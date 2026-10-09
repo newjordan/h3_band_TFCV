@@ -275,6 +275,8 @@ def load_mpfb():
     sub = mesh.modifiers.new("smooth", "SUBSURF")      # after the armature: smooth the posed mesh
     sub.levels, sub.render_levels = 1, 2
     arm.hide_render = True
+    global MPFB_MESH
+    MPFB_MESH = mesh
     rest = {}
     for s in "LR":
         B = {b.name[:-2]: b for b in arm.data.bones if b.name.endswith("." + s)}
@@ -454,6 +456,47 @@ else:
     scn.display.light_direction = (-0.35, -0.45, 0.82)
     scn.display.render_aa = "16"
 
+MESHQA = opts.get("--meshqa")      # OUT.json: no render; count skinned-mesh self-intersections per frame, by body part
+if MESHQA:
+    import numpy as np
+    from mathutils.bvhtree import BVHTree
+    me0 = MPFB_MESH.data
+    MPFB_MESH.modifiers["smooth"].show_viewport = False
+    me0.calc_loop_triangles()
+    TRIS = [tuple(t.vertices) for t in me0.loop_triangles]
+    gname = {g.index: g.name for g in MPFB_MESH.vertex_groups}
+
+    def part(vn):
+        b, sd = vn.rsplit(".", 1)
+        if b.startswith("finger"):
+            return f"{sd}{b[6]}"                          # R1 = right thumb ... R5 = right pinky
+        return f"{sd}{'arm' if b.startswith('lowerarm') else 'palm'}"
+    VPART = []
+    for v in me0.vertices:
+        g = max(v.groups, key=lambda e: e.weight, default=None)
+        VPART.append(part(gname[g.group]) if g else "?")
+    TPART = [VPART[t[0]] for t in TRIS]
+    TSET = [set(t) for t in TRIS]
+    NV = len(me0.vertices)
+
+    def intersections():
+        dg = bpy.context.evaluated_depsgraph_get()
+        ev = MPFB_MESH.evaluated_get(dg)
+        m = ev.to_mesh()
+        co = np.empty(NV * 3); m.vertices.foreach_get("co", co)
+        ev.to_mesh_clear()
+        tree = BVHTree.FromPolygons([tuple(c) for c in co.reshape(-1, 3)], TRIS)
+        out = set()
+        for a, b in tree.overlap(tree):
+            if a < b and not (TSET[a] & TSET[b]):
+                out.add((a, b))
+        return out
+    for pb in MPFB_ARM.pose.bones:
+        pb.matrix_basis = Matrix()
+    bpy.context.view_layer.update()
+    REST_PAIRS = intersections()
+    MQ = {"rest_pairs": len(REST_PAIRS), "frames": {}}
+
 for i in FRAME_IDS:
     fr = frames[i]
     for p, ob in keys.items():
@@ -519,8 +562,20 @@ for i in FRAME_IDS:
             if ob.name.split("_")[0].rstrip("-1") in ("torso", "head", "nose", "neck", "thigh", "shin", "bench") \
                     or ob.name.startswith(("L_upper", "R_upper")):
                 ob.hide_render = True
+    if MESHQA:
+        bpy.context.view_layer.update()
+        cnt = {}
+        for a, b in intersections() - REST_PAIRS:
+            k = "-".join(sorted((TPART[a], TPART[b])))
+            cnt[k] = cnt.get(k, 0) + 1
+        if cnt:
+            MQ["frames"][i] = cnt
+        continue
     scn.render.filepath = os.path.join(out_dir, f"f_{i:05d}.png")
     bpy.ops.render.render(write_still=True)
+if MESHQA:
+    json.dump(MQ, open(MESHQA, "w"))
+    print("meshqa frames with intersections:", len(MQ["frames"]), "of", len(FRAME_IDS))
 if MPFB_RESID:
     MPFB_RESID.sort()
     print(f"mpfb joint residual: median {MPFB_RESID[len(MPFB_RESID) // 2] * 1000:.2f} mm, "

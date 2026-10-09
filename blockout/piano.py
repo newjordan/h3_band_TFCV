@@ -808,6 +808,53 @@ def _pen_detail(info):
             "overstretched": sum(1 for i in bad if i[3] > 0.97 * reach[i[1]])}
 
 
+# Anatomical joint ranges for fingers 2-5 (degrees of flexion; negative = bending backwards), and how far a hinge
+# joint (PIP, DIP) may bend sideways. A pose outside these is a broken finger on screen.
+ANAT = {"mcp": (-20.0, 90.0), "pip": (0.0, 105.0), "dip": (-5.0, 85.0), "abd": 25.0, "lat": 10.0}
+
+
+def finger_angles(wrist, chains, side):
+    """Per finger 2-5: (MCP flexion, PIP flexion, DIP flexion, MCP abduction, PIP lateral, DIP lateral), degrees.
+    Flexion is measured about the hand's across axis carried onto the finger, positive toward the palm."""
+    wrist = np.asarray(wrist, float)
+    ch = [np.asarray(c, float) for c in chains]
+    _, M = hand_frame(wrist, [ch[f][0] for f in range(1, 5)], side)
+    ac, fwd, up = M
+    ax = np.cross(fwd, -up); ax /= np.linalg.norm(ax)
+    n = lambda v: v / np.linalg.norm(v)
+    out = []
+    for f in range(1, 5):
+        q = ch[f]
+        mc = n(q[0] - wrist)
+        s = [n(q[k + 1] - q[k]) for k in range(3)]
+        axf = n(ax - s[0] * (ax @ s[0]))
+        flex = lambda u, v, a: math.degrees(math.atan2(float(np.cross(u, v) @ a), float(u @ v)))
+        lat = lambda u, v: math.degrees(math.asin(float(np.clip(v @ axf, -1, 1)))) - \
+            math.degrees(math.asin(float(np.clip(u @ axf, -1, 1))))
+        mcp_flex = flex(mc - ax * (mc @ ax), s[0] - ax * (s[0] @ ax), ax)
+        abd = math.degrees(math.asin(float(np.clip(s[0] @ n(np.cross(up, mc)), -1, 1))))
+        out.append((mcp_flex, flex(s[0], s[1], axf), flex(s[1], s[2], axf), abd, lat(s[0], s[1]), lat(s[1], s[2])))
+    return out
+
+
+def _anat_detail(frames):
+    """Finger-frames (fingers 2-5) with a joint outside ANAT, by kind. The same check for every hand model."""
+    bad = {"mcp": 0, "pip": 0, "dip": 0, "abd": 0, "lat": 0}
+    worst = {k: 0.0 for k in bad}
+    n = 0
+    for fr in frames:
+        for h, hd in fr["hands"].items():
+            for m, pi, di, ab, l1, l2 in finger_angles(hd["wrist"], hd["fingers"], h):
+                n += 1
+                for k, v, (lo, hi) in (("mcp", m, ANAT["mcp"]), ("pip", pi, ANAT["pip"]), ("dip", di, ANAT["dip"])):
+                    e = max(lo - v, v - hi, 0.0)
+                    bad[k] += e > 0; worst[k] = max(worst[k], e)
+                for k, v, lim in (("abd", ab, ANAT["abd"]), ("lat", max(abs(l1), abs(l2)), ANAT["lat"])):
+                    e = max(abs(v) - lim, 0.0)
+                    bad[k] += e > 0; worst[k] = max(worst[k], e)
+    return {"finger_frames": n, "out_of_range": bad, "worst_excess_deg": {k: round(v, 1) for k, v in worst.items()}}
+
+
 def _reach_detail(hands):
     """Pressing fingers whose solved chain doesn't get the fingertip to its key (joint limits / segment
     lengths): a key going down with no finger on it. Same measure for every hand model."""
@@ -1198,7 +1245,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             "qa": {"finger_frames": int(len(pens)), "penetrating_over_1mm": int((pens > 0.001).sum()),
                    "max_penetration_mm": round(float(pens.max()) * 1000, 2),
                    "detail": _pen_detail([i for H in hands.values() for i in H.get("pen_info", [])]),
-                   "hits": _hit_detail(frames), "order": _cross_detail(frames), "reach": _reach_detail(hands), "hands": _hands_detail(frames)},
+                   "hits": _hit_detail(frames), "order": _cross_detail(frames), "reach": _reach_detail(hands), "anatomy": _anat_detail(frames), "hands": _hands_detail(frames)},
             "schedule": sched, "beats": [b - start for b in beats.tolist() if start <= b <= end],
             "downbeats": [b - start for b in downbeats.tolist() if start <= b <= end],
             "fingering": fing_out, "frames": frames}
