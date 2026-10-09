@@ -1,0 +1,13 @@
+{
+ "1": {"class_type": "LoadAudio", "inputs": {"audio": "drums.wav"}, "_meta": {"title": "Drum stem"}},
+ "2": {"class_type": "H3BandDrumEvents", "inputs": {"audio": ["1", 0]}, "_meta": {"title": "Drum events"}},
+ "3": {"class_type": "H3BandDrumBlockout", "inputs": {
+   "hits": ["2", 0], "start": 8.0, "frames": 121, "fps": 24, "width": 1280, "height": 704,
+   "view": "front", "head_schedule": "0:groove", "seed": 0, "camera": "", "engine": "WORKBENCH"},
+   "_meta": {"title": "Drum blockout"}},
+ "4": {"class_type": "TrimAudioDuration", "inputs": {"audio": ["1", 0], "start_index": 8.0, "duration": 5.0417},
+   "_meta": {"title": "Stem from start (frames / fps)"}},
+ "5": {"class_type": "CreateVideo", "inputs": {"images": ["3", 0], "audio": ["4", 0], "fps": 24.0}},
+ "6": {"class_type": "SaveVideo", "inputs": {"video": ["5", 0], "filename_prefix": "h3band/drum_blockout",
+   "format": "mp4", "codec": "auto"}, "_meta": {"title": "Blockout video"}}
+}
