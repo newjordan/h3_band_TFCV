@@ -162,6 +162,39 @@ $P -m blockout.drums work/drum_events.json work/drums.json --beats $H3B_BEATS
 
 Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brahms Op. 118 No. 2 are Public Domain; Rachmaninoff Op. 3 No. 2 is CC BY-SA 4.0. `knights_suite.mid` (built by `suite.py`) contains an original theme plus excerpts of the Rachmaninoff (CC BY-SA 4.0) and the Brahms.
 
+## Drum blockout in ComfyUI, driven by the Comfy SDK
+
+`comfy_nodes/h3_band_drums.py` puts the drum blockout in a ComfyUI graph:
+
+| node | in | out |
+|---|---|---|
+| **H3 Band Drum Events** | `AUDIO` (a drum stem) | `DRUM_HITS` from `h3band/drum_events.py` |
+| **H3 Band Drum Hits (MIDI)** | a GM drum `.mid` in the input dir | `DRUM_HITS` with the MIDI's beat grid |
+| **H3 Band Drum Blockout** | `DRUM_HITS`, `start` (s), `frames`, `fps`, size, view or `camera`, head schedule | `IMAGE`: grey kit frames from `blockout/drums.py`, rendered by Blender |
+
+The frames begin at `start` seconds into the hits, so `TrimAudioDuration` (start = `start`, duration = frames / fps) gives the matching audio for `CreateVideo`. The same frames can be VAE-encoded as the take for an H3 zone run. `examples/workflows/drum_blockout_api.json` is the stem → hits → blockout → MP4 graph in API format.
+
+`h3band/sdk_drum_blockout.py` runs that graph through the official [Comfy SDK](https://docs.comfy.org/development/api-development/sdks) (`comfy-sdk`, MIT). It uploads the stem or MIDI as an asset, sets the inputs, follows the job's progress events and downloads the video:
+
+```bash
+# ComfyUI side: the nodes import blockout/ and h3band/ from this repo, so link the folder rather than copy the file
+#   (a copied folder works too with H3B_REPO=<repo>). It also loads H3 Band Zone Latent when the ComfyUI supports it.
+ln -s "$PWD/comfy_nodes" ComfyUI/custom_nodes/h3band     # Windows: mklink /J ComfyUI\custom_nodes\h3band comfy_nodes
+ComfyUI/.venv/bin/pip install soundfile                 # numpy, scipy and Pillow ship with ComfyUI
+export H3B_BLENDER=/path/to/blender                     # default: blender on PATH
+python ComfyUI/main.py --port 8188 &
+
+# client side: the SDK talks Comfy API v2, which a self-hosted ComfyUI serves through comfy-api-proxy
+python3 -m venv .venv_sdk && .venv_sdk/bin/pip install -r requirements-sdk.txt
+.venv_sdk/bin/comfy-api-proxy run --comfyui http://127.0.0.1:8188 --port 8189 &
+cd h3band
+../.venv_sdk/bin/python sdk_drum_blockout.py $H3B_STEMS_DIR/drums.wav ../work/drums_blockout.mp4 --start 8 --frames 121
+../.venv_sdk/bin/python sdk_drum_blockout.py ../examples/drums/rock_groove.mid ../work/groove.mp4 \
+    --audio ../work/drums.wav --view three4 --heads 0:wild      # MIDI hits, a drumsynth render as the soundtrack
+```
+
+`COMFY_BASE_URL` picks the server (default `http://127.0.0.1:8189`). On an RTX 5060 Ti, 121 frames at 1280x704 (Workbench) take about 17 s on the server, including detection. The node loads every frame into one `IMAGE` batch (about 10 MB per 1280x704 frame), so render long takes in sections.
+
 ## Hackathon tasks
 
 - [ ] **Per-zone audio binding.** Bind each stem to its zone inside one run: multiple audio segments plus an attention bias, so stem A's tokens reach only zone A's video tokens.
@@ -171,7 +204,8 @@ Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brah
 - [x] **Drum blockout.** Stick tips and pedals on the drum-stem hits or a GM drum MIDI (`blockout/drums.py`, `blockout/blender_drums.py`, `h3band/drum_events.py`).
 - [ ] **H3 over the drum blockout.** Same go/no-go as the piano: zone strengths 0.6 / 0.75 / 0.9 with the drum stem locked, scoring whether each stick lands on its onset.
 - [ ] **Bass blockout.** Bass fingers on the bass note onsets.
-- [ ] **Comfy nodes for the chain.** A Beat Matrix node (stem or MIDI to events), a Primitive Performer Render node (events + instrument + camera to a grey plate), then the existing H3 Band Zone Latent, driven end to end through the Comfy API.
+- [x] **Comfy nodes for the drum blockout.** Drum Events / Drum Hits (MIDI) / Drum Blockout render, driven through the Comfy SDK (`h3band/sdk_drum_blockout.py`).
+- [ ] **Comfy nodes for the rest of the chain.** Piano and guitar blockout render nodes, then blockout → H3 Band Zone Latent end to end through the SDK.
 - [ ] **A ground-truth strum clip** for `strum_score2.py` (real footage with known stroke times), plus stroke-direction scoring.
 - [ ] **Phoneme-level vocal alignment** for sung vocals, giving visemes for the mouth.
 - [ ] **Seam handling in the merge pass.** Release a feathered band around touching zones instead of the whole frame.

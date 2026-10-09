@@ -1,0 +1,2 @@
+comfy-sdk>=0.4
+comfy-api-proxy
