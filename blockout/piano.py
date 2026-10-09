@@ -1191,7 +1191,7 @@ def _roll_offsets(off, roll):
 # ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
 PRESS_AXES = (3.0, 0.5, 1.5)        # pressing-pad target weight along x (across keys), y (along a key), z
 HAND_CLEAR, HAND_W = 0.003, 1.0    # m kept between the two hands' skin; weight of that against the targets
-RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=4e-5, iters=12, smooth=2e-5)   # target weights and the plan prior
+RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=9e-6, comfort_sigma=True, iters=12, smooth=2e-5)   # target weights and the plan prior
 _RIGS = {}
 
 
