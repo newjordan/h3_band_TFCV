@@ -41,7 +41,7 @@ An isolated run is `mode B` + `video_denoise 0` (the take is locked) + a zone bo
 
 ## Setup
 
-**Not included:** ComfyUI, the MiniMax H3 weights, separator checkpoints, the face landmark model, and any media.
+**Not included:** ComfyUI, the MiniMax H3 weights, separator checkpoints, the face landmark model, and any input media.
 
 1. **ComfyUI with MiniMax H3 support and per-token noise masks on nested AV latents** (upstream ComfyUI PR #15375). Without that PR the zone latent still loads, but the sampler applies its masks as inpaint blending, a looser lock. Copy `comfy_nodes/h3_band_zone_latent.py` into `ComfyUI/custom_nodes/`. H3 file names default to the values in `h3band/config.py` (`H3B_UNET`, `H3B_CLIP`, `H3B_VAE`, `H3B_AUDIO_VAE`).
 2. **Two venvs.** They're kept separate because mediapipe and torch pins fight.
@@ -224,6 +224,16 @@ Results on the example groove, 13.0–18.2 s (the fill into the next section), s
 
 From the audio alone H3 paints a convincing drummer whose sticks don't follow the hits. Over the blockout at 0.6–0.8 the sticks keep the blockout's timing, about as well as the blockout itself, and 0.8 is the first strength where the kit no longer looks grey. At 0.89 the blockout is too faint to hold either the timing or the camera. ComfyUI's `BasicScheduler` floors `steps / denoise`, so 8 steps at denoise 0.9 there is the full schedule from noise. That take came out as the same video as B, which is why the script splits the sigmas itself.
 
+One snare backbeat (1.46 s into the window), frame by frame from 4 frames before the hit to 2 after, cropped to the hands and brightened. Over the blockout, seed 7's right stick is up at −4 and on the snare at the hit. Seed 42's arm comes down on the hit but is motion-blurred. With audio only, the stick is mid-stroke at the hit:
+
+![Frames around a snare hit](docs/drums/snare_hit_frames.jpg)
+
+The frame at each big hit in the window. The blockout moves to the toms (3.08 s, 3.62 s) and reaches for the crash (4.12 s):
+
+![Frames at each hit](docs/drums/frames_at_hits.jpg)
+
+**Limitation: the timing of the strokes transfers, but not which drum they land on.** Through the fill, the seed 7 drummer keeps playing the snare in time while the blockout moves around the toms, and seed 42 is a blur. `drum_sync_score.py` measures stroke timing only, so it doesn't see this. Getting limb placement to carry over probably needs a lower denoise in the fill or a stronger blockout (thicker sticks, contrasting drum heads); neither has been tried.
+
 `drum_sync_score.py` only separates synced from unsynced on varied playing. On the steady 8th-note groove (8.0–13.2 s) the blockout itself fails its between-hits control (margin −0.02), so score fills and breaks. All of these takes use the `drumsynth.py` render of the MIDI; H3 over a blockout driven by a real drum stem hasn't been scored yet.
 
 ## Hackathon tasks
@@ -233,7 +243,7 @@ From the audio alone H3 paints a convincing drummer whose sticks don't follow th
 - [ ] **H3 over the piano blockout: the go/no-go.** Run about 5 s of a blockout through H3 at zone strengths 0.6 / 0.75 / 0.9 with the piano audio locked, then score whether each struck key lands on its onset.
 - [ ] **Guitar strum blockout.** A grey picking arm and guitar strumming down/up on the onsets from `guitar_events.py`, rendered from the shot's camera, composited over the guitarist zone, then H3 at about 0.85–0.9 with the guitar stem locked.
 - [x] **Drum blockout.** Stick tips and pedals on the drum-stem hits or a GM drum MIDI (`blockout/drums.py`, `blockout/blender_drums.py`, `h3band/drum_events.py`).
-- [x] **H3 over the drum blockout.** Go: at denoise 0.6–0.8 the sticks keep the blockout's timing (p 0.005 at 0.8), audio alone doesn't (`h3band/sdk_drum_h3.py`, `h3band/drum_sync_score.py`).
+- [x] **H3 over the drum blockout.** Go: at denoise 0.6–0.8 the sticks keep the blockout's timing (p 0.005 at 0.8), audio alone doesn't (`h3band/sdk_drum_h3.py`, `h3band/drum_sync_score.py`). Which drum each stroke lands on doesn't carry over yet.
 - [ ] **Bass blockout.** Bass fingers on the bass note onsets.
 - [x] **Comfy nodes for the drum blockout.** Drum Events / Drum Hits (MIDI) / Drum Blockout render, driven through the Comfy SDK (`h3band/sdk_drum_blockout.py`).
 - [ ] **Comfy nodes for the rest of the chain.** Piano and guitar blockout render nodes, then blockout → H3 Band Zone Latent end to end through the SDK.
