@@ -9,7 +9,8 @@ the half cadence: G# in the bass under a D#/C#/F# chord, i.e. the dominant of C#
 C# minor Op. 3 No. 2 follows at its bar 35 (agitato climb), which opens on a G#-B-D-F diminished seventh over
 that same G#, so the dominant is carried straight through the join (major mode turning minor); the climb
 (bars 35-44), G#7 at bar 45, the fff four-stave climax and the pp coda run to bar 61. Its last C# hands over
-(after one silent bar) to Chopin's Nocturne in
+(after one silent bar) to the opening of the Rondo of Mozart's Piano Concerto No. 22 in E-flat, K. 482 (the solo
+piano's theme, 8 bars, read off the public-domain score), then after another silent bar to Chopin's Nocturne in
 C# minor Op. posth. (B. 49, Lento con gran espressione): the slow introduction and first theme (bars 1-8,
 which end on the dominant, B# in the bass), then the close, bars 58-64: the quiet C# pedal coda that ends in
 C# major. The bar numbers are the fitted bars of our transcription of a free recording (see README).
@@ -79,6 +80,46 @@ def knights_theme():
 
 
 # ---------------------------------------------------------------- excerpts
+# ---------------------------------------------------------------- Mozart, Piano Concerto No. 22 K. 482, III
+# The Rondo's opening: the solo piano states the theme alone (p), 6/8 Allegro. Read off the public-domain
+# Breitkopf & Haertel full score (IMSLP / Wikimedia Commons, "Piano Concerto No.22 ... K.482 (IA imslp-...)",
+# p. 39) and checked against the engraved incipit "Mozart Klavierkonzert Nr. 22 KV 482, 3. Satz.png" (Commons).
+# The left hand plays one bass note per bar under it. Bar 8 is the tutti's first bar (the piano's E-flat).
+MOZART_BAR_S = 1.15        # 6/8, dotted quarter = 104
+_E = 1.0                   # an eighth note
+MOZ_RH = [  # (pitch or None for a rest, length in eighths), bar by bar after the pickup
+    [("Eb5", 2), ("Eb5", 1), ("Eb5", 2), ("Eb5", 1)],
+    [("Eb5", 2), ("F5", .25), ("Eb5", .25), ("D5", .25), ("Eb5", .25), ("G5", 1), (None, 1), ("Bb4", 1)],
+    [("F5", 2), ("F5", 1), ("F5", 2), ("F5", 1)],
+    [("F5", 2), ("G5", .25), ("F5", .25), ("E5", .25), ("F5", .25), ("Ab5", 1), (None, 1), ("Bb4", 1)],
+    [("G5", 2), ("G5", 1), ("G5", 2), ("Ab5", .25), ("G5", .25), ("F5", .25), ("G5", .25)],
+    [("Bb5", 3), ("Bb5", 1), ("G5", 1), ("Eb5", 1)],
+    [("F5", 3), ("F5", 1), ("D5", 1), ("Bb4", 1)],
+    [("Eb5", 2), (None, 4)],
+]
+MOZ_LH = ["Eb3", "Eb3", "D3", "D3", "Eb3", "Eb3", "Bb2", "Eb3"]
+
+
+def mozart_theme():
+    """Pickup (an eighth) + 8 bars of 6/8 -> (notes, bars), seconds from 0."""
+    e = MOZART_BAR_S / 6
+    notes = [midi.Note(0.0, 0.85 * e, P("Bb4"), 56, 1)]
+    bars = [(0.0, e, 1, 8)]
+    t = e
+    for b, (rh, lh) in enumerate(zip(MOZ_RH, MOZ_LH)):
+        bars.append((t, MOZART_BAR_S, 6, 8))
+        u = t
+        for k, (p, L) in enumerate(rh):
+            if p is not None:
+                d = L * e
+                acc = 6 if (u - t) < 1e-6 else 0                 # the downbeat a touch stronger
+                notes.append(midi.Note(u, u + (0.92 if L >= 2 else 0.8) * d, P(p), 56 + acc, 1))
+            u += L * e
+        notes.append(midi.Note(t, t + 1.7 * e, P(lh), 48, 2))
+        t += MOZART_BAR_S
+    return notes, bars
+
+
 def excerpt(path, bar_lo, bar_hi, num, den):
     """Bars bar_lo..bar_hi (1-based, inclusive) of a MIDI file, shifted to start at 0."""
     notes = midi.read(path)
@@ -159,13 +200,14 @@ def write(path, notes, bars):
 
 # source MIDI track -> hand (1 right, 2 left), per part: the scores' own staves. Splitting per onset at the widest
 # gap put whole right-hand chords into the left hand whenever only one hand struck (156 of 899 Rachmaninoff notes).
-STAVES = [{1: 1, 2: 2}, {1: 1, 2: 2}, {1: 1, 2: 1, 3: 2, 4: 2}, {1: 1, 2: 2}, {1: 1, 2: 2}]
+STAVES = [{1: 1, 2: 2}, {1: 1, 2: 2}, {1: 1, 2: 1, 3: 2, 4: 2}, {1: 1, 2: 2}, {1: 1, 2: 2}, {1: 1, 2: 2}]
 
 
 def knights_suite(clair, rach, chopin):
     parts = [knights_theme(),
              excerpt(clair, 1, 8, 9, 8),
              excerpt(rach, 35, 61, 4, 4),
+             mozart_theme(),
              excerpt(chopin, 1, 8, 4, 4),
              excerpt(chopin, 58, 64, 4, 4)]
     notes, bars, t = [], [], 0.0
@@ -176,7 +218,7 @@ def knights_suite(clair, rach, chopin):
         notes += [midi.Note(n.start + t, n.end + t, n.pitch, n.velocity, mp.get(n.track, 1)) for n in ns]
         bars += [(b0 + t, L, num, den) for b0, L, num, den in bs]
         t += sum(b[1] for b in bs)
-        if k == 2:      # a silent 3/4 bar of air between the Rachmaninoff coda and the Chopin
+        if k in (2, 3):  # a silent 3/4 bar of air after the Rachmaninoff coda and after the Mozart
             bars.append((t, 2.25, 3, 4)); t += 2.25
     return notes, bars, marks       # hands as the scores have them (resplit() only for sources without staves)
 
