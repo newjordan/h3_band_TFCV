@@ -1,7 +1,7 @@
 """Blender (bpy) renderer for a piano blockout JSON from blockout/piano.py. Grey matte primitives, Workbench.
 
     blender -b --factory-startup -P blockout/blender_piano.py -- ANIM.json OUT_DIR [--res 1280x704]
-           [--frames a:b] [--engine WORKBENCH|CYCLES] [--view pov|three4|side] [--lens mm]
+           [--frames a:b] [--engine WORKBENCH|CYCLES] [--view pov|three4|side|handcam [--hand R|L --angle front3q|side|top|front --dist m]] [--lens mm]
 
 --hands mpfb|skin|capsule: mpfb (default) is a real rigged, skinned CC0 hand from MPFB2, driven bone by
 bone; skin is a Skin-modifier tube stopgap over the joint graph; capsule is the original mannequin.
@@ -108,6 +108,7 @@ box("cheek_r", X1 + 0.005, X1 + 0.06, -0.03, 0.30, -0.10, 0.045, M_CASE)
 box("fallboard", X0 - 0.005, X1 + 0.005, 0.153, 0.20, -0.02, 0.055, M_CASE)
 box("lid_body", X0 - 0.06, X1 + 0.06, 0.20, 0.32, -0.10, 0.07, M_CASE)
 VIEW = opts.get("--view", "pov")
+HC_HAND, HC_ANGLE, HC_DIST = opts.get("--hand", "R"), opts.get("--angle", "front3q"), float(opts.get("--dist", 0.34))
 if VIEW == "pov":
     box("music_desk", X0 + 0.45, X1 - 0.45, 0.22, 0.25, 0.07, 0.30, M_CASE)
 box("floor", X0 - 3, X1 + 3, -3, 4, -0.80, -0.79, M_FLOOR)
@@ -546,6 +547,15 @@ for i in FRAME_IDS:
                          @ Matrix.Diagonal((1, 1, 0.035, 1)))
     if VIEW == "pov":
         cam.matrix_world = look_matrix(b["eye"], b["cam_fwd"], b["cam_up"])
+    elif VIEW == "handcam":                            # review: follow one hand from its own joints, fixed distance
+        hd = fr["hands"][HC_HAND]
+        pts = [Vector(hd["wrist"])] + [Vector(c[k]) for c in hd["fingers"] for k in (0, 3)]
+        ctr = sum(pts, Vector()) / len(pts)
+        sg = 1.0 if HC_HAND == "R" else -1.0
+        dirv, upv = {"front3q": ((0.35 * sg, -0.75, 0.80), (0, 0, 1)), "side": ((sg, -0.05, 0.22), (0, 0, 1)),
+                     "top": ((0, -0.08, 1.0), (0, 1, 0)), "front": ((0.20 * sg, 1.0, 0.45), (0, 0, 1))}[HC_ANGLE]
+        eye = ctr + Vector(dirv).normalized() * HC_DIST
+        cam.matrix_world = look_matrix(eye, ctr - eye, upv)
     elif VIEW == "edit":
         c = fr["cam"]
         fwd = Vector(c["look"]) - Vector(c["pos"])
