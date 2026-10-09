@@ -286,6 +286,56 @@ def load_mpfb():
     return arm, rest
 
 
+_SK = {}
+
+
+def pose_rig(arm, rest, s, hd):
+    """Pure forward kinematics from the hand rig (blockout/rig): the wrist bone gets the solved root pose and every
+    other bone its joint rotation about its own rest axes -- exactly the pose the rig solved, nothing re-aimed."""
+    import numpy as np
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from blockout.rig.skeleton import Skeleton
+    if s not in _SK:
+        _SK[s] = Skeleton(s)
+    sk = _SK[s]
+    B = rest[s]["bones"]
+    wrist, elbow = Vector(hd["wrist"]), Vector(hd["elbow"])
+    u = (wrist - elbow).normalized()
+    want = {}
+    for nm, back in (("lowerarm02", 0.0), ("lowerarm01", B["lowerarm02"].length)):
+        head = wrist - u * (B["lowerarm02"].length + back)
+        tail = head + u * B[nm].length
+        r3 = B[nm].matrix_local.to_3x3()
+        r3 = r3.col[1].normalized().rotation_difference(u).to_matrix() @ r3
+        m = r3.to_4x4(); m.translation = head
+        want[nm] = m
+    root = Matrix([list(r) for r in hd["root"]["rot"]]).to_4x4()
+    root.translation = Vector(hd["root"]["pos"])
+    want["wrist"] = root
+    ang = hd["angles"]
+    for nm in sk.names:
+        pb = arm.pose.bones[f"{nm}.{s}"]
+        b = B[nm]
+        if nm in want:
+            m = want[nm]
+            if b.parent is None:
+                pb.matrix_basis = b.matrix_local.inverted() @ m
+            else:
+                pn = b.parent.name[:-2]
+                pb.matrix_basis = ((b.parent.matrix_local.inverted() @ b.matrix_local).inverted()
+                                   @ want[pn].inverted() @ m)
+        else:
+            R = sk.local_rot(nm, ang.get(nm, {}))
+            pb.matrix_basis = Matrix([list(r) for r in R]).to_4x4()
+    for nm in ("lowerarm01", "lowerarm02"):
+        b = B[nm]; pb = arm.pose.bones[f"{nm}.{s}"]
+        if b.parent is None:
+            pb.matrix_basis = b.matrix_local.inverted() @ want[nm]
+        else:
+            pn = b.parent.name[:-2]
+            pb.matrix_basis = ((b.parent.matrix_local.inverted() @ b.matrix_local).inverted() @ want[pn].inverted() @ want[nm])
+
+
 def pose_mpfb(arm, rest, s, hd):
     """Pose one hand's bones from the frame's joints (armature space = world: the rig sits at the origin)."""
     R = rest[s]
@@ -480,12 +530,36 @@ if MESHQA:
     TSET = [set(t) for t in TRIS]
     NV = len(me0.vertices)
 
+    KB = np.array([(k["x"] - k["w"] / 2, k["x"] + k["w"] / 2, k["y0"], 0.150, k["top"] - (0.012 if k["black"] else 0.018),
+                    k["top"], k["pitch"]) for k in anim["keyboard"]])
+    LAST_CO = {}
+
+    def key_penetration(co, keys):
+        """Skinned-mesh vertices inside a key box (keys tilted down by their depth): count > 1 mm and max depth."""
+        depth = np.zeros(len(KB))
+        for i, k in enumerate(KB):
+            depth[i] = float(keys.get(str(int(k[6])), 0.0))
+        worst, n = 0.0, 0
+        x, y, z = co[:, 0], co[:, 1], co[:, 2]
+        near = (z < 0.013) & (y > -0.01) & (y < 0.155)
+        for i, (x0, x1, y0, y1, zb, zt, _p) in enumerate(KB):
+            m = near & (x > x0) & (x < x1) & (y > y0) & (y < y1)
+            if not m.any():
+                continue
+            top = zt - depth[i] * 0.010 * (0.150 - y[m]) / (0.150 - y0)     # pivot at the back
+            d = np.minimum(top - z[m], z[m] - zb)
+            d = d[d > 0]
+            if len(d):
+                worst = max(worst, float(d.max())); n += int((d > 0.001).sum())
+        return n, worst
+
     def intersections():
         dg = bpy.context.evaluated_depsgraph_get()
         ev = MPFB_MESH.evaluated_get(dg)
         m = ev.to_mesh()
         co = np.empty(NV * 3); m.vertices.foreach_get("co", co)
         ev.to_mesh_clear()
+        LAST_CO["co"] = co.reshape(-1, 3)
         tree = BVHTree.FromPolygons([tuple(c) for c in co.reshape(-1, 3)], TRIS)
         out = set()
         for a, b in tree.overlap(tree):
@@ -513,7 +587,12 @@ for i in FRAME_IDS:
         if HANDS == "mpfb":
             el, wr = Vector(hd["elbow"]), Vector(hd["wrist"])
             R["forearm"].set(el, wr - (wr - el).normalized() * 0.05)
-            pose_mpfb(MPFB_ARM, MPFB_REST, h, hd)
+            (pose_rig if "angles" in hd else pose_mpfb)(MPFB_ARM, MPFB_REST, h, hd)
+            if "angles" in hd and opts.get("--fkcheck"):
+                bpy.context.view_layer.update()
+                for f in range(5):
+                    tl = MPFB_ARM.pose.bones[f"finger{f + 1}-3.{h}"].tail
+                    MPFB_RESID.append((Vector(hd["fingers"][f][3]) - tl).length)
             R["upper"].set(fr["body"]["shoulders"][h], hd["elbow"])
             continue
         if HANDS == "capsule":
@@ -578,6 +657,10 @@ for i in FRAME_IDS:
         for a, b in intersections() - REST_PAIRS:
             k = "-".join(sorted((TPART[a], TPART[b])))
             cnt[k] = cnt.get(k, 0) + 1
+        kn, kw = key_penetration(LAST_CO["co"], fr["keys"])
+        if kn:
+            cnt["keys"] = kn
+            MQ.setdefault("keys_worst_mm", {})[i] = round(kw * 1000, 1)
         if cnt:
             MQ["frames"][i] = cnt
         continue

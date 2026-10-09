@@ -912,13 +912,15 @@ def finger_angles(wrist, chains, side):
     for f in range(1, 5):
         q = ch[f]
         mc = n(q[0] - wrist)
-        up = n(M[2] - mc * (M[2] @ mc))
+        hup = M[2]                                       # the hand's own palm normal (back of the hand)
+        up = n(hup - mc * (hup @ mc))
         sd = np.cross(up, mc)
         s = [n(q[k + 1] - q[k]) for k in range(3)]
-        e1 = n(s[0] - up * (s[0] @ up))
-        abd = deg(math.atan2(float(e1 @ sd), float(e1 @ mc)))
-        mcp_flex = deg(math.atan2(float(-(s[0] @ up)), float(s[0] @ e1)))
-        a = n(np.cross(s[0], -up))
+        mcp_p = n(mc - hup * (mc @ hup))                 # metacarpal and phalanx seen in the palm plane
+        e1 = n(s[0] - hup * (s[0] @ hup))
+        abd = deg(math.atan2(float(np.cross(mcp_p, e1) @ hup), float(e1 @ mcp_p)))
+        mcp_flex = deg(math.atan2(float(-(s[0] @ up)), float(s[0] @ n(s[0] - up * (s[0] @ up)))))
+        a = n(np.cross(s[0], -hup))                      # finger plane: the proximal phalanx and the palm normal
         flex = lambda u, v: deg(math.atan2(float(np.cross(u, v) @ a), float(u @ v)))
         lat = lambda v: deg(math.asin(float(np.clip(v @ a, -1, 1))))
         out.append((mcp_flex, flex(s[0], s[1]), flex(s[1], s[2]), abd, lat(s[1]), lat(s[2])))
@@ -1131,6 +1133,119 @@ def _roll_offsets(off, roll):
     return o
 
 
+# ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
+RIG_W = dict(press=1.0, free=0.15, root_pos=0.05, root_rot=1e-4, env=1.0)   # target weights and the plan prior
+_RIGS = {}
+
+
+def _rig(side):
+    if side not in _RIGS:
+        from .rig.hand import HandRig
+        _RIGS[side] = HandRig(side)
+    return _RIGS[side]
+
+
+def hand_frame_from_plan(sgn, roll, psi):
+    """Rows across (thumb -> pinky), forward, up (back of hand) for a planned hand: yaw psi, roll toward the thumb."""
+    ac = _yaw(_roll_offsets(np.array([sgn, 0.0, 0.0]), roll), psi)
+    fw = _yaw(np.array([0.0, 1.0, 0.0]), psi)
+    up = _yaw(_roll_offsets(np.array([0.0, 0.0, 1.0]), roll), psi)
+    return np.stack([ac, fw, up])
+
+
+def _key_env(keydepth, pressing):
+    """Collision penalty (m^2) of a posed hand against the keyboard heightfield: every finger bone as a tapered
+    capsule sampled along its length, plus the knuckles; a pressing finger's pad may rest on its own key."""
+    def env(pts, radii, root_rot, root_pos):
+        pen = 0.0
+        for f in range(5):
+            P = pts[f]
+            for k in range(3):
+                a, b = P[k], P[k + 1]
+                r0, r1, r2 = radii[f][k]
+                for u in (0.25, 0.5, 0.75, 1.0):
+                    if pressing[f] and k == 2 and u > 0.5:
+                        continue
+                    q = a + (b - a) * u
+                    r = r1 + (r2 - r1) * (u - 0.5) * 2 if u > 0.5 else r0 + (r1 - r0) * u * 2
+                    if q[2] - r > 0.016:
+                        continue                       # well above every key top
+                    d = surface_under(q[0], q[1], r, keydepth) + r - q[2]
+                    if d > 0:
+                        pen += d * d
+        return pen
+    return env
+
+
+def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
+    frames = []
+    prev = {}
+    for j in range(j0, N):
+        t = times[j]
+        fr = {"t": round(float(t - start), 4), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}
+        targets, est_depth = {}, {}
+        for name, H in hands.items():                   # targets: pressing tips on their keys, free tips floating
+            tg = H["Tf"][j].copy()
+            for f in range(5):
+                a = H["act"][j][f]
+                if a is None:
+                    continue
+                p, kx, cz = a
+                tg[f, 2] = max(tg[f, 2], cz - KEY_TRAVEL)
+                if abs(tg[f, 0] - kx) < WHITE_W:
+                    est_depth[p] = max(est_depth.get(p, 0.0), float(np.clip((cz - tg[f, 2]) / KEY_TRAVEL, 0, 1)))
+            targets[name] = tg
+        keydepth, press, solved = {}, {}, {}
+        for name, H in hands.items():
+            sgn = 1 if name == "R" else -1
+            rig = _rig(name)
+            M = hand_frame_from_plan(sgn, float(H["Rf"][j]), float(H["Yf"][j]))
+            ref_rot, ref_pos = rig.root_from_hand_frame(M, H["Cf"][j])
+            pressing = [H["act"][j][f] is not None for f in range(5)]
+            w = [RIG_W["press"] if pressing[f] else RIG_W["free"] for f in range(5)]
+            x, (rr, rp, pts), miss = rig.solve(ref_rot, ref_pos, list(targets[name]), w, prev=prev.get(name),
+                                               env=_key_env(est_depth, pressing),
+                                               W=dict(root_pos=RIG_W["root_pos"], root_rot=RIG_W["root_rot"], env=RIG_W["env"]))
+            prev[name] = x
+            solved[name] = (x, rr, rp, pts, pressing)
+            for f in range(5):                           # a key goes down only as far as the real finger pushes it
+                a = H["act"][j][f]
+                if a is None:
+                    continue
+                p, kx, cz = a
+                tip = pts[f][-1]
+                tr = TIP_R[f]
+                if abs(tip[0] - kx) < (BLACK_W if is_black(p) else WHITE_W) / 2 + 0.002:
+                    d = float(np.clip((cz - tip[2] + (tr - tr)) / KEY_TRAVEL, 0, 1))
+                    d = float(np.clip((cz - tip[2]) / KEY_TRAVEL, 0, 1))
+                    if d > 0.01:
+                        keydepth[p] = max(keydepth.get(p, 0.0), d)
+                        press[str(p)] = f"{name}{f + 1}"
+                H.setdefault("tip_miss", []).append((float(miss[f]), f))
+        for name, (x, rr, rp, pts, pressing) in solved.items():
+            H = hands[name]
+            env = _key_env(keydepth, pressing)
+            for f in range(5):
+                pen = 0.0
+                P = pts[f]
+                rad = FINGER_R[f]
+                pen = _penetration(P, rad, keydepth, skip_tip=pressing[f])
+                H.setdefault("pen", []).append(pen)
+                H.setdefault("pen_info", []).append((pen, f, pressing[f], 0.0, j, name))
+            fr["hands"][name] = {"wrist": [round(float(c), 5) for c in rp],
+                                 "fingers": [[[round(float(c), 5) for c in q] for q in P] for P in pts],
+                                 "root": {"rot": np.round(rr, 6).tolist(), "pos": [round(float(c), 6) for c in rp]},
+                                 "angles": {b: {k: round(v, 5) for k, v in d.items()} for b, d in _rig(name).angles(x).items()}}
+        pitch, yaw, roll_h, lean = HEAD[j]
+        fr["body"] = body.pose(pitch, yaw, roll_h, lean, {h: fr["hands"][h]["wrist"] for h in fr["hands"]})
+        for h in fr["hands"]:
+            fr["hands"][h]["elbow"] = fr["body"]["elbows"][h]
+        fr["keys"] = {str(p): round(d, 3) for p, d in keydepth.items()}
+        fr["press"] = press
+        frames.append(fr)
+    return frames
+
+
 def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats=None,
             schedule=((0.0, "expressive"),), energy_fn=None, seed=0):
     if speed != 1.0:
@@ -1290,7 +1405,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     # ---- pass 3: pose, IK, keys from the sprung fingertips
     frames = []
     j0 = int(round(pre * fps))
-    for j in range(j0, N):
+    if HAND_MODEL == "mpfb":
+        frames = _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps)
+    for j in (range(j0, N) if HAND_MODEL != "mpfb" else ()):
         t = times[j]
         fr = {"t": round(float(t - start), 4), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}
         keydepth = {}
