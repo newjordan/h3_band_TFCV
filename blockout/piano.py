@@ -305,8 +305,8 @@ set_hand_model("mpfb")
 
 # Parncutt-style finger-pair spans in semitones (right hand, finger i < j, signed pitch_j - pitch_i):
 # (MinPrac, MinComf, MinRel, MaxRel, MaxComf, MaxPrac)
-SPAN = {(0, 1): (-5, -3, 1, 5, 8, 10), (0, 2): (-4, -2, 3, 7, 10, 12), (0, 3): (-3, -1, 5, 9, 12, 14),
-        (0, 4): (-1, 1, 7, 10, 13, 15), (1, 2): (1, 1, 1, 2, 3, 5), (1, 3): (1, 1, 3, 4, 5, 7),
+SPAN = {(0, 1): (-5, -3, 1, 4, 5, 6), (0, 2): (-4, -2, 3, 6, 7, 8), (0, 3): (-3, -1, 5, 8, 9, 10),
+        (0, 4): (3, 4, 7, 10, 13, 15), (1, 2): (1, 1, 1, 2, 3, 5), (1, 3): (1, 1, 3, 4, 5, 7),
         (1, 4): (2, 2, 5, 6, 8, 10), (2, 3): (1, 1, 1, 2, 2, 4), (2, 4): (1, 1, 3, 4, 5, 7),
         (3, 4): (1, 1, 1, 2, 3, 5)}
 
@@ -517,6 +517,28 @@ def finger_events(fing):
         for i in range(len(e) - 1):  # a finger must let go before it strikes again
             e[i][1] = min(e[i][1], e[i + 1][0] - strike_time(e[i + 1][5]) - 0.02)
             e[i][1] = max(e[i][1], e[i][0] + 0.03)
+    return ev
+
+
+REACH_D = float(__import__("os").environ.get("REACH_D", "0.05"))   # m: how far a held finger may be left behind
+
+
+def release_far(fing, ev, hand, D=None):
+    """A finger that holds a key while the hand moves on lets go before the hand leaves (the pedal / the
+    sound carries the note), instead of being dragged off its key: no key stays down without a finger on it."""
+    D = REACH_D if D is None else D
+    if not fing:
+        return ev
+    sgn = 1 if hand == "R" else -1
+    t_on = np.array([s[0][0].start for s in fing])
+    hx = np.array([_place([(n.pitch, f) for n, f in s], any(is_black(n.pitch) for n, _ in s), hand) for s in fing])
+    for f, evs in ev.items():
+        for e in evs:
+            kx = contact(e[2], e[4], f == 0)[0]
+            for i in np.nonzero((t_on > e[0] + 0.02) & (t_on < e[1]))[0]:
+                if abs(kx - (hx[i] + sgn * HOME[f])) > D:
+                    e[1] = max(e[0] + 0.05, min(e[1], t_on[i] - 0.17))
+                    break
     return ev
 
 
@@ -776,7 +798,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         for n, o in zip(ns, [m for m in (rh if name == "R" else lh)]):
             n.touch, n.lift = getattr(o, "touch", 0.3), getattr(o, "lift", 1.0)
         fing = fingering(slices(ns, hand=name), name) if ns else []
-        ev = finger_events(fing)
+        ev = release_far(fing, finger_events(fing), name)
         sl_end = np.array([max(n.end for n, _ in s) for s in fing]) if fing else np.zeros(0)
         H = {"fing": fing, "ev": ev, "ev_on": {f: np.array([e[0] for e in ev[f]]) for f in ev},
              "on": np.array([s[0][0].start for s in fing]) if fing else np.zeros(0),
@@ -938,6 +960,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                     pts, miss = solve(tip)
                 if own is not None:                          # does the fingertip actually get to its key?
                     H.setdefault("tip_miss", []).append((float(np.linalg.norm(np.asarray(pts[3]) - tip)), f))
+                    H.setdefault("dbg", []).append((round(float(t), 2), name, f, own, round(float(tip[0] - kn[0]), 3), round(float(tip[1] - kn[1]), 3), round(float(tip[2]-kn[2]),3), round(float(np.linalg.norm(np.asarray(pts[3]) - tip)), 4), [None if q is None else q[0] for q in H['act'][j]], round(float(centre[0]),3), round(float(centre[1]),3)))
                 H.setdefault("pen", []).append(pen)
                 H.setdefault("pen_info", []).append((pen, f, own is not None, float(np.linalg.norm(tip - kn))))
                 chains.append([[round(float(c), 5) for c in q] for q in pts])
@@ -950,6 +973,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         fr["press"] = press
         frames.append(fr)
     fing_out = {name: [[[n.start, n.pitch, f] for n, f in s] for s in H["fing"]] for name, H in hands.items()}
+    if os.environ.get("REACH_DBG"):
+        json.dump([d for H in hands.values() for d in H.get("dbg", [])], open(os.environ["REACH_DBG"], "w"))
     pens = np.concatenate([H.get("pen", [0.0]) for H in hands.values()])
     return {"fps": fps, "start": start, "speed": speed, "centre_x": cx, "keyboard": keyboard(),
             "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,
