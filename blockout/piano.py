@@ -232,6 +232,7 @@ KNUCKLE = np.array([[-0.046, -0.040, -0.022],      # thumb CMC: low, out to the 
 FINGER_R = np.array([(0.0115, 0.0105, 0.0095, 0.0085), (0.0095, 0.0088, 0.0080, 0.0070),
                      (0.0098, 0.0090, 0.0082, 0.0072), (0.0093, 0.0085, 0.0078, 0.0068),
                      (0.0085, 0.0078, 0.0070, 0.0062)])
+PITCH0 = 0.0               # rad: the palm's resting pitch (+ = wrist above the knuckles); calibrated from FürElise
 KNUCKLE_Z = 0.064          # knuckle line height over white key tops (mannequin; set_hand_model sets the real hand's)
 Y_KN = -0.006              # knuckle line's resting distance from the white key fronts
 HAND_MODEL = "mannequin"
@@ -489,6 +490,15 @@ def set_hand_model(name):
         # a real hand's natural curl (MCP ~15, PIP ~40 deg) puts the long fingertips ~7 cm below and ~6-7 cm in
         # front of the knuckles, so the knuckle line rides higher and further back than the mannequin's
         KNUCKLE_Z, Y_KN = _rig_rest_height()
+        from .rig.hand import _furelise_cal
+        cal = _furelise_cal()
+        if cal:                                  # measured on concert pianists (blockout.furelise.calibrate)
+            global HITPAD_W, HITPAD_WN, HITPAD_B, PITCH0
+            KNUCKLE_Z, Y_KN = cal["knuckle_z"], cal["knuckle_y"]
+            PITCH0 = math.radians(cal["pitch_deg"])
+            HITPAD_W = [tuple(b) for b in cal["hitpad"]["white"]]
+            HITPAD_WN = [tuple(b) for b in cal["hitpad"]["white_near_black"]]
+            HITPAD_B = [tuple(b) for b in cal["hitpad"]["black"]]
         # HOME = _rig_home()   # rig-derived home spread: not yet validated by the fleet, so off for the render lock
         loc = lambda n, k: M @ (np.array(B[n][k]) - c)
         d = [loc(f"finger1-{s}", "tail") - loc(f"finger1-{s}", "head") for s in (1, 2)]
@@ -508,6 +518,9 @@ SPAN = {(0, 1): (-5, -3, 1, 4, 5, 6), (0, 2): (-4, -2, 3, 6, 7, 8), (0, 3): (-3,
         (0, 4): (3, 4, 7, 10, 13, 15), (1, 2): (1, 1, 1, 2, 3, 5), (1, 3): (1, 1, 3, 4, 5, 7),
         (1, 4): (2, 2, 5, 6, 8, 10), (2, 3): (1, 1, 1, 2, 2, 4), (2, 4): (1, 1, 3, 4, 5, 7),
         (3, 4): (1, 1, 1, 2, 3, 5)}
+_CAL = __import__("blockout.rig.hand", fromlist=["_furelise_cal"])._furelise_cal() if HAND_MODEL == "mpfb" else None
+if _CAL:                                   # the spans concert pianists actually fingered (FürElise)
+    SPAN.update({(int(k[0]), int(k[1])): tuple(v) for k, v in _CAL["span"].items()})
 
 
 def split_hands(notes):
@@ -1417,7 +1430,7 @@ def _plan_root(H, name, j):
     """The motion plan's wrist (root) rotation and position at frame j."""
     sgn = 1 if name == "R" else -1
     wz = float(H["WZf"][j]) - 0.004 * float(H["TCH"][j]) if "WZf" in H else 0.0
-    M = hand_frame_from_plan(sgn, float(H["Rf"][j]), float(H["Yf"][j]), math.atan2(wz, PALM_LEN))
+    M = hand_frame_from_plan(sgn, float(H["Rf"][j]), float(H["Yf"][j]), math.atan2(wz, PALM_LEN) + PITCH0)
     return _rig(name).root_from_hand_frame(M, H["Cf"][j])
 
 
