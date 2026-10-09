@@ -134,7 +134,7 @@ def surface_under(x, y, r, depth):
 # finger 0 = thumb ... 4 = pinky. Home tip offsets: a five-finger position over adjacent white keys.
 # Home tip offsets across the hand, from reference footage of pianists: the fingers fan out from the wrist
 # and the thumb sits well out to the side, so a relaxed playing hand spans about a seventh to an octave.
-HOME = np.array([-0.078, -0.036, 0.000, 0.030, 0.058])
+HOME = np.array([-0.062, -0.036, 0.000, 0.030, 0.058])   # thumb rests ~6 cm out, not splayed wide
 SEG = np.array([[0.040, 0.032, 0.026],   # thumb: metacarpal, proximal, distal
                 [0.044, 0.025, 0.019],
                 [0.048, 0.028, 0.020],
@@ -1189,6 +1189,7 @@ def _roll_offsets(off, roll):
 
 
 # ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
+THUMB_REST = 4.0                    # an idle thumb follows its resting spot by the keys this much harder
 PRESS_AXES = (3.0, 0.5, 1.5)        # pressing-pad target weight along x (across keys), y (along a key), z
 HAND_CLEAR, HAND_W = 0.003, 1.0    # m kept between the two hands' skin; weight of that against the targets
 RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=9e-6, comfort_sigma=True, iters=12, smooth=2e-5)   # target weights and the plan prior
@@ -1283,7 +1284,8 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
             ref_rot, ref_pos = rig.root_from_hand_frame(M, H["Cf"][j])
             pressing = [H["act"][j][f] is not None for f in range(5)]
             # a key is narrow across the keyboard and long along it: aim pressing pads hardest in x
-            w = [np.array(PRESS_AXES) * RIG_W["press"] if pressing[f] else RIG_W["free"] for f in range(5)]
+            w = [np.array(PRESS_AXES) * RIG_W["press"] if pressing[f] else RIG_W["free"] * (THUMB_REST if f == 0 else 1.0)
+                 for f in range(5)]
             x_init = solved[name][0] if name in solved else prev.get(name)
             x, (rr, rp, pts, pads), miss = rig.solve(ref_rot, ref_pos, list(targets[name]), w, prev=x_init, last=prev.get(name),
                                                env=_key_env(est_depth, pressing, blobs.get("L" if name == "R" else "R"), rig),
@@ -1487,9 +1489,10 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                             goal = contact(en[2], en[4], f)
                             tip = tip.copy()
                             tip[:2] += w * (goal[:2] - tip[:2])
-                    idle = 1.0 - w                            # off duty, the finger eases out and up, very softly
+                    idle = (1.0 - w) * (0.0 if f == 0 else 1.0)  # off duty, a finger eases out and up, very softly;
+                    # the thumb doesn't: an idle thumb rests low along the key edge
                     tip = tip.copy() + _yaw(np.array([sgn * EXT_OUT[f], EXT_FWD, 0.0]), psi0) * idle
-                    tip[2] = surface_under(tip[0], tip[1], TIP_R[f], {}) + TIP_R[f] + hover + EXT_UP * idle
+                    tip[2] = surface_under(tip[0], tip[1], TIP_R[f], {}) + TIP_R[f] + hover * (0.4 if f == 0 else 1.0) + EXT_UP * idle
                     uw, ow = float(CL["under"][j]), float(CL["over"][j])
                     if f == 0 and CL["tclose"][j] > 0:        # the other hand is near: the free thumb draws in
                         tk = ct + _yaw(np.array([sgn * THUMB_CLOSE[0], THUMB_CLOSE[1], THUMB_CLOSE[2]]), psi0)
