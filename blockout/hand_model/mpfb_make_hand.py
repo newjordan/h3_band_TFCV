@@ -55,7 +55,7 @@ fore_groups = {gi[f"lowerarm02.{s}"] for s in "LR" if f"lowerarm02.{s}" in gi}
 body_g = gi.get("body")
 wrist_head = {s: arm.matrix_world @ arm.data.bones[f"wrist.{s}"].head_local for s in "LR"}
 el_head = {s: arm.matrix_world @ arm.data.bones[f"lowerarm01.{s}"].head_local for s in "LR"}
-STUB = 0.08                                   # metres of forearm kept behind the wrist joint
+STUB = float(os.environ.get("MPFB_STUB", 0.08))      # metres of forearm kept behind the wrist joint
 mw = body.matrix_world
 keep_v = set()
 for v in body.data.vertices:
@@ -70,7 +70,7 @@ for v in body.data.vertices:
         p = mw @ v.co
         for s in "LR":
             ax = (wrist_head[s] - el_head[s]).normalized()
-            if -STUB < (p - wrist_head[s]).dot(ax) <= 0.01 and (p - wrist_head[s]).length < 0.14:
+            if -STUB < (p - wrist_head[s]).dot(ax) <= 0.01 and (p - wrist_head[s]).length < STUB + 0.06:
                 keep_v.add(v.index)
 bm = bmesh.new(); bm.from_mesh(body.data)
 bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.index not in keep_v], context="VERTS")

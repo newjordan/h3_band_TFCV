@@ -14,7 +14,7 @@ angles. Residuals (all squared and summed, Levenberg-Marquardt, angles projected
   * env(points, radii) -> penalty: collisions with the instrument and the other hand, supplied by the caller.
 Warm-started from the previous frame, so the pose family carries from frame to frame.
 """
-import math
+import json, math, os
 
 import numpy as np
 
@@ -45,6 +45,15 @@ class HandRig:
         self.lo = np.concatenate([c.lo for c in self.chains]); self.hi = np.concatenate([c.hi for c in self.chains])
         self.rng = self.hi - self.lo
         self.q_rest = np.concatenate([c.q_rest for c in self.chains])
+        cpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "comfort.json")
+        if os.path.exists(cpath):                     # relaxed pose calibrated to measured pianists (calibrate.py)
+            q = np.clip(np.array(json.load(open(cpath))[side]), self.lo, self.hi)
+            if len(q) == len(self.q_rest):
+                self.q_rest = q
+                for ch, a, b in zip(self.chains, self.sl[:-1], self.sl[1:]):
+                    ch.q_rest = q[a:b].copy()
+                    if ch.k_dip and q[a + ch.i_pip] > 0.05:   # the tendon's DIP:PIP ratio, per finger, from people
+                        ch.k_dip = float(np.clip(q[a + ch.i_dip] / q[a + ch.i_pip], 0.4, 1.0))
 
     def anatomical_abduction(self, root_rot, root_pos, pts, f):
         """Finger f's (2-5) abduction in degrees as anatomy measures it: the proximal phalanx against its
@@ -142,6 +151,7 @@ class HandRig:
         """targets: 5 world points or None; weights: 5 floats. prev: x from the previous frame (warm start).
         Returns x, (root_rot, root_pos, points per finger), misses per finger (m, None if no target)."""
         W = {**dict(comfort=4e-5, couple=5e-5, root_pos=0.5, root_rot=2e-4, wrist=1e-3, env=1.0), **(W or {})}
+        iters = int(W.pop("iters", iters))
         ref_rot = np.asarray(ref_rot, float); ref_pos = np.asarray(ref_pos, float)
         targets = [None if t is None else np.asarray(t, float) for t in targets]
         if prev is not None:

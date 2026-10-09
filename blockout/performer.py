@@ -29,6 +29,12 @@ STYLES = {
 KEYS = ("nod", "sharp", "down_acc", "lag", "sway_roll", "sway_yaw", "pitch", "yaw_out", "lean", "jitter")
 STYLE_XFADE = 0.6
 UPPER_ARM, FOREARM = 0.29, 0.26
+try:                                    # the rigged hand's own forearm (elbow -> wrist), so arm and mesh agree
+    import json as _json, os as _os
+    _B = _json.load(open(_os.path.join(_os.path.dirname(__file__), "hand_model", "skeleton.json")))["hands"]["R"]
+    FOREARM = _B["lowerarm01"]["length"] + _B["lowerarm02"]["length"]
+except Exception:
+    pass
 
 
 def style_params(t, schedule):

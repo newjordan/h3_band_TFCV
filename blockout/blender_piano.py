@@ -302,15 +302,22 @@ def pose_rig(arm, rest, s, hd):
     wrist, elbow = Vector(hd["wrist"]), Vector(hd["elbow"])
     u = (wrist - elbow).normalized()
     want = {}
-    for nm, back in (("lowerarm02", 0.0), ("lowerarm01", B["lowerarm02"].length)):
-        head = wrist - u * (B["lowerarm02"].length + back)
-        tail = head + u * B[nm].length
-        r3 = B[nm].matrix_local.to_3x3()
-        r3 = r3.col[1].normalized().rotation_difference(u).to_matrix() @ r3
-        m = r3.to_4x4(); m.translation = head
-        want[nm] = m
     root = Matrix([list(r) for r in hd["root"]["rot"]]).to_4x4()
     root.translation = Vector(hd["root"]["pos"])
+    for nm, back, share in (("lowerarm02", 0.0, 0.6), ("lowerarm01", B["lowerarm02"].length, 0.2)):
+        head = wrist - u * (B["lowerarm02"].length + back)
+        r3 = B[nm].matrix_local.to_3x3()
+        r3 = r3.col[1].normalized().rotation_difference(u).to_matrix() @ r3
+        # forearm pronation: the two forearm bones take a share of the hand's own roll about the forearm axis
+        rigid = root.to_3x3() @ B["wrist"].matrix_local.to_3x3().inverted() @ B[nm].matrix_local.to_3x3()
+        za, zb = r3.col[2] - u * r3.col[2].dot(u), rigid.col[2] - u * rigid.col[2].dot(u)
+        if za.length > 1e-6 and zb.length > 1e-6:
+            ang = za.normalized().angle(zb.normalized())
+            if za.normalized().cross(zb.normalized()).dot(u) < 0:
+                ang = -ang
+            r3 = Matrix.Rotation(ang * share, 3, u) @ r3
+        m = r3.to_4x4(); m.translation = head
+        want[nm] = m
     want["wrist"] = root
     ang = hd["angles"]
     for nm in sk.names:
@@ -389,6 +396,9 @@ def pose_mpfb(arm, rest, s, hd):
 
 if HANDS == "mpfb":
     MPFB_ARM, MPFB_REST = load_mpfb()
+    _ys = [MPFB_MESH.matrix_world @ v.co for v in MPFB_MESH.data.vertices]
+    _w = MPFB_ARM.data.bones["wrist.R"].head_local; _e = MPFB_ARM.data.bones["lowerarm01.R"].head_local
+    MPFB_FULL_FOREARM = max(((p - _w).dot((_e - _w).normalized()) for p in _ys)) > 0.2
 
 rig = {}
 for h in ("L", "R"):
@@ -596,6 +606,9 @@ for i in FRAME_IDS:
         if HANDS == "mpfb":
             el, wr = Vector(hd["elbow"]), Vector(hd["wrist"])
             R["forearm"].set(el, wr - (wr - el).normalized() * 0.05)
+            if "angles" in hd and MPFB_FULL_FOREARM:          # the skinned forearm runs to the elbow
+                for o in (R["forearm"].ob, R["forearm"].j1):
+                    o.hide_render = True
             (pose_rig if "angles" in hd else pose_mpfb)(MPFB_ARM, MPFB_REST, h, hd)
             if "angles" in hd and opts.get("--fkcheck"):
                 bpy.context.view_layer.update()
