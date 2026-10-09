@@ -64,20 +64,27 @@ def keyboard():
     return keys
 
 
-# Hit pads (y range from the white key fronts, metres). A key is a lever pivoting at the back: struck near
-# its front edge it goes down with the least force; struck mid-key it is heavier and tires the player. So
-# pianists strike with the fingertip in a small zone near the front of each key.
-HITPAD = {"white": (0.010, 0.026), "black": (WHITE_L - BLACK_L + 0.004, WHITE_L - BLACK_L + 0.016)}
+# Hit pads per finger (y range, metres from the white-key fronts; black keys from their own front). The thumb and
+# pinky strike near the front edge; the long fingers 2-4 land deeper, in among the black keys (Chopin's natural
+# position): the hand is a curve and the key front a line, and with a real hand's proportions a curled middle
+# finger reaches several cm past the thumb. (User call 2026-10-09, replacing one front pad for every finger.)
+_BY0 = WHITE_L - BLACK_L
+HITPAD_W = [(0.010, 0.025), (0.025, 0.040), (0.030, 0.050), (0.025, 0.040), (0.010, 0.025)]
+HITPAD_B = [(_BY0 + 0.004, _BY0 + 0.014), (_BY0 + 0.010, _BY0 + 0.025), (_BY0 + 0.010, _BY0 + 0.025),
+            (_BY0 + 0.010, _BY0 + 0.025), (_BY0 + 0.004, _BY0 + 0.014)]
+HITPAD = {"white": (0.010, 0.050), "black": (_BY0 + 0.004, _BY0 + 0.025)}     # union, for anything finger-blind
 
 
-def contact(p, near_black=False, thumb=False):
-    """Fingertip strike point on a key's surface: inside its hit pad (white keys at the back of the pad
-    when the hand is up among the black keys, still in front of them; a thumb takes a black key on its
-    front lip, since it reaches from further back)."""
+def hitpad(p, f):
+    return (HITPAD_B if is_black(p) else HITPAD_W)[f]
+
+
+def contact(p, near_black=False, f=2):
+    """Fingertip strike point on key p for finger f (0 = thumb), inside that finger's pad; on a white key, at the
+    back of the pad when the hand is up among the black keys."""
+    lo, hi = hitpad(p, f)
     if is_black(p):
-        lo, hi = HITPAD["black"]
-        return np.array([key_x(p), lo + 0.002 if thumb else 0.5 * (lo + hi), BLACK_H])
-    lo, hi = HITPAD["white"]
+        return np.array([key_x(p), 0.5 * (lo + hi), BLACK_H])
     return np.array([key_x(p), hi - 0.002 if near_black else 0.5 * (lo + hi), 0.0])
 
 
@@ -138,6 +145,7 @@ FINGER_R = np.array([(0.0115, 0.0105, 0.0095, 0.0085), (0.0095, 0.0088, 0.0080, 
                      (0.0098, 0.0090, 0.0082, 0.0072), (0.0093, 0.0085, 0.0078, 0.0068),
                      (0.0085, 0.0078, 0.0070, 0.0062)])
 KNUCKLE_Z = 0.064          # knuckle line height over white key tops
+Y_KN = -0.006              # knuckle line's resting distance from the white key fronts
 HAND_MODEL = "mannequin"
 MPFB_JSON = os.path.join(os.path.dirname(__file__), "hand_model", "mpfb_hands.json")
 
@@ -230,6 +238,61 @@ def _thumb_solve(t, dirs):
     miss = np.linalg.norm(tip - t, axis=1)
     cost = miss ** 2 + 1e-5 * dev ** 2                              # reach first, then stay near neutral
     return cost, th1, th2, miss
+
+
+# Fingers 2-5: the MCP is a 2-axis joint (flexion, abduction), PIP and DIP are hinges and the DIP follows the PIP
+# (shared tendon: DIP = k * PIP, k in FINGER_K). Degrees. Inside ANAT, the anatomical ranges the QA checks.
+FINGER_MCP = (-19.5, 88.0)
+FINGER_PIP = (0.0, 103.0)
+FINGER_ABD = 24.0
+FINGER_K = np.arange(0.45, 0.901, 0.05)
+_FGRID = {}
+
+
+def _finger_grid(f):
+    """In-plane chain for MCP flexion 0 over a grid of PIP angles x DIP couplings: distance and bearing of the tip."""
+    if (f, tuple(SEG[f])) not in _FGRID:
+        L1, L2, L3 = SEG[f]
+        tp = np.radians(np.arange(FINGER_PIP[0], FINGER_PIP[1] + 0.01, 0.5))[:, None]
+        k = FINGER_K[None, :]
+        td = np.minimum(k * tp, np.radians(80.0))
+        z = L1 + L2 * np.exp(1j * tp) + L3 * np.exp(1j * (tp + td))
+        b = lambda a: np.broadcast_to(a, z.shape)
+        _FGRID[(f, tuple(SEG[f]))] = (b(tp), b(k), b(td), np.abs(z), np.angle(z))
+    return _FGRID[(f, tuple(SEG[f]))]
+
+
+def finger_ik(f, mcp, target, wrist, mcps, side):
+    """Finger f (1-4) chain [MCP, PIP, DIP, tip] reaching for target with every joint inside its range, and the
+    miss (m) when it can't: a target too far OR too close is not folded or stretched into, it is reported, and
+    the hand placement moves the hand instead."""
+    _, Mh = hand_frame(wrist, mcps, side)
+    ac, fwd, up = Mh
+    mcp = np.asarray(mcp, float)
+    d0 = mcp - np.asarray(wrist, float); d0 /= np.linalg.norm(d0)   # the metacarpal: zero flexion, zero abduction
+    up = up - d0 * (up @ d0); up /= np.linalg.norm(up)              # back of the hand, square to the metacarpal
+    side_ = np.cross(up, d0)
+    t = np.asarray(target, float) - mcp
+    ab = math.atan2(float(t @ side_), float(t @ d0))
+    ab = float(np.clip(ab, -math.radians(FINGER_ABD), math.radians(FINGER_ABD)))
+    e1 = math.cos(ab) * d0 + math.sin(ab) * side_                 # finger plane: e1 (straight) and -up (palm)
+    x, y = float(t @ e1), float(t @ -up)
+    r, phi = math.hypot(x, y), math.atan2(y, x)
+    tp, k, td, D, beta = _finger_grid(f)
+    tm = phi - beta
+    lo, hi = math.radians(FINGER_MCP[0]), math.radians(FINGER_MCP[1])
+    tmc = np.clip(tm, lo, hi)
+    # tip error for each candidate (clamped MCP), then prefer the tendon's usual coupling and a mid-range PIP
+    ex = D * np.cos(tmc + beta) - x
+    ey = D * np.sin(tmc + beta) - y
+    cost = ex * ex + ey * ey + 1e-6 * ((k - 0.65) / 0.2) ** 2 + 1e-6 * ((tp - math.radians(40)) / 1.0) ** 2
+    i = np.unravel_index(int(np.argmin(cost)), cost.shape)
+    a1 = float(tmc[i]); a2 = a1 + float(tp[i]); a3 = a2 + float(td[i])
+    L1, L2, L3 = SEG[f]
+    pip = mcp + L1 * (math.cos(a1) * e1 - math.sin(a1) * up)
+    dip = pip + L2 * (math.cos(a2) * e1 - math.sin(a2) * up)
+    tip = dip + L3 * (math.cos(a3) * e1 - math.sin(a3) * up)
+    return [mcp, pip, dip, tip], float(np.linalg.norm(tip - np.asarray(target, float)))
 
 
 def thumb_ik(cmc, target, wrist, mcps, side, depth=None, skip_tip=False):
@@ -536,7 +599,7 @@ def release_far(fing, ev, hand, D=None):
     hx = np.array([_place([(n.pitch, f) for n, f in s], any(is_black(n.pitch) for n, _ in s), hand) for s in fing])
     for f, evs in ev.items():
         for e in evs:
-            kx = contact(e[2], e[4], f == 0)[0]
+            kx = contact(e[2], e[4], f)[0]
             for i in np.nonzero((t_on > e[0] + 0.02) & (t_on < e[1]))[0]:
                 if abs(kx - (hx[i] + sgn * HOME[f])) > D:
                     e[1] = max(e[0] + 0.05, min(e[1], t_on[i] - REACH_LEAD))
@@ -549,7 +612,7 @@ def strike_time(touch):
     return 0.080 - 0.050 * touch
 
 
-def finger_tip(t, e, home_tip, r, thumb=False):
+def finger_tip(t, e, home_tip, r, f=2):
     """Fingertip (pad centre) target for one note event at time t, and the key depth it causes (or None if
     idle). The pad centre sits one pad radius r above the key surface it touches."""
     t_on, t_off, p, vel, nbk, touch, lift = e
@@ -558,7 +621,7 @@ def finger_tip(t, e, home_tip, r, thumb=False):
     approach = 0.10 + 0.08 * touch
     if t < t_on - S - approach or t > t_off + rel:
         return None, 0.0
-    c = contact(p, nbk, thumb) + np.array([0, 0, r])
+    c = contact(p, nbk, f) + np.array([0, 0, r])
     down = c - np.array([0, 0, KEY_TRAVEL])
     # soft: the finger is already on (or a hair above) the key; strong: it pulls back and comes down
     h = (0.002 + 0.034 * touch ** 1.3 + 0.005 * vel / 127) * lift
@@ -793,7 +856,7 @@ def _hit_detail(frames):
             p = int(p)
             h = fr["hands"][who[0]]
             tip = h["fingers"][int(who[1]) - 1][3]
-            lo, hi = HITPAD["black" if is_black(p) else "white"]
+            lo, hi = hitpad(p, int(who[1]) - 1)
             inside += lo - 0.004 <= tip[1] <= hi + 0.004
             lev += leverage(p, tip[1]); n += 1
     return {"presses": n, "in_hitpad": round(inside / max(n, 1), 3), "mean_leverage": round(lev / max(n, 1), 3)}
@@ -815,25 +878,29 @@ ANAT = {"mcp": (-20.0, 90.0), "pip": (0.0, 105.0), "dip": (-5.0, 85.0), "abd": 2
 
 def finger_angles(wrist, chains, side):
     """Per finger 2-5: (MCP flexion, PIP flexion, DIP flexion, MCP abduction, PIP lateral, DIP lateral), degrees.
-    Flexion is measured about the hand's across axis carried onto the finger, positive toward the palm."""
+    Measured from the metacarpal (wrist -> MCP) with the back of the hand as up: MCP flexion and abduction are the
+    proximal phalanx's angles off the metacarpal; PIP/DIP flexion are about the finger plane's normal (positive
+    toward the palm); lateral is how far a hinge segment leaves the finger plane (the plane of the proximal
+    phalanx and the hand's up), which a hinge can't do."""
     wrist = np.asarray(wrist, float)
     ch = [np.asarray(c, float) for c in chains]
     _, M = hand_frame(wrist, [ch[f][0] for f in range(1, 5)], side)
-    ac, fwd, up = M
-    ax = np.cross(fwd, -up); ax /= np.linalg.norm(ax)
     n = lambda v: v / np.linalg.norm(v)
+    deg = math.degrees
     out = []
     for f in range(1, 5):
         q = ch[f]
         mc = n(q[0] - wrist)
+        up = n(M[2] - mc * (M[2] @ mc))
+        sd = np.cross(up, mc)
         s = [n(q[k + 1] - q[k]) for k in range(3)]
-        axf = n(ax - s[0] * (ax @ s[0]))
-        flex = lambda u, v, a: math.degrees(math.atan2(float(np.cross(u, v) @ a), float(u @ v)))
-        lat = lambda u, v: math.degrees(math.asin(float(np.clip(v @ axf, -1, 1)))) - \
-            math.degrees(math.asin(float(np.clip(u @ axf, -1, 1))))
-        mcp_flex = flex(mc - ax * (mc @ ax), s[0] - ax * (s[0] @ ax), ax)
-        abd = math.degrees(math.asin(float(np.clip(s[0] @ n(np.cross(up, mc)), -1, 1))))
-        out.append((mcp_flex, flex(s[0], s[1], axf), flex(s[1], s[2], axf), abd, lat(s[0], s[1]), lat(s[1], s[2])))
+        e1 = n(s[0] - up * (s[0] @ up))
+        abd = deg(math.atan2(float(e1 @ sd), float(e1 @ mc)))
+        mcp_flex = deg(math.atan2(float(-(s[0] @ up)), float(s[0] @ e1)))
+        a = n(np.cross(s[0], -up))
+        flex = lambda u, v: deg(math.atan2(float(np.cross(u, v) @ a), float(u @ v)))
+        lat = lambda v: deg(math.asin(float(np.clip(v @ a, -1, 1))))
+        out.append((mcp_flex, flex(s[0], s[1]), flex(s[1], s[2]), abd, lat(s[1]), lat(s[2])))
     return out
 
 
@@ -949,7 +1016,7 @@ ROLL_MAX = 0.12            # rad: the hand rolls toward the fingers that are pla
 def _centre(H, x, nb, t):
     """Raw hand-centre target at time t: placement, attack give, arm weight, breathing."""
     yoff = 0.018 if nb else 0.0
-    c = np.array([x, -0.006 + yoff, KNUCKLE_Z])
+    c = np.array([x, Y_KN + yoff, KNUCKLE_Z])
     on = H["on"]
     if not len(on):
         return c, 0.3, yoff
@@ -973,6 +1040,7 @@ def _centre(H, x, nb, t):
 YAW_MAX = 0.45             # rad: wrist turn (radial/ulnar deviation plus forearm angle)
 SPLAY = np.array([0.060, 0.036, 0.024, 0.032, 0.048])   # max sideways tip offset from its knuckle, per finger
 PULL = 0.93               # pressing fingers pull the hand once their tip is further than this share of reach
+PULL_IT = 4                # iterations of the reach pull
 KN_FWD = 0.065            # how far the knuckle line may go past the white key fronts
 TETHER = 0.80             # free fingertips stay within this share of the finger's length from the knuckle
 FINGER_GAP = 0.017         # free fingertips keep at least a finger's width apart, in order across the hand
@@ -1087,19 +1155,17 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             psi_arm = math.atan2(ct[0] - shoulder[0], ct[1] - shoulder[1])   # the forearm's own angle
             psi0 = YAW[j - 1] if j else 0.6 * psi_arm
             for f in range(5):
-                loc = np.array([sgn * HOME[f], 0.020 + yoff - ct[1], 0.0])
-                if f == 0:
-                    loc += np.array([0.0, 0.006, 0.0])         # the thumb lies long and low along the keys
+                loc = np.array([sgn * HOME[f], 0.5 * sum(HITPAD_W[f]) + yoff - ct[1], 0.0])
                 home = ct + _yaw(loc, psi0)
                 home[2] = surface_under(home[0], home[1], TIP_R[f], {}) + TIP_R[f] + hover
                 tip = home
                 eo = H["ev_on"][f]
                 lo, hi = max(0, int(np.searchsorted(eo, t - 8.0))), int(np.searchsorted(eo, t + 0.3))
                 for e in H["ev"][f][lo:hi][::-1]:
-                    tp, dep = finger_tip(t, e, home, TIP_R[f], f == 0)
+                    tp, dep = finger_tip(t, e, home, TIP_R[f], f)
                     if tp is not None:
                         tip = tp
-                        c = contact(e[2], e[4], f == 0) + np.array([0, 0, TIP_R[f]])
+                        c = contact(e[2], e[4], f) + np.array([0, 0, TIP_R[f]])
                         act[j][f] = (e[2], float(c[0]), float(c[2]))
                         if e[0] - 0.15 <= t <= e[1]:
                             playing.append(f)
@@ -1154,7 +1220,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             kn_off = _yaw(_roll_offsets(KNUCKLE * np.array([sgn, 1, 1]), roll), psi)
             reach = SEG.sum(1)
             side = np.array([math.cos(psi), -math.sin(psi), 0.0])         # across the hand (local +x)
-            for _ in range(4):                               # pressing fingers pull the hand within reach
+            for _ in range(PULL_IT):                         # pressing fingers pull the hand within reach
                 pull, n = np.zeros(3), 0
                 for f in range(5):
                     if H["act"][j][f] is None:
@@ -1165,6 +1231,13 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                                              [centre + kn_off[q] for q in range(1, 5)], name)
                         if miss > 0.001:
                             pull += (tips[name][0] - pts[3]) * 1.1; n += 1
+                        continue
+                    if THUMB is not None:
+                        wr = centre + _yaw(_roll_offsets(WRIST_OFF * np.array([sgn, 1, 1]), roll * 0.5), psi)
+                        pts, miss = finger_ik(f, centre + kn_off[f], tips[name][f], wr,
+                                              [centre + kn_off[q] for q in range(1, 5)], name)
+                        if miss > 0.001:
+                            pull += tips[name][f] - pts[3]; n += 1
                         continue
                     v = tips[name][f] - (centre + kn_off[f])
                     ex = np.linalg.norm(v) - PULL * reach[f]
@@ -1177,7 +1250,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                 if not n:
                     break
                 step = pull / n
-                step[1] = np.clip(centre[1] + step[1], -0.03, KN_FWD) - centre[1]  # knuckles stay behind the key fronts
+                step[1] = np.clip(centre[1] + step[1], -0.07, KN_FWD) - centre[1]  # knuckles stay behind the key fronts
                 centre += step
                 for f in range(5):                           # free fingers travel with the hand, short of the fallboard
                     if H["act"][j][f] is None:
@@ -1206,6 +1279,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                         if f == 0 and THUMB is not None:          # the thumb has its own joints, not a finger's
                             return thumb_ik(kn, tip, wrist, [centre + kn_off[q] for q in range(1, 5)], name,
                                             keydepth, own is not None)
+                        if THUMB is not None:                      # real joints for the fingers too
+                            return finger_ik(f, kn, tip, wrist, [centre + kn_off[q] for q in range(1, 5)], name)
                         return _ik(kn, tip, SEG[f], np.array([0, 1.0, 0]), tp), 0.0
                     return solve
                 solve = mk(f, kn, tp, own, name, centre, kn_off, wrist)
