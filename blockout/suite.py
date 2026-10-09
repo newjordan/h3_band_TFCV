@@ -2,9 +2,14 @@
 
     python3 -m blockout.suite OUT.mid
 
-The Knight's Suite: "Knight's Theme" (original, A major, 3/4) darkens onto G#7, which is exactly where
-Rachmaninoff's Prelude in C# minor Op. 3 No. 2 sits at bar 45; the agitato climb (bars 35-44), the fff
-four-stave climax and the pp coda follow (bars 35-61). Its last C# hands over to Chopin's Nocturne in
+The Knight's Suite: "Knight's Theme" (original, A major, 3/4) darkens onto G#7 (V7 of C#) and its last
+bar holds that chord; Debussy's Clair de Lune (Suite bergamasque, D-flat = C# major, 9/8), bars 1-8, answers
+with a plain V7 -> I: bar 1 is the C# major chord (C#-F-G#) in the quiet opening. The excerpt stops at bar 8,
+the half cadence: G# in the bass under a D#/C#/F# chord, i.e. the dominant of C#. Rachmaninoff's Prelude in
+C# minor Op. 3 No. 2 follows at its bar 35 (agitato climb), which opens on a G#-B-D-F diminished seventh over
+that same G#, so the dominant is carried straight through the join (major mode turning minor); the climb
+(bars 35-44), G#7 at bar 45, the fff four-stave climax and the pp coda run to bar 61. Its last C# hands over
+(after one silent bar) to Chopin's Nocturne in
 C# minor Op. posth. (B. 49, Lento con gran espressione): the slow introduction and first theme (bars 1-8,
 which end on the dominant, B# in the bass), then the close, bars 58-64: the quiet C# pedal coda that ends in
 C# major. The bar numbers are the fitted bars of our transcription of a free recording (see README).
@@ -152,8 +157,9 @@ def write(path, notes, bars):
     open(path, "wb").write(data)
 
 
-def knights_suite(rach, chopin):
+def knights_suite(clair, rach, chopin):
     parts = [knights_theme(),
+             excerpt(clair, 1, 8, 9, 8),
              excerpt(rach, 35, 61, 4, 4),
              excerpt(chopin, 1, 8, 4, 4),
              excerpt(chopin, 58, 64, 4, 4)]
@@ -164,15 +170,16 @@ def knights_suite(rach, chopin):
         notes += [midi.Note(n.start + t, n.end + t, n.pitch, n.velocity, n.track) for n in ns]
         bars += [(b0 + t, L, num, den) for b0, L, num, den in bs]
         t += sum(b[1] for b in bs)
-        if k == 1:      # a silent 3/4 bar of air between the Rachmaninoff coda and the Chopin
+        if k == 2:      # a silent 3/4 bar of air between the Rachmaninoff coda and the Chopin
             bars.append((t, 2.25, 3, 4)); t += 2.25
     return resplit(notes), bars, marks
 
 
 if __name__ == "__main__":
     import sys
+    clair = "examples/piano/clair_de_lune.mid"
     rach, chopin = "examples/piano/rach_prelude_op3_no2.mid", "examples/piano/chopin_nocturne_cs_minor_posth.mid"
-    notes, bars, marks = knights_suite(rach, chopin)
+    notes, bars, marks = knights_suite(clair, rach, chopin)
     write(sys.argv[1], notes, bars)
     print(f"{len(notes)} notes, {len(bars)} bars, {bars[-1][0] + bars[-1][1]:.1f} s; sections start at bars",
           [m[0] for m in marks], "times", [round(m[1], 1) for m in marks])
