@@ -128,6 +128,10 @@ Zone runs gave lip sync, but not instruments: H3 doesn't learn a strum or a key 
 | `blender_piano.py` | Blender renderer: grey 88-key piano, capsule performer, `pov` (camera rides the eyes), `three4`, `side` views. |
 | `sampler.py` | Sampled grand piano (SFZ+FLAC) with automatic pedal and room reverb. |
 | `synth.py` | Dependency-free additive piano, for quick timing checks. |
+| `drums.py` | Drum kit layout, sticking (beam search over hand preference, travel and crossing), velocity-scaled strokes landing on the onset frame, sprung wrists, kick and hi-hat pedals with leg IK, cymbal swing. Plain numpy. Reads a GM drum MIDI or a hit list from `h3band/drum_events.py`. |
+| `blender_drums.py` | Blender renderer: grey kit and capsule drummer, `front`, `three4`, `side`, `over`, `top` views, or `--cam` for any eye and look-at point. |
+| `drum_groove.py` | Writes the original 16-bar example groove (`examples/drums/rock_groove.mid`). |
+| `drumsynth.py` | Numpy drum synth: a hit list to a WAV, for timing checks and as ground truth for `drum_events.py`. |
 
 ```bash
 python3 -m venv .venv_blockout && .venv_blockout/bin/pip install -r requirements-blockout.txt
@@ -140,6 +144,22 @@ blender -b --factory-startup -P blockout/blender_piano.py -- work/cdl.json work/
 $P -m blockout.sampler work/cdl_notes.json work/cdl.wav --sfz models/.../SalamanderGrandPiano-V3+20200602.sfz
 ```
 
+**Drums.** From a GM drum MIDI, or from a drum stem through `h3band/drum_events.py`:
+
+```bash
+$P -m blockout.drums examples/drums/rock_groove.mid work/drums.json --hits-out work/drum_hits.json \
+   --schedule 0:focused,8:groove,24:wild
+$P -m blockout.drumsynth work/drum_hits.json work/drums.wav            # timing reference audio
+blender -b --factory-startup -P blockout/blender_drums.py -- work/drums.json work/drum_frames --view front
+# or from a real stem (beats JSON optional; it drives the head styles):
+(cd h3band && ../$P drum_events.py $H3B_STEMS_DIR/drums.wav ../work/drum_events.json)
+$P -m blockout.drums work/drum_events.json work/drums.json --beats $H3B_BEATS
+```
+
+`drums.py` prints a check after every run: stick-tip contact error on the onset frames (about 0.06 mm max on the example), frames where a tip goes through a head (0), kicks with the beater on the head on their onset frame (all), and the furthest reach against the arm length.
+
+`drum_events.py` is a band-energy heuristic, not a transcriber. Pass `--truth HITS.json` to score it against a known hit list: render a MIDI through `drums.py --hits-out` and `drumsynth.py`, then detect on the WAV. On the synthesized example grooves it finds kick, snare, hi-hat and crash at about 0.7–0.9 recall and 0.9–1.0 precision. Ride hits come out at about 0.6 and toms are unreliable. The numbers for each piece are in the module docstring. A real mixed stem will score lower, so check the hit list before rendering a long take.
+
 Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brahms Op. 118 No. 2 are Public Domain; Rachmaninoff Op. 3 No. 2 is CC BY-SA 4.0. `knights_suite.mid` (built by `suite.py`) contains an original theme plus excerpts of the Rachmaninoff (CC BY-SA 4.0) and the Brahms.
 
 ## Hackathon tasks
@@ -148,7 +168,9 @@ Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brah
 - [ ] **Staggered per-zone timesteps.** Give zones their own timestep rows (AdaLN row ids per token). Global structure resolves first, then each zone develops in turn while the other stays noisy as context.
 - [ ] **H3 over the piano blockout: the go/no-go.** Run about 5 s of a blockout through H3 at zone strengths 0.6 / 0.75 / 0.9 with the piano audio locked, then score whether each struck key lands on its onset.
 - [ ] **Guitar strum blockout.** A grey picking arm and guitar strumming down/up on the onsets from `guitar_events.py`, rendered from the shot's camera, composited over the guitarist zone, then H3 at about 0.85–0.9 with the guitar stem locked.
-- [ ] **Drum and bass blockouts.** Stick tips on the drums at the drum-stem hits (kick, snare, crash); bass fingers on the bass note onsets.
+- [x] **Drum blockout.** Stick tips and pedals on the drum-stem hits or a GM drum MIDI (`blockout/drums.py`, `blockout/blender_drums.py`, `h3band/drum_events.py`).
+- [ ] **H3 over the drum blockout.** Same go/no-go as the piano: zone strengths 0.6 / 0.75 / 0.9 with the drum stem locked, scoring whether each stick lands on its onset.
+- [ ] **Bass blockout.** Bass fingers on the bass note onsets.
 - [ ] **Comfy nodes for the chain.** A Beat Matrix node (stem or MIDI to events), a Primitive Performer Render node (events + instrument + camera to a grey plate), then the existing H3 Band Zone Latent, driven end to end through the Comfy API.
 - [ ] **A ground-truth strum clip** for `strum_score2.py` (real footage with known stroke times), plus stroke-direction scoring.
 - [ ] **Phoneme-level vocal alignment** for sung vocals, giving visemes for the mouth.
@@ -156,4 +178,4 @@ Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brah
 
 ## License
 
-Code: MIT, see `LICENSE`. Example MIDI files carry their own licenses; see `examples/piano/README.md`.
+Code: MIT, see `LICENSE`. Example MIDI files carry their own licenses; see `examples/piano/README.md` and `examples/drums/README.md`.
