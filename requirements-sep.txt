@@ -1,0 +1,10 @@
+# separation, alignment, guitar events, vocal activity, stem quality
+# CPU torch: pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+audio-separator==0.47.0
+onnxruntime==1.30.0
+torch
+torchaudio
+librosa
+numpy
+scipy
+soundfile

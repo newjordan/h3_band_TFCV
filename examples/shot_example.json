@@ -1,0 +1,21 @@
+{
+ "id": "demo_duo",
+ "song_start": 42.0,
+ "length": 124,
+ "width": 1920,
+ "height": 1088,
+ "image": "h3band/demo_duo/first_frame.png",
+ "seed": 1,
+ "steps": 20,
+ "scheduler": "beta",
+ "prompt": "One continuous uncut take from a live rock concert: the lead singer in the foreground sings into the microphone, the guitarist behind him plays an electric guitar, stage lights and haze, the crowd in the dark foreground. No cuts, no new characters, no text.",
+ "prompts": {
+  "singer": "The lead singer sings the line in perfect sync with the vocal: his mouth opens on the long vowels and closes on the consonants and in every pause.",
+  "guitarist": "The guitarist strums hard and in perfect time with the guitar: his picking hand strikes the strings on every stroke, down and up, his body moving with the beat."
+ },
+ "zones": [
+  {"name": "singer", "stem": "vocals", "box_start": "380,60,780,420", "denoise": 0.92},
+  {"name": "guitarist", "stem": "guitar", "box_start": "1040,80,1800,1088", "denoise": 1.0}
+ ],
+ "merge_denoise": 0.25
+}
