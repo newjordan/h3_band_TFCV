@@ -138,7 +138,7 @@ class HandRig:
     def effectors(self, pts, rots):
         return [ch.effector(P, R) for ch, P, R in zip(self.chains, pts, rots)]
 
-    def residuals(self, x, ref_rot, ref_pos, targets, weights, env, forearm, W):
+    def residuals(self, x, ref_rot, ref_pos, targets, weights, env, forearm, W, x_last=None):
         root_rot, root_pos, pts = self.points(x, ref_rot)
         rots = self._rots
         eff = self.effectors(pts, rots)
@@ -146,16 +146,19 @@ class HandRig:
         r = []
         for f in range(5):
             if targets[f] is not None:
-                r.append(weights[f] * (eff[f] - targets[f]))
+                r.append(np.asarray(weights[f], float) * (eff[f] - targets[f]))   # scalar or per-axis weights
         cw = np.ones(len(q))                                  # a pressing finger may leave its relaxed pose to reach
         for f, (a, b) in enumerate(zip(self.sl[:-1], self.sl[1:])):
-            if targets[f] is not None and weights[f] >= 0.99:
+            if targets[f] is not None and float(np.max(weights[f])) >= 0.99:
                 cw[a:b] = math.sqrt(W.get("comfort_press", 1.0))
         scale = self.sigma if W.get("comfort_sigma") else self.rng      # human-spread scaling: experimental, off
         r.append(math.sqrt(W["comfort"]) * cw * (q - self.q_rest) / scale)
         for ch, a in zip(self.chains, self.sl[:-1]):
             if ch.k_dip:
                 r.append([math.sqrt(W["couple"]) * (q[a + ch.i_dip] - ch.k_dip * q[a + ch.i_pip])])
+        if x_last is not None and W.get("smooth", 0) > 0:   # joints and the hand can't teleport between frames
+            r.append(math.sqrt(W["smooth"]) * (x[6:] - x_last[6:]) / self.sigma)
+            r.append(math.sqrt(W["smooth"]) * 20.0 * (x[:3] - x_last[:3]))
         r.append(math.sqrt(W["root_pos"]) * (root_pos - ref_pos))
         r.append(math.sqrt(W["root_rot"]) * x[3:6])
         if forearm is not None:                          # wrist joint: the hand's forward axis against the forearm
@@ -172,7 +175,8 @@ class HandRig:
             r.append([math.sqrt(W["env"] * max(pen, 0.0))])
         return np.concatenate([np.ravel(v) for v in r]), (root_rot, root_pos, pts, eff)
 
-    def solve(self, ref_rot, ref_pos, targets, weights, prev=None, env=None, forearm=None, iters=12, W=None):
+    def solve(self, ref_rot, ref_pos, targets, weights, prev=None, env=None, forearm=None, iters=12, W=None,
+              last=None):
         """targets: 5 world points or None; weights: 5 floats. prev: x from the previous frame (warm start).
         Returns x, (root_rot, root_pos, points per finger), misses per finger (m, None if no target)."""
         W = {**dict(comfort=4e-5, couple=5e-5, root_pos=0.5, root_rot=2e-4, wrist=1e-3, env=1.0), **(W or {})}
@@ -187,7 +191,7 @@ class HandRig:
             x = np.concatenate([ref_pos, np.zeros(3), self.q_rest])
         lo = np.concatenate([np.full(6, -np.inf), self.lo]); hi = np.concatenate([np.full(6, np.inf), self.hi])
         x = np.clip(x, lo, hi)
-        args = (ref_rot, ref_pos, targets, weights, env, forearm, W)
+        args = (ref_rot, ref_pos, targets, weights, env, forearm, W, None if last is None else np.asarray(last, float))
         r, pose = self.residuals(x, *args)
         c = float(r @ r); lam = 1e-3
         n = len(x)

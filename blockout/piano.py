@@ -1093,6 +1093,7 @@ THUMB_GAP = (0.15, 0.20)            # m between hand centres: free thumbs close 
 THUMB_CLOSE = (-0.054, -0.008, -0.030)  # a free thumb drawn in against the index side when the other hand is near
 ROLE_FORCE = None                   # experiment hook: 1.0 = right hand always under, 0.0 = left
 CLOSE = {}
+FREE_GAP = (0.25, 0.35)           # s after a release / before a strike in which a finger is still working
 GLIDE_MAX = 0.8                    # s: a free finger starts drifting toward its next key at most this early
 ENSLAVE = (0.45, 0.20)             # share of a pressing neighbour's dip a free finger follows (next, next-but-one)
 SPRING_ROLL = (3.0, 0.75, 1.0)
@@ -1188,8 +1189,9 @@ def _roll_offsets(off, roll):
 
 
 # ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
+PRESS_AXES = (3.0, 0.5, 1.5)        # pressing-pad target weight along x (across keys), y (along a key), z
 HAND_CLEAR, HAND_W = 0.003, 1.0    # m kept between the two hands' skin; weight of that against the targets
-RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=4e-5, iters=12)   # target weights and the plan prior
+RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=4e-5, iters=12, smooth=2e-5)   # target weights and the plan prior
 _RIGS = {}
 
 
@@ -1280,9 +1282,10 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
             M = hand_frame_from_plan(sgn, float(H["Rf"][j]), float(H["Yf"][j]), math.atan2(wz, PALM_LEN))
             ref_rot, ref_pos = rig.root_from_hand_frame(M, H["Cf"][j])
             pressing = [H["act"][j][f] is not None for f in range(5)]
-            w = [RIG_W["press"] if pressing[f] else RIG_W["free"] for f in range(5)]
+            # a key is narrow across the keyboard and long along it: aim pressing pads hardest in x
+            w = [np.array(PRESS_AXES) * RIG_W["press"] if pressing[f] else RIG_W["free"] for f in range(5)]
             x_init = solved[name][0] if name in solved else prev.get(name)
-            x, (rr, rp, pts, pads), miss = rig.solve(ref_rot, ref_pos, list(targets[name]), w, prev=x_init,
+            x, (rr, rp, pts, pads), miss = rig.solve(ref_rot, ref_pos, list(targets[name]), w, prev=x_init, last=prev.get(name),
                                                env=_key_env(est_depth, pressing, blobs.get("L" if name == "R" else "R"), rig),
                                                W={k: v for k, v in RIG_W.items() if k not in ("press", "free")})
             rig.points(x, ref_rot)                          # rotations of the accepted pose (not a trial step)
@@ -1455,7 +1458,11 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                 tip = home
                 eo = H["ev_on"][f]
                 lo, hi = max(0, int(np.searchsorted(eo, t - 8.0))), int(np.searchsorted(eo, t + 0.3))
-                for e in H["ev"][f][lo:hi][::-1]:
+                cand = H["ev"][f][lo:hi][::-1]
+                # a note that is sounding (or being struck) now outranks the next note's approach: with fast repeated
+                # notes the next approach window opens before the current note is released
+                cand = sorted(cand, key=lambda e: 0 if e[0] - strike_time(e[5]) <= t <= e[1] else 1)
+                for e in cand:
                     tp, dep = finger_tip(t, e, home, TIP_R[f], f)
                     if tp is not None:
                         tip = tp
@@ -1509,7 +1516,16 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                         dz = max(dz, share * max(0.0, base - TIP[j, g, 2]))
                 floor = surface_under(TIP[j, f, 0], TIP[j, f, 1], TIP_R[f], {}) + TIP_R[f] + 0.001
                 TIP[j, f, 2] = max(floor, TIP[j, f, 2] - dz)
-            FREE[j] = [act[j][f] is None for f in range(5)]
+            # off duty = no note now AND none just before or coming up: between fast repeated notes a finger stays
+            # on its firm spring (it is working, not idling)
+            fr_ = []
+            for f in range(5):
+                eo = H["ev_on"][f]
+                i_n = int(np.searchsorted(eo, t))
+                near = (i_n < len(eo) and eo[i_n] - t < FREE_GAP[1]) or \
+                       (i_n > 0 and t - H["ev"][f][i_n - 1][1] < FREE_GAP[0])
+                fr_.append(act[j][f] is None and not near)
+            FREE[j] = fr_
             ROLL[j] = sgn * PRONATE                           # the resting hand leans toward the thumb
             if playing:
                 ROLL[j] += sgn * ROLL_MAX * (2 - np.mean(playing)) / 2
