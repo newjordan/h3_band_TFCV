@@ -43,7 +43,7 @@ An isolated run is `mode B` + `video_denoise 0` (the take is locked) + a zone bo
 
 **Not included:** ComfyUI, the MiniMax H3 weights, separator checkpoints, the face landmark model, and any media.
 
-1. **ComfyUI with MiniMax H3 support and per-token noise masks on nested AV latents** (upstream ComfyUI PR #15375). Copy `comfy_nodes/h3_band_zone_latent.py` into `ComfyUI/custom_nodes/`. H3 file names default to the values in `h3band/config.py` (`H3B_UNET`, `H3B_CLIP`, `H3B_VAE`, `H3B_AUDIO_VAE`).
+1. **ComfyUI with MiniMax H3 support and per-token noise masks on nested AV latents** (upstream ComfyUI PR #15375). Without that PR the zone latent still loads, but the sampler applies its masks as inpaint blending, a looser lock. Copy `comfy_nodes/h3_band_zone_latent.py` into `ComfyUI/custom_nodes/`. H3 file names default to the values in `h3band/config.py` (`H3B_UNET`, `H3B_CLIP`, `H3B_VAE`, `H3B_AUDIO_VAE`).
 2. **Two venvs.** They're kept separate because mediapipe and torch pins fight.
    ```bash
    python3 -m venv .venv_score && .venv_score/bin/pip install -r requirements-score.txt
@@ -136,6 +136,7 @@ Zone runs gave lip sync, but not instruments: H3 doesn't learn a strum or a key 
 
 ```bash
 python3 -m venv .venv_blockout && .venv_blockout/bin/pip install -r requirements-blockout.txt
+mkdir -p work                                            # the commands below write here
 # piano samples (Salamander Grand Piano V3, CC-BY 3.0, Alexander Holm), into models/:
 #   https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html  (SFZ+FLAC)
 P=.venv_blockout/bin/python
@@ -209,7 +210,7 @@ cd h3band
 python drum_sync_score.py ../work/C.mp4 ../work/drum_hits.json 13      # in an env with opencv + mediapipe
 ```
 
-Results on the example groove, 13.0–18.2 s (the fill into the next section), seed 42, same prompt and audio for every take, about 6.5 min each on an RTX 5060 Ti:
+Results on the example groove, 13.0–18.2 s (the fill into the next section), same prompt and audio for every take, seed 42 unless noted, about 6.5 min each on an RTX 5060 Ti:
 
 | take | stick sync | best control | margin | p | look |
 |---|---|---|---|---|---|
@@ -218,10 +219,12 @@ Results on the example groove, 13.0–18.2 s (the fill into the next section), s
 | C: over blockout, denoise 0.6 (8 of 13 steps) | 0.308 | 0.156 | +0.152 | 0.05 | real drummer, the kit stays matte grey |
 | C: over blockout, denoise 0.8 (8 of 10) | 0.325 | 0.194 | +0.131 | 0.005 | real drummer and kit, the blockout's framing |
 | C: over blockout, denoise 0.89 (8 of 9) | 0.124 | 0.167 | −0.043 | 0.24 | real drummer, framing drifts, timing gone |
+| B, seed 7 | 0.034 | 0.172 | −0.139 | 0.73 | real drummer |
+| C at 0.8, seed 7 | 0.401 | 0.135 | +0.266 | 0.005 | real drummer and kit, the blockout's framing |
 
 From the audio alone H3 paints a convincing drummer whose sticks don't follow the hits. Over the blockout at 0.6–0.8 the sticks keep the blockout's timing, about as well as the blockout itself, and 0.8 is the first strength where the kit no longer looks grey. At 0.89 the blockout is too faint to hold either the timing or the camera. ComfyUI's `BasicScheduler` floors `steps / denoise`, so 8 steps at denoise 0.9 there is the full schedule from noise. That take came out as the same video as B, which is why the script splits the sigmas itself.
 
-`drum_sync_score.py` only separates synced from unsynced on varied playing. On the steady 8th-note groove (8.0–13.2 s) the blockout itself fails its between-hits control (margin −0.02), so score fills and breaks.
+`drum_sync_score.py` only separates synced from unsynced on varied playing. On the steady 8th-note groove (8.0–13.2 s) the blockout itself fails its between-hits control (margin −0.02), so score fills and breaks. All of these takes use the `drumsynth.py` render of the MIDI; H3 over a blockout driven by a real drum stem hasn't been scored yet.
 
 ## Hackathon tasks
 
