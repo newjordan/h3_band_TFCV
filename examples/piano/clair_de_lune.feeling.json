@@ -1,0 +1,35 @@
+{
+ "piece": "Debussy, Clair de Lune (Suite bergamasque), 72 bars of 9/8",
+ "source": "Our reading of Debussy's markings, by bar. Edit freely: values are interpolated between rows.",
+ "fields": {
+  "strength": "0 = ppp, 0.12 = pp, 0.25 = p, 0.4 = mp, 0.55 = mf, 0.72 = f, 0.88 = ff",
+  "touch": "0 = fingers rest on the keys and press (caress), 1 = fingers come down from height (strike)",
+  "freedom": "0 = metronomic and identical, 1 = loose: timing, velocity and lift vary a lot",
+  "tempo": "1 = the MIDI tempo; 1.15 = 15% faster",
+  "head": "performer head style from this bar on (performer.STYLES)"
+ },
+ "rows": [
+  {"bar": 1,  "strength": 0.12, "touch": 0.04, "freedom": 0.55, "tempo": 1.18, "head": "expressive", "mark": "pp, Andante très expressif, con sordina"},
+  {"bar": 8,  "strength": 0.14, "touch": 0.05, "freedom": 0.55, "tempo": 1.16},
+  {"bar": 9,  "strength": 0.20, "touch": 0.08, "freedom": 0.65, "tempo": 1.12, "mark": "Tempo rubato"},
+  {"bar": 14, "strength": 0.16, "touch": 0.06, "freedom": 0.65, "tempo": 1.10},
+  {"bar": 15, "strength": 0.25, "touch": 0.12, "freedom": 0.55, "tempo": 1.18, "mark": "Peu à peu cresc. et animé"},
+  {"bar": 19, "strength": 0.52, "touch": 0.28, "freedom": 0.50, "tempo": 1.30, "mark": "En animant"},
+  {"bar": 24, "strength": 0.70, "touch": 0.42, "freedom": 0.50, "tempo": 1.32},
+  {"bar": 25, "strength": 0.55, "touch": 0.30, "freedom": 0.60, "tempo": 1.10, "mark": "Calmato"},
+  {"bar": 26, "strength": 0.25, "touch": 0.12, "freedom": 0.60, "tempo": 1.00},
+  {"bar": 27, "strength": 0.14, "touch": 0.06, "freedom": 0.40, "tempo": 1.35, "head": "focused", "mark": "pp, Un poco mosso (the flowing arpeggios)"},
+  {"bar": 31, "strength": 0.30, "touch": 0.14, "freedom": 0.40, "tempo": 1.38},
+  {"bar": 35, "strength": 0.62, "touch": 0.35, "freedom": 0.45, "tempo": 1.42, "head": "expressive", "mark": "cresc. to f"},
+  {"bar": 37, "strength": 0.72, "touch": 0.45, "freedom": 0.50, "tempo": 1.45, "mark": "En animant"},
+  {"bar": 41, "strength": 0.88, "touch": 0.62, "freedom": 0.55, "tempo": 1.40, "mark": "ff climax"},
+  {"bar": 42, "strength": 0.70, "touch": 0.45, "freedom": 0.60, "tempo": 1.15},
+  {"bar": 43, "strength": 0.22, "touch": 0.08, "freedom": 0.60, "tempo": 1.05, "mark": "Calmato, dolce"},
+  {"bar": 50, "strength": 0.15, "touch": 0.05, "freedom": 0.60, "tempo": 1.00},
+  {"bar": 51, "strength": 0.12, "touch": 0.04, "freedom": 0.55, "tempo": 1.15, "mark": "Tempo I, the theme returns pp"},
+  {"bar": 58, "strength": 0.14, "touch": 0.05, "freedom": 0.55, "tempo": 1.12},
+  {"bar": 59, "strength": 0.10, "touch": 0.03, "freedom": 0.60, "tempo": 1.10, "head": "focused"},
+  {"bar": 66, "strength": 0.07, "touch": 0.02, "freedom": 0.60, "tempo": 0.98, "head": "expressive", "mark": "Morendo jusqu'à la fin"},
+  {"bar": 72, "strength": 0.04, "touch": 0.01, "freedom": 0.50, "tempo": 0.72}
+ ]
+}

@@ -33,7 +33,11 @@ An isolated run is `mode B` + `video_denoise 0` (the take is locked) + a zone bo
 - A lip sync works with a head box at about **0.92**, because a mouth moves a few pixels.
 - Instrument motion did **not** appear at 0.92. Because of H3's sigma shift, 0.92 leaves the region about half-noised, so the pose survives and only the texture changes.
 - At **1.0** with a box over only the lower body and the instrument body, the performer was regenerated but still didn't strum. The locked guitar neck and raised arm above the box pinned the pose.
-- **Open:** whether 1.0 with a box over the **whole performer and the whole instrument** (plus a prompt that describes playing, not posing) gets strumming in time. That's hackathon task #1.
+- At **1.0** with a box over the **whole performer and the whole instrument**, plus a prompt that describes playing instead of posing, the guitarist **plays**: the picking arm moves with motion blur. The strokes are **not on the beat**.
+- Adding drums under the guitar in the audio stream, or a "hard strum on every beat" prompt, didn't change that.
+- **The prompt sets the amount of motion.** "Hard, on every beat" gives big swings; "small, tight strokes, fretting hand slides, gentle sway" gives a calmer performance. It doesn't set the timing.
+- **Retiming an H3 take onto the onsets** (time-warping the zone with DTW so its stroke peaks land on the onsets) failed: the generated strokes weren't distinct enough to align.
+- **Conclusion:** H3 doesn't place a strum or a key press on a specific onset from the audio alone. Its video tokens span 4 frames, finer than a 16th-note strum, and nothing ties a background performer's hand to the stem. Timing has to be in the pixels before H3 sees them, which is what `blockout/` does (below).
 
 ## Setup
 
@@ -96,7 +100,11 @@ cd h3band
   - the fraction of frames with no face found.
 
   Use `--shift S` for a time-shifted audio control. `jawOpen` is the signal that separates real audio from the control; the lip gap doesn't. Small or mic-occluded faces use a tiled search plus a tracked upscaled crop.
-- **`strum_score.py VIDEO EVENTS SONG_START --box ...`**: Farneback optical-flow magnitude in the box (detrended) against the guitar onset train. It reports the peak cross-correlation over ±8 frames, plus controls with the onsets shifted by 1, 2 and 3 s, and `margin_vs_control`. Positive-control check: injecting a 4 px jolt on each onset frame of a real take scores far above the shifted controls.
+- **`strum_score.py VIDEO EVENTS SONG_START --box ...`** (v1): Farneback optical-flow magnitude in the box (detrended) against the guitar onset train, with the onsets shifted by 1, 2 and 3 s as controls. Body bounce and camera moves swamp it; use v2.
+- **`strum_score2.py VIDEO EVENTS SONG_START --box ... [--beats BEATS] [--grid-lag S]`** (v2): the picking-stroke signal. It uses MediaPipe hand landmarks when a hand is found in at least half the frames. Otherwise it takes optical flow with the zone's median motion removed (bounce, push-in) and picks the 3x3-cell sub-box with the most motion above 3 Hz. It scores stroke speed against the onset train, with controls (onsets shifted 1/2/3 s, another song section) and a permutation p-value over 200 circular shifts. `sync_margin` = real minus the best control.
+  - Validation: a synthetic onset-locked jolt under a ±25 px random-walk body bounce scores +0.59 (p 0.005), where v1 reads 0.00. A static plate scores −0.09.
+  - **Pass a tight `--box` around the picking hand and check the reported `subbox`.** Given a whole-performer zone, the sub-box search once locked onto drifting stage smoke beside the guitarist and reported a false "in sync" (+0.10, p 0.005).
+  - At 24 fps a 16th note is about 3 frames, so beat-phase locking (metric `b`) can't separate synced from static; it's reported but not used.
 
 ## Known limits
 
@@ -105,15 +113,47 @@ cd h3band
 - **Stroke direction** (down vs up, from low-vs-high band rise timing) is a weak signal; treat individual calls as unreliable.
 - **One shared audio stream per run.** The zone runs work around this by freezing one stem per run; they don't solve it.
 
+## Instrument blockouts (`blockout/`)
+
+Zone runs gave lip sync, but not instruments: H3 doesn't learn a strum or a key press from the audio alone. H3 *is* good at painting over grey 3D blockouts. So we animate primitive performers playing the actual notes, render grey footage, and let H3 re-skin it with the stem locked in its audio stream. The timing is in the pixels.
+
+| file | what |
+|---|---|
+| `midi.py` | MIDI reader (notes in seconds, beat/downbeat grid from the time signature). No dependencies. |
+| `feeling.py` | Feeling chart → performance: per-bar strength, touch (caress..strike), freedom, tempo (rubato) and head style, plus phrase breathing, voicing and seeded per-note variation. |
+| `piano.py` | Fingering (Viterbi, Parncutt-style costs), hand glide, per-touch strike/press/release, arm weight, phrase "breaths", finger IK, key travel. Plain numpy. |
+| `dynamics.py` | Second-order springs (frequency, damping, response) that every motion target runs through: anticipation, overshoot, follow-through. |
+| `suite.py` | Splices an original theme and excerpts into one MIDI on bar boundaries, with a per-bar tempo map (the Knight's Suite). |
+| `performer.py` | Shared body: torso, neck, head, 2-bone arm IK, and head styles driven by the beat grid (`focused`, `groove`, `wild`, `crowd`, `expressive`). |
+| `blender_piano.py` | Blender renderer: grey 88-key piano, capsule performer, `pov` (camera rides the eyes), `three4`, `side` views. |
+| `sampler.py` | Sampled grand piano (SFZ+FLAC) with automatic pedal and room reverb. |
+| `synth.py` | Dependency-free additive piano, for quick timing checks. |
+
+```bash
+python3 -m venv .venv_blockout && .venv_blockout/bin/pip install -r requirements-blockout.txt
+# piano samples (Salamander Grand Piano V3, CC-BY 3.0, Alexander Holm), into models/:
+#   https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html  (SFZ+FLAC)
+P=.venv_blockout/bin/python
+$P -m blockout.piano examples/piano/clair_de_lune.mid work/cdl.json \
+   --feeling examples/piano/clair_de_lune.feeling.json --notes-out work/cdl_notes.json
+blender -b --factory-startup -P blockout/blender_piano.py -- work/cdl.json work/frames --view three4
+$P -m blockout.sampler work/cdl_notes.json work/cdl.wav --sfz models/.../SalamanderGrandPiano-V3+20200602.sfz
+```
+
+Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brahms Op. 118 No. 2 are Public Domain; Rachmaninoff Op. 3 No. 2 is CC BY-SA 4.0. `knights_suite.mid` (built by `suite.py`) contains an original theme plus excerpts of the Rachmaninoff (CC BY-SA 4.0) and the Brahms.
+
 ## Hackathon tasks
 
 - [ ] **Per-zone audio binding.** Bind each stem to its zone inside one run: multiple audio segments plus an attention bias, so stem A's tokens reach only zone A's video tokens.
 - [ ] **Staggered per-zone timesteps.** Give zones their own timestep rows (AdaLN row ids per token). Global structure resolves first, then each zone develops in turn while the other stays noisy as context.
-- [ ] **Drummer and bassist shots.** Sync to drum hits (kick, snare, crash onsets from the drum stem) and to bass note onsets.
-- [ ] **A better strum scorer.** Track the picking hand (keypoints) instead of box flow, score stroke direction, and add a ground-truth clip.
+- [ ] **H3 over the piano blockout: the go/no-go.** Run about 5 s of a blockout through H3 at zone strengths 0.6 / 0.75 / 0.9 with the piano audio locked, then score whether each struck key lands on its onset.
+- [ ] **Guitar strum blockout.** A grey picking arm and guitar strumming down/up on the onsets from `guitar_events.py`, rendered from the shot's camera, composited over the guitarist zone, then H3 at about 0.85–0.9 with the guitar stem locked.
+- [ ] **Drum and bass blockouts.** Stick tips on the drums at the drum-stem hits (kick, snare, crash); bass fingers on the bass note onsets.
+- [ ] **Comfy nodes for the chain.** A Beat Matrix node (stem or MIDI to events), a Primitive Performer Render node (events + instrument + camera to a grey plate), then the existing H3 Band Zone Latent, driven end to end through the Comfy API.
+- [ ] **A ground-truth strum clip** for `strum_score2.py` (real footage with known stroke times), plus stroke-direction scoring.
 - [ ] **Phoneme-level vocal alignment** for sung vocals, giving visemes for the mouth.
 - [ ] **Seam handling in the merge pass.** Release a feathered band around touching zones instead of the whole frame.
 
 ## License
 
-MIT, see `LICENSE`.
+Code: MIT, see `LICENSE`. Example MIDI files carry their own licenses; see `examples/piano/README.md`.

@@ -18,6 +18,7 @@ SHOTS_DIR = _p("H3B_SHOTS_DIR", WORK / "shots")
 RESULTS_DIR = _p("H3B_RESULTS_DIR", WORK / "results")
 MODEL_DIR = _p("H3B_MODEL_DIR", REPO / "models")            # audio-separator checkpoints
 FACE_MODEL = _p("H3B_FACE_MODEL", REPO / "models" / "face_landmarker.task")
+HAND_MODEL = _p("H3B_HAND_MODEL", REPO / "models" / "hand_landmarker.task")
 
 COMFY_URL = os.environ.get("H3B_COMFY_URL", "http://127.0.0.1:8188")
 COMFY_INPUT = _p("H3B_COMFY_INPUT", REPO / "ComfyUI" / "input")
