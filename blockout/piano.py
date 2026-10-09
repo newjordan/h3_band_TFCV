@@ -1190,7 +1190,7 @@ def _roll_offsets(off, roll):
 
 # ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
 THUMB_REST = 4.0                    # an idle thumb follows its resting spot by the keys this much harder
-PRESS_AXES = (3.0, 0.5, 1.5)        # pressing-pad target weight along x (across keys), y (along a key), z
+PRESS_AXES = (3.0, 1.0, 1.5)        # pressing-pad target weight along x (across keys), y (along a key), z
 HAND_CLEAR, HAND_W = 0.003, 1.0    # m kept between the two hands' skin; weight of that against the targets
 RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=9e-6, comfort_sigma=True, iters=12, smooth=2e-5)   # target weights and the plan prior
 _RIGS = {}
@@ -1303,7 +1303,8 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
                     continue
                 p, kx, cz = a
                 pad = pads[f]
-                if abs(pad[0] - kx) < (BLACK_W if is_black(p) else WHITE_W) / 2 + 0.002:
+                y0 = WHITE_L - BLACK_L if is_black(p) else 0.0
+                if abs(pad[0] - kx) < (BLACK_W if is_black(p) else WHITE_W) / 2 + 0.002 and y0 - 0.002 <= pad[1] <= WHITE_L:
                     d = float(np.clip((cz - TIP_R[f] - pad[2]) / (KEY_TRAVEL * key_lever(p, pad[1])), 0, 1))
                     if d > 0.01:
                         keydepth[p] = max(keydepth.get(p, 0.0), d)
