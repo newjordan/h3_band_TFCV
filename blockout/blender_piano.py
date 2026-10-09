@@ -606,9 +606,9 @@ for i in FRAME_IDS:
         if HANDS == "mpfb":
             el, wr = Vector(hd["elbow"]), Vector(hd["wrist"])
             R["forearm"].set(el, wr - (wr - el).normalized() * 0.05)
-            if "angles" in hd and MPFB_FULL_FOREARM:          # the skinned forearm runs to the elbow
-                for o in (R["forearm"].ob, R["forearm"].j1):
-                    o.hide_render = True
+            if "angles" in hd and MPFB_FULL_FOREARM:          # the skinned forearm runs (almost) to the elbow:
+                R["forearm"].set(el, el + (wr - el).normalized() * 0.06)   # a short sleeve covers its cut edge
+                R["forearm"].j1.hide_render = True
             (pose_rig if "angles" in hd else pose_mpfb)(MPFB_ARM, MPFB_REST, h, hd)
             if "angles" in hd and opts.get("--fkcheck"):
                 bpy.context.view_layer.update()

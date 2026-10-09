@@ -54,6 +54,26 @@ class HandRig:
                     ch.q_rest = q[a:b].copy()
                     if ch.k_dip and q[a + ch.i_pip] > 0.05:   # the tendon's DIP:PIP ratio, per finger, from people
                         ch.k_dip = float(np.clip(q[a + ch.i_dip] / q[a + ch.i_pip], 0.4, 1.0))
+        # comfort is measured in units of how much people actually vary each joint while playing (human IQR / 1.35)
+        self.sigma = self.rng.copy()
+        try:
+            ref = json.load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "human_ref.json")))
+            pf, ms = ref["per_finger"], ref["measures"]
+            iqr = lambda d: math.radians(max(4.0, (d["p75"] - d["p25"]) / 1.35))
+            names = ["index", "middle", "ring", "pinky"]
+            for ci, (ch, a) in enumerate(zip(self.chains, self.sl[:-1])):
+                for i, (b, n, *_r) in enumerate(ch.dofs):
+                    kind = self.sk.kind[b]
+                    if ci == 0:
+                        key = {"cmc": "thumb_abd", "tmcp": "thumb_mcp_flex", "tip": "thumb_ip_flex"}[kind]
+                        self.sigma[a + i] = iqr(ms[key]["pooled"])
+                    elif n == "abd":
+                        self.sigma[a + i] = iqr(ms[("abd_im", "abd_mr", "abd_mr", "abd_rp")[ci - 1]]["pooled"])
+                    else:
+                        meas = {"mcp": "mcp_flex", "mcp_edge": "mcp_flex", "pip": "pip_flex", "dip": "dip_flex"}[kind]
+                        self.sigma[a + i] = iqr(pf[f"{meas}.{names[ci - 1]}"])
+        except (OSError, KeyError):
+            pass
 
     def anatomical_abduction(self, root_rot, root_pos, pts, f):
         """Finger f's (2-5) abduction in degrees as anatomy measures it: the proximal phalanx against its
@@ -127,7 +147,12 @@ class HandRig:
         for f in range(5):
             if targets[f] is not None:
                 r.append(weights[f] * (eff[f] - targets[f]))
-        r.append(math.sqrt(W["comfort"]) * (q - self.q_rest) / self.rng)
+        cw = np.ones(len(q))                                  # a pressing finger may leave its relaxed pose to reach
+        for f, (a, b) in enumerate(zip(self.sl[:-1], self.sl[1:])):
+            if targets[f] is not None and weights[f] >= 0.99:
+                cw[a:b] = math.sqrt(W.get("comfort_press", 1.0))
+        scale = self.sigma if W.get("comfort_sigma") else self.rng      # human-spread scaling: experimental, off
+        r.append(math.sqrt(W["comfort"]) * cw * (q - self.q_rest) / scale)
         for ch, a in zip(self.chains, self.sl[:-1]):
             if ch.k_dip:
                 r.append([math.sqrt(W["couple"]) * (q[a + ch.i_dip] - ch.k_dip * q[a + ch.i_pip])])

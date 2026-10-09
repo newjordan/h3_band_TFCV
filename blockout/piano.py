@@ -348,6 +348,16 @@ def thumb_ik(cmc, target, wrist, mcps, side, depth=None, skip_tip=False):
     return pts, float(miss[k])
 
 
+def _rig_home():
+    """Home pad offsets across the hand (right hand, m from the knuckle-line centre) in the rig's relaxed,
+    human-calibrated pose: where the fingertips sit when nothing pulls them."""
+    from .rig.hand import HandRig
+    rig = HandRig("R")
+    rr, rp = rig.root_from_hand_frame(np.eye(3), np.zeros(3))
+    _, _, pts = rig.points(np.concatenate([rp, np.zeros(3), rig.q_rest]), rr)
+    return np.array([float(e[0]) for e in rig.effectors(pts, rig._rots)])
+
+
 def _rig_rest_height():
     """Knuckle-line height over the keys and setback from the key fronts at which the rig's relaxed curl puts the
     index..ring pads on their keys (hand level): derived from the hand, not tuned per piece."""
@@ -367,11 +377,12 @@ def set_hand_model(name):
     """'mpfb': segment lengths, knuckle layout, palm length and finger radii measured off the CC0 MPFB2 hand
     (blockout/hand_model/), so the IK chains and the rendered skinned hand agree bone for bone.
     'mannequin': the hand-tuned proportions the capsule/skin hands were built with."""
-    global SEG, KNUCKLE, FINGER_R, TIP_R, PALM_LEN, WRIST_OFF, HAND_MODEL, THUMB, KNUCKLE_Z, Y_KN
+    global SEG, KNUCKLE, FINGER_R, TIP_R, PALM_LEN, WRIST_OFF, HAND_MODEL, THUMB, KNUCKLE_Z, Y_KN, HOME
     HAND_MODEL = name
     if name == "mannequin":
         SEG, KNUCKLE, FINGER_R = _SEG0, _KNUCKLE0, _FINGER_R0
         KNUCKLE_Z, Y_KN = 0.064, -0.006
+        HOME = _HOME0
         PALM_LEN = 0.085                         # knuckle line -> wrist
         WRIST_OFF = np.array([0.004, -PALM_LEN, -0.006])
         THUMB = None
@@ -395,6 +406,7 @@ def set_hand_model(name):
         # a real hand's natural curl (MCP ~15, PIP ~40 deg) puts the long fingertips ~7 cm below and ~6-7 cm in
         # front of the knuckles, so the knuckle line rides higher and further back than the mannequin's
         KNUCKLE_Z, Y_KN = _rig_rest_height()
+        HOME = _rig_home()
         loc = lambda n, k: M @ (np.array(B[n][k]) - c)
         d = [loc(f"finger1-{s}", "tail") - loc(f"finger1-{s}", "head") for s in (1, 2)]
         n0, d2 = d[0] / np.linalg.norm(d[0]), d[1] / np.linalg.norm(d[1])
@@ -404,7 +416,7 @@ def set_hand_model(name):
     TIP_R = FINGER_R[:, 3]
 
 
-_SEG0, _KNUCKLE0, _FINGER_R0 = SEG, KNUCKLE, FINGER_R
+_SEG0, _KNUCKLE0, _FINGER_R0, _HOME0 = SEG, KNUCKLE, FINGER_R, HOME
 set_hand_model("mpfb")
 
 # Parncutt-style finger-pair spans in semitones (right hand, finger i < j, signed pitch_j - pitch_i):
@@ -1052,7 +1064,7 @@ SPRING_HAND = (2.6, 0.72, 1.3)
 SPRING_TIP = (10.0, 0.80, 0.4)
 SPRING_FREE = (4.5, 0.45, 0.6)     # free fingers: soft and under-damped, the hand's subconscious ragdoll
 EXT_UP, EXT_FWD = 0.010, 0.008    # m: how far an idle finger lifts and lengthens
-EXT_OUT = (-0.006, -0.003, 0.0, 0.002, 0.005)   # m: and fans away from the middle finger (right hand; mirrored)
+EXT_OUT = (-0.002, -0.001, 0.0, 0.001, 0.002)   # m: and fans away from the middle finger (right hand; mirrored)
 # ---- two hands close, overlapping, crossing (from footage study; notes in the commit message). Two cases:
 #  * Overlap / shared register while both play: the hand that is TRAVELLING along the keys while it plays (the
 #    passage hand) stays UNDER: low, flat wrist, at the key fronts, its thumb tucked under its palm. The settled
