@@ -348,6 +348,21 @@ def thumb_ik(cmc, target, wrist, mcps, side, depth=None, skip_tip=False):
     return pts, float(miss[k])
 
 
+def _rig_rest_height():
+    """Knuckle-line height over the keys and setback from the key fronts at which the rig's relaxed curl puts the
+    index..ring pads on their keys (hand level): derived from the hand, not tuned per piece."""
+    from .rig.hand import HandRig
+    rig = HandRig("R")
+    rr, rp = rig.root_from_hand_frame(np.eye(3), np.zeros(3))
+    x = np.concatenate([rp, np.zeros(3), rig.q_rest])
+    _, _, pts = rig.points(x, rr)
+    eff = rig.effectors(pts, rig._rots)
+    dz = float(np.mean([eff[f][2] for f in (1, 2, 3)]))
+    dy = float(np.mean([eff[f][1] for f in (1, 2, 3)]))
+    pad_y = float(np.mean([0.5 * sum(HITPAD_W[f]) for f in (1, 2, 3)]))
+    return -dz, pad_y - dy
+
+
 def set_hand_model(name):
     """'mpfb': segment lengths, knuckle layout, palm length and finger radii measured off the CC0 MPFB2 hand
     (blockout/hand_model/), so the IK chains and the rendered skinned hand agree bone for bone.
@@ -379,7 +394,7 @@ def set_hand_model(name):
         FINGER_R = np.array(r)
         # a real hand's natural curl (MCP ~15, PIP ~40 deg) puts the long fingertips ~7 cm below and ~6-7 cm in
         # front of the knuckles, so the knuckle line rides higher and further back than the mannequin's
-        KNUCKLE_Z, Y_KN = 0.076, -0.020
+        KNUCKLE_Z, Y_KN = _rig_rest_height()
         loc = lambda n, k: M @ (np.array(B[n][k]) - c)
         d = [loc(f"finger1-{s}", "tail") - loc(f"finger1-{s}", "head") for s in (1, 2)]
         n0, d2 = d[0] / np.linalg.norm(d[0]), d[1] / np.linalg.norm(d[1])
@@ -1162,7 +1177,7 @@ def _roll_offsets(off, roll):
 
 # ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
 HAND_CLEAR, HAND_W = 0.003, 3.0    # m kept between the two hands' skin; weight of that against the targets
-RIG_W = dict(press=1.0, free=0.15, root_pos=0.05, root_rot=1e-4, env=1.0)   # target weights and the plan prior
+RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=1.0, comfort=4e-5)   # target weights and the plan prior
 _RIGS = {}
 
 
@@ -1257,7 +1272,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
             x_init = solved[name][0] if name in solved else prev.get(name)
             x, (rr, rp, pts, pads), miss = rig.solve(ref_rot, ref_pos, list(targets[name]), w, prev=x_init,
                                                env=_key_env(est_depth, pressing, blobs.get("L" if name == "R" else "R"), rig),
-                                               W=dict(root_pos=RIG_W["root_pos"], root_rot=RIG_W["root_rot"], env=RIG_W["env"]))
+                                               W={k: v for k, v in RIG_W.items() if k not in ("press", "free")})
             rig.points(x, ref_rot)                          # rotations of the accepted pose (not a trial step)
             solved[name] = (x, rr, rp, pts, pressing, pads)
             misses[name] = miss

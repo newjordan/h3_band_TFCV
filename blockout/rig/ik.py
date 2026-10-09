@@ -29,8 +29,8 @@ class Chain:
                     self.dofs.append((b, name, sk.axes[b][name], lo, hi))
         self.lo = np.array([d[3] for d in self.dofs]); self.hi = np.array([d[4] for d in self.dofs])
         self.rng = self.hi - self.lo
-        # comfort centre: a relaxed, curved hand (fingers: MCP 20, PIP 40, DIP ~2/3 PIP; the thumb at its rest)
-        neutral = {("mcp", "flex"): 20, ("mcp_edge", "flex"): 20, ("pip", "flex"): 40, ("dip", "flex"): 27}
+        # comfort centre: a relaxed, curved playing hand (MCP 15, PIP 35, DIP ~2/3 PIP: fingertips ~70 deg to the keys)
+        neutral = {("mcp", "flex"): 15, ("mcp_edge", "flex"): 15, ("pip", "flex"): 35, ("dip", "flex"): 22}
         self.q_rest = np.clip(np.array([D(neutral.get((sk.kind[b], n), 0.0)) for b, n, *_r in self.dofs]),
                               self.lo, self.hi)
         self.base_bone = sk.parent[self.bones[0]]

@@ -29,7 +29,7 @@ LIMITS = {
     "dip": {"flex": (-5, 85)},
     "cmc": {"flex": (-30, 30), "abd": (-30, 30)},
     "tmcp": {"flex": (-10, 55)},
-    "tip": {"flex": (-10, 80)},
+    "tip": {"flex": (-20, 80)},                                  # thumb IP: hyperextends 10-20 deg normally
     "wrist": {"flex": (-70, 70), "abd": (-20, 30)},
 }
 
