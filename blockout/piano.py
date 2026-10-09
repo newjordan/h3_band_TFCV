@@ -577,6 +577,195 @@ def finger_tip(t, e, home_tip, r, thumb=False):
     return down + (home_tip - down) * u, 1.0 - u
 
 
+def _seg_dist(p0, p1, q0, q1):
+    """Closest distance between segments p0-p1 and q0-q1 (Ericson)."""
+    d1, d2, r = p1 - p0, q1 - q0, p0 - q0
+    a, e, f = d1 @ d1, d2 @ d2, d2 @ r
+    if a < 1e-12 and e < 1e-12:
+        return float(np.linalg.norm(r))
+    if a < 1e-12:
+        s, t = 0.0, np.clip(f / e, 0, 1)
+    else:
+        c = d1 @ r
+        if e < 1e-12:
+            s, t = np.clip(-c / a, 0, 1), 0.0
+        else:
+            b = d1 @ d2; den = a * e - b * b
+            s = np.clip((b * f - c * e) / den, 0, 1) if den > 1e-12 else 0.0
+            t = (b * s + f) / e
+            if t < 0: t, s = 0.0, np.clip(-c / a, 0, 1)
+            elif t > 1: t, s = 1.0, np.clip((b - c) / a, 0, 1)
+    return float(np.linalg.norm(p0 + d1 * s - q0 - d2 * t))
+
+
+PALM_R, ARM_R = 0.015, 0.030
+
+
+def _capsules(h):
+    """A posed hand as capsules (a, b, radius): finger segments, palm wrist->each MCP, forearm wrist->elbow."""
+    w, caps = np.asarray(h["wrist"], float), []
+    for f, ch in enumerate(h["fingers"]):
+        ch = np.asarray(ch, float)
+        for i in range(3):
+            caps.append((ch[i], ch[i + 1], 0.5 * (FINGER_R[f][i] + FINGER_R[f][i + 1])))
+        caps.append((w, ch[0], PALM_R))
+    caps.append((w, np.asarray(h["elbow"], float), ARM_R))
+    return caps
+
+
+def _hands_detail(frames, thresh=0.003):
+    """qa.hands: frames where the two hands' capsule volumes interpenetrate by more than thresh (m)."""
+    worst, bad, wf = 0.0, 0, None
+    for j, fr in enumerate(frames):
+        if "R" not in fr["hands"] or "L" not in fr["hands"]:
+            continue
+        A, B = _capsules(fr["hands"]["L"]), _capsules(fr["hands"]["R"])
+        d = 0.0
+        for a0, a1, ra in A:
+            for b0, b1, rb in B:
+                if min(np.linalg.norm(a0 - b0), np.linalg.norm(a1 - b1)) > 0.25:
+                    continue
+                d = max(d, ra + rb - _seg_dist(a0, a1, b0, b1))
+        if d > thresh:
+            bad += 1
+        if d > worst:
+            worst, wf = d, j
+    return {"frames": len(frames), "overlap_frames_over_3mm": bad, "max_depth_mm": round(worst * 1000, 2), "worst_frame": wf}
+
+
+def _proxy_caps(centre, kn_off, tip, wrist):
+    """Cheap hand volume before the IK: palm wrist->MCPs, straight finger rods knuckle->tip."""
+    caps = []
+    for f in range(5):
+        kn = centre + kn_off[f]
+        caps.append((wrist, kn, PALM_R))
+        caps.append((kn, tip[f], 0.5 * (FINGER_R[f][0] + FINGER_R[f][3])))
+    return caps
+
+
+COLL_MARGIN = 0.004        # hands try to keep this much air between their volumes
+COLL_FALL = 0.92
+COLL_MAX_X, COLL_MAX_Y, COLL_MAX_Z, COLL_MAX_TIP = 0.020, 0.030, 0.030, 0.04
+COLL_ON = False            # hand-to-hand avoidance: experimental, did not reduce qa.hands (see commit message)
+
+
+def _separate_hands(hands, st, tips, j, t, fps):
+    """Hand-to-hand collision: when the two hands' volumes meet, the hand that is not sounding yields. It slides
+    away along the keys and, if it has no finger on a key, lifts over the other. The correction is itself a
+    smoothed state (fast in, slow out), so it never pops."""
+    if len(st) < 2 or not COLL_ON:
+        return
+    sound = {}
+    for name, H in hands.items():
+        sound[name] = sum(1 for f in range(5) if H["act"][j][f] is not None)
+    yl = "L" if sound["L"] < sound["R"] or (sound["L"] == sound["R"] and st["L"][0][1] <= st["R"][0][1]) else "R"
+    ys, os_ = (yl, "R" if yl == "L" else "L")
+    def shift(name, v):
+        st[name][0][:] += v
+        for f in range(5):
+            if hands[name]["act"][j][f] is None:
+                tips[name][f] += v
+    for name in st:                                  # last frame's correction fades out; the projection re-adds what is needed
+        corr = hands[name].setdefault("coll", np.zeros(3))
+        if np.any(corr):
+            new = corr * COLL_FALL
+            shift(name, new - corr)
+            corr[:] = new
+    free = sound[ys] == 0
+    share = 1.0 if sound[os_] > sound[ys] else 0.6
+    for _ in range(3):
+        caps = {}
+        for name in st:
+            c, roll, psi, kn_off, sgn = st[name]
+            wr = c + _yaw(_roll_offsets(WRIST_OFF * np.array([sgn, 1, 1]), roll * 0.5), psi)
+            caps[name] = _proxy_caps(c, kn_off, tips[name], wr)
+        d = -1.0
+        for a0, a1, ra in caps["L"]:
+            for b0, b1, rb in caps["R"]:
+                d = max(d, ra + rb + COLL_MARGIN - _seg_dist(a0, a1, b0, b1))
+        if d <= 0:
+            break
+        away = 1.0 if st[ys][0][0] >= st[os_][0][0] else -1.0
+        for name, w, zl in ((ys, share, 0.5 if free else 0.0), (os_, 1.0 - share, 0.0)):
+            if w > 0:
+                v = np.array([(away if name == ys else -away) * 0.8 * d * w, 0.0, zl * d])
+                lim = np.array([COLL_MAX_X, COLL_MAX_Y, COLL_MAX_Z])
+                v = np.clip(hands[name]["coll"] + v, -lim, lim) - hands[name]["coll"]
+                shift(name, v)
+                hands[name]["coll"] += v
+
+    # free fingertips back out of the other hand's volume (thumbs tuck, fingers lift) -- sprung like the rest
+    for name in st:
+        other = "R" if name == "L" else "L"
+        oc = _proxy_caps(st[other][0], st[other][3], tips[other], st[other][0] + _yaw(_roll_offsets(
+            WRIST_OFF * np.array([st[other][4], 1, 1]), st[other][1] * 0.5), st[other][2]))
+        to = hands[name].setdefault("tipoff", np.zeros((5, 3)))
+        for f in range(5):
+            if hands[name]["act"][j][f] is not None:
+                to[f] = 0.0
+                continue
+            if np.any(to[f]):
+                new = to[f] * COLL_FALL
+                tips[name][f] += new - to[f]
+                to[f] = new
+            for _ in range(2):
+                tp, rf = tips[name][f], FINGER_R[f][3]
+                worst, push = 0.0, None
+                for a0, a1, ra in oc:
+                    ab = a1 - a0
+                    u = float(np.clip((tp - a0) @ ab / max(ab @ ab, 1e-9), 0, 1))
+                    v = tp - (a0 + ab * u)
+                    d = ra + rf + COLL_MARGIN - float(np.linalg.norm(v))
+                    if d > worst:
+                        worst, push = d, v
+                if push is None:
+                    break
+                h = np.array([push[0], push[1], 0.0]); hn = np.linalg.norm(h)
+                h = h / hn if hn > 1e-6 else np.array([1.0 if name == "R" else -1.0, 0.0, 0.0])
+                v = h * worst * 0.9 + np.array([0.0, 0.0, 0.5 * worst])
+                v = np.clip(to[f] + v, -COLL_MAX_TIP, COLL_MAX_TIP) - to[f]
+                tips[name][f] += v
+                to[f] += v
+
+
+COLL_LIFT_MAX = 0.05
+
+
+def _lift_free(fr, hands, j, solvers, raw):
+    """After the IK: a free finger whose real segments sit inside the other hand rides up and over it (the
+    lift is remembered and fades, so it never pops). Pressing fingers are never touched."""
+    if len(fr["hands"]) < 2 or not COLL_ON:
+        return
+    for name, H in hands.items():
+        other = "R" if name == "L" else "L"
+        oc = _capsules({**fr["hands"][other], "elbow": fr["hands"][other]["wrist"]})[:-1]
+        lift = H.setdefault("lift", np.zeros(5))
+        for f in range(5):
+            if H["act"][j][f] is not None:
+                lift[f] = 0.0
+                continue
+            tip0, pts = raw[(name, f)]
+            lift[f] *= COLL_FALL
+            tip = tip0 + np.array([0, 0, lift[f]])
+            if lift[f] > 1e-4:
+                pts, _m = solvers[(name, f)](tip)
+            for _ in range(3):
+                pts = np.asarray(pts, float)
+                d = -1.0
+                for i in range(3):
+                    rf = 0.5 * (FINGER_R[f][i] + FINGER_R[f][i + 1])
+                    for a0, a1, ra in oc:
+                        d = max(d, ra + rf + COLL_MARGIN - _seg_dist(pts[i], pts[i + 1], a0, a1))
+                add = min(d + 0.001, COLL_LIFT_MAX - lift[f])
+                if d <= 0 or add <= 0:
+                    break
+                lift[f] += add
+                tip = tip + np.array([0, 0, add])
+                pts, _m = solvers[(name, f)](tip)
+            if lift[f] > 1e-4:
+                fr["hands"][name]["fingers"][f] = [[round(float(c), 5) for c in q] for q in np.asarray(pts, float)]
+
+
 def _cross_detail(frames):
     """Finger-order violations: adjacent fingers (index..pinky) whose tips are out of order across the hand
     (closer than 4 mm or crossed), and splay beyond what a hand can do (tip far sideways of its knuckle)."""
@@ -911,6 +1100,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                     if d > 0.01:
                         keydepth[p] = max(keydepth.get(p, 0.0), d)
                         press[str(p)] = f"{name}{f + 1}"            # which finger holds the key (R1 = right thumb)
+        st = {}; solvers = {}; tipsol = {}; raw = {}
         for name, H in hands.items():                       # then nothing may sink into a key
             sgn = 1 if name == "R" else -1
             centre, roll, psi = H["Cf"][j].copy(), float(H["Rf"][j]), float(H["Yf"][j])
@@ -946,7 +1136,11 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                     if H["act"][j][f] is None:
                         tips[name][f] += step
                         tips[name][f][1] = min(tips[name][f][1], FALLBOARD_Y - 0.015)
-            tips[name] = _order_free(tips[name], H["act"][j], centre, kn_off, psi, sgn, TETHER * reach)
+            st[name] = (centre, roll, psi, kn_off, sgn)
+        _separate_hands(hands, st, tips, j, times[j], fps)
+        for name, H in hands.items():
+            centre, roll, psi, kn_off, sgn = st[name]
+            tips[name] = _order_free(tips[name], H["act"][j], centre, kn_off, psi, sgn, TETHER * SEG.sum(1))
             w_off = _yaw(_roll_offsets(WRIST_OFF * np.array([sgn, 1, 1]) - np.array([0, 0, 0.004 * H["TCH"][j]]), roll * 0.5), psi)
             wrist = centre + w_off
             chains = []
@@ -960,12 +1154,16 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                     tip[2] = max(tip[2], floor)
                 tp = 0.40 + 0.25 * float(H["TCH"][j]) if f == 0 else 0.72 + 0.50 * float(H["TCH"][j])
 
-                def solve(tip):
-                    if f == 0 and THUMB is not None:          # the thumb has its own joints, not a finger's
-                        pts, miss = thumb_ik(kn, tip, wrist, [centre + kn_off[q] for q in range(1, 5)], name,
-                                             keydepth, own is not None)
-                        return pts, miss
-                    return _ik(kn, tip, SEG[f], np.array([0, 1.0, 0]), tp), 0.0
+                def mk(f, kn, tp, own, name, centre, kn_off, wrist):
+                    def solve(tip):
+                        if f == 0 and THUMB is not None:          # the thumb has its own joints, not a finger's
+                            return thumb_ik(kn, tip, wrist, [centre + kn_off[q] for q in range(1, 5)], name,
+                                            keydepth, own is not None)
+                        return _ik(kn, tip, SEG[f], np.array([0, 1.0, 0]), tp), 0.0
+                    return solve
+                solve = mk(f, kn, tp, own, name, centre, kn_off, wrist)
+                solvers[(name, f)] = solve
+                tipsol[(name, f)] = tip
                 pts, miss = solve(tip)
                 for _ in range(3):                           # lift the finger until no segment is inside a key
                     pen = _penetration(pts, FINGER_R[f], keydepth, skip_tip=own is not None)
@@ -979,7 +1177,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                 H.setdefault("pen", []).append(pen)
                 H.setdefault("pen_info", []).append((pen, f, own is not None, float(np.linalg.norm(tip - kn)), j, name))
                 chains.append([[round(float(c), 5) for c in q] for q in pts])
+                raw[(name, f)] = (tip, pts)
             fr["hands"][name] = {"wrist": wrist.round(5).tolist(), "fingers": chains}
+        _lift_free(fr, hands, j, solvers, raw)
         pitch, yaw, roll_h, lean = HEAD[j]
         fr["body"] = body.pose(pitch, yaw, roll_h, lean, {h: fr["hands"][h]["wrist"] for h in fr["hands"]})
         for h in fr["hands"]:
@@ -998,7 +1198,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             "qa": {"finger_frames": int(len(pens)), "penetrating_over_1mm": int((pens > 0.001).sum()),
                    "max_penetration_mm": round(float(pens.max()) * 1000, 2),
                    "detail": _pen_detail([i for H in hands.values() for i in H.get("pen_info", [])]),
-                   "hits": _hit_detail(frames), "order": _cross_detail(frames), "reach": _reach_detail(hands)},
+                   "hits": _hit_detail(frames), "order": _cross_detail(frames), "reach": _reach_detail(hands), "hands": _hands_detail(frames)},
             "schedule": sched, "beats": [b - start for b in beats.tolist() if start <= b <= end],
             "downbeats": [b - start for b in downbeats.tolist() if start <= b <= end],
             "fingering": fing_out, "frames": frames}
