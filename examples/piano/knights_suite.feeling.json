@@ -1,10 +1,10 @@
 {
- "piece": "The Knight's Suite: Knight's Theme (original) -> Rachmaninoff Prelude in C# minor Op. 3 No. 2, bars 35-61 -> Brahms Intermezzo Op. 118 No. 2, bars 1-16 and 113-124",
+ "piece": "The Knight's Suite: Knight's Theme (original) -> Rachmaninoff Prelude in C# minor Op. 3 No. 2, bars 35-61 -> Chopin Nocturne in C# minor Op. posth. (B. 49), transcribed bars 1-8 and 58-64",
  "source": "Suite bars (blockout/suite.py). Values interpolate between rows. Tempo multiplies each source's own tempo.",
  "rows": [
   {"bar": 1,  "strength": 0.24, "touch": 0.10, "freedom": 0.55, "tempo": 1.00, "head": "expressive", "mark": "Knight's Theme (A major)"},
   {"bar": 5,  "strength": 0.34, "touch": 0.16, "freedom": 0.55, "tempo": 1.00},
-  {"bar": 9,  "strength": 0.26, "touch": 0.10, "freedom": 0.60, "tempo": 0.97, "mark": "C#-B-C# (Brahms, foreshadowed)"},
+  {"bar": 9,  "strength": 0.26, "touch": 0.10, "freedom": 0.60, "tempo": 0.97, "mark": "C#-B-C# (foreshadowed)"},
   {"bar": 13, "strength": 0.40, "touch": 0.22, "freedom": 0.55, "tempo": 0.97, "head": "focused"},
   {"bar": 15, "strength": 0.62, "touch": 0.45, "freedom": 0.50, "tempo": 0.90, "mark": "darkens onto G#7"},
   {"bar": 16, "strength": 0.72, "touch": 0.55, "freedom": 0.45, "tempo": 0.80},
@@ -16,11 +16,13 @@
   {"bar": 36, "strength": 0.60, "touch": 0.50, "freedom": 0.50, "tempo": 0.95, "head": "focused"},
   {"bar": 38, "strength": 0.14, "touch": 0.05, "freedom": 0.55, "tempo": 0.95, "head": "expressive", "mark": "pp coda"},
   {"bar": 43, "strength": 0.06, "touch": 0.02, "freedom": 0.55, "tempo": 0.85},
-  {"bar": 45, "strength": 0.20, "touch": 0.05, "freedom": 0.60, "tempo": 0.92, "mark": "Brahms: Andante teneramente (A major)"},
-  {"bar": 52, "strength": 0.34, "touch": 0.12, "freedom": 0.60, "tempo": 0.95},
-  {"bar": 60, "strength": 0.20, "touch": 0.06, "freedom": 0.60, "tempo": 0.92},
-  {"bar": 61, "strength": 0.24, "touch": 0.08, "freedom": 0.60, "tempo": 0.95, "mark": "the close"},
-  {"bar": 68, "strength": 0.14, "touch": 0.04, "freedom": 0.55, "tempo": 0.90},
-  {"bar": 72, "strength": 0.05, "touch": 0.01, "freedom": 0.50, "tempo": 0.72}
+  {"bar": 45, "strength": 0.16, "touch": 0.04, "freedom": 0.80, "tempo": 0.92, "head": "expressive", "mark": "Chopin: Lento con gran espressione (C# minor)"},
+  {"bar": 48, "strength": 0.18, "touch": 0.05, "freedom": 0.85, "tempo": 0.90},
+  {"bar": 49, "strength": 0.30, "touch": 0.10, "freedom": 0.80, "tempo": 0.93, "head": "focused", "mark": "the first theme"},
+  {"bar": 52, "strength": 0.32, "touch": 0.12, "freedom": 0.85, "tempo": 0.92},
+  {"bar": 53, "strength": 0.22, "touch": 0.06, "freedom": 0.80, "tempo": 0.92, "head": "expressive", "mark": "the close: C# pedal"},
+  {"bar": 57, "strength": 0.14, "touch": 0.03, "freedom": 0.85, "tempo": 0.90},
+  {"bar": 58, "strength": 0.08, "touch": 0.02, "freedom": 0.80, "tempo": 0.88, "mark": "C# major"},
+  {"bar": 59, "strength": 0.04, "touch": 0.01, "freedom": 0.80, "tempo": 0.80}
  ]
 }

@@ -4,8 +4,10 @@
 
 The Knight's Suite: "Knight's Theme" (original, A major, 3/4) darkens onto G#7, which is exactly where
 Rachmaninoff's Prelude in C# minor Op. 3 No. 2 sits at bar 45; the agitato climb (bars 35-44), the fff
-four-stave climax and the pp coda follow (bars 35-61). Its last C# hands over to Brahms' Intermezzo in
-A major Op. 118 No. 2, whose melody opens on C# (bars 1-16, then the close, bars 113-124): back home in A.
+four-stave climax and the pp coda follow (bars 35-61). Its last C# hands over to Chopin's Nocturne in
+C# minor Op. posth. (B. 49, Lento con gran espressione): the slow introduction and first theme (bars 1-8,
+which end on the dominant, B# in the bass), then the close, bars 58-64: the quiet C# pedal coda that ends in
+C# major. The bar numbers are the fitted bars of our transcription of a free recording (see README).
 
 Output tempo map: one tempo event per output bar so every bar lasts exactly as long as in its source.
 Hands: notes are re-split per onset at the widest pitch gap (track 1 = right hand, track 2 = left hand),
@@ -150,11 +152,11 @@ def write(path, notes, bars):
     open(path, "wb").write(data)
 
 
-def knights_suite(rach, brahms):
+def knights_suite(rach, chopin):
     parts = [knights_theme(),
              excerpt(rach, 35, 61, 4, 4),
-             excerpt(brahms, 1, 16, 3, 4),
-             excerpt(brahms, 113, 124, 3, 4)]
+             excerpt(chopin, 1, 8, 4, 4),
+             excerpt(chopin, 58, 64, 4, 4)]
     notes, bars, t = [], [], 0.0
     marks = []
     for k, (ns, bs) in enumerate(parts):
@@ -162,15 +164,15 @@ def knights_suite(rach, brahms):
         notes += [midi.Note(n.start + t, n.end + t, n.pitch, n.velocity, n.track) for n in ns]
         bars += [(b0 + t, L, num, den) for b0, L, num, den in bs]
         t += sum(b[1] for b in bs)
-        if k == 1:      # a silent 3/4 bar of air between the Rachmaninoff coda and the Brahms
+        if k == 1:      # a silent 3/4 bar of air between the Rachmaninoff coda and the Chopin
             bars.append((t, 2.25, 3, 4)); t += 2.25
     return resplit(notes), bars, marks
 
 
 if __name__ == "__main__":
     import sys
-    rach, brahms = "examples/piano/rach_prelude_op3_no2.mid", "examples/piano/brahms_intermezzo_op118_no2.mid"
-    notes, bars, marks = knights_suite(rach, brahms)
+    rach, chopin = "examples/piano/rach_prelude_op3_no2.mid", "examples/piano/chopin_nocturne_cs_minor_posth.mid"
+    notes, bars, marks = knights_suite(rach, chopin)
     write(sys.argv[1], notes, bars)
     print(f"{len(notes)} notes, {len(bars)} bars, {bars[-1][0] + bars[-1][1]:.1f} s; sections start at bars",
           [m[0] for m in marks], "times", [round(m[1], 1) for m in marks])
