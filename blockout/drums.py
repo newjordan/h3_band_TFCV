@@ -342,7 +342,18 @@ HAND_LIFT, HAND_PULL = 0.30, 0.10   # hand rises this fraction of the tip's heig
 REST_H = 0.06                       # hover height of a resting tip
 
 
-def _hand_track(hs, times, hand, start, fps):
+def _snap_curve(t, T, H, rest, fps):
+    """Two poses: the tip is on the head on a hit's frame and at the next stroke's prep height on every other
+    frame, with no easing. Returns (height, k, w) like stroke_curve; w jumps to the next piece after the hit."""
+    k = int(np.searchsorted(T, t + 0.5 / fps, side="right")) - 1
+    if k >= 0 and abs(t - T[k]) < 0.5 / fps:
+        return 0.0, k, 0.0
+    if k + 1 < len(T):
+        return H[k + 1], k, 1.0
+    return rest, k, 0.0
+
+
+def _hand_track(hs, times, hand, start, fps, motion="smooth"):
     """Raw targets for one hand: tip target, hand (grip) target, height above the surface, current piece."""
     N = len(times)
     TIPT, HAND, HH = np.zeros((N, 3)), np.zeros((N, 3)), np.zeros(N)
@@ -359,16 +370,20 @@ def _hand_track(hs, times, hand, start, fps):
     T = np.array([h["tf"] for h in hs])
     Hh = np.array([stroke_height(h["vel"]) for h in hs])
     P = [h["piece"] for h in hs]
-    S = [STRIKE[p] + np.array([0, 0, HIHAT_OPEN if h.get("open") else 0.0]) for p, h in zip(P, hs)]
+    S = [STRIKE[p] + np.array([0, 0, HIHAT_OPEN if h.get("open") else 0.0]) + np.asarray(h.get("aim", (0, 0, 0)))
+         for p, h in zip(P, hs)]
     G = [grip_home(p, hand) for p in P]
     for j, t in enumerate(times):
-        h, k, w = stroke_curve(t, T, Hh, REST_H)
+        if motion == "snap":
+            h, k, w = _snap_curve(t, T, Hh, REST_H, fps)
+        else:
+            h, k, w = stroke_curve(t, T, Hh, REST_H)
         a, b = (max(k, 0), min(k + 1, len(T) - 1)) if k >= 0 else (0, 0)
         if k < 0:
             w = 0.0
         s = S[a] + (S[b] - S[a]) * w
         n = _unit(NORMAL[P[a]] + (NORMAL[P[b]] - NORMAL[P[a]]) * w)
-        arc = 0.25 * math.sin(math.pi * w) * float(np.linalg.norm(S[b] - S[a]))
+        arc = 0.0 if motion == "snap" else 0.25 * math.sin(math.pi * w) * float(np.linalg.norm(S[b] - S[a]))
         g = G[a][0] + (G[b][0] - G[a][0]) * w
         d = _unit(G[a][1] + (G[b][1] - G[a][1]) * w)
         dh = _unit([d[0], d[1], 0.0])
@@ -424,7 +439,18 @@ def _hat_track(hits, times, start, fps, beats):
 
 
 # ---------------------------------------------------------------- animate
-def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, schedule=((0.0, "groove"),), seed=0):
+MOTIONS = ("smooth", "snap", "loose")
+LOOSE_FRAMES, LOOSE_AIM = 2, 0.08   # loose: each hand hit moves up to this many frames and aims up to this far off
+
+
+def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, schedule=((0.0, "groove"),), seed=0,
+            motion="smooth"):
+    """motion: "smooth" (the rules above), "snap" (hands jump between a prep pose and the hit pose, no easing,
+    no springs), or "loose" (smooth, but every hand hit lands up to LOOSE_FRAMES early or late and up to
+    LOOSE_AIM m off its strike point). snap and loose exist to test how exact a blockout has to be."""
+    if motion not in MOTIONS:
+        raise ValueError(f"motion must be one of {MOTIONS}")
+    rng = np.random.default_rng(seed + 1000)
     hits = [dict(h) for h in hits]
     end = start + dur if dur else max(h["t"] for h in hits) + 1.5
     hits = [h for h in hits if start - 2.0 < h["t"] < end + 1.0]
@@ -438,6 +464,11 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
         hs = [h for h in hand_hits if h.get("hand") == hand]
         for h in hs:
             h["tf"] = _snap(h["t"], start, fps)
+            if motion == "loose":
+                h["tf"] += int(rng.integers(-LOOSE_FRAMES, LOOSE_FRAMES + 1)) / fps
+                r, ang = LOOSE_AIM * math.sqrt(rng.random()), 2 * math.pi * rng.random()
+                h["aim"] = (r * math.cos(ang), r * math.sin(ang), 0.0)
+        hs.sort(key=lambda h: h["tf"])
         keep = []
         for h in hs:     # one stroke per frame per hand: a faster repeat is merged into the stroke before it
             if keep and h["tf"] <= keep[-1]["tf"]:
@@ -445,7 +476,7 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
                 h["hand"] = None
                 continue
             keep.append(h)
-        tracks[hand] = (keep,) + _hand_track(keep, times, hand, start, fps)
+        tracks[hand] = (keep,) + _hand_track(keep, times, hand, start, fps, motion)
 
     kicks = [h for h in hits if h["piece"] == "kick"]
     KP, KLIFT, kick_T = _kick_track(kicks, times, start, fps)
@@ -459,6 +490,9 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
     Hs = {}
     for k, hand in enumerate(("R", "L")):
         raw = tracks[hand][2]
+        if motion == "snap":
+            Hs[hand] = raw
+            continue
         raw = np.concatenate([raw[lead:], np.repeat(raw[-1:], lead, 0)])
         f = dynamics.filter_track(raw, fps, *SPRING_HAND)
         f += np.stack([dynamics.drift(times, 0.004, seed * 10 + 3 * k + i) for i in range(3)], 1)
@@ -602,6 +636,7 @@ if __name__ == "__main__":
     ap.add_argument("--schedule", default="0:groove",
                     help="head style timeline in seconds: '0:focused,8:groove,16:wild,20:crowd'")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--motion", choices=MOTIONS, default="smooth")
     ap.add_argument("--hits-out", help="write the hit list (for drumsynth / scoring) as JSON")
     a = ap.parse_args()
     bts = dbs = None
@@ -617,7 +652,7 @@ if __name__ == "__main__":
     if a.hits_out:
         json.dump({"hits": hits}, open(a.hits_out, "w"))
     sched = [(float(t), st) for t, st in (x.split(":") for x in a.schedule.split(","))]
-    anim = animate(hits, a.fps, a.start, a.dur, bts, dbs, sched, a.seed)
+    anim = animate(hits, a.fps, a.start, a.dur, bts, dbs, sched, a.seed, a.motion)
     json.dump(anim, open(a.out, "w"))
     print(f"{len(anim['frames'])} frames -> {a.out}")
     print(json.dumps(check(anim)))

@@ -96,17 +96,20 @@ class H3BandDrumBlockout:
                              "head_schedule": ("STRING", {"default": "0:groove"}),
                              "seed": ("INT", {"default": 0, "min": 0, "max": 2 ** 31 - 1})},
                 "optional": {"camera": ("STRING", {"default": ""}),
-                             "engine": (ENGINES, {"default": "WORKBENCH"})}}
+                             "engine": (ENGINES, {"default": "WORKBENCH"}),
+                             "motion": (list(drums.MOTIONS), {"default": "smooth"})}}
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "run"
     CATEGORY = "h3band"
 
-    def run(self, hits, start, frames, fps, width, height, view, head_schedule, seed, camera="", engine="WORKBENCH"):
+    def run(self, hits, start, frames, fps, width, height, view, head_schedule, seed, camera="", engine="WORKBENCH",
+            motion="smooth"):
         if view not in VIEWS or engine not in ENGINES:
             raise ValueError("view must be one of {} and engine one of {}".format(VIEWS, ENGINES))
         sched = [(float(t), st) for t, st in (x.split(":") for x in head_schedule.split(","))]
-        anim = drums.animate(hits["hits"], fps, start, frames / fps, hits["beats"], hits["downbeats"], sched, seed)
+        anim = drums.animate(hits["hits"], fps, start, frames / fps, hits["beats"], hits["downbeats"], sched, seed,
+                             motion)
         logging.info("[H3BandDrumBlockout] %s", json.dumps(drums.check(anim)))
         args = ["--res", "{}x{}".format(width, height), "--view", view, "--engine", engine]
         if camera.strip():

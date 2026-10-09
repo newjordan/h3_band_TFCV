@@ -3,6 +3,7 @@
 
   sdk_drum_h3.py OUT.mp4 --midi GROOVE.mid --audio DRUMS.wav [--blockout | --no-blockout] [--denoise D]
                  [--keyframe FRAME.png] [--start S] [--frames 124] [--seed 42] [--steps 8] [--prompt TEXT]
+                 [--motion smooth|snap|loose]
 
 One graph: the drum stem is trimmed to [start, start + frames/24] and frozen into H3's audio stream by
 H3 Band Zone Latent (audio_denoise 0). The MIDI's hits drive H3 Band Drum Blockout over the same window.
@@ -56,7 +57,7 @@ def build(a):
     if a.blockout:
         hits = n(12, "H3BandDrumHitsMIDI", midi="groove.mid")
         frames = n(13, "H3BandDrumBlockout", hits=hits, start=a.start, frames=a.frames, fps=FPS, width=W, height=H,
-                   view="front", head_schedule="0:groove", seed=0, camera="", engine="WORKBENCH")
+                   view="front", head_schedule="0:groove", seed=0, camera="", engine="WORKBENCH", motion=a.motion)
         zone["video_latent"] = n(16, "VAEEncode", pixels=frames, vae=vae)
     lat = n(17, "H3BandZoneLatent", **zone)
     # BasicScheduler's own denoise floors steps/denoise (8 steps at 0.9 -> the full schedule); round it here
@@ -87,6 +88,8 @@ def main():
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--steps", type=int, default=8)
     ap.add_argument("--prompt", default=PROMPT)
+    ap.add_argument("--motion", choices=("smooth", "snap", "loose"), default="smooth",
+                    help="blockout motion (blockout/drums.py MOTIONS): how exact the blockout is")
     a = ap.parse_args()
 
     os.environ.setdefault("COMFY_BASE_URL", "http://127.0.0.1:8189")

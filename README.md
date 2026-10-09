@@ -172,7 +172,7 @@ Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brah
 |---|---|---|
 | **H3 Band Drum Events** | `AUDIO` (a drum stem) | `DRUM_HITS` from `h3band/drum_events.py` |
 | **H3 Band Drum Hits (MIDI)** | a GM drum `.mid` in the input dir | `DRUM_HITS` with the MIDI's beat grid |
-| **H3 Band Drum Blockout** | `DRUM_HITS`, `start` (s), `frames`, `fps`, size, view or `camera`, head schedule | `IMAGE`: grey kit frames from `blockout/drums.py`, rendered by Blender |
+| **H3 Band Drum Blockout** | `DRUM_HITS`, `start` (s), `frames`, `fps`, size, view or `camera`, head schedule, `motion` (smooth / snap / loose) | `IMAGE`: grey kit frames from `blockout/drums.py`, rendered by Blender |
 
 The frames begin at `start` seconds into the hits, so `TrimAudioDuration` (start = `start`, duration = frames / fps) gives the matching audio for `CreateVideo`. The same frames can be VAE-encoded as the take for an H3 zone run. `examples/workflows/drum_blockout_api.json` is the stem → hits → blockout → MP4 graph in API format.
 
@@ -236,6 +236,34 @@ The frame at each big hit in the window. The blockout moves to the toms (3.08 s,
 
 `drum_sync_score.py` only separates synced from unsynced on varied playing. On the steady 8th-note groove (8.0–13.2 s) the blockout itself fails its between-hits control (margin −0.02), so score fills and breaks. All of these takes use the `drumsynth.py` render of the MIDI; H3 over a blockout driven by a real drum stem hasn't been scored yet.
 
+#### How exact does the blockout have to be?
+
+`--motion` (and the node's `motion` input) swaps the blockout's stroke motion, everything else held fixed:
+
+- `smooth`: the rules in `blockout/drums.py`. Eased strokes, springs on the hands, tips on the head on the hit frame.
+- `snap`: two poses with no easing and no springs. The tip is on the head on the hit frame and at the next stroke's prep height on every other frame.
+- `loose`: smooth, but every hand hit lands up to 2 frames (83 ms) early or late and up to 8 cm off its strike point.
+
+```bash
+../.venv_sdk/bin/python sdk_drum_h3.py ../work/snap.mp4 --midi ../examples/drums/rock_groove.mid --audio ../work/drums.wav \
+    --blockout --denoise 0.8 --start 13 --motion snap
+```
+
+Same window, prompt and audio as above, denoise 0.8, scored against the true hit times:
+
+| blockout | grey blockout: sync / margin / p | H3, seed 42 | H3, seed 7 |
+|---|---|---|---|
+| smooth | 0.331 / +0.146 / 0.005 | 0.325 / +0.131 / 0.005 | 0.401 / +0.266 / 0.005 |
+| snap | 0.575 / +0.051 / 0.005 | 0.239 / −0.046 / 0.26 | 0.243 / +0.017 / 0.005 |
+| loose | 0.255 / −0.018 / 0.005 | 0.234 / +0.100 / 0.07 | 0.267 / +0.156 / 0.005 |
+
+![Average stick speed around each hit, per blockout motion](docs/drums/motion_hit_locked.png)
+
+- **The timing doesn't have to be exact.** With hits up to 2 frames off and aimed up to 8 cm wide, H3 still puts its strokes on the true hits (margins +0.10 and +0.16), at some cost in sync (0.23–0.27 against 0.33–0.40 for smooth). That margin is better than the loose blockout's own, so H3 seems to pull the strokes back toward the locked audio. This is two seeds, so treat it as a lead rather than a result.
+- **The motion has to be smooth.** The snap blockout scores highest of the three as grey footage, but H3 drops most of it (margins −0.05 and +0.02). Its hit pose lasts one frame and H3's video tokens span 4, which is a likely reason the jump doesn't survive the encode.
+
+So a blockout needs strokes that move continuously over several frames and land roughly on the beat. Exact timing and exact placement buy little.
+
 ## Hackathon tasks
 
 - [ ] **Per-zone audio binding.** Bind each stem to its zone inside one run: multiple audio segments plus an attention bias, so stem A's tokens reach only zone A's video tokens.
@@ -243,7 +271,7 @@ The frame at each big hit in the window. The blockout moves to the toms (3.08 s,
 - [ ] **H3 over the piano blockout: the go/no-go.** Run about 5 s of a blockout through H3 at zone strengths 0.6 / 0.75 / 0.9 with the piano audio locked, then score whether each struck key lands on its onset.
 - [ ] **Guitar strum blockout.** A grey picking arm and guitar strumming down/up on the onsets from `guitar_events.py`, rendered from the shot's camera, composited over the guitarist zone, then H3 at about 0.85–0.9 with the guitar stem locked.
 - [x] **Drum blockout.** Stick tips and pedals on the drum-stem hits or a GM drum MIDI (`blockout/drums.py`, `blockout/blender_drums.py`, `h3band/drum_events.py`).
-- [x] **H3 over the drum blockout.** Go: at denoise 0.6–0.8 the sticks keep the blockout's timing (p 0.005 at 0.8), audio alone doesn't (`h3band/sdk_drum_h3.py`, `h3band/drum_sync_score.py`). Which drum each stroke lands on doesn't carry over yet.
+- [x] **H3 over the drum blockout.** Go: at denoise 0.6–0.8 the sticks keep the blockout's timing (p 0.005 at 0.8), audio alone doesn't (`h3band/sdk_drum_h3.py`, `h3band/drum_sync_score.py`). Which drum each stroke lands on doesn't carry over yet. Strokes have to be smooth but not exact (`--motion`).
 - [ ] **Bass blockout.** Bass fingers on the bass note onsets.
 - [x] **Comfy nodes for the drum blockout.** Drum Events / Drum Hits (MIDI) / Drum Blockout render, driven through the Comfy SDK (`h3band/sdk_drum_blockout.py`).
 - [ ] **Comfy nodes for the rest of the chain.** Piano and guitar blockout render nodes, then blockout → H3 Band Zone Latent end to end through the SDK.
