@@ -64,18 +64,25 @@ class HandRig:
         root_rot = rotvec(x[3:6]) @ ref_rot
         root_pos = x[:3]
         q = x[6:]
-        pts = []
+        pts, rots = [], []
         for ch, (bR, bH), a, b in zip(self.chains, self.bases(root_rot, root_pos), self.sl[:-1], self.sl[1:]):
-            pts.append(ch.fk(bR, bH, q[a:b])[0])
+            P, Rs = ch.fk(bR, bH, q[a:b])
+            pts.append(P); rots.append(Rs)
+        self._rots = rots
         return root_rot, root_pos, pts
+
+    def effectors(self, pts, rots):
+        return [ch.effector(P, R) for ch, P, R in zip(self.chains, pts, rots)]
 
     def residuals(self, x, ref_rot, ref_pos, targets, weights, env, forearm, W):
         root_rot, root_pos, pts = self.points(x, ref_rot)
+        rots = self._rots
+        eff = self.effectors(pts, rots)
         q = x[6:]
         r = []
         for f in range(5):
             if targets[f] is not None:
-                r.append(weights[f] * (pts[f][-1] - targets[f]))
+                r.append(weights[f] * (eff[f] - targets[f]))
         r.append(math.sqrt(W["comfort"]) * (q - self.q_rest) / self.rng)
         for ch, a in zip(self.chains, self.sl[:-1]):
             if ch.k_dip:
@@ -92,9 +99,9 @@ class HandRig:
             r.append([math.sqrt(W["wrist"]) * max(0.0, abs(flex) - band[0]),
                       math.sqrt(W["wrist"]) * max(0.0, abs(dev) - band[1])])
         if env is not None:
-            pen = env(pts, [ch.radii for ch in self.chains], root_rot, root_pos)
+            pen = env([ch.samples(P, R) for ch, P, R in zip(self.chains, pts, rots)], root_rot, root_pos)
             r.append([math.sqrt(W["env"] * max(pen, 0.0))])
-        return np.concatenate([np.ravel(v) for v in r]), (root_rot, root_pos, pts)
+        return np.concatenate([np.ravel(v) for v in r]), (root_rot, root_pos, pts, eff)
 
     def solve(self, ref_rot, ref_pos, targets, weights, prev=None, env=None, forearm=None, iters=12, W=None):
         """targets: 5 world points or None; weights: 5 floats. prev: x from the previous frame (warm start).
@@ -134,7 +141,7 @@ class HandRig:
                 lam *= 4
             if not ok or c < 1e-12:
                 break
-        misses = [None if targets[f] is None else float(np.linalg.norm(pose[2][f][-1] - targets[f])) for f in range(5)]
+        misses = [None if targets[f] is None else float(np.linalg.norm(pose[3][f] - targets[f])) for f in range(5)]
         return x, pose, misses
 
     def angles(self, x):

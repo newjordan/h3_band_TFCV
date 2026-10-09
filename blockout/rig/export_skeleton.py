@@ -35,8 +35,19 @@ for side in "LR":
             ds = [((p - h) - ax * (p - h).dot(ax)).length for p in pts if abs((p - h).dot(ax) / L - u0) < 0.2]
             radii.append(round(sum(ds) / len(ds), 5) if ds else None)
         m = (arm.matrix_world @ b.matrix_local).to_3x3()
+        # cross-section at head/mid/tail: half-width along the bone's x, extents toward its +z and -z
+        bx, bz = m.col[0].normalized(), m.col[2].normalized()
+        sect = []
+        for u0 in (0.1, 0.5, 0.9):
+            sl = [p - h for p in pts if abs((p - h).dot(ax) / L - u0) < 0.15]
+            if not sl:
+                sect.append(None); continue
+            xs = sorted(abs(v.dot(bx)) for v in sl)
+            zp = sorted(v.dot(bz) for v in sl)
+            q = lambda arr, f: arr[min(len(arr) - 1, int(f * len(arr)))]
+            sect.append([round(q(xs, 0.9), 5), round(q(zp, 0.95), 5), round(-q(zp, 0.05), 5)])
         bones[name] = {"head": list(h), "tail": list(t), "length": L, "parent": b.parent.name[:-2] if b.parent else None,
-                       "rest": [list(r) for r in m], "radii": radii}
+                       "rest": [list(r) for r in m], "radii": radii, "section": sect}
     data["hands"][side] = bones
 json.dump(data, open(out, "w"), indent=1)
 print("wrote", out)

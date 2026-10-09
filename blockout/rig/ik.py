@@ -38,9 +38,64 @@ class Chain:
         self.off = [sk.R0[sk.parent[b]].T @ (sk.h0[b] - sk.h0[sk.parent[b]]) for b in self.bones]
         self.L = [sk.L[b] for b in self.bones]
         self.radii = [[r if r else 0.008 for r in sk.radii[b]] for b in self.bones]
+        # skin cross-sections: the bone runs near the back of the finger, the pad sticks out on the palm side
+        up = sk.rest_frame[2]
+        self.palm_sign = [1.0 if sk.R0[b][:, 2] @ -up > 0 else -1.0 for b in self.bones]
+        self.sect = []
+        for b in self.bones:
+            sec = sk.section.get(b) or [[r, r, r] for r in self.radii[self.bones.index(b)]]
+            sec = [x if x else sec[1] for x in sec]
+            self.sect.append(np.array(sec, float))
+        # effector: the fingertip pad that meets the key (the thumb: the corner of its tip facing the fingers)
+        w, zp, zm = self._sect_at(2, 0.8)
+        palm = zp if self.palm_sign[2] > 0 else zm
+        side = 0.0
+        if finger == 1:
+            ac = sk.rest_frame[0]
+            side = (0.45 * w) * (1.0 if sk.R0[self.bones[2]][:, 0] @ ac > 0 else -1.0)
+            palm *= 0.6
+        self.eff_local = np.array([side, 0.8 * sk.L[self.bones[2]], self.palm_sign[2] * 0.85 * palm])
         flex = [i for i, d in enumerate(self.dofs) if d[1] == "flex"]
         self.i_pip, self.i_dip = flex[1], flex[2]
         self.k_dip = 0.0 if finger == 1 else 0.67          # tendon coupling (fingers 2-5 only)
+
+    def _sect_at(self, i, u):
+        S = self.sect[i]
+        if u <= 0.5:
+            t = max(0.0, (u - 0.1) / 0.4); return S[0] + (S[1] - S[0]) * t
+        t = min(1.0, (u - 0.5) / 0.4); return S[1] + (S[2] - S[1]) * t
+
+    def support(self, pts, rots, i, u):
+        """Lowest skin point of bone i's cross-section at u (an off-centre ellipse in the bone's x-z plane)."""
+        R = rots[i]
+        w, zp, zm = self._sect_at(i, min(u, 0.95))
+        c = pts[i] + R[:, 1] * self.L[i] * u + R[:, 2] * (zp - zm) / 2
+        h = (zp + zm) / 2
+        bx, bz = R[2, 0], R[2, 2]
+        s = math.sqrt((w * bx) ** 2 + (h * bz) ** 2) + 1e-12
+        return c - R[:, 0] * (w * w * bx / s) - R[:, 2] * (h * h * bz / s)
+
+    def effector(self, pts, rots):
+        """The fingertip pad that meets the key: the lowest skin of the end of the finger (soft minimum over the
+        last part of the end bone, so it slides smoothly along the pad as the finger tilts)."""
+        P = [self.support(pts, rots, 2, u) for u in (0.55, 0.7, 0.85, 1.0)]
+        z = np.array([p[2] for p in P])
+        w = np.exp(-(z - z.min()) / 0.0015)
+        return (w[:, None] * np.array(P)).sum(0) / w.sum()
+
+    def samples(self, pts, rots, us=(0.2, 0.5, 0.8, 1.0)):
+        """Skin cross-sections along every bone: (bone index, u, centre, lowest point z, half-width)."""
+        out = []
+        for i in range(3):
+            R = rots[i]
+            for u in us:
+                w, zp, zm = self._sect_at(i, min(u, 0.95))
+                p = pts[i] + R[:, 1] * self.L[i] * u
+                c = p + R[:, 2] * (zp - zm) / 2               # the section spans -zm .. +zp along the bone's z
+                h = (zp + zm) / 2
+                low = c[2] - math.sqrt((w * R[2, 0]) ** 2 + (h * R[2, 2]) ** 2)   # == support(...)[2]
+                out.append((i, u, c, low, w))
+        return out
 
     def angles(self, q):
         out = {b: {} for b in self.bones}
@@ -70,8 +125,8 @@ class Chain:
         return pts, rots
 
     def residuals(self, q, base_rot, base_head, target, w_comfort, w_couple, coll):
-        pts, _ = self.fk(base_rot, base_head, q)
-        r = [pts[-1] - target, math.sqrt(w_comfort) * (q - self.q_rest) / self.rng]
+        pts, rots = self.fk(base_rot, base_head, q)
+        r = [self.effector(pts, rots) - target, math.sqrt(w_comfort) * (q - self.q_rest) / self.rng]
         if self.k_dip:
             r.append([math.sqrt(w_couple) * (q[self.i_dip] - self.k_dip * q[self.i_pip])])
         if coll is not None:

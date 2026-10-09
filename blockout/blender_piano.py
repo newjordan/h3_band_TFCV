@@ -533,6 +533,7 @@ if MESHQA:
     KB = np.array([(k["x"] - k["w"] / 2, k["x"] + k["w"] / 2, k["y0"], 0.150, k["top"] - (0.012 if k["black"] else 0.018),
                     k["top"], k["pitch"]) for k in anim["keyboard"]])
     LAST_CO = {}
+    PARTS_HIT = {}
 
     def key_penetration(co, keys):
         """Skinned-mesh vertices inside a key box (keys tilted down by their depth): count > 1 mm and max depth."""
@@ -548,6 +549,9 @@ if MESHQA:
                 continue
             top = zt - depth[i] * 0.010 * (0.150 - y[m]) / (0.150 - y0)     # pivot at the back
             d = np.minimum(top - z[m], z[m] - zb)
+            idx = np.nonzero(m)[0][d > 0.001]
+            for vi in idx:
+                PARTS_HIT[VPART[vi]] = PARTS_HIT.get(VPART[vi], 0) + 1
             d = d[d > 0]
             if len(d):
                 worst = max(worst, float(d.max())); n += int((d > 0.001).sum())
@@ -667,6 +671,7 @@ for i in FRAME_IDS:
     scn.render.filepath = os.path.join(out_dir, f"f_{i:05d}.png")
     bpy.ops.render.render(write_still=True)
 if MESHQA:
+    MQ["key_hits_by_part"] = PARTS_HIT
     json.dump(MQ, open(MESHQA, "w"))
     print("meshqa frames with intersections:", len(MQ["frames"]), "of", len(FRAME_IDS))
 if MPFB_RESID:

@@ -64,6 +64,7 @@ class Skeleton:
         self.h0 = {n: np.array(B[n]["head"]) for n in B}
         self.L = {n: B[n]["length"] for n in B}
         self.radii = {n: B[n]["radii"] for n in B}
+        self.section = {n: B[n].get("section") for n in B}     # [[half-width, +z extent, -z extent] x (u .1 .5 .9)]
         # hand frame at rest: across (thumb side -> pinky side), forward (wrist -> knuckles), up (back of hand)
         mcp = np.array([self.h0[f"finger{f}-1"] for f in range(2, 6)])
         c = mcp.mean(0)
