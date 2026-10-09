@@ -157,6 +157,11 @@ def write(path, notes, bars):
     open(path, "wb").write(data)
 
 
+# source MIDI track -> hand (1 right, 2 left), per part: the scores' own staves. Splitting per onset at the widest
+# gap put whole right-hand chords into the left hand whenever only one hand struck (156 of 899 Rachmaninoff notes).
+STAVES = [{1: 1, 2: 2}, {1: 1, 2: 2}, {1: 1, 2: 1, 3: 2, 4: 2}, {1: 1, 2: 2}, {1: 1, 2: 2}]
+
+
 def knights_suite(clair, rach, chopin):
     parts = [knights_theme(),
              excerpt(clair, 1, 8, 9, 8),
@@ -167,12 +172,13 @@ def knights_suite(clair, rach, chopin):
     marks = []
     for k, (ns, bs) in enumerate(parts):
         marks.append((len(bars) + 1, t))
-        notes += [midi.Note(n.start + t, n.end + t, n.pitch, n.velocity, n.track) for n in ns]
+        mp = STAVES[k]
+        notes += [midi.Note(n.start + t, n.end + t, n.pitch, n.velocity, mp.get(n.track, 1)) for n in ns]
         bars += [(b0 + t, L, num, den) for b0, L, num, den in bs]
         t += sum(b[1] for b in bs)
         if k == 2:      # a silent 3/4 bar of air between the Rachmaninoff coda and the Chopin
             bars.append((t, 2.25, 3, 4)); t += 2.25
-    return resplit(notes), bars, marks
+    return notes, bars, marks       # hands as the scores have them (resplit() only for sources without staves)
 
 
 if __name__ == "__main__":
