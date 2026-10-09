@@ -1031,12 +1031,34 @@ SPRING_TIP = (10.0, 0.80, 0.4)
 SPRING_FREE = (4.5, 0.45, 0.6)     # free fingers: soft and under-damped, the hand's subconscious ragdoll
 EXT_UP, EXT_FWD = 0.010, 0.008    # m: how far an idle finger lifts and lengthens
 EXT_OUT = (-0.006, -0.003, 0.0, 0.002, 0.005)   # m: and fans away from the middle finger (right hand; mirrored)
-MIN_GAP, MAX_PUSH = 0.115, 0.04     # m: working gap between hand centres; how far the hands give way for it
-LAYER_GAP = (0.085, 0.13)           # m between hand centres: fully layered .. not layered
-LAYER_HOLD = 0.4                    # s: hysteresis, so the layering doesn't flicker
-OVER, UNDER = (0.022, 0.020), (-0.012, -0.006)   # (deeper, higher) for the settled hand / the travelling hand
-TUCK_GAP, TUCK = 0.17, (-0.030, -0.030)          # a free thumb tucks under its palm when the hands are this close
-LAYER_W = []
+# ---- two hands close, overlapping, crossing (from footage study; notes in the commit message). Two cases:
+#  * Overlap / shared register while both play: the hand that is TRAVELLING along the keys while it plays (the
+#    passage hand) stays UNDER: low, flat wrist, at the key fronts, its thumb tucked under its palm. The settled
+#    hand goes OVER: knuckles ~2.5 cm higher and ~2 cm deeper, wrist lifted so the hand pitches down and the
+#    fingers drop steeply past the under hand's knuckles onto the deep end of their keys; its free fingers and
+#    thumb ride up and curl in, clear of the under hand.
+#  * Leap across: a hand that moves sideways with nothing held (airborne) goes OVER in an arc, 6-9 cm above the
+#    keys; the planted hand stays under. The lift begins ~0.3 s before the hands meet and eases out after.
+CLOSE_GAP = (0.075, 0.140)          # m between hand centres (xh): fully layered .. not layered
+CLOSE_LEAD, CLOSE_HOLD = 0.30, 0.35  # s: layering starts this far ahead of the meeting, and lingers this long after
+ROLE_SWITCH = 0.035                 # m/s of travel-score difference needed to swap over/under (hysteresis)
+ROLE_EASE = 0.45                    # s: over/under roles cross-fade this slowly when they do swap
+OVER_DY, OVER_DZ, OVER_WZ = 0.028, 0.036, 0.014     # m: over hand deeper, higher; extra wrist lift (pitch down)
+UNDER_DY, UNDER_DZ, UNDER_WZ = -0.016, -0.012, -0.016
+UNDER_YAW = 0.10                    # rad: the under hand turns its fingers away from the other hand
+OVER_YAW = 0.35                     # rad: the over hand turns its fingers in, across the other hand (its thumb swings clear)
+OVER_ROLL, UNDER_ROLL = 0.30, 0.15  # rad: the over hand rolls its side facing the other hand up; the under hand, down
+LEAP_BUNCH = 0.4                    # share by which a leaping hand's free fingertips close toward the middle finger
+LEAP_DZ, LEAP_V = 0.060, 0.80       # m: extra arc of a hand leaping over the other; sideways speed (m/s) that is a leap
+OVER_FREE_UP = 0.015                # m: the over hand's free fingers lift clear of the under hand ...
+OVER_FREE_BACK = 0.0                # m: ... (curling them in as well runs the PIPs into their stops)
+TUCK = (-0.050, -0.014, -0.038)     # under hand's free thumb tip, hand-local (x: + toward the little finger): under the index/middle metacarpals, below the knuckles
+OVER_THUMB = (-0.045, 0.000, -0.008)    # over hand's free thumb tip: laid along the index, up at knuckle height
+MIN_GAP, MAX_PUSH = 0.105, 0.03     # m: working gap the hand centres keep where their notes allow; most they give way
+THUMB_GAP = (0.15, 0.20)            # m between hand centres: free thumbs close in to the index .. stay out
+THUMB_CLOSE = (-0.054, -0.008, -0.030)  # a free thumb drawn in against the index side when the other hand is near
+ROLE_FORCE = None                   # experiment hook: 1.0 = right hand always under, 0.0 = left
+CLOSE = {}
 GLIDE_MAX = 0.8                    # s: a free finger starts drifting toward its next key at most this early
 ENSLAVE = (0.45, 0.20)             # share of a pressing neighbour's dip a free finger follows (next, next-but-one)
 SPRING_ROLL = (3.0, 0.75, 1.0)
@@ -1129,6 +1151,61 @@ def _roll_offsets(off, roll):
     return o
 
 
+def _box(x, n):
+    """Centred moving average over 2n+1 frames (edges held)."""
+    if n < 1:
+        return np.asarray(x, float)
+    return np.convolve(np.pad(x, n, mode="edge"), np.ones(2 * n + 1) / (2 * n + 1), "valid")
+
+
+def _close_roles(hands, times, fps):
+    """Two hands close: per frame and hand, how much it is the OVER hand and the UNDER hand (0..1, proximity
+    included), and how much of its lift is a leap. The under hand is the one travelling along the keys while it
+    plays; a hand that moves with nothing held (a leap) or that sits still goes over. Roles have hysteresis and
+    only swap while the hands are apart (or on a clear leap), so the hands never pass through each other."""
+    N = len(times)
+    gap = hands["R"]["xh"] - hands["L"]["xh"]
+    raw = np.clip((CLOSE_GAP[1] - gap) / (CLOSE_GAP[1] - CLOSE_GAP[0]), 0, 1)
+    a, b = int(round(CLOSE_HOLD * fps)), int(round(CLOSE_LEAD * fps))
+    pad = np.pad(raw, (a, b), mode="edge")
+    near = np.array([pad[j:j + a + b + 1].max() for j in range(N)])     # look ahead (anticipate) and linger
+    near = _smooth(_box(near, int(0.15 * fps)))
+    score, leap = {}, {}
+    for n, H in hands.items():
+        v = np.abs(np.gradient(H["xh"])) * fps
+        th = times + LEAD_HAND                                     # the clock xh runs on
+        held = np.zeros(N, bool)
+        if len(H["on"]):
+            i = np.searchsorted(H["on"], th, side="right") - 1
+            held = (i >= 0) & (H["end"][np.clip(i, 0, None)] >= th - 0.05)
+        held &= v < LEAP_V                                        # this fast, the hand is in the air whatever rings on
+        rate = (np.searchsorted(H["on"], times + 0.5) - np.searchsorted(H["on"], times - 0.5)).astype(float)
+        score[n] = _box(np.where(held, v, -1.5 * v), int(0.3 * fps)) + 0.008 * rate
+        leap[n] = np.clip(_box(np.where(held, 0.0, v), int(0.2 * fps)) / LEAP_V, 0, 1)
+    d = score["R"] - score["L"]
+    r = 1.0 if float((d * near).sum()) >= 0 else 0.0            # 1: the right hand is under
+    role = np.empty(N)
+    for j in range(N):
+        if near[j] < 0.5 or abs(d[j]) > 3 * ROLE_SWITCH:
+            if d[j] > ROLE_SWITCH:
+                r = 1.0
+            elif d[j] < -ROLE_SWITCH:
+                r = 0.0
+        role[j] = r
+    if ROLE_FORCE is not None:
+        role[:] = ROLE_FORCE
+    role = _smooth(_box(role, int(ROLE_EASE * fps / 2)))
+    tc = np.clip((THUMB_GAP[1] - gap) / (THUMB_GAP[1] - THUMB_GAP[0]), 0, 1)
+    pad = np.pad(tc, (a, b), mode="edge")
+    tc = _smooth(_box(np.array([pad[j:j + a + b + 1].max() for j in range(N)]), int(0.15 * fps)))
+    out = {"R": {"under": near * role, "over": near * (1 - role), "tclose": tc},
+           "L": {"under": near * (1 - role), "over": near * role, "tclose": tc}}
+    for n in out:
+        out[n]["leap"] = out[n]["over"] * leap[n]
+        out[n]["away"] = np.sign(hands[n]["xh"] - hands["L" if n == "R" else "R"]["xh"] + 1e-9)
+    return out, near, role
+
+
 def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats=None,
             schedule=((0.0, "expressive"),), energy_fn=None, seed=0):
     if speed != 1.0:
@@ -1171,10 +1248,16 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     sched = sorted((float(t), st) for t, st in schedule)
     body = performer.Body(hips=(cx, -0.50, -0.22), base_gaze_pitch=0.86)
 
+    if "R" in hands and "L" in hands:
+        roles, near, role = _close_roles(hands, times, fps)
+        CLOSE.update(near=near, role=role, times=times)
+    else:
+        roles = {n: {k: np.zeros(N) for k in ("under", "over", "leap", "tclose")} | {"away": np.ones(N)} for n in hands}
+
     # ---- pass 1: raw targets (read slightly ahead to cancel spring lag)
     for name, H in hands.items():
         sgn = 1 if name == "R" else -1
-        other = hands["L" if name == "R" else "R"]["xh"] if len(hands) == 2 else None
+        CL = roles[name]
         C = np.zeros((N, 3)); ROLL = np.zeros(N); TIP = np.zeros((N, 5, 3)); act = [[None] * 5 for _ in range(N)]
         TCH = np.zeros(N); YAW = np.zeros(N); FREE = np.zeros((N, 5))
         shoulder = np.array([cx + sgn * 0.19, -0.45])
@@ -1199,6 +1282,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                     if tp is not None:
                         tip = tp
                         c = contact(e[2], e[4], f) + np.array([0, 0, TIP_R[f]])
+                        if CL["over"][j] > 0 and not is_black(e[2]):     # over hand: in deep, past the under hand
+                            tip = tip.copy()
+                            tip[1] += CL["over"][j] * max(0.0, hitpad(e[2], f)[1] - 0.002 - c[1])
                         act[j][f] = (e[2], float(c[0]), float(c[2]))
                         if e[0] - 0.15 <= t <= e[1]:
                             playing.append(f)
@@ -1218,11 +1304,22 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                             tip[:2] += w * (goal[:2] - tip[:2])
                     idle = 1.0 - w                            # off duty, the finger eases out and up, very softly
                     tip = tip.copy() + _yaw(np.array([sgn * EXT_OUT[f], EXT_FWD, 0.0]), psi0) * idle
-                    if f == 0 and other is not None:          # the other hand is close: the thumb tucks under the palm
-                        wt = float(np.clip((TUCK_GAP - abs(other[j] - H["xh"][j])) / 0.05, 0, 1)) * idle
-                        tuck = ct + _yaw(np.array([sgn * TUCK[0], TUCK[1], 0.0]), psi0)
-                        tip[:2] += wt * (tuck[:2] - tip[:2])
                     tip[2] = surface_under(tip[0], tip[1], TIP_R[f], {}) + TIP_R[f] + hover + EXT_UP * idle
+                    uw, ow = float(CL["under"][j]), float(CL["over"][j])
+                    if f == 0 and CL["tclose"][j] > 0:        # the other hand is near: the free thumb draws in
+                        tk = ct + _yaw(np.array([sgn * THUMB_CLOSE[0], THUMB_CLOSE[1], THUMB_CLOSE[2]]), psi0)
+                        tk[2] = max(tk[2], surface_under(tk[0], tk[1], TIP_R[f], {}) + TIP_R[f] + 0.004)
+                        tip = tip + float(CL["tclose"][j]) * idle * (tk - tip)
+                    if f == 0 and uw > 0:                     # under hand: the thumb tucks in under the palm
+                        tk = ct + _yaw(np.array([sgn * TUCK[0], TUCK[1], TUCK[2]]), psi0)
+                        tk[2] = max(tk[2], surface_under(tk[0], tk[1], TIP_R[f], {}) + TIP_R[f] + 0.006)
+                        tip = tip + uw * idle * (tk - tip)
+                    if ow > 0:                                # over hand: fingers ride up and curl in, thumb closes
+                        if f == 0:
+                            tk = ct + _yaw(np.array([sgn * OVER_THUMB[0], OVER_THUMB[1], OVER_THUMB[2]]), psi0)
+                            tip = tip + ow * idle * (tk - tip)
+                        else:
+                            tip = tip + ow * (_yaw(np.array([0.0, -OVER_FREE_BACK, 0.0]), psi0) + np.array([0, 0, OVER_FREE_UP]))
                 TIP[j, f] = tip
             for f in range(1, 5):                              # shared tendons: free fingers sink with a pressing neighbour
                 if act[j][f] is not None:
@@ -1244,30 +1341,29 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             YAW[j] = float(np.clip(0.6 * psi_arm + 0.4 * psi_reach, -YAW_MAX, YAW_MAX))
         H["C"], H["ROLL"], H["TIP"], H["act"], H["TCH"], H["YAW"], H["FREE"] = C, ROLL, TIP, act, TCH, YAW, FREE
 
-    # ---- two hands close together. They keep a working gap where their notes allow (free fingers travel with
-    # the hand; pressing fingers stay on their keys, and the reach pull settles the rest). What is left is solved
-    # the way pianists do it: the travelling hand (the one moving sideways) passes UNDER -- lower, toward the key
-    # fronts -- and the settled hand stays OVER, higher and deeper. Eased in and out, with hysteresis.
-    if "R" in hands and "L" in hands:
-        R_, L_ = hands["R"], hands["L"]
-        gap = R_["C"][:, 0] - L_["C"][:, 0]
-        push = np.clip(MIN_GAP - gap, 0, MAX_PUSH) / 2
-        for H_, sg in ((R_, 1), (L_, -1)):
-            H_["C"][:, 0] += sg * push
-            free = np.array([[a is None for a in row] for row in H_["act"]])
-            H_["TIP"][:, :, 0] += np.where(free, sg * push[:, None], 0.0)
-        gap = R_["C"][:, 0] - L_["C"][:, 0]
-        k = max(1, int(LAYER_HOLD * fps))
-        box = lambda x: np.convolve(np.pad(x, k, mode="edge"), np.ones(2 * k + 1) / (2 * k + 1), "same")[k:-k]
-        w = _smooth(np.clip(box(np.clip((LAYER_GAP[1] - gap) / (LAYER_GAP[1] - LAYER_GAP[0]), 0, 1)) * 1.5, 0, 1))
-        lat_v = {n_: box(np.abs(np.gradient(hands[n_]["C"][:, 0])) * fps) for n_ in ("R", "L")}
-        under_R = _smooth(np.clip((box(lat_v["R"] - lat_v["L"]) + 0.02) / 0.04, 0, 1))   # 1: right hand travels
-        for n_, u in (("R", under_R), ("L", 1 - under_R)):
-            dy = w * (u * UNDER[0] + (1 - u) * OVER[0])
-            dz = w * (u * UNDER[1] + (1 - u) * OVER[1])
-            hands[n_]["C"][:, 1] += dy
-            hands[n_]["C"][:, 2] += dz
-        LAYER_W[:] = [w, under_R]
+    # ---- two hands close: the over hand rises, goes deeper and pitches down (wrist up); the under hand drops a
+    # little, flattens, comes to the key fronts and turns its fingers away; a leaping over hand arcs higher.
+    # Free fingertips travel with their hand. All of it is eased by the hand springs below.
+    if "R" in hands and "L" in hands:              # first they make room sideways where their notes allow
+        push = np.clip(MIN_GAP - (hands["R"]["C"][:, 0] - hands["L"]["C"][:, 0]), 0, MAX_PUSH) / 2
+        for name, sg in (("R", 1), ("L", -1)):
+            H = hands[name]
+            H["C"][:, 0] += sg * push
+            H["TIP"][:, :, 0] += np.where(H["FREE"] > 0.5, sg * push[:, None], 0.0)
+    for name, H in hands.items():
+        o, u, lp = roles[name]["over"], roles[name]["under"], roles[name]["leap"]
+        dy = o * OVER_DY + u * UNDER_DY
+        dz = o * OVER_DZ + u * UNDER_DZ + lp * LEAP_DZ
+        H["C"][:, 1] += dy
+        H["C"][:, 2] += dz
+        free = H["FREE"] > 0.5
+        H["TIP"][:, :, 1] += np.where(free, dy[:, None], 0.0)
+        H["TIP"][:, :, 2] += np.where(free, dz[:, None], 0.0)
+        mid = H["TIP"][:, 2:3, :2].copy()                          # in the air the fingers close up, bunched
+        H["TIP"][:, :, :2] += np.where(free[:, :, None], LEAP_BUNCH * lp[:, None, None] * (mid - H["TIP"][:, :, :2]), 0.0)
+        H["WZ"] = o * OVER_WZ + u * UNDER_WZ + lp * 0.5 * OVER_WZ
+        H["YAW"] = np.clip(H["YAW"] + roles[name]["away"] * (u * UNDER_YAW - o * OVER_YAW), -YAW_MAX, YAW_MAX)
+        H["ROLL"] = H["ROLL"] + roles[name]["away"] * (u * UNDER_ROLL - o * OVER_ROLL)
 
     # ---- pass 2: springs + organic drift
     for k, (name, H) in enumerate(hands.items()):
@@ -1275,6 +1371,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         H["Cf"] += np.stack([dynamics.drift(times, a, seed * 10 + 3 * k + i) for i, a in enumerate((0.0015, 0.0015, 0.0012))], 1)
         H["Rf"] = dynamics.filter_track(H["ROLL"], fps, *SPRING_ROLL) + dynamics.drift(times, 0.02, seed * 10 + 7 + k)
         H["Yf"] = dynamics.filter_track(H["YAW"], fps, *SPRING_ROLL) + dynamics.drift(times, 0.015, seed * 10 + 9 + k)
+        H["WZf"] = dynamics.filter_track(H.get("WZ", np.zeros(N)), fps, *SPRING_HAND)
         firm = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_TIP).reshape(N, 5, 3)
         soft = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_FREE).reshape(N, 5, 3)
         wf = np.clip(dynamics.filter_track(H["FREE"], fps, 6.0, 1.0, 1.0), 0, 1)[:, :, None]
@@ -1353,7 +1450,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         for name, H in hands.items():
             centre, roll, psi, kn_off, sgn = st[name]
             tips[name] = _order_free(tips[name], H["act"][j], centre, kn_off, psi, sgn, TETHER * SEG.sum(1))
-            w_off = _yaw(_roll_offsets(WRIST_OFF * np.array([sgn, 1, 1]) - np.array([0, 0, 0.004 * H["TCH"][j]]), roll * 0.5), psi)
+            w_off = _yaw(_roll_offsets(WRIST_OFF * np.array([sgn, 1, 1]) - np.array([0, 0, 0.004 * H["TCH"][j] - H["WZf"][j]]), roll * 0.5), psi)
             wrist = centre + w_off
             chains = []
             for f in range(5):
