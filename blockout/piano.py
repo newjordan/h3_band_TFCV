@@ -1366,6 +1366,10 @@ WRIST_STRIKE_T = 0.12       # s: a strike lasts this long from the finger taking
 WRIST_LAMBDA_Z = 0.25       # the vertical path is this much less smoothed (an arm drop is quick)
 WRIST_PASSES = 2            # wrist path refinements: solve the whole hand around the path, smooth, repeat
 WRIST_PRIOR = 0.3           # root_pos weight around the refined path (the first pass uses RIG_W's, around the plan)
+FINGER_REFINE = True        # solve the fingers, smooth their joint paths, solve again held near them
+FINGER_LAMBDA = 6.0         # finger joint path smoothing (Whittaker, 2nd differences)
+FINGER_PRESS_W = 8.0        # ... pinned this hard on the frames the finger is on its key
+FINGER_PRIOR = 5e-3         # how hard a finger holds its smoothed path in the second solve
 FINGER_SPLIT = True         # with the wrist set, each finger solves on its own
 FREE_FOLLOW = True          # free fingers' float targets move with the solved wrist (across/along the keys)
 SOFT_ENV = True             # collisions as eased per-sample residuals (False: v16's single hard-edged penalty)
@@ -1417,7 +1421,7 @@ def _hand_fwd(name, root_rot, root_pos=None):
     return root_rot @ (rig.sk.R0["wrist"].T @ rig.M_rest[1])
 
 
-def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, refs=None, prior=None):
+def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, refs=None, prior=None, qprior=None):
     """Both hands at frame j (two passes: each hand sees the other's latest skin). roots: a set wrist per hand
     (x[:6]); then only the fingers move. forearms: (elbow, band) per hand for the wrist joint term. refs: the
     wrist reference (rot, pos) per hand instead of the plan's; prior: its root_pos weight."""
@@ -1443,16 +1447,19 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
         W = {k: v for k, v in RIG_W.items() if k not in ("press", "free")}
         if roots is not None:
             q0 = x_init[6:] if x_init is not None else rig.q_rest
+            if qprior is not None:                      # start on the smoothed finger path, and stay near it
+                q0 = qprior[name][6:]
             x_init = np.concatenate([roots[name], q0])
             W["iters"] = FINGER_ITERS
-            W["smooth"] = FINGER_SMOOTH
+            W["smooth"] = FINGER_SMOOTH if qprior is None else FINGER_PRIOR
         else:
             W["wrist"] = WRIST_W
             if prior is not None:
                 W["root_pos"] = prior
         env = _key_env(est_depth, pressing, blobs.get("L" if name == "R" else "R"), rig)
         if roots is not None and FINGER_SPLIT:          # the wrist is set: five independent finger solves
-            x = rig.solve_fingers(ref_rot, x_init, list(targets[name]), w, env=env, W=W, last=prev.get(name),
+            x = rig.solve_fingers(ref_rot, x_init, list(targets[name]), w, env=env, W=W,
+                                  last=prev.get(name) if qprior is None else qprior[name],
                                   iters=FINGER_ITERS)
             rr, rp, pts = rig.points(x, ref_rot)
             pads = rig.effectors(pts, rig._rots)
@@ -1501,6 +1508,26 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
             REF[name] = [(rotvec(S_[i, 3:6]) @ REF[name][i][0], S_[i, :3]) for i in range(len(S_))]
     roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
 
+    QP = None
+    if FINGER_REFINE:                                   # the fingers once, then their joint paths smoothed: in pass B
+        XB = {name: [] for name in hands}               # each finger stays near its smoothed path (no shape it has
+        prev = {}                                       # spare wanders frame to frame), the notes still pull it on
+        for j in range(j0, N):
+            solved = _solve_frame(hands, j, *T[j], prev, roots={n: roots[n][j - j0] for n in hands},
+                                  refs={n: REF[n][j - j0] for n in hands})
+            for name in hands:
+                prev[name] = solved[name][0]
+                XB[name].append(solved[name][0])
+        QP = {}
+        for name, H in hands.items():                   # each finger's path is pinned where it is on its key, so only
+            X_ = np.array(XB[name])                     # its travel and its spare wandering are smoothed
+            rig = _rig(name)
+            for f in range(5):
+                a, b = 6 + rig.sl[f], 6 + rig.sl[f + 1]
+                w = np.array([FINGER_PRESS_W if H["act"][j][f] is not None else 1.0 for j in range(j0, N)])
+                X_[:, a:b] = np.clip(_whittaker(X_[:, a:b], w, FINGER_LAMBDA), rig.lo[a - 6:b - 6], rig.hi[a - 6:b - 6])
+            QP[name] = X_
+
     frames = []
     prev = {}
     for j in range(j0, N):                              # pass B: the fingers, from the set wrist
@@ -1508,7 +1535,8 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
         fr = {"t": round(float(t - start), 4), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}
         targets, est_depth = T[j]
         solved = _solve_frame(hands, j, targets, est_depth, prev, roots={n: roots[n][j - j0] for n in hands},
-                              refs={n: REF[n][j - j0] for n in hands})
+                              refs={n: REF[n][j - j0] for n in hands},
+                              qprior=None if QP is None else {n: QP[n][j - j0] for n in hands})
         keydepth, press = {}, {}
         for name, H in hands.items():
             x, rr, rp, pts, pressing, pads, ref_pos, miss = solved[name]

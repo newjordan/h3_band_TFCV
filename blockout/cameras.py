@@ -4,11 +4,14 @@
 
 Adds fr["cam"] = {"pos", "look", "up", "lens", "shot", "hide_head"} to every frame; render with
 blender_piano.py --view edit. Rules:
-- cuts land on downbeats (on any beat at the climax); shot length follows the music's energy: ~8 s when it is soft, a bar or less at
-  the climax, so the edit breathes with the playing;
+- cuts land on downbeats; shots are long (~6 s soft, ~10 s at the climax): the impressive thing is
+  seeing him actually play, so the big moments hold still and wide instead of cutting on the action;
 - the shot is drawn (seeded) from weights that also follow energy: soft passages favour the wide, the
-  first-person view, slow orbits and gentle hand tracking; loud passages favour low hero angles on the
-  helm, hand close-ups, grazing keyboard angles and the overhead;
+  first-person view, slow orbits and gentle hand tracking; loud passages favour views that show both
+  hands on the keys (hands, wide, overhead, slow orbit) over the helm and single-hand close-ups;
+- a hand that travels far in a shot (a run down from the top of the keyboard) gets a camera that follows it;
+- the point is to watch the hands hit the keys: shots that don't show them (the low hero angle on the helm)
+  are rare;
 - never the same shot twice in a row; opens on the wide, closes on a slow rising pull-back;
 - within a shot nothing is locked off: wides push in, orbits drift, tracking shots follow the hands
   through springs, so the camera moves like an operator, not a rail.
@@ -20,16 +23,24 @@ import numpy as np
 from . import dynamics
 
 #            soft  loud
-WEIGHTS = {"wide":       (3.0, 0.6),
-           "pov":        (2.0, 0.8),
-           "orbit":      (2.0, 1.0),
-           "hands":      (2.0, 2.0),
+WEIGHTS = {"wide":       (3.0, 2.0),
+           "pov":        (2.0, 1.0),
+           "orbit":      (2.0, 2.0),
+           "hands":      (2.0, 3.0),
            "overhead":   (1.0, 2.0),
-           "side":       (1.0, 0.8),
-           "hero_low":   (1.0, 3.0),
-           "rh_close":   (1.0, 2.0),
-           "lh_close":   (1.0, 2.0),
-           "keys_low":   (0.5, 2.0)}
+           "side":       (0.6, 0.5),
+           "hero_low":   (0.0, 0.0),        # the helm without the hands: kept for other pieces, never drawn here
+           "rh_close":   (1.0, 0.4),
+           "lh_close":   (1.0, 0.4),
+           "keys_low":   (0.5, 0.3)}
+
+
+FOLLOW_MIN = 0.20         # m a hand travels across the keys in a shot before the camera follows it
+
+
+def _travel(frames, f0, f1, side):
+    xs = [_hand(frames[i], side)[0] for i in range(f0, f1, 3) if side in frames[i]["hands"]]
+    return (max(xs) - min(xs)) if xs else 0.0
 
 
 def plan(frames, downbeats, fps, seed=0, beats=()):
@@ -42,9 +53,8 @@ def plan(frames, downbeats, fps, seed=0, beats=()):
     shots, f0, last = [], 0, None
     while f0 < n:
         e = float(energy[min(f0 + fps, n - 1)])
-        target = int((8.0 - 6.8 * e ** 1.3) * fps)
-        grid = sorted(set(db) | set(bt)) if e > 0.75 else db       # at the climax, cut on any beat
-        nxt = [d for d in grid if d >= f0 + max(target, int(0.9 * fps))]
+        target = int((6.0 + 4.0 * e) * fps)                   # the climax holds longest
+        nxt = [d for d in db if d >= f0 + target]
         f1 = nxt[0] if nxt else n
         if n - f1 < 2 * fps:
             f1 = n
@@ -52,11 +62,17 @@ def plan(frames, downbeats, fps, seed=0, beats=()):
             name = "wide"
         elif f1 == n:
             name = "pullback"
+        elif max((tr := {h: _travel(frames, f0, f1, h) for h in ("R", "L")}).values()) > FOLLOW_MIN and \
+                max(tr.values()) > 1.8 * min(tr.values()):
+            name = "follow_" + max(tr, key=tr.get)        # one hand on a long run: stay with it
         else:
-            names = [k for k in WEIGHTS if k != last]
+            names = [k for k in WEIGHTS if k != last and sum(WEIGHTS[k]) > 0]
             w = np.array([WEIGHTS[k][0] * (1 - e) + WEIGHTS[k][1] * e for k in names])
             name = names[int(rng.choice(len(names), p=w / w.sum()))]
-        shots.append((f0, f1, name))
+        if shots and name == shots[-1][2]:              # the same follow again: one continuous shot, no cut
+            shots[-1] = (shots[-1][0], f1, name)
+        else:
+            shots.append((f0, f1, name))
         last, f0 = name, f1
     return shots
 
@@ -96,6 +112,10 @@ def camera(name, fr, u, cx, seed):
         h = _hand(fr, "R" if name == "rh_close" else "L")
         s = 1 if name == "rh_close" else -1
         return h + np.array([0.26 * s, -0.17 + 0.05 * u, 0.27]), h + np.array([0, 0.02, -0.01]), up, 48.0
+    if name.startswith("follow_"):
+        h = _hand(fr, name[-1])
+        s = 1 if name[-1] == "R" else -1
+        return h + np.array([0.16 * s, -0.42, 0.34]), h + np.array([0, 0.03, -0.01]), up, 38.0
     if name == "overhead":
         return np.array([mid[0], 0.05, 0.78 - 0.08 * u]), np.array([mid[0], 0.05, 0.0]), np.array([0, 1.0, 0]), 32.0
     if name == "side":
