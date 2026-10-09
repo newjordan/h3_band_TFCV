@@ -106,8 +106,8 @@ def camera(name, fr, u, cx, seed):
         a = a0 + side * 0.35 * u
         centre = np.array([cx, -0.28, 0.28])
         return centre + np.array([1.25 * math.sin(a), 1.25 * math.cos(a), 0.45]), centre, up, 32.0
-    if name == "hands":
-        return mid + np.array([0.14 * side, 0.55, 0.34]), mid + np.array([0, 0.02, -0.02]), up, 40.0
+    if name == "hands":                                   # both hands from the player's side, high: the keys show
+        return mid + np.array([0.18 * side, -0.48, 0.40]), mid + np.array([0, 0.04, -0.02]), up, 34.0
     if name in ("rh_close", "lh_close"):
         h = _hand(fr, "R" if name == "rh_close" else "L")
         s = 1 if name == "rh_close" else -1

@@ -517,6 +517,24 @@ else:
     scn.display.light_direction = (-0.35, -0.45, 0.82)
     scn.display.render_aa = "16"
 
+PASS = opts.get("--pass")           # depth: an inverse-depth control image (near = white) for H3 Fun ControlNet
+if PASS == "depth":
+    near, far = (float(v) for v in opts.get("--depth-range", "0.12,2.5").split(","))
+    scn.view_settings.view_transform = "Standard"
+    bpy.context.view_layer.use_pass_z = True
+    scn.use_nodes = True
+    nt = scn.node_tree
+    for nd in list(nt.nodes):
+        nt.nodes.remove(nd)
+    rl = nt.nodes.new("CompositorNodeRLayers")
+    inv = nt.nodes.new("CompositorNodeMath"); inv.operation = "DIVIDE"; inv.inputs[0].default_value = 1.0
+    mr = nt.nodes.new("CompositorNodeMapRange"); mr.use_clamp = True
+    mr.inputs[1].default_value, mr.inputs[2].default_value = 1.0 / far, 1.0 / near
+    mr.inputs[3].default_value, mr.inputs[4].default_value = 0.0, 1.0
+    comp = nt.nodes.new("CompositorNodeComposite")
+    nt.links.new(rl.outputs["Depth"], inv.inputs[1]); nt.links.new(inv.outputs[0], mr.inputs[0])
+    nt.links.new(mr.outputs[0], comp.inputs["Image"])
+
 MESHQA = opts.get("--meshqa")      # OUT.json: no render; count skinned-mesh self-intersections per frame, by body part
 if MESHQA:
     import numpy as np
