@@ -144,7 +144,7 @@ KNUCKLE = np.array([[-0.046, -0.040, -0.022],      # thumb CMC: low, out to the 
 FINGER_R = np.array([(0.0115, 0.0105, 0.0095, 0.0085), (0.0095, 0.0088, 0.0080, 0.0070),
                      (0.0098, 0.0090, 0.0082, 0.0072), (0.0093, 0.0085, 0.0078, 0.0068),
                      (0.0085, 0.0078, 0.0070, 0.0062)])
-KNUCKLE_Z = 0.064          # knuckle line height over white key tops
+KNUCKLE_Z = 0.064          # knuckle line height over white key tops (mannequin; set_hand_model sets the real hand's)
 Y_KN = -0.006              # knuckle line's resting distance from the white key fronts
 HAND_MODEL = "mannequin"
 MPFB_JSON = os.path.join(os.path.dirname(__file__), "hand_model", "mpfb_hands.json")
@@ -262,7 +262,7 @@ def _finger_grid(f):
     return _FGRID[(f, tuple(SEG[f]))]
 
 
-def finger_ik(f, mcp, target, wrist, mcps, side):
+def finger_ik(f, mcp, target, wrist, mcps, side, depth=None, skip_tip=False):
     """Finger f (1-4) chain [MCP, PIP, DIP, tip] reaching for target with every joint inside its range, and the
     miss (m) when it can't: a target too far OR too close is not folded or stretched into, it is reported, and
     the hand placement moves the hand instead."""
@@ -286,13 +286,30 @@ def finger_ik(f, mcp, target, wrist, mcps, side):
     ex = D * np.cos(tmc + beta) - x
     ey = D * np.sin(tmc + beta) - y
     cost = ex * ex + ey * ey + 1e-6 * ((k - 0.65) / 0.2) ** 2 + 1e-6 * ((tp - math.radians(40)) / 1.0) ** 2
-    i = np.unravel_index(int(np.argmin(cost)), cost.shape)
-    a1 = float(tmc[i]); a2 = a1 + float(tp[i]); a3 = a2 + float(td[i])
     L1, L2, L3 = SEG[f]
-    pip = mcp + L1 * (math.cos(a1) * e1 - math.sin(a1) * up)
-    dip = pip + L2 * (math.cos(a2) * e1 - math.sin(a2) * up)
-    tip = dip + L3 * (math.cos(a3) * e1 - math.sin(a3) * up)
-    return [mcp, pip, dip, tip], float(np.linalg.norm(tip - np.asarray(target, float)))
+
+    def chain(i):
+        a1 = float(tmc[i]); a2 = a1 + float(tp[i]); a3 = a2 + float(td[i])
+        pip = mcp + L1 * (math.cos(a1) * e1 - math.sin(a1) * up)
+        dip = pip + L2 * (math.cos(a2) * e1 - math.sin(a2) * up)
+        tip = dip + L3 * (math.cos(a3) * e1 - math.sin(a3) * up)
+        return [mcp, pip, dip, tip]
+    flat = np.argsort(cost, axis=None)
+    best = np.unravel_index(int(flat[0]), cost.shape)
+    pts = chain(best)
+    if depth is not None and _penetration(pts, FINGER_R[f], depth, skip_tip) > 0.0005:
+        # the PIP/DIP coupling leaves one spare degree of freedom: spend it keeping the finger out of the keys
+        e0 = math.sqrt(float(ex[best] ** 2 + ey[best] ** 2))
+        cand = [np.unravel_index(int(q), cost.shape) for q in flat[:4000]]
+        slack = 0.003 if skip_tip else 0.030       # a free finger only hovers: clearing the keys beats its exact spot
+        cand = [c for c in cand if math.sqrt(float(ex[c] ** 2 + ey[c] ** 2)) < e0 + slack][:160]
+        scored = []
+        for c in cand:
+            q = chain(c)
+            scored.append((_penetration(q, FINGER_R[f], depth, skip_tip), math.sqrt(float(ex[c] ** 2 + ey[c] ** 2)), q))
+        pen0 = min(x[0] for x in scored)
+        pts = min((x for x in scored if x[0] <= pen0 + 0.0003), key=lambda x: x[1])[2]
+    return pts, float(np.linalg.norm(pts[3] - np.asarray(target, float)))
 
 
 def thumb_ik(cmc, target, wrist, mcps, side, depth=None, skip_tip=False):
@@ -330,10 +347,11 @@ def set_hand_model(name):
     """'mpfb': segment lengths, knuckle layout, palm length and finger radii measured off the CC0 MPFB2 hand
     (blockout/hand_model/), so the IK chains and the rendered skinned hand agree bone for bone.
     'mannequin': the hand-tuned proportions the capsule/skin hands were built with."""
-    global SEG, KNUCKLE, FINGER_R, TIP_R, PALM_LEN, WRIST_OFF, HAND_MODEL, THUMB
+    global SEG, KNUCKLE, FINGER_R, TIP_R, PALM_LEN, WRIST_OFF, HAND_MODEL, THUMB, KNUCKLE_Z, Y_KN
     HAND_MODEL = name
     if name == "mannequin":
         SEG, KNUCKLE, FINGER_R = _SEG0, _KNUCKLE0, _FINGER_R0
+        KNUCKLE_Z, Y_KN = 0.064, -0.006
         PALM_LEN = 0.085                         # knuckle line -> wrist
         WRIST_OFF = np.array([0.004, -PALM_LEN, -0.006])
         THUMB = None
@@ -354,6 +372,9 @@ def set_hand_model(name):
             j = [b[0], (b[0] + b[1]) / 2, (b[1] + b[2]) / 2, b[2] * 0.9]
             r.append(np.minimum.accumulate(j))   # a finger only narrows toward the tip
         FINGER_R = np.array(r)
+        # a real hand's natural curl (MCP ~15, PIP ~40 deg) puts the long fingertips ~7 cm below and ~6-7 cm in
+        # front of the knuckles, so the knuckle line rides higher and further back than the mannequin's
+        KNUCKLE_Z, Y_KN = 0.076, -0.020
         loc = lambda n, k: M @ (np.array(B[n][k]) - c)
         d = [loc(f"finger1-{s}", "tail") - loc(f"finger1-{s}", "head") for s in (1, 2)]
         n0, d2 = d[0] / np.linalg.norm(d[0]), d[1] / np.linalg.norm(d[1])
@@ -1007,6 +1028,17 @@ def _ik(m, target, seg, fwd_hint, tip_pitch=None):
 # spring settings (f Hz, damping, response) and how far ahead each target is read to cancel the spring's lag
 SPRING_HAND = (2.6, 0.72, 1.3)
 SPRING_TIP = (10.0, 0.80, 0.4)
+SPRING_FREE = (4.5, 0.45, 0.6)     # free fingers: soft and under-damped, the hand's subconscious ragdoll
+EXT_UP, EXT_FWD = 0.010, 0.008    # m: how far an idle finger lifts and lengthens
+EXT_OUT = (-0.006, -0.003, 0.0, 0.002, 0.005)   # m: and fans away from the middle finger (right hand; mirrored)
+MIN_GAP, MAX_PUSH = 0.115, 0.04     # m: working gap between hand centres; how far the hands give way for it
+LAYER_GAP = (0.085, 0.13)           # m between hand centres: fully layered .. not layered
+LAYER_HOLD = 0.4                    # s: hysteresis, so the layering doesn't flicker
+OVER, UNDER = (0.022, 0.020), (-0.012, -0.006)   # (deeper, higher) for the settled hand / the travelling hand
+TUCK_GAP, TUCK = 0.17, (-0.030, -0.030)          # a free thumb tucks under its palm when the hands are this close
+LAYER_W = []
+GLIDE_MAX = 0.8                    # s: a free finger starts drifting toward its next key at most this early
+ENSLAVE = (0.45, 0.20)             # share of a pressing neighbour's dip a free finger follows (next, next-but-one)
 SPRING_ROLL = (3.0, 0.75, 1.0)
 SPRING_HEAD = (1.7, 0.50, 0.9)
 LEAD_HAND, LEAD_TIP, LEAD_HEAD = 0.07, 0.018, 0.06
@@ -1040,7 +1072,7 @@ def _centre(H, x, nb, t):
 YAW_MAX = 0.45             # rad: wrist turn (radial/ulnar deviation plus forearm angle)
 SPLAY = np.array([0.060, 0.036, 0.024, 0.032, 0.048])   # max sideways tip offset from its knuckle, per finger
 PULL = 0.93               # pressing fingers pull the hand once their tip is further than this share of reach
-PULL_IT = 4                # iterations of the reach pull
+PULL_IT = 12               # iterations of the reach pull
 KN_FWD = 0.065            # how far the knuckle line may go past the white key fronts
 TETHER = 0.80             # free fingertips stay within this share of the finger's length from the knuckle
 FINGER_GAP = 0.017         # free fingertips keep at least a finger's width apart, in order across the hand
@@ -1142,8 +1174,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     # ---- pass 1: raw targets (read slightly ahead to cancel spring lag)
     for name, H in hands.items():
         sgn = 1 if name == "R" else -1
+        other = hands["L" if name == "R" else "R"]["xh"] if len(hands) == 2 else None
         C = np.zeros((N, 3)); ROLL = np.zeros(N); TIP = np.zeros((N, 5, 3)); act = [[None] * 5 for _ in range(N)]
-        TCH = np.zeros(N); YAW = np.zeros(N)
+        TCH = np.zeros(N); YAW = np.zeros(N); FREE = np.zeros((N, 5))
         shoulder = np.array([cx + sgn * 0.19, -0.45])
         for j in range(N):
             C[j], _, _ = _centre(H, H["xh"][j], H["nbh"][j], times[j] + LEAD_HAND)
@@ -1170,7 +1203,38 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                         if e[0] - 0.15 <= t <= e[1]:
                             playing.append(f)
                         break
+                if act[j][f] is None:                         # free: float just over the keys, gliding to the next note
+                    i_n = int(np.searchsorted(eo, t))
+                    w = 0.0
+                    if i_n < len(eo):
+                        en = H["ev"][f][i_n]
+                        prev_end = H["ev"][f][i_n - 1][1] if i_n else t - 10.0
+                        g0 = max(prev_end, en[0] - GLIDE_MAX)
+                        g1 = en[0] - strike_time(en[5]) - 0.10
+                        if g1 > g0 and t > g0:
+                            w = _smooth(min(1.0, (t - g0) / (g1 - g0)))
+                            goal = contact(en[2], en[4], f)
+                            tip = tip.copy()
+                            tip[:2] += w * (goal[:2] - tip[:2])
+                    idle = 1.0 - w                            # off duty, the finger eases out and up, very softly
+                    tip = tip.copy() + _yaw(np.array([sgn * EXT_OUT[f], EXT_FWD, 0.0]), psi0) * idle
+                    if f == 0 and other is not None:          # the other hand is close: the thumb tucks under the palm
+                        wt = float(np.clip((TUCK_GAP - abs(other[j] - H["xh"][j])) / 0.05, 0, 1)) * idle
+                        tuck = ct + _yaw(np.array([sgn * TUCK[0], TUCK[1], 0.0]), psi0)
+                        tip[:2] += wt * (tuck[:2] - tip[:2])
+                    tip[2] = surface_under(tip[0], tip[1], TIP_R[f], {}) + TIP_R[f] + hover + EXT_UP * idle
                 TIP[j, f] = tip
+            for f in range(1, 5):                              # shared tendons: free fingers sink with a pressing neighbour
+                if act[j][f] is not None:
+                    continue
+                dz = 0.0
+                for g, share in ((f - 1, ENSLAVE[0]), (f + 1, ENSLAVE[0]), (f - 2, ENSLAVE[1]), (f + 2, ENSLAVE[1])):
+                    if 1 <= g <= 4 and act[j][g] is not None:
+                        base = surface_under(TIP[j, g, 0], TIP[j, g, 1], TIP_R[g], {}) + TIP_R[g] + hover
+                        dz = max(dz, share * max(0.0, base - TIP[j, g, 2]))
+                floor = surface_under(TIP[j, f, 0], TIP[j, f, 1], TIP_R[f], {}) + TIP_R[f] + 0.001
+                TIP[j, f, 2] = max(floor, TIP[j, f, 2] - dz)
+            FREE[j] = [act[j][f] is None for f in range(5)]
             if playing:
                 ROLL[j] = sgn * ROLL_MAX * (2 - np.mean(playing)) / 2
                 d = np.mean([TIP[j, f] for f in playing], axis=0) - C[j]
@@ -1178,7 +1242,32 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             else:
                 psi_reach = 0.0
             YAW[j] = float(np.clip(0.6 * psi_arm + 0.4 * psi_reach, -YAW_MAX, YAW_MAX))
-        H["C"], H["ROLL"], H["TIP"], H["act"], H["TCH"], H["YAW"] = C, ROLL, TIP, act, TCH, YAW
+        H["C"], H["ROLL"], H["TIP"], H["act"], H["TCH"], H["YAW"], H["FREE"] = C, ROLL, TIP, act, TCH, YAW, FREE
+
+    # ---- two hands close together. They keep a working gap where their notes allow (free fingers travel with
+    # the hand; pressing fingers stay on their keys, and the reach pull settles the rest). What is left is solved
+    # the way pianists do it: the travelling hand (the one moving sideways) passes UNDER -- lower, toward the key
+    # fronts -- and the settled hand stays OVER, higher and deeper. Eased in and out, with hysteresis.
+    if "R" in hands and "L" in hands:
+        R_, L_ = hands["R"], hands["L"]
+        gap = R_["C"][:, 0] - L_["C"][:, 0]
+        push = np.clip(MIN_GAP - gap, 0, MAX_PUSH) / 2
+        for H_, sg in ((R_, 1), (L_, -1)):
+            H_["C"][:, 0] += sg * push
+            free = np.array([[a is None for a in row] for row in H_["act"]])
+            H_["TIP"][:, :, 0] += np.where(free, sg * push[:, None], 0.0)
+        gap = R_["C"][:, 0] - L_["C"][:, 0]
+        k = max(1, int(LAYER_HOLD * fps))
+        box = lambda x: np.convolve(np.pad(x, k, mode="edge"), np.ones(2 * k + 1) / (2 * k + 1), "same")[k:-k]
+        w = _smooth(np.clip(box(np.clip((LAYER_GAP[1] - gap) / (LAYER_GAP[1] - LAYER_GAP[0]), 0, 1)) * 1.5, 0, 1))
+        lat_v = {n_: box(np.abs(np.gradient(hands[n_]["C"][:, 0])) * fps) for n_ in ("R", "L")}
+        under_R = _smooth(np.clip((box(lat_v["R"] - lat_v["L"]) + 0.02) / 0.04, 0, 1))   # 1: right hand travels
+        for n_, u in (("R", under_R), ("L", 1 - under_R)):
+            dy = w * (u * UNDER[0] + (1 - u) * OVER[0])
+            dz = w * (u * UNDER[1] + (1 - u) * OVER[1])
+            hands[n_]["C"][:, 1] += dy
+            hands[n_]["C"][:, 2] += dz
+        LAYER_W[:] = [w, under_R]
 
     # ---- pass 2: springs + organic drift
     for k, (name, H) in enumerate(hands.items()):
@@ -1186,7 +1275,10 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         H["Cf"] += np.stack([dynamics.drift(times, a, seed * 10 + 3 * k + i) for i, a in enumerate((0.0015, 0.0015, 0.0012))], 1)
         H["Rf"] = dynamics.filter_track(H["ROLL"], fps, *SPRING_ROLL) + dynamics.drift(times, 0.02, seed * 10 + 7 + k)
         H["Yf"] = dynamics.filter_track(H["YAW"], fps, *SPRING_ROLL) + dynamics.drift(times, 0.015, seed * 10 + 9 + k)
-        H["Tf"] = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_TIP).reshape(N, 5, 3)
+        firm = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_TIP).reshape(N, 5, 3)
+        soft = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_FREE).reshape(N, 5, 3)
+        wf = np.clip(dynamics.filter_track(H["FREE"], fps, 6.0, 1.0, 1.0), 0, 1)[:, :, None]
+        H["Tf"] = wf * soft + (1 - wf) * firm          # a finger off duty goes limp: it trails, floats and settles
     HEAD = np.array([performer.head_angles(t, beats, downbeats, float(energy[j]), sched) for j, t in enumerate(th)])
     HEAD = dynamics.filter_track(HEAD, fps, *SPRING_HEAD)
     HEAD[:, 1] += dynamics.drift(times, 0.03, seed * 10 + 11)
@@ -1280,7 +1372,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                             return thumb_ik(kn, tip, wrist, [centre + kn_off[q] for q in range(1, 5)], name,
                                             keydepth, own is not None)
                         if THUMB is not None:                      # real joints for the fingers too
-                            return finger_ik(f, kn, tip, wrist, [centre + kn_off[q] for q in range(1, 5)], name)
+                            return finger_ik(f, kn, tip, wrist, [centre + kn_off[q] for q in range(1, 5)], name,
+                                             keydepth, own is not None)
                         return _ik(kn, tip, SEG[f], np.array([0, 1.0, 0]), tp), 0.0
                     return solve
                 solve = mk(f, kn, tp, own, name, centre, kn_off, wrist)

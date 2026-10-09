@@ -117,7 +117,7 @@ def flags(anim_path, out, excess_deg=5.0, pop_m=0.06, tip_off_m=0.015):
                 continue
             h, fi = who[0], int(who[1]) - 1
             tip = np.asarray(f["hands"][h]["fingers"][fi][3], float)
-            c = piano.contact(int(p), thumb=fi == 0)
+            c = piano.contact(int(p), False, fi)
             dx = abs(tip[0] - c[0])
             if dx > tip_off_m:
                 off.append([who, int(p), round(dx * 1000, 1)])
