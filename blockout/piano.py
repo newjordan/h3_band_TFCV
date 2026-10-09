@@ -406,7 +406,7 @@ def set_hand_model(name):
         # a real hand's natural curl (MCP ~15, PIP ~40 deg) puts the long fingertips ~7 cm below and ~6-7 cm in
         # front of the knuckles, so the knuckle line rides higher and further back than the mannequin's
         KNUCKLE_Z, Y_KN = _rig_rest_height()
-        HOME = _rig_home()
+        # HOME = _rig_home()   # rig-derived home spread: not yet validated by the fleet, so off for the render lock
         loc = lambda n, k: M @ (np.array(B[n][k]) - c)
         d = [loc(f"finger1-{s}", "tail") - loc(f"finger1-{s}", "head") for s in (1, 2)]
         n0, d2 = d[0] / np.linalg.norm(d[0]), d[1] / np.linalg.norm(d[1])
@@ -1064,7 +1064,7 @@ SPRING_HAND = (2.6, 0.72, 1.3)
 SPRING_TIP = (10.0, 0.80, 0.4)
 SPRING_FREE = (4.5, 0.45, 0.6)     # free fingers: soft and under-damped, the hand's subconscious ragdoll
 EXT_UP, EXT_FWD = 0.010, 0.008    # m: how far an idle finger lifts and lengthens
-EXT_OUT = (-0.002, -0.001, 0.0, 0.001, 0.002)   # m: and fans away from the middle finger (right hand; mirrored)
+EXT_OUT = (-0.006, -0.003, 0.0, 0.002, 0.005)   # m: and fans away from the middle finger (right hand; mirrored)
 # ---- two hands close, overlapping, crossing (from footage study; notes in the commit message). Two cases:
 #  * Overlap / shared register while both play: the hand that is TRAVELLING along the keys while it plays (the
 #    passage hand) stays UNDER: low, flat wrist, at the key fronts, its thumb tucked under its palm. The settled
