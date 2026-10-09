@@ -8,8 +8,10 @@ stream, and sets per-stream noise masks:
   zone box          -> pixel x0,y0,x1,y1, moving linearly from the first to the last frame; the box runs at
                        zone_denoise while the rest of the frame runs at video_denoise. 16 px per latent cell.
 
-Requires a ComfyUI with MiniMax H3 support and per-token noise masks on nested AV latents
-(upstream ComfyUI PR #15375). Install: copy this file into ComfyUI/custom_nodes/.
+Requires a ComfyUI with MiniMax H3 support. With per-token noise masks on nested AV latents (upstream
+ComfyUI PR #15375) a mask-0 token is clean at the condition timestep; without it the sampler applies the
+same masks as inpaint blending (mask-0 tokens are reset to the noised source every step), a looser lock.
+Install: copy this file into ComfyUI/custom_nodes/.
 
 H3BAND_STOCK_MATMUL=1 runs every quantized layer as dequantized weights x bf16 activations
 (no activation quantization), the closest to stock bf16 that quantized weights allow.
@@ -19,7 +21,13 @@ import os
 
 import comfy.nested_tensor
 import torch
-from comfy_extras.nodes_minimax_h3 import _encode_ref_audio
+
+try:
+    from comfy_extras.nodes_minimax_h3 import _encode_ref_audio
+except ImportError:
+    # earlier MiniMax H3 nodes keep it as a staticmethod on the ref2va node
+    from comfy_extras.nodes_minimax_h3 import MiniMaxH3ReferenceToVideo
+    _encode_ref_audio = MiniMaxH3ReferenceToVideo._encode_ref_audio
 
 if os.environ.get("H3BAND_STOCK_MATMUL") == "1":
     import comfy.ops
