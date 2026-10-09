@@ -23,7 +23,7 @@ Rules, in order of application:
    seeded drift keeps the wrists and head alive. Keys are pushed by the sprung fingertips: a key goes down
    only as far as a finger actually presses it.
 """
-import itertools, json, math
+import itertools, json, math, os
 
 import numpy as np
 
@@ -64,30 +64,244 @@ def keyboard():
     return keys
 
 
-def contact(p, near_black):
-    """Where a fingertip presses the key: black keys mid-length, white keys near the front unless the
-    hand is up among the black keys."""
+# Hit pads (y range from the white key fronts, metres). A key is a lever pivoting at the back: struck near
+# its front edge it goes down with the least force; struck mid-key it is heavier and tires the player. So
+# pianists strike with the fingertip in a small zone near the front of each key.
+HITPAD = {"white": (0.010, 0.026), "black": (WHITE_L - BLACK_L + 0.004, WHITE_L - BLACK_L + 0.016)}
+
+
+def contact(p, near_black=False, thumb=False):
+    """Fingertip strike point on a key's surface: inside its hit pad (white keys at the back of the pad
+    when the hand is up among the black keys, still in front of them; a thumb takes a black key on its
+    front lip, since it reaches from further back)."""
     if is_black(p):
-        return np.array([key_x(p), WHITE_L - BLACK_L + 0.045, BLACK_H])
-    return np.array([key_x(p), 0.075 if near_black else 0.035, 0.0])
+        lo, hi = HITPAD["black"]
+        return np.array([key_x(p), lo + 0.002 if thumb else 0.5 * (lo + hi), BLACK_H])
+    lo, hi = HITPAD["white"]
+    return np.array([key_x(p), hi - 0.002 if near_black else 0.5 * (lo + hi), 0.0])
+
+
+def leverage(p, y):
+    """Relative force to press key p at depth y (1 = at the front edge): the lever shortens toward the pivot."""
+    y0 = WHITE_L - BLACK_L if is_black(p) else 0.0
+    arm = 0.40                                   # key-lever length from front edge to the balance point
+    return arm / max(arm - (y - y0), 0.05)
+
+
+# ---------------------------------------------------------------- collision: the keyboard as a heightfield
+_WHITES = [p for p in range(LOW, HIGH + 1) if not is_black(p)]
+_BLACKS = np.array([p for p in range(LOW, HIGH + 1) if is_black(p)])
+_BLACK_X = np.array([key_x(p) for p in _BLACKS])
+RAIL_Z, FALLBOARD_Y, FALLBOARD_Z = -0.012, 0.153, 0.055
+
+
+def surface(x, y, depth):
+    """Top of whatever is under (x, y): a white key, a black key, the front rail or the fallboard.
+    depth = {pitch: 0..1} lowers pressed keys (they pivot at the back, so the front drops the most)."""
+    if y < 0:
+        return RAIL_Z
+    if y > FALLBOARD_Y:
+        return FALLBOARD_Z
+    wi = int(np.clip((x + _MID_C) // WHITE_W, 0, len(_WHITES) - 1))
+    pw = _WHITES[wi]
+    z = -depth.get(pw, 0.0) * KEY_TRAVEL * (WHITE_L - y) / WHITE_L
+    if y >= WHITE_L - BLACK_L:
+        k = int(np.argmin(np.abs(_BLACK_X - x)))
+        if abs(_BLACK_X[k] - x) < BLACK_W / 2:
+            pb = int(_BLACKS[k])
+            z = max(z, BLACK_H - depth.get(pb, 0.0) * KEY_TRAVEL * (WHITE_L - y) / BLACK_L)
+    return z
+
+
+def surface_under(x, y, r, depth):
+    """Highest surface under a disc of radius r (a finger pad seen from above)."""
+    return max(surface(x + dx, y + dy, depth) for dx, dy in ((0, 0), (0.8 * r, 0), (-0.8 * r, 0), (0, 0.8 * r), (0, -0.8 * r)))
 
 
 # ---------------------------------------------------------------- hand model
 # finger 0 = thumb ... 4 = pinky. Home tip offsets: a five-finger position over adjacent white keys.
-HOME = np.array([-2, -1, 0, 1, 2]) * WHITE_W
+# Home tip offsets across the hand, from reference footage of pianists: the fingers fan out from the wrist
+# and the thumb sits well out to the side, so a relaxed playing hand spans about a seventh to an octave.
+HOME = np.array([-0.078, -0.036, 0.000, 0.030, 0.058])
 SEG = np.array([[0.040, 0.032, 0.026],   # thumb: metacarpal, proximal, distal
                 [0.044, 0.025, 0.019],
                 [0.048, 0.028, 0.020],
                 [0.045, 0.027, 0.020],
                 [0.036, 0.020, 0.018]])
 # knuckle (MCP; thumb CMC) offsets from the hand centre at the knuckle line, right hand
-KNUCKLE = np.array([[-0.034, -0.055, -0.020],
-                    [-0.027, 0.000, 0.0],
-                    [-0.008, 0.004, 0.0],
-                    [0.011, 0.000, 0.0],
-                    [0.029, -0.010, -0.004]])
-KNUCKLE_Z = 0.060          # knuckle line height over white key tops
-PALM_LEN = 0.085           # knuckle line -> wrist
+KNUCKLE = np.array([[-0.046, -0.040, -0.022],      # thumb CMC: low, out to the side
+                    [-0.038, 0.000, 0.0],               # knuckle breadth ~8 cm, as on an adult hand
+                    [-0.013, 0.005, 0.0],
+                    [0.012, 0.001, 0.0],
+                    [0.036, -0.010, -0.004]])
+FINGER_R = np.array([(0.0115, 0.0105, 0.0095, 0.0085), (0.0095, 0.0088, 0.0080, 0.0070),
+                     (0.0098, 0.0090, 0.0082, 0.0072), (0.0093, 0.0085, 0.0078, 0.0068),
+                     (0.0085, 0.0078, 0.0070, 0.0062)])
+KNUCKLE_Z = 0.064          # knuckle line height over white key tops
+HAND_MODEL = "mannequin"
+MPFB_JSON = os.path.join(os.path.dirname(__file__), "hand_model", "mpfb_hands.json")
+
+
+def hand_frame(wrist, mcps, side):
+    """Hand frame from the wrist and the four finger MCPs: origin at the knuckle-line centre, rows = across
+    (thumb side -> pinky side), forward (wrist -> knuckles), up (back of the hand). Anatomical, so the same
+    local coordinates serve both hands. blender_piano.py builds the identical frame from the animated joints."""
+    mcps = np.asarray(mcps, float)
+    c = mcps.mean(0)
+    fwd = c - np.asarray(wrist, float); fwd /= np.linalg.norm(fwd)
+    ac = mcps[3] - mcps[0]; ac -= fwd * (ac @ fwd); ac /= np.linalg.norm(ac)
+    up = np.cross(ac, fwd) * (1 if side == "R" else -1)
+    return c, np.stack([ac, fwd, up])
+
+
+def mpfb_frame(B, side):
+    """hand_frame of an MPFB rig hand at rest."""
+    return hand_frame(B["wrist"]["head"], [B[f"finger{f}-1"]["head"] for f in range(2, 6)], side)
+
+
+def _swing(a, b):
+    """Rotation matrix taking unit vector a onto unit vector b by the shortest arc (no twist)."""
+    v, cth = np.cross(a, b), float(a @ b)
+    if cth < -0.999999:
+        return -np.eye(3)
+    K = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+    return np.eye(3) + K + K @ K / (1 + cth)
+
+
+# Thumb joints (radians). The CMC is a saddle joint: its metacarpal swings within a cone around the rig's rest
+# direction (flexion/extension ~50 deg and ab/adduction ~45 deg of total arc, so about +-30 deg here); the MCP and
+# IP are hinges on an axis carried by the metacarpal.
+THUMB_CONE = math.radians(30)
+THUMB_MCP = (math.radians(-10), math.radians(55))
+THUMB_IP = (math.radians(-10), math.radians(80))
+THUMB = None                 # rest data, set by set_hand_model("mpfb")
+
+
+def _swings(a, B):
+    """_swing(a, b) for every row b of B, as a (K, 3, 3) stack."""
+    v = np.cross(a, B)
+    cth = B @ a
+    K = np.zeros((len(B), 3, 3))
+    K[:, 0, 1], K[:, 0, 2], K[:, 1, 2] = -v[:, 2], v[:, 1], -v[:, 0]
+    K[:, 1, 0], K[:, 2, 0], K[:, 2, 1] = v[:, 2], -v[:, 1], v[:, 0]
+    return np.eye(3)[None] + K + (K @ K) / (1 + np.maximum(cth, -0.999999))[:, None, None]
+
+
+def _cone_dirs(n0, half, k=600, seed=0):
+    """k unit vectors spread over the spherical cap of half-angle `half` around n0 (n0 itself first)."""
+    rng = np.random.default_rng(seed)
+    z = 1 - rng.random(k - 1) * (1 - math.cos(half))
+    ph = rng.random(k - 1) * 2 * math.pi
+    r = np.sqrt(1 - z * z)
+    cap = np.vstack([[0, 0, 1], np.stack([r * np.cos(ph), r * np.sin(ph), z], 1)])
+    return cap @ _swing(np.array([0, 0, 1.0]), n0).T
+
+
+def _thumb_fk(m, th1, th2):
+    """Local MCP, IP, tip offsets from the CMC for metacarpal directions m (K,3) and hinge angles (K,)."""
+    T = THUMB
+    L1, L2, L3 = T["seg"]
+    ax = np.einsum("kij,j->ki", T["swings"](m), T["axis"])        # hinge axis carried by the metacarpal
+    e2 = np.cross(ax, m)                                           # direction a positive (flexing) rotation moves m
+    d2 = np.cos(th1)[:, None] * m + np.sin(th1)[:, None] * e2
+    d3 = np.cos(th1 + th2)[:, None] * m + np.sin(th1 + th2)[:, None] * e2
+    mcp = L1 * m
+    ip = mcp + L2 * d2
+    return mcp, ip, ip + L3 * d3
+
+
+def _thumb_solve(t, dirs):
+    """Best thumb pose reaching local target t (from the CMC) over candidate metacarpal directions."""
+    T = THUMB
+    L1, L2, L3 = T["seg"]
+    m = dirs
+    ax = np.einsum("kij,j->ki", T["swings"](m), T["axis"])
+    e2 = np.cross(ax, m)
+    v = t[None, :] - L1 * m
+    v = v - ax * np.sum(v * ax, 1, keepdims=True)                   # into the hinge plane
+    D = np.clip(np.linalg.norm(v, axis=1), abs(L2 - L3) + 1e-6, L2 + L3 - 1e-6)
+    phi = np.arctan2(np.sum(v * e2, 1), np.sum(v * m, 1))
+    th2 = np.arccos(np.clip((D * D - L2 * L2 - L3 * L3) / (2 * L2 * L3), -1, 1))
+    th1 = phi - np.arctan2(L3 * np.sin(th2), L2 + L3 * np.cos(th2))
+    th1 = np.clip(th1, *THUMB_MCP)
+    th2 = np.clip(th2, *THUMB_IP)
+    _, _, tip = _thumb_fk(m, th1, th2)
+    dev = np.arccos(np.clip(m @ T["n0"], -1, 1))
+    miss = np.linalg.norm(tip - t, axis=1)
+    cost = miss ** 2 + 1e-5 * dev ** 2                              # reach first, then stay near neutral
+    return cost, th1, th2, miss
+
+
+def thumb_ik(cmc, target, wrist, mcps, side, depth=None, skip_tip=False):
+    """Thumb chain [CMC, MCP, IP, tip] (world) reaching for target within the joint limits above, and the miss
+    (m) when the target is out of the thumb's range. The chain has one spare degree of freedom (the CMC is a
+    2-axis joint): with depth (key depths) it is spent keeping the thumb out of the neighbouring keys."""
+    c, Mh = hand_frame(wrist, mcps, side)
+    cmc = np.asarray(cmc, float)
+    t = Mh @ (np.asarray(target, float) - cmc)
+    cost, *_ = _thumb_solve(t, THUMB["dirs"])
+    m0 = THUMB["dirs"][int(np.argmin(cost))]                        # refine around the best coarse direction
+    fine = _cone_dirs(m0, math.radians(6), 300, 1)
+    fine = np.vstack([THUMB["dirs"], m0[None], fine[np.arccos(np.clip(fine @ THUMB["n0"], -1, 1)) <= THUMB_CONE]])
+    cost, th1, th2, miss = _thumb_solve(t, fine)
+    order = np.argsort(cost)
+    k = int(order[0])
+    if depth is not None:
+        ok = order[miss[order] < miss[k] + 0.001][:60]              # every pose that reaches as well as the best
+        mcp, ip, tip = _thumb_fk(fine[ok], th1[ok], th2[ok])
+        best = None
+        for i, kk in enumerate(ok):
+            pts = [cmc] + [cmc + Mh.T @ q[i] for q in (mcp, ip, tip)]
+            pen = _penetration(pts, FINGER_R[0], depth, skip_tip)
+            if best is None or pen < best[0] - 0.0002:
+                best = (pen, int(kk))
+            if pen <= 0.0005:
+                break
+        k = best[1]
+    mcp, ip, tip = _thumb_fk(fine[k:k + 1], th1[k:k + 1], th2[k:k + 1])
+    pts = [cmc] + [cmc + Mh.T @ q[0] for q in (mcp, ip, tip)]
+    return pts, float(miss[k])
+
+
+def set_hand_model(name):
+    """'mpfb': segment lengths, knuckle layout, palm length and finger radii measured off the CC0 MPFB2 hand
+    (blockout/hand_model/), so the IK chains and the rendered skinned hand agree bone for bone.
+    'mannequin': the hand-tuned proportions the capsule/skin hands were built with."""
+    global SEG, KNUCKLE, FINGER_R, TIP_R, PALM_LEN, WRIST_OFF, HAND_MODEL, THUMB
+    HAND_MODEL = name
+    if name == "mannequin":
+        SEG, KNUCKLE, FINGER_R = _SEG0, _KNUCKLE0, _FINGER_R0
+        PALM_LEN = 0.085                         # knuckle line -> wrist
+        WRIST_OFF = np.array([0.004, -PALM_LEN, -0.006])
+        THUMB = None
+    else:
+        hd = json.load(open(MPFB_JSON))["hands"]["R"]
+        B, rad = hd["bones"], hd["radius"]
+        c, M = mpfb_frame(B, "R")
+        SEG = np.array([[np.linalg.norm(np.array(B[f"finger{f}-{s}"]["tail"]) - B[f"finger{f}-{s}"]["head"])
+                         for s in (1, 2, 3)] for f in range(1, 6)])
+        KNUCKLE = np.array([M @ (np.array(B[f"finger{f}-1"]["head"]) - c) for f in range(1, 6)])
+        WRIST_OFF = M @ (np.array(B["wrist"]["head"]) - c)
+        PALM_LEN = float(-WRIST_OFF[1])
+        r = []
+        for f in range(1, 6):
+            b = [rad[f"finger{f}-{s}"] for s in (1, 2, 3)]
+            if f == 1:
+                b[0] = b[1]                      # the thumb metacarpal's verts are the thenar pad, not the thumb
+            j = [b[0], (b[0] + b[1]) / 2, (b[1] + b[2]) / 2, b[2] * 0.9]
+            r.append(np.minimum.accumulate(j))   # a finger only narrows toward the tip
+        FINGER_R = np.array(r)
+        loc = lambda n, k: M @ (np.array(B[n][k]) - c)
+        d = [loc(f"finger1-{s}", "tail") - loc(f"finger1-{s}", "head") for s in (1, 2)]
+        n0, d2 = d[0] / np.linalg.norm(d[0]), d[1] / np.linalg.norm(d[1])
+        axis = np.cross(n0, d2); axis /= np.linalg.norm(axis)        # the rest MCP bend fixes the hinge axis
+        THUMB = {"seg": SEG[0], "n0": n0, "axis": axis, "dirs": _cone_dirs(n0, THUMB_CONE),
+                 "swings": lambda m, n0=n0: _swings(n0, m)}
+    TIP_R = FINGER_R[:, 3]
+
+
+_SEG0, _KNUCKLE0, _FINGER_R0 = SEG, KNUCKLE, FINGER_R
+set_hand_model("mpfb")
 
 # Parncutt-style finger-pair spans in semitones (right hand, finger i < j, signed pitch_j - pitch_i):
 # (MinPrac, MinComf, MinRel, MaxRel, MaxComf, MaxPrac)
@@ -105,14 +319,29 @@ def split_hands(notes):
     return [n for n in notes if n.pitch >= 60], [n for n in notes if n.pitch < 60]
 
 
-def slices(notes, tol=0.01):
+HAND_SPAN = 0.19          # m, thumb to pinky tip at full stretch (about a ninth)
+
+
+def playable(chord, hand):
+    """What one hand can actually take of a chord: at most 5 notes within HAND_SPAN, anchored on the outer
+    voice (top for the right hand, bottom for the left), keeping the chord's outline. The other notes still
+    sound in the audio; this only decides what the fingers do."""
+    ch = sorted(chord, key=lambda n: n.pitch, reverse=(hand == "R"))
+    anchor = key_x(ch[0].pitch)
+    reach = [n for n in ch if abs(key_x(n.pitch) - anchor) <= HAND_SPAN]
+    if len(reach) > 5:
+        reach = [reach[0]] + reach[1:-1][: 3] + [reach[-1]]   # outer notes plus the nearest inner ones
+    return sorted(reach, key=lambda n: n.pitch)
+
+
+def slices(notes, tol=0.01, hand="R"):
     out = []
     for n in sorted(notes, key=lambda n: (n.start, n.pitch)):
         if out and n.start - out[-1][0].start < tol:
             out[-1].append(n)
         else:
             out.append([n])
-    return [s[:5] for s in out]
+    return [playable(s, hand) for s in out]
 
 
 def _span_cost(fi, pi, fj, pj, hand):
@@ -146,7 +375,7 @@ def fingering(sl, hand):
             order = fs if hand == "R" else fs[::-1]
             a = list(zip(ps, order))
             c = sum(_span_cost(f1, p1, f2, p2, hand) for (p1, f1), (p2, f2) in itertools.combinations(a, 2))
-            c += sum(2.0 for p, f in a if f == 0 and is_black(p)) + sum(1.0 for p, f in a if f == 4 and is_black(p))
+            c += sum(3.0 for p, f in a if f == 0 and is_black(p)) + sum(1.0 for p, f in a if f == 4 and is_black(p))
             if c < 50:
                 nb = any(is_black(p) for p in ps)
                 cs.append((a, c, _place(a, nb, hand)))
@@ -168,6 +397,15 @@ def fingering(sl, hand):
                 if any(f in fb and p in held and (p, f) not in b for p, f in a):
                     continue  # that finger is still holding a key
                 t = 0.0
+                for pa, fa in a:                      # keys still held fix the finger order around them
+                    if pa not in held:
+                        continue
+                    for pb, fbb in b:
+                        if fbb == fa or pb == pa:
+                            continue
+                        above = (pb > pa) if hand == "R" else (pb < pa)
+                        if above != (fbb > fa) and not (fbb == 0 or fa == 0):
+                            t += 40.0
                 for pa, fa in a:
                     for pb, fbb in b:
                         if fa == fbb and pa != pb:
@@ -177,9 +415,9 @@ def fingering(sl, hand):
                             t += 0.5 * sc if sc < 50 else 8.0  # a reach this wide means a hand shift
                             up = (pb - pa) if hand == "R" else (pa - pb)
                             if up > 0 and fbb < fa and fbb != 0:
-                                t += 3.0  # non-thumb crossing
+                                t += 25.0  # finger crossing (only the thumb passes under)
                             if up < 0 and fbb > fa and fa != 0:
-                                t += 3.0
+                                t += 25.0
                 t += abs(hb - ha) / WHITE_W * (0.3 + 0.05 / dt)
                 if cost[k] + t < best:
                     best, arg = cost[k] + t, k
@@ -192,10 +430,47 @@ def fingering(sl, hand):
         k = bp[k]
         path.append(k)
     path.reverse()
-    out = []
+    return _repair(sl, cands, path, hand)
+
+
+def _conflicts(assign, held, hand):
+    """Does this chord fingering clash with keys still held (finger reuse, or order across a held key)?"""
+    bad = 0
+    for pb, fb in assign:
+        for pa, fa, _ in held:
+            if fa == fb and pa != pb:
+                bad += 1
+            elif fa != fb and pa != pb and fa != 0 and fb != 0:
+                above = (pb > pa) if hand == "R" else (pb < pa)
+                bad += above != (fb > fa)
+    return bad
+
+
+def _repair(sl, cands, path, hand):
+    """Walk the music tracking every key still held (from any earlier chord, not just the last): where the
+    chosen fingering would reuse a holding finger or cross a held key, switch to the best fingering that fits;
+    if none fits, the held key is let go early (a finger substitution under the pedal; it still sounds)."""
+    from .midi import Note
+    out, held, prev = [], [], None                    # held: [pitch, finger, note]
     for i, (s, k) in enumerate(zip(sl, path)):
-        by_pitch = dict(cands[i][k][0])
-        out.append([(n, by_pitch.get(n.pitch, 2)) for n in s])
+        t0 = s[0].start
+        held = [h for h in held if h[2].end > t0 + 0.02]
+        hv = [(p, f, n) for p, f, n in held]
+        choice = cands[i][k][0]
+        if _conflicts(choice, hv, hand):
+            ok = [c for c in cands[i] if not _conflicts(c[0], hv, hand)]
+            if ok:
+                choice = min(ok, key=lambda c: c[1] + abs(c[2] - (prev[2] if prev else c[2])) / WHITE_W)[0]
+            else:                                     # let the clashing held keys go just before this chord
+                for h in held:
+                    if _conflicts(choice, [h], hand):
+                        h[2].end = max(h[2].start + 0.05, t0 - 0.03)
+                held = [h for h in held if h[2].end > t0 + 0.02]
+        by_pitch = dict(choice)
+        row = [(n, by_pitch.get(n.pitch, 2)) for n in s]
+        out.append(row)
+        prev = next((c for c in cands[i] if c[0] == choice), None)
+        held += [[n.pitch, f, n] for n, f in row]
     return out
 
 
@@ -250,15 +525,16 @@ def strike_time(touch):
     return 0.080 - 0.050 * touch
 
 
-def finger_tip(t, e, home_tip):
-    """Fingertip target for one note event at time t, and the key depth it causes (or None if idle)."""
+def finger_tip(t, e, home_tip, r, thumb=False):
+    """Fingertip (pad centre) target for one note event at time t, and the key depth it causes (or None if
+    idle). The pad centre sits one pad radius r above the key surface it touches."""
     t_on, t_off, p, vel, nbk, touch, lift = e
     S = strike_time(touch)
     rel = 0.10 - 0.05 * touch
     approach = 0.10 + 0.08 * touch
     if t < t_on - S - approach or t > t_off + rel:
         return None, 0.0
-    c = contact(p, nbk)
+    c = contact(p, nbk, thumb) + np.array([0, 0, r])
     down = c - np.array([0, 0, KEY_TRAVEL])
     # soft: the finger is already on (or a hair above) the key; strong: it pulls back and comes down
     h = (0.002 + 0.034 * touch ** 1.3 + 0.005 * vel / 127) * lift
@@ -277,8 +553,99 @@ def finger_tip(t, e, home_tip):
     return down + (home_tip - down) * u, 1.0 - u
 
 
-def _ik(m, target, seg, fwd_hint):
-    """3-link planar IK in the vertical plane through knuckle m and the target. Returns 4 points."""
+def _cross_detail(frames):
+    """Finger-order violations: adjacent fingers (index..pinky) whose tips are out of order across the hand
+    (closer than 4 mm or crossed), and splay beyond what a hand can do (tip far sideways of its knuckle)."""
+    cross, splay, n = 0, 0, 0
+    for fr in frames:
+        for name, h in fr["hands"].items():
+            sgn = 1 if name == "R" else -1
+            ax = np.array(h["fingers"][4][0][:2]) - np.array(h["fingers"][1][0][:2])   # across the hand, index -> pinky
+            ax /= max(np.linalg.norm(ax), 1e-6)
+            tx = [float(np.array(c[3][:2]) @ ax) for c in h["fingers"]]
+            kx = [float(np.array(c[0][:2]) @ ax) for c in h["fingers"]]
+            for f in range(1, 4):
+                cross += tx[f + 1] - tx[f] < 0.004
+            for f in range(1, 5):
+                splay += abs(tx[f] - kx[f]) > SPLAY[f] + 0.015      # beyond a fully stretched hand
+            n += 1
+    return {"hand_frames": n, "crossed_pairs": int(cross), "over_splayed": int(splay)}
+
+
+def _hit_detail(frames):
+    """Where the fingertips actually press: share inside the hit pad, and mean leverage (1 = front edge)."""
+    inside, lev, n = 0, 0.0, 0
+    for fr in frames:
+        for p, who in fr.get("press", {}).items():
+            p = int(p)
+            h = fr["hands"][who[0]]
+            tip = h["fingers"][int(who[1]) - 1][3]
+            lo, hi = HITPAD["black" if is_black(p) else "white"]
+            inside += lo - 0.004 <= tip[1] <= hi + 0.004
+            lev += leverage(p, tip[1]); n += 1
+    return {"presses": n, "in_hitpad": round(inside / max(n, 1), 3), "mean_leverage": round(lev / max(n, 1), 3)}
+
+
+def _pen_detail(info):
+    """Where the remaining penetrations are: pressing vs free fingers, by finger, and how stretched the finger was."""
+    bad = [i for i in info if i[0] > 0.001]
+    reach = SEG.sum(1)
+    return {"pressing": sum(1 for i in bad if i[2]), "free": sum(1 for i in bad if not i[2]),
+            "by_finger": [sum(1 for i in bad if i[1] == f) for f in range(5)],
+            "overstretched": sum(1 for i in bad if i[3] > 0.97 * reach[i[1]])}
+
+
+def _reach_detail(hands):
+    """Pressing fingers whose solved chain doesn't get the fingertip to its key (joint limits / segment
+    lengths): a key going down with no finger on it. Same measure for every hand model."""
+    tm = [i for H in hands.values() for i in H.get("tip_miss", [])]
+    bad = [(m, f) for m, f in tm if m > 0.003]
+    return {"pressing_frames": len(tm), "miss_over_3mm": len(bad),
+            "by_finger": [sum(1 for _, f in bad if f == q) for q in range(5)],
+            "max_miss_mm": round(max((m for m, _ in tm), default=0.0) * 1000, 1)}
+
+
+def _penetration(pts, radii, depth, skip_tip=False):
+    """Deepest point (m) of a finger's capsules inside the keyboard surface; 0 if clear."""
+    worst = 0.0
+    for k in range(3):
+        a, b = np.asarray(pts[k]), np.asarray(pts[k + 1])
+        for u in (0.33, 0.66, 1.0):
+            if skip_tip and k == 2 and u > 0.5:
+                continue
+            q = a + (b - a) * u
+            r = radii[k] + (radii[k + 1] - radii[k]) * u
+            worst = max(worst, surface_under(q[0], q[1], r, depth) + r - q[2])
+    return worst
+
+
+def _ik(m, target, seg, fwd_hint, tip_pitch=None):
+    """Finger IK in the vertical plane through knuckle m and the target. Returns 4 points (MCP, PIP, DIP, tip).
+    With tip_pitch (radians below horizontal) the last segment comes down at that angle, so the fingertip
+    (not the pad or the middle phalanx) meets the key, and MCP/PIP are solved exactly with the knuckle arched
+    up; if that can't reach, the finger flattens step by step, like a stretched finger. Without it: the
+    coupled 3-link solve (DIP = 0.75 x PIP)."""
+    if tip_pitch is not None:
+        v = target - m
+        hd = np.array([v[0], v[1], 0.0])
+        if np.linalg.norm(hd) < 1e-4:
+            hd = np.array([fwd_hint[0], fwd_hint[1], 0.0])
+        hd /= np.linalg.norm(hd)
+        L1, L2, L3 = seg
+        a3 = tip_pitch
+        while a3 > 0.15:
+            dip = target - L3 * (math.cos(a3) * hd + np.array([0, 0, -math.sin(a3)]))
+            w = dip - m
+            d2, h2 = float(w @ hd), float(w[2])
+            D = math.hypot(d2, h2)
+            if abs(L1 - L2) < D < L1 + L2 - 1e-4:
+                phi = math.atan2(h2, d2)
+                beta = math.acos(np.clip((L1 * L1 + D * D - L2 * L2) / (2 * L1 * D), -1, 1))
+                a1 = phi + beta                                   # knuckle arch up
+                pip = m + L1 * (math.cos(a1) * hd + np.array([0, 0, math.sin(a1)]))
+                if pip[2] >= dip[2] - 0.002:                       # no hyperextended PIP
+                    return [m, pip, dip, target]
+            a3 -= 0.15
     v = target - m
     hd = np.array([v[0], v[1], 0.0])
     if np.linalg.norm(hd) < 1e-4:
@@ -321,8 +688,8 @@ ROLL_MAX = 0.12            # rad: the hand rolls toward the fingers that are pla
 
 def _centre(H, x, nb, t):
     """Raw hand-centre target at time t: placement, attack give, arm weight, breathing."""
-    yoff = 0.040 if nb else 0.0
-    c = np.array([x, -0.012 + yoff, KNUCKLE_Z])
+    yoff = 0.018 if nb else 0.0
+    c = np.array([x, -0.006 + yoff, KNUCKLE_Z])
     on = H["on"]
     if not len(on):
         return c, 0.3, yoff
@@ -341,6 +708,43 @@ def _centre(H, x, nb, t):
             if 0 < u < 1:
                 c[2] += (0.010 + 0.020 * (1 - tch)) * math.sin(math.pi * u) ** 1.5
     return c, tch, yoff
+
+
+YAW_MAX = 0.45             # rad: wrist turn (radial/ulnar deviation plus forearm angle)
+SPLAY = np.array([0.060, 0.036, 0.024, 0.032, 0.048])   # max sideways tip offset from its knuckle, per finger
+FINGER_GAP = 0.017         # free fingertips keep at least a finger's width apart, in order across the hand
+
+
+def _yaw(v, psi):
+    """Rotate hand-local (x across, y forward) offsets by the wrist turn psi (+ points the fingers to +x)."""
+    c, s_ = math.cos(psi), math.sin(psi)
+    o = np.array(v, float)
+    x, y = o[..., 0].copy(), o[..., 1].copy()
+    o[..., 0], o[..., 1] = x * c + y * s_, -x * s_ + y * c
+    return o
+
+
+def _order_free(tips, act, centre, kn_off, psi, sgn):
+    """Keep free fingertips in hand order (index < middle < ring < pinky across the hand, thumb inside the
+    index) and within each finger's splay; pressing fingers stay where their keys are."""
+    loc = _yaw(tips - centre, -psi); loc[:, 0] *= sgn
+    kl = _yaw(kn_off, -psi); kl[:, 0] *= sgn
+    free = [act[f] is None for f in range(5)]
+    for f in range(1, 5):
+        if free[f]:
+            loc[f, 0] = np.clip(loc[f, 0], kl[f, 0] - SPLAY[f], kl[f, 0] + SPLAY[f])
+    for f in range(2, 5):
+        if free[f] and loc[f, 0] < loc[f - 1, 0] + FINGER_GAP:
+            loc[f, 0] = loc[f - 1, 0] + FINGER_GAP
+    for f in range(3, 0, -1):
+        if free[f] and loc[f, 0] > loc[f + 1, 0] - FINGER_GAP:
+            loc[f, 0] = loc[f + 1, 0] - FINGER_GAP
+    if free[0]:
+        loc[0, 0] = min(loc[0, 0], loc[1, 0] - 0.012)
+    loc[:, 0] *= sgn
+    out = centre + _yaw(loc, psi)
+    out[:, 2] = tips[:, 2]
+    return out
 
 
 def _roll_offsets(off, roll):
@@ -368,7 +772,10 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
 
     hands = {}
     for name, ns, rest in (("R", rh, cx + 0.15), ("L", lh, cx - 0.15)):
-        fing = fingering(slices(ns), name) if ns else []
+        ns = [type(n)(n.start, n.end, n.pitch, n.velocity, n.track) for n in ns]   # motion copies (repair may shorten holds)
+        for n, o in zip(ns, [m for m in (rh if name == "R" else lh)]):
+            n.touch, n.lift = getattr(o, "touch", 0.3), getattr(o, "lift", 1.0)
+        fing = fingering(slices(ns, hand=name), name) if ns else []
         ev = finger_events(fing)
         sl_end = np.array([max(n.end for n, _ in s) for s in fing]) if fing else np.zeros(0)
         H = {"fing": fing, "ev": ev, "ev_on": {f: np.array([e[0] for e in ev[f]]) for f in ev},
@@ -395,7 +802,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     for name, H in hands.items():
         sgn = 1 if name == "R" else -1
         C = np.zeros((N, 3)); ROLL = np.zeros(N); TIP = np.zeros((N, 5, 3)); act = [[None] * 5 for _ in range(N)]
-        TCH = np.zeros(N)
+        TCH = np.zeros(N); YAW = np.zeros(N)
+        shoulder = np.array([cx + sgn * 0.19, -0.45])
         for j in range(N):
             C[j], _, _ = _centre(H, H["xh"][j], H["nbh"][j], times[j] + LEAD_HAND)
             t = times[j] + LEAD_TIP
@@ -403,18 +811,22 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             TCH[j] = tch
             hover = 0.003 + 0.012 * tch
             playing = []
+            psi_arm = math.atan2(ct[0] - shoulder[0], ct[1] - shoulder[1])   # the forearm's own angle
+            psi0 = YAW[j - 1] if j else 0.6 * psi_arm
             for f in range(5):
-                home = np.array([ct[0] + sgn * HOME[f], 0.035 + yoff, hover])
+                loc = np.array([sgn * HOME[f], 0.020 + yoff - ct[1], 0.0])
                 if f == 0:
-                    home += np.array([sgn * 0.004, -0.012, 0.0])
+                    loc += np.array([0.0, 0.006, 0.0])         # the thumb lies long and low along the keys
+                home = ct + _yaw(loc, psi0)
+                home[2] = surface_under(home[0], home[1], TIP_R[f], {}) + TIP_R[f] + hover
                 tip = home
                 eo = H["ev_on"][f]
                 lo, hi = max(0, int(np.searchsorted(eo, t - 8.0))), int(np.searchsorted(eo, t + 0.3))
                 for e in H["ev"][f][lo:hi][::-1]:
-                    tp, dep = finger_tip(t, e, home)
+                    tp, dep = finger_tip(t, e, home, TIP_R[f], f == 0)
                     if tp is not None:
                         tip = tp
-                        c = contact(e[2], e[4])
+                        c = contact(e[2], e[4], f == 0) + np.array([0, 0, TIP_R[f]])
                         act[j][f] = (e[2], float(c[0]), float(c[2]))
                         if e[0] - 0.15 <= t <= e[1]:
                             playing.append(f)
@@ -422,13 +834,19 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                 TIP[j, f] = tip
             if playing:
                 ROLL[j] = sgn * ROLL_MAX * (2 - np.mean(playing)) / 2
-        H["C"], H["ROLL"], H["TIP"], H["act"], H["TCH"] = C, ROLL, TIP, act, TCH
+                d = np.mean([TIP[j, f] for f in playing], axis=0) - C[j]
+                psi_reach = 0.5 * math.atan2(d[0] - sgn * np.mean([HOME[f] for f in playing]) * sgn, max(d[1] + 0.06, 0.03))
+            else:
+                psi_reach = 0.0
+            YAW[j] = float(np.clip(0.6 * psi_arm + 0.4 * psi_reach, -YAW_MAX, YAW_MAX))
+        H["C"], H["ROLL"], H["TIP"], H["act"], H["TCH"], H["YAW"] = C, ROLL, TIP, act, TCH, YAW
 
     # ---- pass 2: springs + organic drift
     for k, (name, H) in enumerate(hands.items()):
         H["Cf"] = dynamics.filter_track(H["C"], fps, *SPRING_HAND)
         H["Cf"] += np.stack([dynamics.drift(times, a, seed * 10 + 3 * k + i) for i, a in enumerate((0.0015, 0.0015, 0.0012))], 1)
         H["Rf"] = dynamics.filter_track(H["ROLL"], fps, *SPRING_ROLL) + dynamics.drift(times, 0.02, seed * 10 + 7 + k)
+        H["Yf"] = dynamics.filter_track(H["YAW"], fps, *SPRING_ROLL) + dynamics.drift(times, 0.015, seed * 10 + 9 + k)
         H["Tf"] = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_TIP).reshape(N, 5, 3)
     HEAD = np.array([performer.head_angles(t, beats, downbeats, float(energy[j]), sched) for j, t in enumerate(th)])
     HEAD = dynamics.filter_track(HEAD, fps, *SPRING_HEAD)
@@ -440,36 +858,107 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     j0 = int(round(pre * fps))
     for j in range(j0, N):
         t = times[j]
-        fr = {"t": round(float(t - start), 4), "keys": {}, "hands": {}}
+        fr = {"t": round(float(t - start), 4), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}
         keydepth = {}
-        for name, H in hands.items():
+        tips, press = {}, {}
+        for name, H in hands.items():                       # pressing fingers move their keys
+            tips[name] = H["Tf"][j].copy()
+            for f in range(5):
+                a = H["act"][j][f]
+                if a is None:
+                    continue
+                p, kx, cz = a
+                tips[name][f, 2] = max(tips[name][f, 2], cz - KEY_TRAVEL)       # a key can't go past its bed
+                if abs(tips[name][f, 0] - kx) < WHITE_W:
+                    d = float(np.clip((cz - tips[name][f, 2]) / KEY_TRAVEL, 0, 1))
+                    if d > 0.01:
+                        keydepth[p] = max(keydepth.get(p, 0.0), d)
+                        press[str(p)] = f"{name}{f + 1}"            # which finger holds the key (R1 = right thumb)
+        for name, H in hands.items():                       # then nothing may sink into a key
             sgn = 1 if name == "R" else -1
-            centre, roll = H["Cf"][j], float(H["Rf"][j])
-            kn_off = _roll_offsets(KNUCKLE * np.array([sgn, 1, 1]), roll)
+            centre, roll, psi = H["Cf"][j].copy(), float(H["Rf"][j]), float(H["Yf"][j])
+            kn_off = _yaw(_roll_offsets(KNUCKLE * np.array([sgn, 1, 1]), roll), psi)
+            reach = SEG.sum(1)
+            side = np.array([math.cos(psi), -math.sin(psi), 0.0])         # across the hand (local +x)
+            for _ in range(4):                               # pressing fingers pull the hand within reach
+                pull, n = np.zeros(3), 0
+                for f in range(5):
+                    if H["act"][j][f] is None:
+                        continue
+                    if f == 0 and THUMB is not None:          # the thumb: move the hand by what its joints can't reach
+                        wr = centre + _yaw(_roll_offsets(WRIST_OFF * np.array([sgn, 1, 1]), roll * 0.5), psi)
+                        pts, miss = thumb_ik(centre + kn_off[0], tips[name][0], wr,
+                                             [centre + kn_off[q] for q in range(1, 5)], name)
+                        if miss > 0.001:
+                            pull += (tips[name][0] - pts[3]) * 1.1; n += 1
+                        continue
+                    v = tips[name][f] - (centre + kn_off[f])
+                    ex = np.linalg.norm(v) - 0.93 * reach[f]
+                    if ex > 0:
+                        vh = np.array([v[0], v[1], 0.0])
+                        pull += vh / max(np.linalg.norm(vh), 1e-6) * ex; n += 1
+                    lat = float(v @ side)                               # too much splay: the hand moves over
+                    if abs(lat) > SPLAY[f]:
+                        pull += side * (lat - math.copysign(SPLAY[f], lat)); n += 1
+                if not n:
+                    break
+                step = pull / n
+                step[1] = np.clip(centre[1] + step[1], -0.03, 0.065) - centre[1]  # knuckles stay behind the key fronts
+                centre += step
+                for f in range(5):                           # free fingers travel with the hand, short of the fallboard
+                    if H["act"][j][f] is None:
+                        tips[name][f] += step
+                        tips[name][f][1] = min(tips[name][f][1], FALLBOARD_Y - 0.015)
+            tips[name] = _order_free(tips[name], H["act"][j], centre, kn_off, psi, sgn)
+            w_off = _yaw(_roll_offsets(WRIST_OFF * np.array([sgn, 1, 1]) - np.array([0, 0, 0.004 * H["TCH"][j]]), roll * 0.5), psi)
+            wrist = centre + w_off
             chains = []
             for f in range(5):
-                tip = H["Tf"][j, f].copy()
+                tip = tips[name][f]
                 a = H["act"][j][f]
-                if a is not None:
-                    p, kx, cz = a
-                    tip[2] = max(tip[2], cz - KEY_TRAVEL)            # a key can't be pushed past its bed
-                    if abs(tip[0] - kx) < WHITE_W:
-                        d = float(np.clip((cz - tip[2]) / KEY_TRAVEL, 0, 1))
-                        if d > 0.01:
-                            keydepth[p] = max(keydepth.get(p, 0.0), d)
+                own = a[0] if a is not None else None
                 kn = centre + kn_off[f]
-                chains.append([[round(float(c), 5) for c in q] for q in _ik(kn, tip, SEG[f], np.array([0, 1.0, 0]))])
-            w_off = _roll_offsets(np.array([sgn * 0.004, -PALM_LEN, -0.006 - 0.004 * H["TCH"][j]]), roll * 0.5)
-            fr["hands"][name] = {"wrist": (centre + w_off).round(5).tolist(), "fingers": chains}
+                floor = surface_under(tip[0], tip[1], TIP_R[f], keydepth) + TIP_R[f]
+                if a is None or not (abs(tip[0] - a[1]) < WHITE_W / 2):
+                    tip[2] = max(tip[2], floor)
+                tp = 0.40 + 0.25 * float(H["TCH"][j]) if f == 0 else 0.72 + 0.50 * float(H["TCH"][j])
+
+                def solve(tip):
+                    if f == 0 and THUMB is not None:          # the thumb has its own joints, not a finger's
+                        pts, miss = thumb_ik(kn, tip, wrist, [centre + kn_off[q] for q in range(1, 5)], name,
+                                             keydepth, own is not None)
+                        return pts, miss
+                    return _ik(kn, tip, SEG[f], np.array([0, 1.0, 0]), tp), 0.0
+                pts, miss = solve(tip)
+                for _ in range(3):                           # lift the finger until no segment is inside a key
+                    pen = _penetration(pts, FINGER_R[f], keydepth, skip_tip=own is not None)
+                    if pen <= 0.0005:
+                        break
+                    tip = tip + np.array([0, 0, pen + 0.0005])
+                    pts, miss = solve(tip)
+                if own is not None:                          # does the fingertip actually get to its key?
+                    H.setdefault("tip_miss", []).append((float(np.linalg.norm(np.asarray(pts[3]) - tip)), f))
+                H.setdefault("pen", []).append(pen)
+                H.setdefault("pen_info", []).append((pen, f, own is not None, float(np.linalg.norm(tip - kn))))
+                chains.append([[round(float(c), 5) for c in q] for q in pts])
+            fr["hands"][name] = {"wrist": wrist.round(5).tolist(), "fingers": chains}
         pitch, yaw, roll_h, lean = HEAD[j]
         fr["body"] = body.pose(pitch, yaw, roll_h, lean, {h: fr["hands"][h]["wrist"] for h in fr["hands"]})
         for h in fr["hands"]:
             fr["hands"][h]["elbow"] = fr["body"]["elbows"][h]
         fr["keys"] = {str(p): round(d, 3) for p, d in keydepth.items()}
+        fr["press"] = press
         frames.append(fr)
     fing_out = {name: [[[n.start, n.pitch, f] for n, f in s] for s in H["fing"]] for name, H in hands.items()}
+    pens = np.concatenate([H.get("pen", [0.0]) for H in hands.values()])
     return {"fps": fps, "start": start, "speed": speed, "centre_x": cx, "keyboard": keyboard(),
+            "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,
+            "qa": {"finger_frames": int(len(pens)), "penetrating_over_1mm": int((pens > 0.001).sum()),
+                   "max_penetration_mm": round(float(pens.max()) * 1000, 2),
+                   "detail": _pen_detail([i for H in hands.values() for i in H.get("pen_info", [])]),
+                   "hits": _hit_detail(frames), "order": _cross_detail(frames), "reach": _reach_detail(hands)},
             "schedule": sched, "beats": [b - start for b in beats.tolist() if start <= b <= end],
+            "downbeats": [b - start for b in downbeats.tolist() if start <= b <= end],
             "fingering": fing_out, "frames": frames}
 
 
@@ -487,7 +976,10 @@ if __name__ == "__main__":
     ap.add_argument("--feeling", help="feeling chart JSON (strength/touch/freedom/tempo/head by bar)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--notes-out", help="write the performed notes (for the audio) as JSON")
+    ap.add_argument("--hand", default="mpfb", choices=["mpfb", "mannequin"],
+                    help="hand proportions: the MPFB2 rig's (default) or the old mannequin's")
     a = ap.parse_args()
+    set_hand_model(a.hand)
     notes = midi.read(a.mid)
     bts, dbs = midi.beats(a.mid, a.speed)
     sched = [(float(t), st) for t, st in (x.split(":") for x in a.schedule.split(","))]

@@ -100,7 +100,7 @@ def arm_ik(shoulder, wrist, side):
     u = d / max(np.linalg.norm(d), 1e-6)
     a = (UPPER_ARM ** 2 - FOREARM ** 2 + L ** 2) / (2 * L)
     h = math.sqrt(max(UPPER_ARM ** 2 - a * a, 0.0))
-    pole = np.array([side * 0.7, -0.2, -1.0])
+    pole = np.array([side * 0.35, -0.3, -1.0])          # elbows hang close to the body, slightly out
     pole -= (pole @ u) * u
     pole /= max(np.linalg.norm(pole), 1e-6)
     return shoulder + a * u + h * pole
