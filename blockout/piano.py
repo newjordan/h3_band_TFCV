@@ -72,20 +72,20 @@ _BY0 = WHITE_L - BLACK_L
 HITPAD_W = [(0.010, 0.025), (0.025, 0.040), (0.030, 0.050), (0.025, 0.040), (0.010, 0.025)]
 HITPAD_B = [(_BY0 + 0.004, _BY0 + 0.014), (_BY0 + 0.010, _BY0 + 0.025), (_BY0 + 0.010, _BY0 + 0.025),
             (_BY0 + 0.010, _BY0 + 0.025), (_BY0 + 0.004, _BY0 + 0.014)]
-HITPAD = {"white": (0.010, 0.050), "black": (_BY0 + 0.004, _BY0 + 0.025)}     # union, for anything finger-blind
+# white keys when the hand is up among the black keys (e.g. D-flat major): the whole hand plays deeper
+HITPAD_WN = [(0.020, 0.035), (0.040, 0.055), (0.040, 0.055), (0.040, 0.055), (0.020, 0.035)]
+HITPAD = {"white": (0.010, 0.055), "black": (_BY0 + 0.004, _BY0 + 0.025)}     # union, for anything finger-blind
 
 
-def hitpad(p, f):
-    return (HITPAD_B if is_black(p) else HITPAD_W)[f]
+def hitpad(p, f, near_black=False):
+    return (HITPAD_B if is_black(p) else HITPAD_WN if near_black else HITPAD_W)[f]
 
 
 def contact(p, near_black=False, f=2):
     """Fingertip strike point on key p for finger f (0 = thumb), inside that finger's pad; on a white key, at the
     back of the pad when the hand is up among the black keys."""
-    lo, hi = hitpad(p, f)
-    if is_black(p):
-        return np.array([key_x(p), 0.5 * (lo + hi), BLACK_H])
-    return np.array([key_x(p), hi - 0.002 if near_black else 0.5 * (lo + hi), 0.0])
+    lo, hi = hitpad(p, f, near_black)
+    return np.array([key_x(p), 0.5 * (lo + hi), BLACK_H if is_black(p) else 0.0])
 
 
 def leverage(p, y):
@@ -877,8 +877,8 @@ def _hit_detail(frames):
             p = int(p)
             h = fr["hands"][who[0]]
             tip = h["fingers"][int(who[1]) - 1][3]
-            lo, hi = hitpad(p, int(who[1]) - 1)
-            inside += lo - 0.004 <= tip[1] <= hi + 0.004
+            f = int(who[1]) - 1
+            inside += any(lo - 0.004 <= tip[1] <= hi + 0.004 for lo, hi in (hitpad(p, f), hitpad(p, f, True)))
             lev += leverage(p, tip[1]); n += 1
     return {"presses": n, "in_hitpad": round(inside / max(n, 1), 3), "mean_leverage": round(lev / max(n, 1), 3)}
 
@@ -1042,12 +1042,14 @@ ENSLAVE = (0.45, 0.20)             # share of a pressing neighbour's dip a free 
 SPRING_ROLL = (3.0, 0.75, 1.0)
 SPRING_HEAD = (1.7, 0.50, 0.9)
 LEAD_HAND, LEAD_TIP, LEAD_HEAD = 0.07, 0.018, 0.06
+YOFF_NB = 0.018            # m: the hand moves in when black keys are in play
+PRONATE = 0.15             # rad: base roll toward the thumb (forearm pronation past flat)
 ROLL_MAX = 0.12            # rad: the hand rolls toward the fingers that are playing
 
 
 def _centre(H, x, nb, t):
     """Raw hand-centre target at time t: placement, attack give, arm weight, breathing."""
-    yoff = 0.018 if nb else 0.0
+    yoff = YOFF_NB if nb else 0.0
     c = np.array([x, Y_KN + yoff, KNUCKLE_Z])
     on = H["on"]
     if not len(on):
@@ -1235,8 +1237,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                 floor = surface_under(TIP[j, f, 0], TIP[j, f, 1], TIP_R[f], {}) + TIP_R[f] + 0.001
                 TIP[j, f, 2] = max(floor, TIP[j, f, 2] - dz)
             FREE[j] = [act[j][f] is None for f in range(5)]
+            ROLL[j] = sgn * PRONATE                           # the resting hand leans toward the thumb
             if playing:
-                ROLL[j] = sgn * ROLL_MAX * (2 - np.mean(playing)) / 2
+                ROLL[j] += sgn * ROLL_MAX * (2 - np.mean(playing)) / 2
                 d = np.mean([TIP[j, f] for f in playing], axis=0) - C[j]
                 psi_reach = 0.5 * math.atan2(d[0] - sgn * np.mean([HOME[f] for f in playing]) * sgn, max(d[1] + 0.06, 0.03))
             else:
