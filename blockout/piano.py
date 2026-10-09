@@ -712,6 +712,9 @@ def _centre(H, x, nb, t):
 
 YAW_MAX = 0.45             # rad: wrist turn (radial/ulnar deviation plus forearm angle)
 SPLAY = np.array([0.060, 0.036, 0.024, 0.032, 0.048])   # max sideways tip offset from its knuckle, per finger
+PULL = 0.93               # pressing fingers pull the hand once their tip is further than this share of reach
+KN_FWD = 0.065            # how far the knuckle line may go past the white key fronts
+TETHER = 0.80             # free fingertips stay within this share of the finger's length from the knuckle
 FINGER_GAP = 0.017         # free fingertips keep at least a finger's width apart, in order across the hand
 
 
@@ -724,12 +727,12 @@ def _yaw(v, psi):
     return o
 
 
-def _order_free(tips, act, centre, kn_off, psi, sgn):
+def _order_free(tips, act, centre, kn_off, psi, sgn, tether=None):
     """Keep free fingertips in hand order (index < middle < ring < pinky across the hand, thumb inside the
     index) and within each finger's splay; pressing fingers stay where their keys are."""
+    free = [act[f] is None for f in range(5)]
     loc = _yaw(tips - centre, -psi); loc[:, 0] *= sgn
     kl = _yaw(kn_off, -psi); kl[:, 0] *= sgn
-    free = [act[f] is None for f in range(5)]
     for f in range(1, 5):
         if free[f]:
             loc[f, 0] = np.clip(loc[f, 0], kl[f, 0] - SPLAY[f], kl[f, 0] + SPLAY[f])
@@ -744,6 +747,16 @@ def _order_free(tips, act, centre, kn_off, psi, sgn):
     loc[:, 0] *= sgn
     out = centre + _yaw(loc, psi)
     out[:, 2] = tips[:, 2]
+    if tether is not None:                  # a free finger can't be further from its knuckle than it is long:
+        for f in range(5):                  # shorten it along the hand (forward, down), not sideways
+            if free[f]:
+                v = out[f] - (centre + kn_off[f])
+                lat = float(v @ np.array([math.cos(psi), -math.sin(psi), 0.0]))
+                w = v - lat * np.array([math.cos(psi), -math.sin(psi), 0.0])
+                lim = math.sqrt(max(tether[f] ** 2 - lat * lat, (0.3 * tether[f]) ** 2))
+                d = np.linalg.norm(w)
+                if d > lim:
+                    out[f] = centre + kn_off[f] + (v - w) + w * (lim / d)
     return out
 
 
@@ -893,7 +906,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                             pull += (tips[name][0] - pts[3]) * 1.1; n += 1
                         continue
                     v = tips[name][f] - (centre + kn_off[f])
-                    ex = np.linalg.norm(v) - 0.93 * reach[f]
+                    ex = np.linalg.norm(v) - PULL * reach[f]
                     if ex > 0:
                         vh = np.array([v[0], v[1], 0.0])
                         pull += vh / max(np.linalg.norm(vh), 1e-6) * ex; n += 1
@@ -903,13 +916,13 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                 if not n:
                     break
                 step = pull / n
-                step[1] = np.clip(centre[1] + step[1], -0.03, 0.065) - centre[1]  # knuckles stay behind the key fronts
+                step[1] = np.clip(centre[1] + step[1], -0.03, KN_FWD) - centre[1]  # knuckles stay behind the key fronts
                 centre += step
                 for f in range(5):                           # free fingers travel with the hand, short of the fallboard
                     if H["act"][j][f] is None:
                         tips[name][f] += step
                         tips[name][f][1] = min(tips[name][f][1], FALLBOARD_Y - 0.015)
-            tips[name] = _order_free(tips[name], H["act"][j], centre, kn_off, psi, sgn)
+            tips[name] = _order_free(tips[name], H["act"][j], centre, kn_off, psi, sgn, TETHER * reach)
             w_off = _yaw(_roll_offsets(WRIST_OFF * np.array([sgn, 1, 1]) - np.array([0, 0, 0.004 * H["TCH"][j]]), roll * 0.5), psi)
             wrist = centre + w_off
             chains = []
@@ -939,7 +952,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                 if own is not None:                          # does the fingertip actually get to its key?
                     H.setdefault("tip_miss", []).append((float(np.linalg.norm(np.asarray(pts[3]) - tip)), f))
                 H.setdefault("pen", []).append(pen)
-                H.setdefault("pen_info", []).append((pen, f, own is not None, float(np.linalg.norm(tip - kn))))
+                H.setdefault("pen_info", []).append((pen, f, own is not None, float(np.linalg.norm(tip - kn)), j, name))
                 chains.append([[round(float(c), 5) for c in q] for q in pts])
             fr["hands"][name] = {"wrist": wrist.round(5).tolist(), "fingers": chains}
         pitch, yaw, roll_h, lean = HEAD[j]
@@ -949,6 +962,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         fr["keys"] = {str(p): round(d, 3) for p, d in keydepth.items()}
         fr["press"] = press
         frames.append(fr)
+    global LAST
+    LAST = hands
     fing_out = {name: [[[n.start, n.pitch, f] for n, f in s] for s in H["fing"]] for name, H in hands.items()}
     pens = np.concatenate([H.get("pen", [0.0]) for H in hands.values()])
     return {"fps": fps, "start": start, "speed": speed, "centre_x": cx, "keyboard": keyboard(),
@@ -960,6 +975,15 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             "schedule": sched, "beats": [b - start for b in beats.tolist() if start <= b <= end],
             "downbeats": [b - start for b in downbeats.tolist() if start <= b <= end],
             "fingering": fing_out, "frames": frames}
+
+
+if os.environ.get("PIANO_OVR"):      # experiment hook: {"KNUCKLE_Z":0.07,"HOME_S":1.1,...}
+    _o = json.loads(os.environ["PIANO_OVR"])
+    for _k, _v in _o.items():
+        if _k.endswith("_S"):
+            globals()[_k[:-2]] = globals()[_k[:-2]] * _v
+        else:
+            globals()[_k] = _v
 
 
 if __name__ == "__main__":
@@ -996,3 +1020,4 @@ if __name__ == "__main__":
     anim = animate(notes, a.fps, a.start, a.dur, a.speed, bts, dbs, sched, efn, a.seed)
     json.dump(anim, open(a.out, "w"))
     print(f"{len(anim['frames'])} frames -> {a.out}")
+
