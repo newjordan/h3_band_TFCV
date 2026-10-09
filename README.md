@@ -131,8 +131,10 @@ Zone runs gave lip sync, but not instruments: H3 doesn't learn a strum or a key 
 | `synth.py` | Dependency-free additive piano, for quick timing checks. |
 | `drums.py` | Drum kit layout, sticking (beam search over hand preference, travel and crossing), velocity-scaled strokes landing on the onset frame, sprung wrists, kick and hi-hat pedals with leg IK, cymbal swing. Plain numpy. Reads a GM drum MIDI or a hit list from `h3band/drum_events.py`. |
 | `blender_drums.py` | Blender renderer: grey kit and capsule drummer, `front`, `three4`, `side`, `over`, `top` views, or `--cam` for any eye and look-at point. |
-| `drum_groove.py` | Writes the original 16-bar example groove (`examples/drums/rock_groove.mid`). |
-| `drumsynth.py` | Numpy drum synth: a hit list to a WAV, for timing checks and as ground truth for `drum_events.py`. |
+| `drum_style.py` | Drummer emotion: `force`, `range`, `body`, `flair` sliders, the `calm` / `groove` / `intense` / `showy` presets built from them, and a timeline that crossfades between presets. Sets stroke heights, arm lift, torso lean and cymbal follow-through. |
+| `drum_teacher.py` | Technique teacher: reads the hits in their musical context and picks chokes, rimshots, cross-sticks, ride bell, flams and ghost notes, with the reason for each. `drums.py` plays them. |
+| `drum_groove.py` | Writes the original example grooves (`examples/drums/rock_groove.mid`, `technique_groove.mid` with `--song technique`). |
+| `drumsynth.py` | Numpy drum synth: a hit list to a WAV, for timing checks and as ground truth for `drum_events.py`. Sounds the techniques too (a choked crash stops dead). |
 
 ```bash
 python3 -m venv .venv_blockout && .venv_blockout/bin/pip install -r requirements-blockout.txt
@@ -172,7 +174,9 @@ Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brah
 |---|---|---|
 | **H3 Band Drum Events** | `AUDIO` (a drum stem) | `DRUM_HITS` from `h3band/drum_events.py` |
 | **H3 Band Drum Hits (MIDI)** | a GM drum `.mid` in the input dir | `DRUM_HITS` with the MIDI's beat grid |
-| **H3 Band Drum Blockout** | `DRUM_HITS`, `start` (s), `frames`, `fps`, size, view or `camera`, head schedule, `motion` (smooth / snap / loose) | `IMAGE`: grey kit frames from `blockout/drums.py`, rendered by Blender |
+| **H3 Band Drum Teacher** | `DRUM_HITS`, `choke_gap` (beats of silence that make a loud crash a choke) | `DRUM_HITS` with techniques, and the lesson sheet as a `STRING` |
+| **H3 Band Drum Synth** | `DRUM_HITS`, seed | `AUDIO`: `blockout/drumsynth.py`, techniques included |
+| **H3 Band Drum Blockout** | `DRUM_HITS`, `start` (s), `frames`, `fps`, size, view or `camera`, head schedule, `motion` (smooth / snap / loose), `emotion` timeline, `force` / `range` / `body` / `flair` overrides | `IMAGE`: grey kit frames from `blockout/drums.py`, rendered by Blender; a report `STRING` (contact check, tiers, lesson) |
 
 The frames begin at `start` seconds into the hits, so `TrimAudioDuration` (start = `start`, duration = frames / fps) gives the matching audio for `CreateVideo`. The same frames can be VAE-encoded as the take for an H3 zone run. `examples/workflows/drum_blockout_api.json` is the stem → hits → blockout → MP4 graph in API format.
 
@@ -264,6 +268,83 @@ Same window, prompt and audio as above, denoise 0.8, scored against the true hit
 
 So a blockout needs strokes that move continuously over several frames and land roughly on the beat. Exact timing and exact placement buy little.
 
+### Drum performance: emotion, force and technique
+
+The same hits can be played gently or hard, and some need a specific technique rather than a plain stroke. Two modules control this, and the defaults are unchanged (the rock groove animates byte-for-byte as before).
+
+**Emotion and force** (`blockout/drum_style.py`). Four sliders, 0 to 1:
+
+| slider | what it changes |
+|---|---|
+| `force` | stroke height, and how much of the arm drives it |
+| `range` | dynamic range: how far apart a ghost note and an accent look (0 plays every stroke alike) |
+| `body` | how far the torso leans into big strokes, on top of the head style |
+| `flair` | how high the stick follows through after a crash |
+
+Presets combine them with a head style from `performer.py`: `calm` (0.30 / 0.35 / 0.15 / 0.00, head `focused`), `groove` (the neutral player), `intense` (0.85 / 0.75 / 0.85 / 0.50, head `wild`) and `showy` (0.75 / 0.90 / 0.70 / 1.00, head `crowd`). A timeline such as `0:calm,8:intense,16:showy` crossfades between them over 0.6 s, and any slider can be overridden for all presets. Every stroke gets a tier from its height: `ghost` and `tap` are wrist strokes, `accent` brings in the forearm and `full` lifts the whole arm. The arm lift and torso lean scale with the tier.
+
+**Technique teacher** (`blockout/drum_teacher.py`). It reads each hit in context and writes down the technique and the reason:
+
+| technique | when | what the blockout does |
+|---|---|---|
+| choke | a loud crash followed by at least a beat with no hand or kick hits | a free hand reaches the cymbal edge half a beat later and pinches it; the cymbal stops swinging (and the synth cuts the sound) |
+| ring | a loud crash that is the last hit of the song | nothing extra: the cymbal is left to ring |
+| rimshot | a snare at velocity 112 or more on beat 2 or 4 | the stick comes in flatter, so the tip lands on the head and the shaft on the hoop |
+| cross-stick | GM side stick (note 37) | the stick lies across the snare and its far end clicks the rim |
+| bell | GM ride bell (note 53) | the tip comes down steeply on the ride's bell |
+| flam | a soft hit 12–50 ms before a louder one on the same drum | the grace note is a low stroke from the other hand |
+| ghost | a snare under velocity 50 | a wrist stroke a few centimetres off the head |
+
+These are fixed rules rather than a learned model, so every choice can be explained. The lesson sheet is printed by `drums.py --teach` and returned by the Teacher and Blockout nodes. This is the window used below:
+
+```
+   time  bar  beat  piece   hand technique    why
+   9.52    5  1.50  snare   L    ghost        soft snare: wrist only, tip a few cm off the head
+  11.54    6  1.00  crash   L    choke        the band stops for 2.0 beats: pinch the edge 0.5 beats after the hit to cut it off
+  12.69    6  2.99  crash2  R    choke        the band stops for 2.0 beats: pinch the edge 0.5 beats after the hit to cut it off
+  14.42    7  2.00  snare   L    rimshot      loud backbeat on 2: tip and shaft hit head and hoop together
+```
+
+`examples/drums/technique_groove.mid` is a 9-bar study with one technique per bar (side-stick backbeats, ride bell, a flam, ghost notes, two choked crashes into stops, rimshot backbeats, another choke and a ringing last crash). The teacher finds all of them: 4 cross-sticks, 8 bells, 1 flam, 3 ghosts, 3 chokes, 2 rimshots and 2 ringing crashes. With every preset, the blockout check reports no tip going through a head and a furthest reach of 0.548 m against a 0.55 m arm.
+
+```bash
+$P -m blockout.drums examples/drums/technique_groove.mid work/tech.json --teach --emotion 0:calm,9:intense \
+   --hits-out work/tech_hits.json                    # --force / --range / --body / --flair override the presets
+$P -m blockout.drumsynth work/tech_hits.json work/tech.wav
+cd h3band   # the same through the SDK; without --audio, H3 Band Drum Synth renders the MIDI in the graph
+../.venv_sdk/bin/python sdk_drum_h3.py ../work/tech_intense.mp4 --midi ../examples/drums/technique_groove.mid \
+    --teach --emotion 0:intense --blockout --denoise 0.8 --start 9.4
+```
+
+The grey blockout at each technique (full groove, `groove` preset, front view):
+
+![Grey blockout at each technique](docs/drums/technique_frames.jpg)
+
+Stick-tip height over the H3 window for `calm` and `intense`. Calm keeps the crescendo roll in taps and accents. Intense builds it to full-arm strokes and follows through higher after each crash:
+
+![Tip height, calm vs intense](docs/drums/emotion_tip_height.png)
+
+#### H3 over the technique blockout
+
+One round: the window above (9.4–14.6 s, 124 frames), `--teach`, presets `calm` and `intense`, denoise 0.8, seeds 42 and 7, the same prompt and synth audio for every take, about 9 min each on an RTX 5060 Ti. Stroke size is the mean and 90th-percentile optical-flow speed in the stick area (camera motion removed, px per frame at 360 px):
+
+| take | calm: mean / p90 | intense: mean / p90 | intense / calm (mean) |
+|---|---|---|---|
+| grey blockout | 0.724 / 1.823 | 1.341 / 2.574 | 1.85x |
+| H3, seed 42 | 0.674 / 1.026 | 0.971 / 1.582 | 1.44x |
+| H3, seed 7 | 0.326 / 0.591 | 0.295 / 0.490 | 0.90x |
+
+The grey blockout, then the seed 42 take, at the roll peak, both crash hits, both choke pinches and the rimshot (`calm` on top, `intense` below):
+
+![Technique window: grey blockout and H3 seed 42](docs/drums/technique_h3_proof.jpg)
+
+- **Force carries over on one seed out of two.** Seed 42 keeps the blockout's framing, and its intense take plays bigger strokes than its calm one (1.44x, against 1.85x in the grey). The stick goes well above the cymbals on both crash hits. Seed 7 reframes to a side view at the kit level, mostly drops the blockout's arms, and plays both presets at the same size.
+- **The choke doesn't carry over.** On the pinch frames the H3 hand is a motion blur near the cymbal, not a hand holding its edge. A pinch is a small, still pose next to big strokes, and H3 smooths it away. It probably needs a lower denoise around the choke, or a blockout hand that stays on the cymbal longer.
+- **Rimshot, ghost and cross-stick differ from a plain stroke by a stick angle or a few centimetres.** At this resolution they can't be told apart in the H3 frames, so these results don't show whether they transfer.
+- **No timing claim for this window.** It starts with a dense 16th-note roll, and `drum_sync_score.py` scores the grey blockout itself below its control here (margin −0.36 calm, −0.39 intense). The H3 margins (−0.04 to −0.17) can't be read either way. The fill window above is still the timing result.
+
+So the sliders change how hard the blockout drummer plays, and H3 follows that when it keeps the blockout's camera. The technique teacher works in the blockout: the lesson sheet, the check and the grey frames. Two runs aren't enough to say how often H3 keeps the camera, and the small techniques need a closer camera or a lower denoise before H3 can show them.
+
 ## Hackathon tasks
 
 - [ ] **Per-zone audio binding.** Bind each stem to its zone inside one run: multiple audio segments plus an attention bias, so stem A's tokens reach only zone A's video tokens.
@@ -272,6 +353,7 @@ So a blockout needs strokes that move continuously over several frames and land 
 - [ ] **Guitar strum blockout.** A grey picking arm and guitar strumming down/up on the onsets from `guitar_events.py`, rendered from the shot's camera, composited over the guitarist zone, then H3 at about 0.85–0.9 with the guitar stem locked.
 - [x] **Drum blockout.** Stick tips and pedals on the drum-stem hits or a GM drum MIDI (`blockout/drums.py`, `blockout/blender_drums.py`, `h3band/drum_events.py`).
 - [x] **H3 over the drum blockout.** Go: at denoise 0.6–0.8 the sticks keep the blockout's timing (p 0.005 at 0.8), audio alone doesn't (`h3band/sdk_drum_h3.py`, `h3band/drum_sync_score.py`). Which drum each stroke lands on doesn't carry over yet. Strokes have to be smooth but not exact (`--motion`).
+- [x] **Drum emotion, force and technique.** Slider presets with crossfades (`blockout/drum_style.py`) and a rule-based technique teacher for chokes, rimshots, cross-stick, bell, flams and ghosts (`blockout/drum_teacher.py`), plus the Teacher and Synth nodes. Over H3, force carries over on one seed out of two, and the choke pinch doesn't carry over yet.
 - [ ] **Bass blockout.** Bass fingers on the bass note onsets.
 - [x] **Comfy nodes for the drum blockout.** Drum Events / Drum Hits (MIDI) / Drum Blockout render, driven through the Comfy SDK (`h3band/sdk_drum_blockout.py`).
 - [ ] **Comfy nodes for the rest of the chain.** Piano and guitar blockout render nodes, then blockout → H3 Band Zone Latent end to end through the SDK.

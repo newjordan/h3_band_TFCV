@@ -1,9 +1,10 @@
 """Original 16-bar rock groove for the drum blockout, written as a General MIDI drum file (channel 10).
 
-    python -m blockout.drum_groove OUT.mid [--bpm 112] [--seed 0]
+    python -m blockout.drum_groove OUT.mid [--bpm 112] [--seed 0] [--song rock|technique]
 
-Bars 1-4 hi-hat groove with a snare pickup, 5-8 crash into a ride verse with ghost notes and pedal chicks,
+rock: bars 1-4 hi-hat groove with a snare pickup, 5-8 crash into a ride verse with ghost notes and pedal chicks,
 ending in a tom fill, 9-11 open-hat lifts, 12 a fill round the kit, 13-15 a crash chorus, 16 the last hit.
+technique: 9 bars for the technique teacher (technique_bars()).
 Timing and velocity are humanised a little (seeded). Composed for this repo, MIT like the code.
 """
 import struct
@@ -63,12 +64,47 @@ def bars():
     return out
 
 
-def notes(bpm=112, seed=0):
+SIDE, BELL = 37, 53
+
+
+def technique_bars():
+    """9 bars that give blockout/drum_teacher.py something to teach: cross-stick verse, ride bell with a flam,
+    a ghost-to-full snare crescendo, crash stabs with stops (chokes), a rimshot groove, a fill, a stop, the end."""
+    hat = lambda **k: [(s, HAT, v) for s, v in eighths(**k)]
+    out = []
+    # 1-2: cross-stick verse
+    for _ in range(2):
+        out.append(hat(vel_on=80, vel_off=60) + [(4, SIDE, 100), (12, SIDE, 104), (0, KICK, 100), (6, KICK, 84),
+                                                  (8, KICK, 96)])
+    # 3-4: ride bell on the beat, bow on the "and", snare backbeats, a flam on the last backbeat
+    bell = [(s, BELL if s % 4 == 0 else RIDE, 100 if s % 4 == 0 else 74) for s in range(0, 16, 2)]
+    out.append(bell + [(4, SNARE, 104), (12, SNARE, 106), (0, KICK, 108), (8, KICK, 102)])
+    out.append(bell + [(4, SNARE, 104), (0, KICK, 108), (8, KICK, 102), (10, KICK, 92), (12, SNARE, 116),
+                       (11.8, SNARE, 46)])
+    # 5: snare 16ths from ghost to full, quarter kicks
+    out.append([(s, SNARE, int(30 + 97 * s / 15)) for s in range(16)] + [(s, KICK, 104) for s in (0, 4, 8, 12)])
+    # 6: stabs: crash + kick on 1 and 3, the band stops in between
+    out.append([(0, CRASH, 122), (0, KICK, 120), (8, CRASH2, 120), (8, KICK, 118)])
+    # 7: rock groove, loud backbeats (rimshots), crash on 1
+    out.append([(0, CRASH, 118)] + hat(skip=(0,)) + [(4, SNARE, 122), (12, SNARE, 124), (0, KICK, 112),
+                                                       (8, KICK, 104), (10, KICK, 94)])
+    # 8: tom fill into a crash stop on 3
+    out.append([(s, TOM1 if s < 4 else FLOOR, 104 + 2 * s) for s in range(8)] + [(0, KICK, 104), (4, KICK, 104),
+                (8, CRASH, 124), (8, KICK, 122)])
+    # 9: the last hit
+    out.append([(0, CRASH, 127), (0, CRASH2, 124), (0, KICK, 127), (0, FLOOR, 120)])
+    return out
+
+
+SONGS = {"rock": bars, "technique": technique_bars}
+
+
+def notes(bpm=112, seed=0, song="rock"):
     """[(start_s, pitch, vel)] for the whole groove."""
     rng = np.random.default_rng(seed)
     step = 60.0 / bpm / 4
     out = []
-    for b, bar in enumerate(bars()):
+    for b, bar in enumerate(SONGS[song]()):
         for s, p, v in bar:
             jitter = 0.0 if (s == 0 and b == 0) else float(rng.normal(0, 0.004))
             out.append((max(0.0, (b * 16 + s) * step + jitter), p, int(np.clip(v + rng.normal(0, 4), 20, 127))))
@@ -103,7 +139,8 @@ if __name__ == "__main__":
     ap.add_argument("out")
     ap.add_argument("--bpm", type=float, default=112)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--song", choices=SONGS, default="rock")
     a = ap.parse_args()
-    ns = notes(a.bpm, a.seed)
+    ns = notes(a.bpm, a.seed, a.song)
     write(a.out, ns, a.bpm)
-    print(f"{len(ns)} hits, {16 * 240 / a.bpm:.1f} s -> {a.out}")
+    print(f"{len(ns)} hits, {len(SONGS[a.song]()) * 240 / a.bpm:.1f} s -> {a.out}")

@@ -30,7 +30,7 @@ import json, math
 
 import numpy as np
 
-from . import dynamics, performer
+from . import drum_style, drum_teacher, dynamics, performer
 
 STICK, TIP = 0.41, 0.28          # stick length; grip -> tip
 HIPS = np.array([0.0, -0.30, 0.58])
@@ -111,20 +111,66 @@ def grip_home(p, hand):
     return s - TIP * d, d
 
 
+HOOP_TOP = 0.006 + 0.0075       # hoop top above the head (blender_drums.py) plus the stick's radius
+
+
+def _in_plane_toward(p, point):
+    """Unit vector in piece p's surface plane, from its centre toward `point`."""
+    c, n = np.array(KIT[p]["c"], float), NORMAL[p]
+    t = np.asarray(point, float) - c
+    return _unit(t - (t @ n) * n)
+
+
+def _anchor(hand):
+    return np.array([ANCHOR_X if hand == "R" else -ANCHOR_X, HIPS[1] + 0.12, KIT["snare"]["c"][2]])
+
+
+def technique_pose(p, hand, tech):
+    """(strike point, (grip, stick dir)) for a technique stroke, or None to use the plain strike.
+    rimshot: tip near the centre, stick low enough that the shaft lands on the near hoop at the same time.
+    bell: tip on the ride's bell, stick steep. cross_stick: the stick lies across the snare, its tip clicks the
+    far hoop and the grip rests just above the near half of the head."""
+    c, n, r = np.array(KIT[p]["c"], float), NORMAL[p], KIT[p]["r"]
+    u = _in_plane_toward(p, _anchor(hand))
+    if tech == "rimshot" and KIT[p]["kind"] == "drum":
+        s = c + 0.10 * r * u
+        a = math.atan2(HOOP_TOP, r + 0.008 - 0.10 * r)
+    elif tech == "cross_stick" and p == "snare":
+        s = c - (r + 0.008) * u + HOOP_TOP * n
+        a = math.atan2(0.03 - HOOP_TOP, TIP)
+    elif tech == "bell" and p == "ride":
+        s = c + 0.035 * u + 0.016 * n
+        a = math.radians(38)
+    else:
+        return None
+    back = _unit(math.cos(a) * u + math.sin(a) * n)
+    return s, (s + TIP * back, -back)
+
+
+def choke_pose(p, hand):
+    """Grip and tip targets for a hand pinching cymbal p's edge, the stick pointing back and down from the fist."""
+    c, n, r = np.array(KIT[p]["c"], float), NORMAL[p], KIT[p]["r"]
+    u = _in_plane_toward(p, _anchor(hand))
+    grip = c + 0.97 * r * u + 0.02 * u - 0.02 * n
+    d = _unit(_unit([u[0], u[1], 0.0]) + np.array([0, 0, -0.5]))   # flat enough to clear the hi-hat
+    return grip, grip + TIP * d
+
+
 # ---------------------------------------------------------------- hits
 def hits_from_midi(notes):
     out = []
     for n in notes:
         p = GM.get(n.pitch)
         if p:
-            out.append({"t": n.start, "piece": p, "vel": int(n.velocity), "open": n.pitch in GM_OPEN})
+            out.append({"t": n.start, "piece": p, "vel": int(n.velocity), "open": n.pitch in GM_OPEN, "note": n.pitch})
     return sorted(out, key=lambda h: h["t"])
 
 
 def _slices(hits):
     sl = []
     for h in hits:
-        if sl and h["t"] - sl[-1][0]["t"] < SLICE_TOL:
+        flam = h.get("tech") == "flam" or sl and sl[-1][0].get("tech") == "flam_grace"   # grace + main: two slices
+        if sl and h["t"] - sl[-1][0]["t"] < SLICE_TOL and not flam:
             if all(o["piece"] != h["piece"] for o in sl[-1]):
                 sl[-1].append(h)
         else:
@@ -208,7 +254,7 @@ def strike_dur(h):
 def stroke_curve(t, T, H, rest, dur=strike_dur, settle=0.25, lift=0.18, rebound=0.5, link=0.5):
     """Height at time t for strokes that land (height 0) at times T, each prepared from height H[k].
     Returns (height, k, w): k is the last stroke at or before t (-1 before the first), w (0..1) how far the
-    hand has moved on toward stroke k+1. Strokes closer than `link` s rebound straight into the next prep
+    hand has moved on toward stroke k+1. rebound is one fraction or one per stroke. Strokes closer than `link` s rebound straight into the next prep
     height (ease-out up, ease-in down); with more time the tip rebounds, settles to `rest`, then lifts."""
     n = len(T)
     k = int(np.searchsorted(T, t, side="right")) - 1
@@ -222,7 +268,8 @@ def stroke_curve(t, T, H, rest, dur=strike_dur, settle=0.25, lift=0.18, rebound=
             return h1 * (1 - u * u), -1, 1.0
         return rest + (h1 - rest) * float(_smooth((t - (t1 - S - lift)) / lift)), -1, 1.0
     t0 = T[k]
-    hr = max(rebound * (H[k] if k < n else rest), rest)
+    rb = rebound[k] if np.ndim(rebound) else rebound
+    hr = max(rb * (H[k] if k < n else rest), rest)
     if k == n - 1:
         if t < t0 + 0.12:
             u = (t - t0) / 0.12
@@ -270,9 +317,14 @@ def swing_params(p, h):
     return SWING[kind]
 
 
-def piece_tilt(hits, times):
-    """Per piece: (N, 3) axis-angle rotation about the piece centre (edge struck goes down, then swings)."""
+CHOKE_TAU, CHOKE_DIP = 0.04, 0.05   # s for a choked cymbal to stop; rad the pinch pulls the edge down
+
+
+def piece_tilt(hits, times, chokes=None):
+    """Per piece: (N, 3) axis-angle rotation about the piece centre (edge struck goes down, then swings).
+    chokes: {piece: [(t, hold, weight array)]}; a choke kills the swing of every earlier hit on that piece."""
     out = {}
+    chokes = chokes or {}
     for p in HAND_PIECES:
         hs = [h for h in hits if h["piece"] == p]
         rot = np.zeros((len(times), 3))
@@ -285,7 +337,13 @@ def piece_tilt(hits, times):
                 a0, a1, f, tau = swing_params(p, h)
                 d = times - h["t"]
                 m = d > 0
-                ang[m] += (a0 + a1 * h["vel"] / 127) * np.exp(-d[m] / tau) * np.sin(2 * np.pi * f * d[m] + 0.25)
+                ring = (a0 + a1 * h["vel"] / 127) * np.exp(-d[m] / tau) * np.sin(2 * np.pi * f * d[m] + 0.25)
+                tc = min((c[0] for c in chokes.get(p, ()) if c[0] > h["t"]), default=None)
+                if tc is not None:
+                    ring *= np.exp(-np.clip(times[m] - tc, 0, None) / CHOKE_TAU)
+                ang[m] += ring
+            for _, _, wgt in chokes.get(p, ()):
+                ang += CHOKE_DIP * wgt
             rot = ang[:, None] * axis[None, :]
         out[p] = rot
     return out
@@ -337,6 +395,7 @@ SPRING_HAND = (5.0, 0.60, 1.0)
 SPRING_LOOK = (1.6, 0.8, 0.5)
 SPRING_HEAD = (1.7, 0.50, 0.9)
 SPRING_LEG = (6.0, 0.7, 1.0)
+SPRING_LEAN = (2.5, 0.8, 0.6)
 LEAD_HAND, LEAD_HEAD = 0.035, 0.06
 HAND_LIFT, HAND_PULL = 0.30, 0.10   # hand rises this fraction of the tip's height, and draws back
 REST_H = 0.06                       # hover height of a resting tip
@@ -368,16 +427,18 @@ def _hand_track(hs, times, hand, start, fps, motion="smooth"):
             cur.append(p)
         return TIPT, HAND, HH, cur, []
     T = np.array([h["tf"] for h in hs])
-    Hh = np.array([stroke_height(h["vel"]) for h in hs])
+    Hh = np.array([h["H"] if "H" in h else stroke_height(h["vel"]) for h in hs])
+    LIFT = np.array([h.get("lift", HAND_LIFT) for h in hs])
+    RB = np.array([h.get("rb", 0.5) for h in hs])
     P = [h["piece"] for h in hs]
-    S = [STRIKE[p] + np.array([0, 0, HIHAT_OPEN if h.get("open") else 0.0]) + np.asarray(h.get("aim", (0, 0, 0)))
-         for p, h in zip(P, hs)]
-    G = [grip_home(p, hand) for p in P]
+    S = [(h["S"] if "S" in h else STRIKE[p] + np.array([0, 0, HIHAT_OPEN if h.get("open") else 0.0]))
+         + np.asarray(h.get("aim", (0, 0, 0))) for p, h in zip(P, hs)]
+    G = [h["G"] if "G" in h else grip_home(p, hand) for p, h in zip(P, hs)]
     for j, t in enumerate(times):
         if motion == "snap":
             h, k, w = _snap_curve(t, T, Hh, REST_H, fps)
         else:
-            h, k, w = stroke_curve(t, T, Hh, REST_H)
+            h, k, w = stroke_curve(t, T, Hh, REST_H, rebound=RB)
         a, b = (max(k, 0), min(k + 1, len(T) - 1)) if k >= 0 else (0, 0)
         if k < 0:
             w = 0.0
@@ -388,8 +449,9 @@ def _hand_track(hs, times, hand, start, fps, motion="smooth"):
         d = _unit(G[a][1] + (G[b][1] - G[a][1]) * w)
         dh = _unit([d[0], d[1], 0.0])
         hh = h + arc
+        lift = LIFT[a] + (LIFT[b] - LIFT[a]) * w
         TIPT[j] = s + hh * n
-        HAND[j] = g + np.array([0, 0, HAND_LIFT * hh + 0.4 * arc]) - HAND_PULL * h * dh
+        HAND[j] = g + np.array([0, 0, lift * hh + 0.4 * arc]) - HAND_PULL * h * dh
         HH[j] = hh
         cur.append(P[a] if w < 0.5 else P[b])
     return TIPT, HAND, HH, cur, T
@@ -443,13 +505,100 @@ MOTIONS = ("smooth", "snap", "loose")
 LOOSE_FRAMES, LOOSE_AIM = 2, 0.08   # loose: each hand hit moves up to this many frames and aims up to this far off
 
 
+CHOKE_IN, CHOKE_OUT, CHOKE_LEAN = 0.16, 0.22, 0.6    # s to reach the edge, s to let go, torso lean while pinching
+TECH_HEIGHT = {"ghost": 0.045, "flam_grace": 0.035, "cross_stick": 0.07}   # m, the most these strokes lift
+
+
+def _bump(d, rise=0.10, fall=0.22):
+    """0..1 envelope around d = 0: eases in before, decays after."""
+    return np.where(d < 0, np.exp(-(d / rise) ** 2), np.exp(-d / fall))
+
+
+def _style_hit(h, hand, style):
+    """Stroke height, arm lift, rebound and technique pose for one hand hit (drum_style.py, drum_teacher.py)."""
+    p, tech = h["piece"], h.get("tech")
+    if style:
+        s = drum_style.at(h["t"], style)
+        h["H"] = drum_style.height(h["vel"], s, stroke_height)
+        h["lift"] = drum_style.arm_lift(h["H"])
+        h["rb"] = drum_style.rebound(p, s)
+        h["lean"] = drum_style.lean_kick(h["H"], s)
+    if tech in TECH_HEIGHT:
+        h["H"] = min(h.get("H", stroke_height(h["vel"])), TECH_HEIGHT[tech])
+    if tech == "cross_stick":
+        h["lift"] = 0.0
+    pose = technique_pose(p, hand, tech) if tech else None
+    if pose:
+        h["S"], h["G"] = pose
+
+
+def _place_chokes(hand_hits, tracks, times):
+    """Moves a free hand onto the cymbal's edge for every choke. Returns {piece: [(t, hold, weight)]}, the torso
+    lean and twist toward the cymbal, and each hand's choke weight (0..1) per frame."""
+    out, lean, twist = {}, np.zeros(len(times)), np.zeros(len(times))
+    on = {"R": np.zeros(len(times)), "L": np.zeros(len(times))}
+    used = {"R": [], "L": []}
+    for h in sorted((h for h in hand_hits if h.get("tech") == "choke" and h.get("hand")), key=lambda h: h["t"]):
+        tc, hold, p = h["choke"]["t"], h["choke"]["hold"], h["piece"]
+        lo, hi = tc - CHOKE_IN - 0.06, tc + hold + CHOKE_OUT + 0.06
+        chosen = None
+        for hand in (h["hand"], "L" if h["hand"] == "R" else "R"):
+            busy = any(lo < k["tf"] < hi for k in tracks[hand][0] if k is not h)
+            busy = busy or any(a < hi and lo < b for a, b in used[hand])
+            if not busy:
+                chosen = hand
+                break
+        if chosen is None:
+            h["choke_skipped"] = "both hands busy"
+            continue
+        used[chosen].append((lo, hi))
+        wgt = _smooth((times - (tc - CHOKE_IN)) / CHOKE_IN) * (1 - _smooth((times - (tc + hold)) / CHOKE_OUT))
+        grip, tip = choke_pose(p, chosen)
+        _, TIPT, HAND, HH, cur, _ = tracks[chosen]
+        HAND += (grip - HAND) * wgt[:, None]
+        TIPT += (tip - TIPT) * wgt[:, None]
+        TIPT[:, 2] += 0.5 * wgt * (1 - wgt)     # arc over the hi-hat on the way to and from the edge
+        HH += (0.3 - HH) * wgt
+        for j in np.nonzero(wgt > 0.5)[0]:
+            cur[j] = p
+        out.setdefault(p, []).append((tc, hold, wgt))
+        lean += CHOKE_LEAN * wgt
+        twist += -math.atan2(grip[0], grip[1] - HIPS[1]) * wgt
+        on[chosen] = np.maximum(on[chosen], wgt)
+        h["choke_hand"] = chosen
+    return out, lean, twist, on
+
+
+def _lesson(hits, start, end, beats, downbeats):
+    bts, dbs, period = drum_teacher._grid(beats, downbeats)
+    out = []
+    for h in sorted(hits, key=lambda h: h["t"]):
+        if "tech" not in h or not start <= h["t"] < end:
+            continue
+        bar, beat = drum_teacher.where(h["t"], bts, dbs, period)
+        e = {"t": round(h["t"], 4), "bar": bar, "beat": round(beat, 2), "piece": h["piece"], "vel": h["vel"],
+             "tech": h["tech"], "why": h["why"], "hand": h.get("choke_hand") or h.get("hand")}
+        if h.get("choke_skipped"):
+            e["skipped"] = h["choke_skipped"]
+        elif h["piece"] in HAND_PIECES and not h.get("hand"):
+            e["skipped"] = "no free hand"
+        out.append(e)
+    return out
+
+
 def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, schedule=((0.0, "groove"),), seed=0,
-            motion="smooth"):
+            motion="smooth", emotion=None, sliders=None):
     """motion: "smooth" (the rules above), "snap" (hands jump between a prep pose and the hit pose, no easing,
     no springs), or "loose" (smooth, but every hand hit lands up to LOOSE_FRAMES early or late and up to
-    LOOSE_AIM m off its strike point). snap and loose exist to test how exact a blockout has to be."""
+    LOOSE_AIM m off its strike point). snap and loose exist to test how exact a blockout has to be.
+    emotion: a drum_style.py timeline ("0:calm,8:intense"); it sets stroke heights, arm lift, torso lean,
+    cymbal follow-through, and the head schedule (replacing `schedule`). sliders: {slider: value} on top.
+    Hits annotated by drum_teacher.teach() get their techniques, and the result carries a "lesson"."""
     if motion not in MOTIONS:
         raise ValueError(f"motion must be one of {MOTIONS}")
+    style = drum_style.parse(emotion, sliders) if emotion else None
+    if style:
+        schedule = drum_style.head_schedule(style)
     rng = np.random.default_rng(seed + 1000)
     hits = [dict(h) for h in hits]
     end = start + dur if dur else max(h["t"] for h in hits) + 1.5
@@ -468,6 +617,7 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
                 h["tf"] += int(rng.integers(-LOOSE_FRAMES, LOOSE_FRAMES + 1)) / fps
                 r, ang = LOOSE_AIM * math.sqrt(rng.random()), 2 * math.pi * rng.random()
                 h["aim"] = (r * math.cos(ang), r * math.sin(ang), 0.0)
+            _style_hit(h, hand, style)
         hs.sort(key=lambda h: h["tf"])
         keep = []
         for h in hs:     # one stroke per frame per hand: a faster repeat is merged into the stroke before it
@@ -483,7 +633,11 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
     beats = np.asarray(beats if beats is not None else np.arange(0, end + 1, 0.5))
     downbeats = np.asarray(downbeats if downbeats is not None else beats[::4])
     OPEN, HEEL_L = _hat_track(hits, times, start, fps, beats)
-    tilt = piece_tilt([h for h in hits if h.get("hand")], times)
+    chokes, LEAN, TWIST, CHOKING = _place_chokes(hand_hits, tracks, times)
+    tilt = piece_tilt([h for h in hits if h.get("hand")], times, chokes)
+    for h in hand_hits:
+        if h.get("lean") and h.get("hand"):
+            LEAN += h["lean"] * _bump(times - h["tf"])
 
     # hands: springs on the grip, read ahead to cancel the lag
     lead = int(round(LEAD_HAND * fps))
@@ -512,6 +666,10 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
     HEAD[:, 1] += look[:, 0] + dynamics.drift(times, 0.03, seed * 10 + 11)
     HEAD[:, 2] += dynamics.drift(times, 0.02, seed * 10 + 12)
     HEAD[:, 3] += look[:, 1]
+    if LEAN.any():
+        HEAD[:, 3] += np.clip(dynamics.filter_track(LEAN[:, None], fps, *SPRING_LEAN)[:, 0], 0, 0.6)
+    if TWIST.any():     # head turns to the cymbal; the torso follows with 0.3 of it (performer.Body.pose)
+        HEAD[:, 1] += dynamics.filter_track(TWIST[:, None], fps, *SPRING_LEAN)[:, 0]
     body = performer.Body(hips=HIPS, base_gaze_pitch=0.75)
     LEG = dynamics.filter_track(np.stack([KLIFT, HEEL_L], 1), fps, *SPRING_LEG)
 
@@ -537,6 +695,15 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
         pitch, yaw, roll, lean = HEAD[j]
         b = body.pose(pitch, yaw, roll, lean, wrists)
         for hand in ("R", "L"):
+            if CHOKING[hand][j] > 0 or style:   # past arm's length (a far cymbal, a big styled lift): stop at full reach
+                hd, sh = fr["hands"][hand], np.array(b["shoulders"][hand])
+                v = hd["wrist"] - sh
+                over = float(np.linalg.norm(v)) - (performer.UPPER_ARM + performer.FOREARM - 0.002)
+                if over > 0:
+                    shift = over * _unit(v)
+                    for key in ("tip", "grip", "butt", "wrist"):
+                        hd[key] = hd[key] - shift
+                    b["elbows"][hand] = performer.arm_ik(sh, hd["wrist"], 1 if hand == "R" else -1).tolist()
             fr["hands"][hand]["elbow"] = b["elbows"][hand]
             fr["hands"][hand]["shoulder"] = b["shoulders"][hand]
         # feet
@@ -558,11 +725,26 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
         fr["body"] = b
         frames.append(_round(fr))
 
-    drawn = [{"t": round(h["t"] - start, 4), "tf": round(h["tf"] - start, 4), "piece": h["piece"], "vel": h["vel"],
-              "hand": h["hand"]} for h in hand_hits if h.get("hand") and start <= h["tf"] < end]
+    drawn = []
+    for h in hand_hits:
+        if h.get("hand") and start <= h["tf"] < end:
+            d = {"t": round(h["t"] - start, 4), "tf": round(h["tf"] - start, 4), "piece": h["piece"], "vel": h["vel"],
+                 "hand": h["hand"]}
+            if "tech" in h:
+                d["tech"] = h["tech"]
+            if "S" in h:
+                d["s"] = [round(float(x), 5) for x in h["S"] + np.asarray(h.get("aim", (0, 0, 0)))]
+            if style:
+                d["tier"] = drum_style.tier(h["H"])[0]
+            drawn.append(d)
+    extra = {}
+    if style:
+        extra["emotion"] = [{"t": t, **sl, "head": head} for t, sl, head in style]
+    if any("tech" in h for h in hits):
+        extra["lesson"] = _lesson(hits, start, end, beats, downbeats)
     kit = {p: {**{k: v for k, v in KIT[p].items()}, "strike_pt": STRIKE.get(p, np.array(KIT[p]["c"])).tolist(),
                "n": NORMAL[p].tolist()} for p in KIT}
-    return {"fps": fps, "start": start, "kit": kit, "stick": [STICK, TIP], "hihat_open": HIHAT_OPEN,
+    return {**extra, "fps": fps, "start": start, "kit": kit, "stick": [STICK, TIP], "hihat_open": HIHAT_OPEN,
             "kick_pedal": {"heel": PEDAL_HEEL.tolist(), "len": BOARD_L, "beater_pivot": BEATER_PIVOT.tolist(),
                            "beater_len": BEATER_L},
             "hat_pedal": {"heel": HAT_HEEL.tolist(), "dir": HAT_DIR.tolist(), "len": BOARD_L},
@@ -592,8 +774,8 @@ def check(anim):
     for h in anim["hits"]:
         j = int(round(h["tf"] * fps))
         if 0 <= j < len(fr):
-            s = np.array(kit[h["piece"]]["strike_pt"])
-            if h["piece"] == "hihat" and fr[j]["hihat"]["open"] > 0.5:
+            s = np.array(h["s"] if "s" in h else kit[h["piece"]]["strike_pt"])
+            if h["piece"] == "hihat" and "s" not in h and fr[j]["hihat"]["open"] > 0.5:
                 s = s + np.array([0, 0, anim["hihat_open"]])
             errs.append(float(np.linalg.norm(np.array(fr[j]["hands"][h["hand"]]["tip"]) - s)))
     pen, reach = 0, 0.0
@@ -620,7 +802,17 @@ def check(anim):
             "tip_penetrating_frames": pen, "max_reach_m": round(reach, 3),
             "arm_length_m": performer.UPPER_ARM + performer.FOREARM,
             "kicks": len(anim["kicks"]), "kicks_beater_on_head": kick_ok,
-            "sticking": {hd: sum(h["hand"] == hd for h in anim["hits"]) for hd in ("R", "L")}}
+            "sticking": {hd: sum(h["hand"] == hd for h in anim["hits"]) for hd in ("R", "L")},
+            **({"techniques": _count(e["tech"] for e in anim["lesson"] if not e.get("skipped")),
+                "skipped": _count(e["tech"] for e in anim["lesson"] if e.get("skipped"))} if "lesson" in anim else {}),
+            **({"tiers": _count(h["tier"] for h in anim["hits"])} if "emotion" in anim else {})}
+
+
+def _count(xs):
+    out = {}
+    for x in xs:
+        out[x] = out.get(x, 0) + 1
+    return dict(sorted(out.items()))
 
 
 if __name__ == "__main__":
@@ -637,6 +829,10 @@ if __name__ == "__main__":
                     help="head style timeline in seconds: '0:focused,8:groove,16:wild,20:crowd'")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--motion", choices=MOTIONS, default="smooth")
+    ap.add_argument("--emotion", help="drum_style.py timeline, e.g. '0:calm,8:intense' (replaces --schedule)")
+    for k in drum_style.SLIDERS:
+        ap.add_argument(f"--{k}", type=float, help=f"{k} slider 0..1 on top of every emotion preset")
+    ap.add_argument("--teach", action="store_true", help="pick techniques with drum_teacher.py and print the lesson")
     ap.add_argument("--hits-out", help="write the hit list (for drumsynth / scoring) as JSON")
     a = ap.parse_args()
     bts = dbs = None
@@ -649,10 +845,15 @@ if __name__ == "__main__":
         bj = json.load(open(a.beats))
         bts = bj["beats"]
         dbs = bj.get("downbeats", bts[::4])
+    if a.teach:
+        drum_teacher.teach(hits, bts, dbs)
     if a.hits_out:
         json.dump({"hits": hits}, open(a.hits_out, "w"))
     sched = [(float(t), st) for t, st in (x.split(":") for x in a.schedule.split(","))]
-    anim = animate(hits, a.fps, a.start, a.dur, bts, dbs, sched, a.seed, a.motion)
+    sliders = {k: getattr(a, k) for k in drum_style.SLIDERS if getattr(a, k) is not None}
+    anim = animate(hits, a.fps, a.start, a.dur, bts, dbs, sched, a.seed, a.motion, a.emotion, sliders)
     json.dump(anim, open(a.out, "w"))
+    if "lesson" in anim:
+        print(drum_teacher.sheet(anim["lesson"]))
     print(f"{len(anim['frames'])} frames -> {a.out}")
     print(json.dumps(check(anim)))

@@ -3,6 +3,8 @@
 Kick (pitch-swept sine and a click), snare (tone plus noise), toms (swept sines), hi-hat (high-passed
 noise; open hats are choked by the next closed hat or pedal), crash and ride (long noise tails, the ride
 with a ping). Panned by where each piece sits in the kit. It is a timing reference, not a drummer.
+Hits annotated by blockout/drum_teacher.py sound their technique: cross-stick click, rimshot crack, ride bell,
+and a choked crash cut off at its choke time.
 
     python -m blockout.drumsynth HITS.json OUT.wav [--start S --dur D]
     (HITS.json: {"hits": [...]} from blockout.drums --hits-out, or h3band/drum_events.py)
@@ -26,8 +28,21 @@ def _sweep(t, f_end, f_start, tau):
     return np.sin(2 * np.pi * np.cumsum(f) / SR)
 
 
-def voice(piece, vel, rng, open_=False, length=None):
+def voice(piece, vel, rng, open_=False, length=None, tech=None):
     a = (vel / 127.0) ** 1.5
+    if tech == "cross_stick":
+        t = np.arange(int(0.12 * SR)) / SR
+        return a * (0.6 * np.sin(2 * np.pi * 1250 * t) * np.exp(-t / 0.012)
+                    + 0.3 * _hp(rng.standard_normal(len(t)), 2) * np.exp(-t / 0.006))
+    if tech == "rimshot":
+        t = np.arange(int(0.35 * SR)) / SR
+        return a * (0.4 * np.sin(2 * np.pi * 185 * t) * np.exp(-t / 0.06)
+                    + 0.9 * _hp(rng.standard_normal(len(t)), 2) * np.exp(-t / 0.09)
+                    + 0.5 * np.sin(2 * np.pi * 920 * t) * np.exp(-t / 0.015))
+    if tech == "bell":
+        t = np.arange(int(1.5 * SR)) / SR
+        ping = sum(np.sin(2 * np.pi * f * t) * w for f, w in ((2380, 0.30), (3570, 0.18), (5010, 0.08)))
+        return a * (0.05 * _hp(rng.standard_normal(len(t)), 2) * np.exp(-t / 0.4) + ping * np.exp(-t / 0.7))
     if piece == "kick":
         t = np.arange(int(0.45 * SR)) / SR
         s = _sweep(t, 48, 150, 0.035) * np.exp(-t / 0.22)
@@ -74,7 +89,10 @@ def render(hits, start=0.0, dur=None, seed=0):
         if h.get("open"):
             nxt = next((o["t"] for o in hats if o["t"] > h["t"] + 1e-3 and not o.get("open")), None)
             length = (nxt - h["t"]) if nxt else None
-        s = voice(h["piece"], h["vel"], rng, bool(h.get("open")), length)
+        s = voice(h["piece"], h["vel"], rng, bool(h.get("open")), length, h.get("tech"))
+        if h.get("choke"):     # blockout/drum_teacher.py: the hand pinches the cymbal at choke["t"]
+            ts = np.arange(len(s)) / SR
+            s = s * np.exp(-np.maximum(ts - (h["choke"]["t"] - h["t"]), 0) / 0.03)
         x = KIT.get(h["piece"] if h["piece"] != "hihat_pedal" else "hihat", {"c": (0, 0, 0)})["c"][0]
         pan = float(np.clip(x / 0.8, -1, 1))
         gains = np.array([np.sqrt(0.5 * (1 - pan)), np.sqrt(0.5 * (1 + pan))])
