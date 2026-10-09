@@ -687,6 +687,7 @@ def hand_track(fing, hand, times, rest_x):
     t_on = np.array([s[0][0].start for s in fing])
     hx = np.array([_place([(n.pitch, f) for n, f in s], any(is_black(n.pitch) for n, _ in s), hand) for s in fing])
     nb = np.array([any(is_black(n.pitch) for n, _ in s) for s in fing])
+    t_end = np.array([min(n.end for n, _ in s) for s in fing])   # the slice's first release frees the hand
     x = np.empty(len(times))
     for j, t in enumerate(times):
         i = np.searchsorted(t_on, t, side="right") - 1
@@ -695,10 +696,11 @@ def hand_track(fing, hand, times, rest_x):
             x[j] = rest_x + (hx[0] - rest_x) * u
             continue
         x[j] = hx[i]
-        if i + 1 < len(t_on):  # glide to the next placement just before it sounds
-            gap = t_on[i + 1] - t_on[i]
-            dur = min(0.12, 0.7 * gap)
+        if i + 1 < len(t_on):  # once its notes let go, the hand drifts toward where it plays next (it doesn't wait,
+            gap = t_on[i + 1] - t_on[i]          # or go home): legato leaves only the short glide before the onset
             t1 = t_on[i + 1] - 0.025
+            g0 = max(t_end[i], t_on[i] + 0.05)
+            dur = max(min(0.12, 0.7 * gap), t1 - g0)
             x[j] = hx[i] + (hx[i + 1] - hx[i]) * _smooth((t - (t1 - dur)) / dur)
     idx = np.clip(np.searchsorted(t_on, times + 0.06, side="right") - 1, 0, len(fing) - 1)
     return x, nb[idx]
@@ -1173,6 +1175,9 @@ TUCK = (-0.050, -0.014, -0.038)     # under hand's free thumb tip, hand-local (x
 OVER_THUMB = (-0.045, 0.000, -0.008)    # over hand's free thumb tip: laid along the index, up at knuckle height
 MIN_GAP, MAX_PUSH = 0.105, 0.03     # m: working gap the hand centres keep where their notes allow; most they give way
 THUMB_GAP = (0.15, 0.20)            # m between hand centres: free thumbs close in to the index .. stay out
+THUMB_IN = 0.8                       # how far an idle thumb draws in to lie along the hand
+THUMB_TUCK = (0.0, 0.0, 0.30, 0.65)  # rad added to an idle thumb's relaxed pose (cmc abd, cmc flex, mcp, ip): the
+                                     # top joint tucks to clear space
 THUMB_CLOSE = (-0.054, -0.008, -0.030)  # a free thumb drawn in against the index side when the other hand is near
 ROLE_FORCE = None                   # experiment hook: 1.0 = right hand always under, 0.0 = left
 CLOSE = {}
@@ -1362,6 +1367,7 @@ WRIST_W = 0.05              # weight of the wrist joint past that band (a 10 deg
 WRIST_LAMBDA = 12.0         # smoothing of the wrist's path (Whittaker, 2nd differences; ~2 Hz at 24 fps)
 WRIST_IDLE_W = 0.15         # how much a frame with no pressing finger pulls the smoothed wrist to its solve
 WRIST_STRIKE_W = 8.0        # ... and how hard the frames where a finger is striking pin it (the arm lands on the chord)
+WRIST_HOLD_W = 0.6          # a held note pulls the wrist path less: between strikes the hand leans to the next one
 WRIST_STRIKE_T = 0.12       # s: a strike lasts this long from the finger taking its key
 WRIST_LAMBDA_Z = 0.25       # the vertical path is this much less smoothed (an arm drop is quick)
 WRIST_PASSES = 2            # wrist path refinements: solve the whole hand around the path, smooth, repeat
@@ -1445,6 +1451,11 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
              for f in range(5)]
         x_init = solved[name][0] if name in solved else prev.get(name)
         W = {k: v for k, v in RIG_W.items() if k not in ("press", "free")}
+        tk = float(H["WF"][j][0]) if "WF" in H else 0.0
+        if not pressing[0] and tk > 0.05:               # off duty: the thumb's relaxed pose tucks, easing in and out
+            W["rest_override"] = {0: np.clip(rig.q_rest[:rig.sl[1]] + tk * np.array(THUMB_TUCK)[:rig.sl[1]],
+                                             rig.lo[:rig.sl[1]], rig.hi[:rig.sl[1]])}
+            W["rest_override_w"] = 1.0 + 29.0 * tk
         if roots is not None:
             q0 = x_init[6:] if x_init is not None else rig.q_rest
             if qprior is not None:                      # start on the smoothed finger path, and stay near it
@@ -1489,7 +1500,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
         busy = np.array([[a is not None for a in H["act"][j]] for j in range(N)])
         new = busy & ~np.vstack([np.zeros((1, 5), bool), busy[:-1]])        # a finger takes its key
         strike = np.convolve(new.any(1).astype(float), np.ones(ns))[:N] > 0
-        PW[name] = np.where(strike, WRIST_STRIKE_W, np.where(busy.any(1), 1.0, WRIST_IDLE_W))[j0:N]
+        PW[name] = np.where(strike, WRIST_STRIKE_W, np.where(busy.any(1), WRIST_HOLD_W, WRIST_IDLE_W))[j0:N]
     for k in range(max(1, WRIST_PASSES)):               # pass A: where the wrist needs to be, then smoothed
         XA = {name: [] for name in hands}
         prev = {}
@@ -1563,7 +1574,10 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
             fr["hands"][name] = {"wrist": [round(float(c), 5) for c in rp],
                                  "fingers": [[[round(float(c), 5) for c in q] for q in P] for P in pts],
                                  "pads": [[round(float(c), 5) for c in q] for q in pads],
-                                 **({"targets": np.round(targets[name], 5).tolist()} if os.environ.get("RIG_DBG") else {}),
+                                 **({"targets": np.round(targets[name], 5).tolist(),
+                                     "plan0": np.round(_plan_root(hands[name], name, j)[1], 5).tolist(),
+                                     "xh": round(float(hands[name]["xh"][j]), 5), "C": np.round(hands[name]["C"][j], 5).tolist(),
+                                     "Cf": np.round(hands[name]["Cf"][j], 5).tolist()} if os.environ.get("RIG_DBG") else {}),
                                  "root": {"rot": np.round(rr, 6).tolist(), "pos": [round(float(c), 6) for c in rp],
                                           "plan": [round(float(c), 6) for c in ref_pos]},
                                  "angles": {b: {k: round(v, 5) for k, v in d.items()} for b, d in _rig(name).angles(x).items()}}
@@ -1738,14 +1752,15 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                     tip = tip.copy() + _yaw(np.array([sgn * EXT_OUT[f], EXT_FWD, 0.0]), psi0) * idle
                     tip[2] = surface_under(tip[0], tip[1], TIP_R[f], {}) + TIP_R[f] + hover * (0.4 if f == 0 else 1.0) + EXT_UP * idle
                     uw, ow = float(CL["under"][j]), float(CL["over"][j])
-                    if f == 0 and CL["tclose"][j] > 0:        # the other hand is near: the free thumb draws in
+                    idle_t = 1.0 - w                          # (the thumb's own off-duty share; `idle` is 0 for it)
+                    if f == 0:                                # an idle thumb lies in along the hand, low and parallel
                         tk = ct + _yaw(np.array([sgn * THUMB_CLOSE[0], THUMB_CLOSE[1], THUMB_CLOSE[2]]), psi0)
                         tk[2] = max(tk[2], surface_under(tk[0], tk[1], TIP_R[f], {}) + TIP_R[f] + 0.004)
-                        tip = tip + float(CL["tclose"][j]) * idle * (tk - tip)
+                        tip = tip + max(float(CL["tclose"][j]), THUMB_IN) * idle_t * (tk - tip)
                     if f == 0 and uw > 0:                     # under hand: the thumb tucks in under the palm
                         tk = ct + _yaw(np.array([sgn * TUCK[0], TUCK[1], TUCK[2]]), psi0)
                         tk[2] = max(tk[2], surface_under(tk[0], tk[1], TIP_R[f], {}) + TIP_R[f] + 0.006)
-                        tip = tip + uw * idle * (tk - tip)
+                        tip = tip + uw * idle_t * (tk - tip)
                     if ow > 0:                                # over hand: fingers ride up and curl in, thumb closes
                         if f == 0:
                             tk = ct + _yaw(np.array([sgn * OVER_THUMB[0], OVER_THUMB[1], OVER_THUMB[2]]), psi0)
@@ -1818,6 +1833,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         soft = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_FREE).reshape(N, 5, 3)
         wf = np.clip(dynamics.filter_track(H["FREE"], fps, 6.0, 1.0, 1.0), 0, 1)[:, :, None]
         H["Tf"] = wf * soft + (1 - wf) * firm          # a finger off duty goes limp: it trails, floats and settles
+        H["WF"] = wf[:, :, 0]                          # (the eased off-duty share, per finger)
     HEAD = np.array([performer.head_angles(t, beats, downbeats, float(energy[j]), sched) for j, t in enumerate(th)])
     HEAD = dynamics.filter_track(HEAD, fps, *SPRING_HEAD)
     HEAD[:, 1] += dynamics.drift(times, 0.03, seed * 10 + 11)

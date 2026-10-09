@@ -682,6 +682,10 @@ for i in FRAME_IDS:
         cam_d.lens = c["lens"]
         for ob in HEAD_PARTS:
             ob.hide_render = c["hide_head"]
+        if "hide_body" in c:                           # keyboard shots: only the arms, hands and piano render
+            for ob in COL.objects:
+                if ob.name.split("_")[0].rstrip("-1") in ("torso", "head", "nose", "neck", "thigh", "shin", "bench"):
+                    ob.hide_render = bool(c["hide_body"]) or (ob in HEAD_PARTS and c["hide_head"])
     if "case" in opts.get("--hide", ""):              # debug: see the fingers from the far side of the piano
         for ob in COL.objects:
             if ob.name in ("fallboard", "lid_body", "music_desk", "cheek_l", "cheek_r"):

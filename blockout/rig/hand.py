@@ -152,7 +152,12 @@ class HandRig:
             if targets[f] is not None and float(np.max(weights[f])) >= 0.99:
                 cw[a:b] = math.sqrt(W.get("comfort_press", 1.0))
         scale = self.sigma if W.get("comfort_sigma") else self.rng      # human-spread scaling: experimental, off
-        r.append(math.sqrt(W["comfort"]) * cw * (q - self.q_rest) / scale)
+        q_rest = self.q_rest
+        if W.get("rest_override"):
+            q_rest = q_rest.copy()
+            for f, v in W["rest_override"].items():
+                q_rest[self.sl[f]:self.sl[f + 1]] = v
+        r.append(math.sqrt(W["comfort"]) * cw * (q - q_rest) / scale)
         for ch, a in zip(self.chains, self.sl[:-1]):
             if ch.k_dip:
                 r.append([math.sqrt(W["couple"]) * (q[a + ch.i_dip] - ch.k_dip * q[a + ch.i_pip])])
@@ -238,7 +243,10 @@ class HandRig:
             r.append(np.asarray(weight, float) * (ch.effector(P, Rs) - target))
         cw = math.sqrt(W.get("comfort_press", 1.0)) if pressing else 1.0
         scale = (self.sigma if W.get("comfort_sigma") else self.rng)[a:b]
-        r.append(math.sqrt(W["comfort"]) * cw * (qf - self.q_rest[a:b]) / scale)
+        rest = W.get("rest_override", {}).get(f, self.q_rest[a:b])
+        if f in W.get("rest_override", {}):
+            cw *= math.sqrt(W.get("rest_override_w", 30.0))   # an overridden pose (the idle thumb's tuck) is held
+        r.append(math.sqrt(W["comfort"]) * cw * (qf - rest) / scale)
         if ch.k_dip:
             r.append([math.sqrt(W["couple"]) * (qf[ch.i_dip] - ch.k_dip * qf[ch.i_pip])])
         if x_last is not None and W.get("smooth", 0) > 0:

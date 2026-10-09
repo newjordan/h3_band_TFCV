@@ -9,7 +9,8 @@ blender_piano.py --view edit. Rules:
 - the shot is drawn (seeded) from weights that also follow energy: soft passages favour the wide, the
   first-person view, slow orbits and gentle hand tracking; loud passages favour views that show both
   hands on the keys (hands, wide, overhead, slow orbit) over the helm and single-hand close-ups;
-- a hand that travels far in a shot (a run down from the top of the keyboard) gets a camera that follows it;
+- composed, not chasing: every shot except the first-person view holds one framing, set from where the hands
+  are over the whole shot; only the wide's slow push-in, a slow orbit and the closing pull-back move;
 - the point is to watch the hands hit the keys: shots that don't show them (the low hero angle on the helm)
   are rare;
 - never the same shot twice in a row; opens on the wide, closes on a slow rising pull-back;
@@ -35,6 +36,7 @@ WEIGHTS = {"wide":       (3.0, 2.0),
            "keys_low":   (0.5, 0.3)}
 
 
+LOCKED = ("hands", "rh_close", "lh_close", "overhead", "side", "keys_low", "hero_low")
 FOLLOW_MIN = 0.20         # m a hand travels across the keys in a shot before the camera follows it
 
 
@@ -62,9 +64,6 @@ def plan(frames, downbeats, fps, seed=0, beats=()):
             name = "wide"
         elif f1 == n:
             name = "pullback"
-        elif max((tr := {h: _travel(frames, f0, f1, h) for h in ("R", "L")}).values()) > FOLLOW_MIN and \
-                max(tr.values()) > 1.8 * min(tr.values()):
-            name = "follow_" + max(tr, key=tr.get)        # one hand on a long run: stay with it
         else:
             names = [k for k in WEIGHTS if k != last and sum(WEIGHTS[k]) > 0]
             w = np.array([WEIGHTS[k][0] * (1 - e) + WEIGHTS[k][1] * e for k in names])
@@ -103,7 +102,7 @@ def camera(name, fr, u, cx, seed):
         return p, look, up, 30.0 - 6 * u
     if name == "orbit":
         a0 = rng.uniform(-0.9, 0.9)
-        a = a0 + side * 0.35 * u
+        a = a0 + side * 0.12 * u
         centre = np.array([cx, -0.28, 0.28])
         return centre + np.array([1.25 * math.sin(a), 1.25 * math.cos(a), 0.45]), centre, up, 32.0
     if name == "hands":                                   # both hands from the player's side, high: the keys show
@@ -133,6 +132,76 @@ def camera(name, fr, u, cx, seed):
     raise ValueError(name)
 
 
+def _fit(pos, look, pts, up, lens, margin=0.8, aspect=1280 / 704):
+    """Move the camera back along its view line until every point is inside `margin` of the frame."""
+    hx = 18.0 / lens; hy = hx / aspect
+    for s in np.linspace(1.0, 3.0, 41):
+        p = look + (pos - look) * s
+        f = look - p; f = f / np.linalg.norm(f)
+        r = np.cross(f, up); r = r / np.linalg.norm(r); u = np.cross(r, f)
+        v = pts - p; z = v @ f
+        if (z > 0).all() and (np.abs(v @ r / z) <= margin * hx).all() and (np.abs(v @ u / z) <= margin * hy).all():
+            return p
+    return p
+
+
+# ---------------------------------------------------------------- still edit (default): locked-off keyboard shots
+STILL_ORDER = ("keys_high", "keys_3q_R", "keys_high", "overhead", "keys_high", "keys_3q_L")
+STILL_LEN = 12.0          # s per shot, cut on the next downbeat
+
+
+def still_plan(frames, downbeats, fps):
+    n = len(frames)
+    db = [int(round(d * fps)) for d in downbeats if 0 < d * fps < n]
+    shots, f0, k = [], 0, 0
+    while f0 < n:
+        nxt = [d for d in db if d >= f0 + int(STILL_LEN * fps)]
+        f1 = nxt[0] if nxt else n
+        if n - f1 < 4 * fps:
+            f1 = n
+        shots.append((f0, f1, STILL_ORDER[k % len(STILL_ORDER)]))
+        f0, k = f1, k + 1
+    return shots
+
+
+def still_camera(name, frames, f0, f1):
+    """One fixed camera for the shot: it sees the keys both hands play during it, and the hands, all the time."""
+    pts = np.array([q[k] for i in range(f0, f1, 2) for h in frames[i]["hands"].values() for q in h["fingers"]
+                    for k in (0, 3)] + [h["wrist"] for i in range(f0, f1, 2) for h in frames[i]["hands"].values()])
+    x0, x1 = pts[:, 0].min() - 0.06, pts[:, 0].max() + 0.06
+    keys = np.array([[x, y, 0.0] for x in np.linspace(x0, x1, 7) for y in (0.0, 0.14)])
+    allp = np.vstack([pts, keys])
+    kc = 0.5 * (x0 + x1)
+    if name.startswith("keys_3q") and x1 - x0 > 0.55:   # both hands spread wide: the oblique would sit far back
+        name = "keys_high"
+    look = np.array([kc, 0.06, 0.0])
+    up = np.array([0, 0, 1.0])
+    if name == "keys_high":
+        pos = np.array([kc, -0.30, 0.62])
+    elif name == "overhead":
+        pos, up = np.array([kc, 0.02, 0.70]), np.array([0, 1.0, 0])
+    else:
+        s = 1 if name.endswith("R") else -1         # high on the player's side, offset: the keys at an angle
+        pos = np.array([kc + s * 0.38, -0.30, 0.58])
+    lens = 35.0
+    return _fit(pos, look, allp, up, lens, margin=0.85), look, up, lens, name
+
+
+def direct_still(anim):
+    frames, fps = anim["frames"], anim["fps"]
+    shots = still_plan(frames, anim.get("downbeats", []), fps)
+    labels = []
+    for f0, f1, name in shots:
+        p, l, u, lens, name = still_camera(name, frames, f0, f1)
+        labels.append((f0, f1, name))
+        for i in range(f0, f1):
+            frames[i]["cam"] = {"pos": [round(float(c), 5) for c in p], "look": [round(float(c), 5) for c in l],
+                                "up": [float(c) for c in u], "lens": lens, "shot": name, "hide_head": True,
+                                "hide_body": True}
+    anim["shots"] = [{"start": f0 / fps, "end": f1 / fps, "shot": s} for f0, f1, s in labels]
+    return anim
+
+
 def direct(anim, seed=0):
     frames, fps = anim["frames"], anim["fps"]
     cx = anim["centre_x"]
@@ -141,7 +210,13 @@ def direct(anim, seed=0):
         L = max(f1 - f0, 1)
         raw = [camera(name, frames[i], (i - f0) / L, cx, seed * 1000 + k) for i in range(f0, f1)]
         pos = np.array([r[0] for r in raw]); look = np.array([r[1] for r in raw])
-        if name not in ("pov",):                          # an operator: smooth, a touch behind the action
+        if name in LOCKED:                                # composed: one framing for the whole shot, backed off
+            p0, l0 = pos.mean(0), look.mean(0)           # until both hands stay inside it all the way through
+            pts = np.array([q[3] for i in range(f0, f1, 2) for h in frames[i]["hands"].values() for q in h["fingers"]]
+                           + [h["wrist"] for i in range(f0, f1, 2) for h in frames[i]["hands"].values()])
+            p0 = _fit(p0, l0, pts, raw[0][2], raw[0][3])
+            pos[:] = p0; look[:] = l0
+        elif name not in ("pov",):                        # the slow moves: smooth, a touch behind the action
             pos = dynamics.filter_track(pos, fps, 1.2, 0.9, 0.0)
             look = dynamics.filter_track(look, fps, 1.6, 0.85, 0.0)
         for i, (p, l, r) in enumerate(zip(pos, look, raw)):
@@ -156,8 +231,10 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("anim"); ap.add_argument("out")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--style", default="still", choices=["still", "music"],
+                    help="still: locked-off shots of the keys and hands (default); music: the older energy-driven edit")
     a = ap.parse_args()
-    anim = direct(json.load(open(a.anim)), a.seed)
+    anim = direct_still(json.load(open(a.anim))) if a.style == "still" else direct(json.load(open(a.anim)), a.seed)
     json.dump(anim, open(a.out, "w"))
     from collections import Counter
     print(len(anim["shots"]), "shots:", dict(Counter(s["shot"] for s in anim["shots"])))
