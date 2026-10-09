@@ -98,8 +98,13 @@ def rot(pitch_down, yaw, roll):
     return Rz @ Rx @ Ry
 
 
-def arm_ik(shoulder, wrist, side):
-    """Elbow for a 2-bone arm; the elbow points down and out to the player's side."""
+ARM_FOLLOW = 0.85                       # how far the elbow swings to put the forearm in line behind the hand
+
+
+def arm_ik(shoulder, wrist, side, hand_fwd=None):
+    """Elbow for a 2-bone arm; the elbow points down and out to the player's side. With hand_fwd (the hand's
+    wrist -> knuckles direction) the elbow swings around the shoulder-wrist axis so the forearm lines up behind
+    the hand: the arm carries the hand, the wrist doesn't bend to suit the arm."""
     d = wrist - shoulder
     L = float(np.linalg.norm(d))
     L = min(max(L, 1e-4), UPPER_ARM + FOREARM - 1e-3)
@@ -109,6 +114,16 @@ def arm_ik(shoulder, wrist, side):
     pole = np.array([side * 0.35, -0.3, -1.0])          # elbows hang close to the body, slightly out
     pole -= (pole @ u) * u
     pole /= max(np.linalg.norm(pole), 1e-6)
+    if hand_fwd is not None:
+        hf = np.asarray(hand_fwd, float); hf = hf / max(np.linalg.norm(hf), 1e-9)
+        want = wrist - FOREARM * hf - (shoulder + a * u)   # where the elbow would put the forearm in line
+        want -= (want @ u) * u
+        if np.linalg.norm(want) > 1e-6:
+            p2 = ARM_FOLLOW * want / np.linalg.norm(want) + (1 - ARM_FOLLOW) * pole
+            if p2[2] > -0.1:                             # the elbow never rises above the shoulder-wrist line
+                p2[2] = -0.1
+                p2 -= (p2 @ u) * u
+            pole = p2 / max(np.linalg.norm(p2), 1e-6)
     return shoulder + a * u + h * pole
 
 
@@ -121,7 +136,7 @@ class Body:
         self.gaze = base_gaze_pitch      # where the eyes look at rest (radians below horizontal)
         self.eye_ahead = eye_ahead
 
-    def pose(self, pitch, yaw, roll, lean, wrists):
+    def pose(self, pitch, yaw, roll, lean, wrists, hand_fwd=None):
         # torso follows the head a little; the head carries the rest
         Rt = rot(0.25 * pitch + 0.06 + 0.6 * lean, 0.3 * yaw, 0.35 * roll)
         top = self.hips + Rt @ np.array([0, 0, self.th])
@@ -138,7 +153,8 @@ class Body:
                "cam_fwd": (Rg @ np.array([0, 1.0, 0])).tolist(), "cam_up": (Rg @ np.array([0, 0, 1.0])).tolist(),
                "shoulders": {k: v.tolist() for k, v in shoulders.items()}, "elbows": {}}
         for side, w in wrists.items():
-            out["elbows"][side] = arm_ik(shoulders[side], np.asarray(w), 1 if side == "R" else -1).tolist()
+            out["elbows"][side] = arm_ik(shoulders[side], np.asarray(w), 1 if side == "R" else -1,
+                                         None if hand_fwd is None else hand_fwd.get(side)).tolist()
         return out
 
 

@@ -125,6 +125,89 @@ def key_lever(p, y):
     return float(np.clip((WHITE_L - y) / (BLACK_L if is_black(p) else WHITE_L), 0.05, 1.0))
 
 
+SOFT_EDGE = 0.0010         # m: key edges eased over this width in the solver's collision surface
+
+
+def _sig(u):
+    return 1.0 / (1.0 + math.exp(-max(-40.0, min(40.0, u))))
+
+
+def surface_soft(x, y, depth, e=SOFT_EDGE):
+    """surface() with its edges eased over e, so a solver can feel a key's side or front before it is inside it
+    (a step has no slope to follow: the solve stalls against it, then snaps past)."""
+    xl = x + _MID_C
+    i0 = int(np.clip(xl // WHITE_W, 0, len(_WHITES) - 1))
+    f = xl / WHITE_W - i0
+    lever = max(WHITE_L - min(max(y, 0.0), WHITE_L), 0.0) / WHITE_L
+    zw = lambda i: -depth.get(_WHITES[int(np.clip(i, 0, len(_WHITES) - 1))], 0.0) * KEY_TRAVEL * lever
+    z0 = zw(i0)
+    z = z0 + (zw(i0 + 1) - z0) * _sig((f - 1) * WHITE_W / e) + (zw(i0 - 1) - z0) * _sig(-f * WHITE_W / e)
+    k = int(np.searchsorted(_BLACK_X, x))
+    for kk in (k - 1, k):
+        if 0 <= kk < len(_BLACK_X):
+            s_ = _sig((BLACK_W / 2 - abs(_BLACK_X[kk] - x)) / e) * _sig((y - (WHITE_L - BLACK_L)) / e)
+            if s_ > 1e-6:
+                zb = BLACK_H - depth.get(int(_BLACKS[kk]), 0.0) * KEY_TRAVEL * max(WHITE_L - y, 0.0) / BLACK_L
+                z += s_ * max(0.0, zb - z)
+    z = RAIL_Z + (z - RAIL_Z) * _sig(y / e)
+    return z + (FALLBOARD_Z - z) * _sig((y - FALLBOARD_Y) / e)
+
+
+def surface_under_soft(x, y, r, depth):
+    return max(surface_soft(x + dx, y + dy, depth) for dx, dy in ((0, 0), (0.8 * r, 0), (-0.8 * r, 0), (0, 0.8 * r), (0, -0.8 * r)))
+
+
+_WHITE_IDX = {p: i for i, p in enumerate(_WHITES)}
+_BLACK_IDX = {int(p): i for i, p in enumerate(_BLACKS)}
+
+
+def _depth_arrays(depth):
+    DW, DB = np.zeros(len(_WHITES)), np.zeros(len(_BLACKS))
+    for p, d in depth.items():
+        if p in _WHITE_IDX:
+            DW[_WHITE_IDX[p]] = d
+        elif p in _BLACK_IDX:
+            DB[_BLACK_IDX[p]] = d
+    return DW, DB
+
+
+def _sigv(u):
+    return 1.0 / (1.0 + np.exp(-np.clip(u, -40.0, 40.0)))
+
+
+def surface_soft_v(X, Y, DW, DB, e=SOFT_EDGE):
+    """surface_soft for arrays of points (DW, DB: white / black key depths by index, from _depth_arrays)."""
+    xl = X + _MID_C
+    n = len(_WHITES)
+    i0 = np.clip(np.floor(xl / WHITE_W), 0, n - 1).astype(int)
+    f = xl / WHITE_W - i0
+    lever = np.maximum(WHITE_L - np.clip(Y, 0.0, WHITE_L), 0.0) / WHITE_L
+    z0 = -DW[i0] * KEY_TRAVEL * lever
+    zn = -DW[np.minimum(i0 + 1, n - 1)] * KEY_TRAVEL * lever
+    zp = -DW[np.maximum(i0 - 1, 0)] * KEY_TRAVEL * lever
+    z = z0 + (zn - z0) * _sigv((f - 1) * WHITE_W / e) + (zp - z0) * _sigv(-f * WHITE_W / e)
+    k = np.searchsorted(_BLACK_X, X)
+    yb = _sigv((Y - (WHITE_L - BLACK_L)) / e)
+    for kk in (k - 1, k):
+        ok = (kk >= 0) & (kk < len(_BLACK_X))
+        kc = np.clip(kk, 0, len(_BLACK_X) - 1)
+        s_ = np.where(ok, _sigv((BLACK_W / 2 - np.abs(_BLACK_X[kc] - X)) / e) * yb, 0.0)
+        zb = BLACK_H - DB[kc] * KEY_TRAVEL * np.maximum(WHITE_L - Y, 0.0) / BLACK_L
+        z = z + s_ * np.maximum(0.0, zb - z)
+    z = RAIL_Z + (z - RAIL_Z) * _sigv(Y / e)
+    return z + (FALLBOARD_Z - z) * _sigv((Y - FALLBOARD_Y) / e)
+
+
+_DISC = np.array([(0, 0), (0.8, 0), (-0.8, 0), (0, 0.8), (0, -0.8)])
+
+
+def surface_under_soft_v(X, Y, R, DW, DB):
+    """Highest soft surface under discs of radius R at (X, Y)."""
+    Xs = X[:, None] + R[:, None] * _DISC[None, :, 0]
+    Ys = Y[:, None] + R[:, None] * _DISC[None, :, 1]
+    return surface_soft_v(Xs.ravel(), Ys.ravel(), DW, DB).reshape(Xs.shape).max(1)
+
+
 def surface_under(x, y, r, depth):
     """Highest surface under a disc of radius r (a finger pad seen from above)."""
     return max(surface(x + dx, y + dy, depth) for dx, dy in ((0, 0), (0.8 * r, 0), (-0.8 * r, 0), (0, 0.8 * r), (0, -0.8 * r)))
@@ -1233,7 +1316,28 @@ def _key_env(keydepth, pressing, other=None, rig=None):
     """Collision penalty (m^2) of a posed hand against the keyboard heightfield, from the skin's real cross-
     sections (the lowest point of each bone's off-centre ellipse; a pressing finger's pad may rest on its key),
     and against the other hand's skin (other = its spheres)."""
+    DW, DB = _depth_arrays(keydepth)
+
     def env(samples, root_rot, root_pos):
+        if not SOFT_ENV:
+            return _env_hard(samples, root_rot, root_pos)
+        out = []                                       # one residual per skin sample (and per hand blob), so the
+        if other is not None:                          # solver sees which part collides and which way is out
+            C, R = _hand_blobs(samples, root_rot, root_pos, rig)
+            d = np.linalg.norm(C[:, None, :] - other[0][None, :, :], axis=2)
+            ov = np.clip(R[:, None] + other[1][None, :] + HAND_CLEAR - d, 0, None)
+            out.extend(math.sqrt(HAND_W) * ov.sum(1))
+        S_ = [(f, i, u, c, low, w) for f in range(5) for i, u, c, low, w in samples[f]]
+        if S_:
+            C = np.array([s_[3] for s_ in S_]); low = np.array([s_[4] for s_ in S_])
+            W_ = np.array([s_[5] for s_ in S_])
+            d = surface_under_soft_v(C[:, 0], C[:, 1], 0.8 * W_, DW, DB) - low
+            d -= np.array([0.001 if pressing[f] and i == 2 and u >= 0.5 else 0.0 for f, i, u, *_r in S_])
+            d[low > 0.02] = 0.0                        # well above every key top
+            out.extend(np.maximum(d, 0.0))             # (a pressing pad rests on its own lowered key, not a neighbour)
+        return np.array(out)
+
+    def _env_hard(samples, root_rot, root_pos):
         pen = 0.0
         if other is not None:
             C, R = _hand_blobs(samples, root_rot, root_pos, rig)
@@ -1253,49 +1357,161 @@ def _key_env(keydepth, pressing, other=None, rig=None):
     return env
 
 
+WRIST_BAND = (0.30, 0.22)   # rad: wrist flexion/extension and sideways deviation (against the forearm) that cost nothing
+WRIST_W = 0.05              # weight of the wrist joint past that band (a 10 deg excess ~ a 1 cm pad miss)
+WRIST_LAMBDA = 12.0         # smoothing of the wrist's path (Whittaker, 2nd differences; ~2 Hz at 24 fps)
+WRIST_IDLE_W = 0.15         # how much a frame with no pressing finger pulls the smoothed wrist to its solve
+WRIST_STRIKE_W = 8.0        # ... and how hard the frames where a finger is striking pin it (the arm lands on the chord)
+WRIST_STRIKE_T = 0.12       # s: a strike lasts this long from the finger taking its key
+WRIST_LAMBDA_Z = 0.25       # the vertical path is this much less smoothed (an arm drop is quick)
+WRIST_PASSES = 2            # wrist path refinements: solve the whole hand around the path, smooth, repeat
+WRIST_PRIOR = 0.3           # root_pos weight around the refined path (the first pass uses RIG_W's, around the plan)
+FINGER_SPLIT = True         # with the wrist set, each finger solves on its own
+FREE_FOLLOW = True          # free fingers' float targets move with the solved wrist (across/along the keys)
+SOFT_ENV = True             # collisions as eased per-sample residuals (False: v16's single hard-edged penalty)
+FINGER_ITERS = 20           # finger solve iterations once the wrist is set
+FINGER_SMOOTH = 2e-5        # finger joints' frame-to-frame smoothness once the wrist is set
+
+
+def _whittaker(Y, w, lam):
+    """Penalised least squares: sum w (z - y)^2 + lam * sum (D2 z)^2, every column of Y."""
+    import scipy.sparse as sp
+    from scipy.sparse.linalg import splu
+    n = len(Y)
+    if n < 4 or lam <= 0:
+        return Y.copy()
+    D = sp.diags([np.ones(n - 2), -2 * np.ones(n - 2), np.ones(n - 2)], [0, 1, 2], shape=(n - 2, n))
+    lu = splu((sp.diags(w) + lam * (D.T @ D)).tocsc())
+    return np.stack([lu.solve(w * Y[:, k]) for k in range(Y.shape[1])], 1)
+
+
+def _frame_targets(hands, j):
+    """Per hand: the pad targets (pressing on their keys, free ones floating) and each struck key's planned depth."""
+    targets, est_depth = {}, {}
+    for name, H in hands.items():
+        tg = H["Tf"][j].copy() - np.array([[0.0, 0.0, r] for r in TIP_R])
+        for f in range(5):
+            a = H["act"][j][f]
+            if a is None:
+                continue
+            p, kx, cz = a
+            top, lev = cz - TIP_R[f], key_lever(p, tg[f, 1])
+            tg[f, 2] = max(tg[f, 2], top - KEY_TRAVEL * lev)     # a key stops on its bed
+            if abs(tg[f, 0] - kx) < WHITE_W:
+                est_depth[p] = max(est_depth.get(p, 0.0), float(np.clip((top - tg[f, 2]) / (KEY_TRAVEL * lev), 0, 1)))
+        targets[name] = tg
+    return targets, est_depth
+
+
+def _plan_root(H, name, j):
+    """The motion plan's wrist (root) rotation and position at frame j."""
+    sgn = 1 if name == "R" else -1
+    wz = float(H["WZf"][j]) - 0.004 * float(H["TCH"][j]) if "WZf" in H else 0.0
+    M = hand_frame_from_plan(sgn, float(H["Rf"][j]), float(H["Yf"][j]), math.atan2(wz, PALM_LEN))
+    return _rig(name).root_from_hand_frame(M, H["Cf"][j])
+
+
+def _hand_fwd(name, root_rot, root_pos=None):
+    """The hand's forward (wrist -> knuckles) direction for a root rotation."""
+    rig = _rig(name)
+    return root_rot @ (rig.sk.R0["wrist"].T @ rig.M_rest[1])
+
+
+def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, refs=None, prior=None):
+    """Both hands at frame j (two passes: each hand sees the other's latest skin). roots: a set wrist per hand
+    (x[:6]); then only the fingers move. forearms: (elbow, band) per hand for the wrist joint term. refs: the
+    wrist reference (rot, pos) per hand instead of the plan's; prior: its root_pos weight."""
+    solved, blobs = {}, {}
+    order = list(hands.items())
+    for name, H in order + (order if len(order) == 2 else []):
+        rig = _rig(name)
+        ref_rot, ref_pos = refs[name] if refs else _plan_root(H, name, j)
+        pressing = [H["act"][j][f] is not None for f in range(5)]
+        if refs and FREE_FOLLOW:                        # free fingers float where the hand is, not where it was
+            pr, pp = _plan_root(H, name, j)             # planned: carried across and along with the wrist
+            tg = targets[name].copy()
+            dR = ref_rot @ pr.T
+            for f in range(5):
+                if not pressing[f]:
+                    v = dR @ (tg[f] - pp) + ref_pos
+                    tg[f, :2] = v[:2]
+            targets = {**targets, name: tg}
+        # a key is narrow across the keyboard and long along it: aim pressing pads hardest in x
+        w = [np.array(PRESS_AXES) * RIG_W["press"] if pressing[f] else RIG_W["free"] * (THUMB_REST if f == 0 else 1.0)
+             for f in range(5)]
+        x_init = solved[name][0] if name in solved else prev.get(name)
+        W = {k: v for k, v in RIG_W.items() if k not in ("press", "free")}
+        if roots is not None:
+            q0 = x_init[6:] if x_init is not None else rig.q_rest
+            x_init = np.concatenate([roots[name], q0])
+            W["iters"] = FINGER_ITERS
+            W["smooth"] = FINGER_SMOOTH
+        else:
+            W["wrist"] = WRIST_W
+            if prior is not None:
+                W["root_pos"] = prior
+        env = _key_env(est_depth, pressing, blobs.get("L" if name == "R" else "R"), rig)
+        if roots is not None and FINGER_SPLIT:          # the wrist is set: five independent finger solves
+            x = rig.solve_fingers(ref_rot, x_init, list(targets[name]), w, env=env, W=W, last=prev.get(name),
+                                  iters=FINGER_ITERS)
+            rr, rp, pts = rig.points(x, ref_rot)
+            pads = rig.effectors(pts, rig._rots)
+            miss = [None if targets[name][f] is None else float(np.linalg.norm(pads[f] - targets[name][f])) for f in range(5)]
+        else:
+            x, (rr, rp, pts, pads), miss = rig.solve(ref_rot, ref_pos, list(targets[name]), w, prev=x_init,
+                                               last=prev.get(name), env=env,
+                                               forearm=None if forearms is None else forearms[name],
+                                               W=W, fix_root=roots is not None)
+        rig.points(x, ref_rot)                          # rotations of the accepted pose (not a trial step)
+        solved[name] = (x, rr, rp, pts, pressing, pads, ref_pos, miss)
+        blobs[name] = _hand_blobs([ch.samples(P, Rs) for ch, P, Rs in zip(rig.chains, pts, rig._rots)], rr, rp, rig)
+    return solved
+
+
 def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
+    """The hand hangs off its wrist. Pass A solves the whole hand (wrist free, held near its plan and against the
+    forearm) to find where the wrist needs to be; that path is smoothed like an arm moves it; pass B sets the wrist
+    there and solves only the fingers."""
+    from .rig.hand import rotvec
+    T = {j: _frame_targets(hands, j) for j in range(j0, N)}
+    shoulders = {j: body.pose(*HEAD[j], {})["shoulders"] for j in range(j0, N)}
+    REF = {name: [_plan_root(H, name, j) for j in range(j0, N)] for name, H in hands.items()}
+    PW = {}
+    ns = max(1, int(round(WRIST_STRIKE_T * fps)))
+    for name, H in hands.items():
+        busy = np.array([[a is not None for a in H["act"][j]] for j in range(N)])
+        new = busy & ~np.vstack([np.zeros((1, 5), bool), busy[:-1]])        # a finger takes its key
+        strike = np.convolve(new.any(1).astype(float), np.ones(ns))[:N] > 0
+        PW[name] = np.where(strike, WRIST_STRIKE_W, np.where(busy.any(1), 1.0, WRIST_IDLE_W))[j0:N]
+    for k in range(max(1, WRIST_PASSES)):               # pass A: where the wrist needs to be, then smoothed
+        XA = {name: [] for name in hands}
+        prev = {}
+        for j in range(j0, N):
+            refs = {name: REF[name][j - j0] for name in hands}
+            forearms = {name: (performer.arm_ik(np.asarray(shoulders[j][name]), refs[name][1], 1 if name == "R" else -1,
+                                                _hand_fwd(name, *refs[name])), WRIST_BAND) for name in hands}
+            solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=WRIST_PRIOR if k else None)
+            for name in hands:
+                prev[name] = solved[name][0]
+                XA[name].append(solved[name][0][:6])
+        for name in hands:                              # the smoothed path becomes the new reference (offset 0)
+            X_ = np.array(XA[name])
+            S_ = _whittaker(X_, PW[name], WRIST_LAMBDA)
+            S_[:, 2:3] = _whittaker(X_[:, 2:3], PW[name], WRIST_LAMBDA * WRIST_LAMBDA_Z)
+            REF[name] = [(rotvec(S_[i, 3:6]) @ REF[name][i][0], S_[i, :3]) for i in range(len(S_))]
+    roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
+
     frames = []
     prev = {}
-    for j in range(j0, N):
+    for j in range(j0, N):                              # pass B: the fingers, from the set wrist
         t = times[j]
         fr = {"t": round(float(t - start), 4), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}
-        targets, est_depth = {}, {}
-        for name, H in hands.items():                   # targets: the pads -- pressing on their keys, free floating
-            tg = H["Tf"][j].copy() - np.array([[0.0, 0.0, r] for r in TIP_R])
-            for f in range(5):
-                a = H["act"][j][f]
-                if a is None:
-                    continue
-                p, kx, cz = a
-                top, lev = cz - TIP_R[f], key_lever(p, tg[f, 1])
-                tg[f, 2] = max(tg[f, 2], top - KEY_TRAVEL * lev)     # a key stops on its bed
-                if abs(tg[f, 0] - kx) < WHITE_W:
-                    est_depth[p] = max(est_depth.get(p, 0.0), float(np.clip((top - tg[f, 2]) / (KEY_TRAVEL * lev), 0, 1)))
-            targets[name] = tg
-        keydepth, press, solved = {}, {}, {}
-        blobs = {}
-        order = list(hands.items())
-        misses = {}
-        for name, H in order + (order if len(order) == 2 else []):   # two passes: each hand sees the other's latest pose
-            sgn = 1 if name == "R" else -1
-            rig = _rig(name)
-            wz = float(H["WZf"][j]) - 0.004 * float(H["TCH"][j]) if "WZf" in H else 0.0
-            M = hand_frame_from_plan(sgn, float(H["Rf"][j]), float(H["Yf"][j]), math.atan2(wz, PALM_LEN))
-            ref_rot, ref_pos = rig.root_from_hand_frame(M, H["Cf"][j])
-            pressing = [H["act"][j][f] is not None for f in range(5)]
-            # a key is narrow across the keyboard and long along it: aim pressing pads hardest in x
-            w = [np.array(PRESS_AXES) * RIG_W["press"] if pressing[f] else RIG_W["free"] * (THUMB_REST if f == 0 else 1.0)
-                 for f in range(5)]
-            x_init = solved[name][0] if name in solved else prev.get(name)
-            x, (rr, rp, pts, pads), miss = rig.solve(ref_rot, ref_pos, list(targets[name]), w, prev=x_init, last=prev.get(name),
-                                               env=_key_env(est_depth, pressing, blobs.get("L" if name == "R" else "R"), rig),
-                                               W={k: v for k, v in RIG_W.items() if k not in ("press", "free")})
-            rig.points(x, ref_rot)                          # rotations of the accepted pose (not a trial step)
-            solved[name] = (x, rr, rp, pts, pressing, pads)
-            misses[name] = miss
-            blobs[name] = _hand_blobs([ch.samples(P, Rs) for ch, P, Rs in zip(rig.chains, pts, rig._rots)], rr, rp, rig)
-        for name, H in order:
-            x, rr, rp, pts, pressing, pads = solved[name]
+        targets, est_depth = T[j]
+        solved = _solve_frame(hands, j, targets, est_depth, prev, roots={n: roots[n][j - j0] for n in hands},
+                              refs={n: REF[n][j - j0] for n in hands})
+        keydepth, press = {}, {}
+        for name, H in hands.items():
+            x, rr, rp, pts, pressing, pads, ref_pos, miss = solved[name]
             prev[name] = x
             for f in range(5):                           # a key goes down only as far as the real finger pushes it
                 a = H["act"][j][f]
@@ -1309,24 +1525,23 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
                     if d > 0.01:
                         keydepth[p] = max(keydepth.get(p, 0.0), d)
                         press[str(p)] = f"{name}{f + 1}"
-                H.setdefault("tip_miss", []).append((float(misses[name][f]), f))
-        for name, (x, rr, rp, pts, pressing, pads) in solved.items():
+                H.setdefault("tip_miss", []).append((float(miss[f]), f))
+        for name, (x, rr, rp, pts, pressing, pads, ref_pos, miss) in solved.items():
             H = hands[name]
-            env = _key_env(keydepth, pressing)
             for f in range(5):
-                pen = 0.0
-                P = pts[f]
-                rad = FINGER_R[f]
-                pen = _penetration(P, rad, keydepth, skip_tip=pressing[f])
+                pen = _penetration(pts[f], FINGER_R[f], keydepth, skip_tip=pressing[f])
                 H.setdefault("pen", []).append(pen)
                 H.setdefault("pen_info", []).append((pen, f, pressing[f], 0.0, j, name))
             fr["hands"][name] = {"wrist": [round(float(c), 5) for c in rp],
                                  "fingers": [[[round(float(c), 5) for c in q] for q in P] for P in pts],
                                  "pads": [[round(float(c), 5) for c in q] for q in pads],
-                                 "root": {"rot": np.round(rr, 6).tolist(), "pos": [round(float(c), 6) for c in rp]},
+                                 **({"targets": np.round(targets[name], 5).tolist()} if os.environ.get("RIG_DBG") else {}),
+                                 "root": {"rot": np.round(rr, 6).tolist(), "pos": [round(float(c), 6) for c in rp],
+                                          "plan": [round(float(c), 6) for c in ref_pos]},
                                  "angles": {b: {k: round(v, 5) for k, v in d.items()} for b, d in _rig(name).angles(x).items()}}
         pitch, yaw, roll_h, lean = HEAD[j]
-        fr["body"] = body.pose(pitch, yaw, roll_h, lean, {h: fr["hands"][h]["wrist"] for h in fr["hands"]})
+        fr["body"] = body.pose(pitch, yaw, roll_h, lean, {h: fr["hands"][h]["wrist"] for h in fr["hands"]},
+                               {h: _hand_fwd(h, solved[h][1]) for h in fr["hands"]})
         for h in fr["hands"]:
             fr["hands"][h]["elbow"] = fr["body"]["elbows"][h]
         fr["keys"] = {str(p): round(d, 3) for p, d in keydepth.items()}

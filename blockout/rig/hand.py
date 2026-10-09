@@ -172,12 +172,16 @@ class HandRig:
                       math.sqrt(W["wrist"]) * max(0.0, abs(dev) - band[1])])
         if env is not None:
             pen = env([ch.samples(P, R) for ch, P, R in zip(self.chains, pts, rots)], root_rot, root_pos)
-            r.append([math.sqrt(W["env"] * max(pen, 0.0))])
+            if np.ndim(pen):                             # per-sample penetrations: smooth least-squares residuals
+                r.append(math.sqrt(W["env"]) * np.asarray(pen, float))
+            else:
+                r.append([math.sqrt(W["env"] * max(pen, 0.0))])
         return np.concatenate([np.ravel(v) for v in r]), (root_rot, root_pos, pts, eff)
 
     def solve(self, ref_rot, ref_pos, targets, weights, prev=None, env=None, forearm=None, iters=12, W=None,
-              last=None):
+              last=None, fix_root=False):
         """targets: 5 world points or None; weights: 5 floats. prev: x from the previous frame (warm start).
+        fix_root: the wrist is given (prev[:6]) and only the finger joints move -- the hand hangs off its wrist.
         Returns x, (root_rot, root_pos, points per finger), misses per finger (m, None if no target)."""
         W = {**dict(comfort=4e-5, couple=5e-5, root_pos=0.5, root_rot=2e-4, wrist=1e-3, env=1.0), **(W or {})}
         iters = int(W.pop("iters", iters))
@@ -185,8 +189,9 @@ class HandRig:
         targets = [None if t is None else np.asarray(t, float) for t in targets]
         if prev is not None:
             x = np.array(prev, float)
-            x[:3] = 0.5 * x[:3] + 0.5 * ref_pos
-            x[3:6] *= 0.5
+            if not fix_root:
+                x[:3] = 0.5 * x[:3] + 0.5 * ref_pos
+                x[3:6] *= 0.5
         else:
             x = np.concatenate([ref_pos, np.zeros(3), self.q_rest])
         lo = np.concatenate([np.full(6, -np.inf), self.lo]); hi = np.concatenate([np.full(6, np.inf), self.hi])
@@ -194,17 +199,19 @@ class HandRig:
         args = (ref_rot, ref_pos, targets, weights, env, forearm, W, None if last is None else np.asarray(last, float))
         r, pose = self.residuals(x, *args)
         c = float(r @ r); lam = 1e-3
-        n = len(x)
+        free = np.arange(6 if fix_root else 0, len(x))
+        n = len(free)
         for _ in range(iters):
             J = np.empty((len(r), n))
-            for i in range(n):
+            for k, i in enumerate(free):
                 dx = x.copy(); h = 1e-5 if dx[i] + 1e-5 <= hi[i] else -1e-5
                 dx[i] += h
-                J[:, i] = (self.residuals(dx, *args)[0] - r) / h
+                J[:, k] = (self.residuals(dx, *args)[0] - r) / h
             A = J.T @ J; g = J.T @ r
             ok = False
             for _t in range(6):
-                step = np.linalg.solve(A + lam * np.diag(np.diag(A) + 1e-9), -g)
+                step = np.zeros(len(x))
+                step[free] = np.linalg.solve(A + lam * np.diag(np.diag(A) + 1e-9), -g)
                 xn = np.clip(x + step, lo, hi)
                 rn, pn = self.residuals(xn, *args)
                 cn = float(rn @ rn)
@@ -217,6 +224,70 @@ class HandRig:
                 break
         misses = [None if targets[f] is None else float(np.linalg.norm(pose[3][f] - targets[f])) for f in range(5)]
         return x, pose, misses
+
+    def finger_residuals(self, f, qf, x, ref_rot, target, weight, env, W, x_last):
+        """Finger f alone, its base fixed by the root in x: pad target, comfort, coupling, smoothness, collisions."""
+        a, b = self.sl[f], self.sl[f + 1]
+        ch = self.chains[f]
+        root_rot = rotvec(x[3:6]) @ ref_rot
+        bR, bH = self.bases(root_rot, x[:3])[f]
+        P, Rs = ch.fk(bR, bH, qf)
+        r = []
+        pressing = target is not None and float(np.max(weight)) >= 0.99
+        if target is not None:
+            r.append(np.asarray(weight, float) * (ch.effector(P, Rs) - target))
+        cw = math.sqrt(W.get("comfort_press", 1.0)) if pressing else 1.0
+        scale = (self.sigma if W.get("comfort_sigma") else self.rng)[a:b]
+        r.append(math.sqrt(W["comfort"]) * cw * (qf - self.q_rest[a:b]) / scale)
+        if ch.k_dip:
+            r.append([math.sqrt(W["couple"]) * (qf[ch.i_dip] - ch.k_dip * qf[ch.i_pip])])
+        if x_last is not None and W.get("smooth", 0) > 0:
+            r.append(math.sqrt(W["smooth"]) * (qf - x_last[6 + a:6 + b]) / self.sigma[a:b])
+        if env is not None:
+            smp = [[] for _ in range(5)]
+            smp[f] = ch.samples(P, Rs)
+            pen = env(smp, root_rot, x[:3])
+            r.append(math.sqrt(W["env"]) * np.asarray(pen, float) if np.ndim(pen) else [math.sqrt(W["env"] * max(pen, 0.0))])
+        return np.concatenate([np.ravel(v) for v in r])
+
+    def solve_fingers(self, ref_rot, x0, targets, weights, env=None, W=None, last=None, iters=20):
+        """The root is set (x0[:6]): each finger is its own small solve (one finger's trouble can't freeze the
+        others), from the previous pose and, if that stalls, from the relaxed pose too; the better one wins."""
+        W = {**dict(comfort=4e-5, couple=5e-5, env=1.0), **(W or {})}
+        x = np.array(x0, float)
+        last = None if last is None else np.asarray(last, float)
+        for f in range(5):
+            a, b = self.sl[f], self.sl[f + 1]
+            lo, hi = self.lo[a:b], self.hi[a:b]
+            args = (x, ref_rot, targets[f], weights[f], env, W, last)
+            best = None
+            for seed in (x[6 + a:6 + b], self.q_rest[a:b]):
+                q = np.clip(np.array(seed, float), lo, hi)
+                r = self.finger_residuals(f, q, *args); c = float(r @ r); lam = 1e-3; moved = False
+                for _ in range(iters):
+                    J = np.empty((len(r), b - a))
+                    for i in range(b - a):
+                        dq = q.copy(); h = 1e-5 if dq[i] + 1e-5 <= hi[i] else -1e-5
+                        dq[i] += h
+                        J[:, i] = (self.finger_residuals(f, dq, *args) - r) / h
+                    A = J.T @ J; g = J.T @ r
+                    ok = False
+                    for _t in range(8):
+                        qn = np.clip(q + np.linalg.solve(A + lam * np.diag(np.diag(A) + 1e-9), -g), lo, hi)
+                        rn = self.finger_residuals(f, qn, *args); cn = float(rn @ rn)
+                        if cn < c:
+                            q, r, c, ok, moved = qn, rn, cn, True, True
+                            lam = max(lam / 3, 1e-7)
+                            break
+                        lam *= 4
+                    if not ok or c < 1e-12:
+                        break
+                if best is None or c < best[0] - 1e-12:
+                    best = (c, q)
+                if moved:                                # the warm start went somewhere: no restart needed
+                    break
+            x[6 + a:6 + b] = best[1]
+        return x
 
     def angles(self, x):
         out = {}
