@@ -1176,8 +1176,8 @@ def _roll_offsets(off, roll):
 
 
 # ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
-HAND_CLEAR, HAND_W = 0.003, 3.0    # m kept between the two hands' skin; weight of that against the targets
-RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=1.0, comfort=4e-5)   # target weights and the plan prior
+HAND_CLEAR, HAND_W = 0.003, 1.0    # m kept between the two hands' skin; weight of that against the targets
+RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=4e-5)   # target weights and the plan prior
 _RIGS = {}
 
 
@@ -1227,11 +1227,11 @@ def _key_env(keydepth, pressing, other=None, rig=None):
             pen += float((ov * ov).sum()) * HAND_W
         for f in range(5):
             for i, u, c, low, w in samples[f]:
-                if pressing[f] and i == 2 and u >= 0.5:
-                    continue
                 if low > 0.016:
                     continue                           # well above every key top
                 d = surface_under(c[0], c[1], 0.8 * w, keydepth) - low
+                if pressing[f] and i == 2 and u >= 0.5:
+                    d -= 0.001                         # its pad rests on its own (lowered) key, not in a neighbour
                 if d > 0:
                     pen += d * d
         return pen

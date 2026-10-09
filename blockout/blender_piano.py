@@ -552,6 +552,11 @@ if MESHQA:
             idx = np.nonzero(m)[0][d > 0.001]
             for vi in idx:
                 PARTS_HIT[VPART[vi]] = PARTS_HIT.get(VPART[vi], 0) + 1
+            if os.environ.get("KEYPEN_DUMP") and len(idx):
+                dd = d[d > 0.001]
+                print("KP key", int(_p), "depth", round(float(depth[i]), 2), "n", len(idx), "max mm", round(float(dd.max()) * 1000, 1),
+                      "parts", sorted({VPART[v] for v in idx}), "y", round(float(y[idx].min()), 3), round(float(y[idx].max()), 3),
+                      "z", round(float(z[idx].min()), 4), "x", round(float(x[idx].min()), 3), round(float(x[idx].max()), 3), "key x", round(x0, 3), round(x1, 3))
             d = d[d > 0]
             if len(d):
                 worst = max(worst, float(d.max())); n += int((d > 0.001).sum())
