@@ -319,6 +319,7 @@ def split_hands(notes):
     return [n for n in notes if n.pitch >= 60], [n for n in notes if n.pitch < 60]
 
 
+SLICE_TOL = float(__import__("os").environ.get("SLICE_TOL", "0.05"))   # s: notes this close are one chord (rolled chords)
 HAND_SPAN = 0.19          # m, thumb to pinky tip at full stretch (about a ninth)
 
 
@@ -334,7 +335,7 @@ def playable(chord, hand):
     return sorted(reach, key=lambda n: n.pitch)
 
 
-def slices(notes, tol=0.01, hand="R"):
+def slices(notes, tol=SLICE_TOL, hand="R"):
     out = []
     for n in sorted(notes, key=lambda n: (n.start, n.pitch)):
         if out and n.start - out[-1][0].start < tol:
@@ -520,7 +521,8 @@ def finger_events(fing):
     return ev
 
 
-REACH_D = float(__import__("os").environ.get("REACH_D", "0.05"))   # m: how far a held finger may be left behind
+REACH_LEAD = float(__import__("os").environ.get("REACH_LEAD", "0.35"))
+REACH_D = float(__import__("os").environ.get("REACH_D", "0.04"))   # m: how far a held finger may be left behind
 
 
 def release_far(fing, ev, hand, D=None):
@@ -537,7 +539,7 @@ def release_far(fing, ev, hand, D=None):
             kx = contact(e[2], e[4], f == 0)[0]
             for i in np.nonzero((t_on > e[0] + 0.02) & (t_on < e[1]))[0]:
                 if abs(kx - (hx[i] + sgn * HOME[f])) > D:
-                    e[1] = max(e[0] + 0.05, min(e[1], t_on[i] - 0.17))
+                    e[1] = max(e[0] + 0.05, min(e[1], t_on[i] - REACH_LEAD))
                     break
     return ev
 
