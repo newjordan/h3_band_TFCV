@@ -490,15 +490,18 @@ def set_hand_model(name):
         # a real hand's natural curl (MCP ~15, PIP ~40 deg) puts the long fingertips ~7 cm below and ~6-7 cm in
         # front of the knuckles, so the knuckle line rides higher and further back than the mannequin's
         KNUCKLE_Z, Y_KN = _rig_rest_height()
-        from .rig.hand import _furelise_cal
+        from .rig.hand import _furelise_cal, _cal_parts
         cal = _furelise_cal()
         if cal:                                  # measured on concert pianists (blockout.furelise.calibrate)
             global HITPAD_W, HITPAD_WN, HITPAD_B, PITCH0
-            KNUCKLE_Z, Y_KN = cal["knuckle_z"], cal["knuckle_y"]
-            PITCH0 = math.radians(cal["pitch_deg"])
-            HITPAD_W = [tuple(b) for b in cal["hitpad"]["white"]]
-            HITPAD_WN = [tuple(b) for b in cal["hitpad"]["white_near_black"]]
-            HITPAD_B = [tuple(b) for b in cal["hitpad"]["black"]]
+            parts = _cal_parts()
+            if "place" in parts:
+                KNUCKLE_Z, Y_KN = cal["knuckle_z"], cal["knuckle_y"]
+                PITCH0 = math.radians(cal["pitch_deg"])
+            if "hitpad" in parts:
+                HITPAD_W = [tuple(b) for b in cal["hitpad"]["white"]]
+                HITPAD_WN = [tuple(b) for b in cal["hitpad"]["white_near_black"]]
+                HITPAD_B = [tuple(b) for b in cal["hitpad"]["black"]]
         # HOME = _rig_home()   # rig-derived home spread: not yet validated by the fleet, so off for the render lock
         loc = lambda n, k: M @ (np.array(B[n][k]) - c)
         d = [loc(f"finger1-{s}", "tail") - loc(f"finger1-{s}", "head") for s in (1, 2)]
@@ -519,7 +522,7 @@ SPAN = {(0, 1): (-5, -3, 1, 4, 5, 6), (0, 2): (-4, -2, 3, 6, 7, 8), (0, 3): (-3,
         (1, 4): (2, 2, 5, 6, 8, 10), (2, 3): (1, 1, 1, 2, 2, 4), (2, 4): (1, 1, 3, 4, 5, 7),
         (3, 4): (1, 1, 1, 2, 3, 5)}
 _CAL = __import__("blockout.rig.hand", fromlist=["_furelise_cal"])._furelise_cal() if HAND_MODEL == "mpfb" else None
-if _CAL:                                   # the spans concert pianists actually fingered (FürElise)
+if _CAL and "span" in __import__("blockout.rig.hand", fromlist=["_cal_parts"])._cal_parts():   # FürElise spans
     SPAN.update({(int(k[0]), int(k[1])): tuple(v) for k, v in _CAL["span"].items()})
 
 
@@ -1291,7 +1294,8 @@ def _roll_offsets(off, roll):
 
 # ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
 THUMB_REST = 4.0                    # an idle thumb follows its resting spot by the keys this much harder
-PRESS_AXES = (3.0, 1.0, 1.5)        # pressing-pad target weight along x (across keys), y (along a key), z
+PRESS_AXES = (3.0, 1.0, 1.5)
+PRESS_AXES_BLACK = (3.0, 3.0, 1.5)  # a black key starts 55 mm in: a pad short of it misses it, so depth counts too
 HAND_CLEAR, HAND_W = 0.003, 1.0    # m kept between the two hands' skin; weight of that against the targets
 RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=9e-6, comfort_sigma=True, iters=12, smooth=2e-5)   # target weights and the plan prior
 _RIGS = {}
@@ -1350,7 +1354,8 @@ def _key_env(keydepth, pressing, other=None, rig=None):
             C = np.array([s_[3] for s_ in S_]); low = np.array([s_[4] for s_ in S_])
             W_ = np.array([s_[5] for s_ in S_])
             d = surface_under_soft_v(C[:, 0], C[:, 1], 0.8 * W_, DW, DB) - low
-            d -= np.array([0.001 if pressing[f] and i == 2 and u >= 0.5 else 0.0 for f, i, u, *_r in S_])
+            d -= np.array([(THUMB_PRESS_GIVE if f == 0 and i >= 1 else 0.001) if pressing[f] and (i == 2 and u >= 0.5 or f == 0 and i >= 1)
+                           else 0.0 for f, i, u, *_r in S_])   # a pressing thumb lies over the neighbour's edge
             d[low > 0.02] = 0.0                        # well above every key top
             out.extend(np.maximum(d, 0.0))             # (a pressing pad rests on its own lowered key, not a neighbour)
         return np.array(out)
@@ -1385,12 +1390,19 @@ WRIST_STRIKE_T = 0.12       # s: a strike lasts this long from the finger taking
 WRIST_LAMBDA_Z = 0.25       # the vertical path is this much less smoothed (an arm drop is quick)
 WRIST_PASSES = 2            # wrist path refinements: solve the whole hand around the path, smooth, repeat
 WRIST_PRIOR = 0.3           # root_pos weight around the refined path (the first pass uses RIG_W's, around the plan)
+EASE_ITERS = 2              # ragdoll ease passes (0: off)
+EASE_PRIOR = 2.0            # how firmly the wrist's spring holds it to its path during the ease solve (root_pos weight)
+EASE_MAX = 0.025            # m: the most the wrist gives per pass
+EASE_LAMBDA = 3.0           # how softly the give eases in and out (Whittaker, 2nd differences)
+EASE_IDLE_W = 0.05          # frames with no pressing finger barely hold the give at zero
 FINGER_REFINE = True        # solve the fingers, smooth their joint paths, solve again held near them
 FINGER_LAMBDA = 6.0         # finger joint path smoothing (Whittaker, 2nd differences)
 FINGER_PRESS_W = 8.0        # ... pinned this hard on the frames the finger is on its key
 FINGER_PRIOR = 5e-3         # how hard a finger holds its smoothed path in the second solve
 FINGER_SPLIT = True         # with the wrist set, each finger solves on its own
 FREE_FOLLOW = True          # free fingers' float targets move with the solved wrist (across/along the keys)
+THUMB_PRESS_GIVE = 0.004    # m a pressing thumb's distal and proximal phalanx may sink past key tops (its side
+                            # rests over the neighbouring key's edge as it presses its own)
 SOFT_ENV = True             # collisions as eased per-sample residuals (False: v16's single hard-edged penalty)
 FINGER_ITERS = 20           # finger solve iterations once the wrist is set
 FINGER_SMOOTH = 2e-5        # finger joints' frame-to-frame smoothness once the wrist is set
@@ -1460,8 +1472,8 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
                     tg[f, :2] = v[:2]
             targets = {**targets, name: tg}
         # a key is narrow across the keyboard and long along it: aim pressing pads hardest in x
-        w = [np.array(PRESS_AXES) * RIG_W["press"] if pressing[f] else RIG_W["free"] * (THUMB_REST if f == 0 else 1.0)
-             for f in range(5)]
+        w = [np.array(PRESS_AXES_BLACK if is_black(H["act"][j][f][0]) else PRESS_AXES) * RIG_W["press"] if pressing[f]
+             else RIG_W["free"] * (THUMB_REST if f == 0 else 1.0) for f in range(5)]
         x_init = solved[name][0] if name in solved else prev.get(name)
         W = {k: v for k, v in RIG_W.items() if k not in ("press", "free")}
         tk = float(H["WF"][j][0]) if "WF" in H else 0.0
@@ -1499,13 +1511,40 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
     return solved
 
 
-def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
+REACH_COMFORT = 0.80        # share of the arm's length a hand reaches before the torso helps (arms stretch first)
+LEAN_K, LEAN_MAX = 2.2, 0.22   # rad of lean toward the far hand per m past that, and the most
+TURN_START, TURN_K, TURN_MAX = 0.05, 2.5, 0.35   # m past comfort before the shoulders turn to open toward that end
+SPRING_TORSO = (0.9, 1.0, 0.0)  # the torso moves slowly
+
+
+def _torso_drive(hands, body, N, fps):
+    """(pitch, yaw, roll) the torso adds per frame from the hands' reach: nothing while both hands are within
+    comfortable reach of their shoulders; past it the torso leans toward the far hand, and further out the
+    shoulders turn to open toward that end of the keyboard."""
+    sh = body.pose(0.0, 0.0, 0.0, 0.0, {})["shoulders"]
+    arm = performer.UPPER_ARM + performer.FOREARM
+    T = np.zeros((N, 3))
+    for j in range(N):
+        far, side = 0.0, 0.0
+        for name, H in hands.items():
+            c = H["Cf"][j]
+            d = float(np.linalg.norm(c - np.asarray(sh[name])))
+            ex = d - REACH_COMFORT * arm
+            if ex > far:
+                far, side = ex, (1.0 if c[0] > body.hips[0] else -1.0)
+        if far > 0:
+            T[j, 2] = side * min(LEAN_MAX, LEAN_K * far)
+            T[j, 1] = -side * min(TURN_MAX, TURN_K * max(0.0, far - TURN_START))
+    return dynamics.filter_track(T, fps, *SPRING_TORSO)
+
+
+def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
     """The hand hangs off its wrist. Pass A solves the whole hand (wrist free, held near its plan and against the
     forearm) to find where the wrist needs to be; that path is smoothed like an arm moves it; pass B sets the wrist
     there and solves only the fingers."""
     from .rig.hand import rotvec
     T = {j: _frame_targets(hands, j) for j in range(j0, N)}
-    shoulders = {j: body.pose(*HEAD[j], {})["shoulders"] for j in range(j0, N)}
+    shoulders = {j: body.pose(*HEAD[j], {}, torso=TORSO[j])["shoulders"] for j in range(j0, N)}
     REF = {name: [_plan_root(H, name, j) for j in range(j0, N)] for name, H in hands.items()}
     PW = {}
     ns = max(1, int(round(WRIST_STRIKE_T * fps)))
@@ -1520,7 +1559,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
         for j in range(j0, N):
             refs = {name: REF[name][j - j0] for name in hands}
             forearms = {name: (performer.arm_ik(np.asarray(shoulders[j][name]), refs[name][1], 1 if name == "R" else -1,
-                                                _hand_fwd(name, *refs[name])), WRIST_BAND) for name in hands}
+                                                _hand_fwd(name, *refs[name]), lift=False), WRIST_BAND) for name in hands}
             solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=WRIST_PRIOR if k else None)
             for name in hands:
                 prev[name] = solved[name][0]
@@ -1532,6 +1571,25 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
             REF[name] = [(rotvec(S_[i, 3:6]) @ REF[name][i][0], S_[i, :3]) for i in range(len(S_))]
     roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
 
+    for _e in range(EASE_ITERS):                        # ragdoll ease: the wrist hangs on a firm spring off its
+        prev, DV = {}, {n: np.zeros((N - j0, 3)) for n in hands}    # path; the whole-hand solve lets the pressing
+        WE = {n: np.full(N - j0, EASE_IDLE_W) for n in hands}       # fingers pull it as far as they need, and that
+        for j in range(j0, N):                                      # give is eased in and out over time
+            refs = {name: REF[name][j - j0] for name in hands}
+            forearms = {name: (performer.arm_ik(np.asarray(shoulders[j][name]), refs[name][1], 1 if name == "R" else -1,
+                                                _hand_fwd(name, *refs[name]), lift=False), WRIST_BAND) for name in hands}
+            solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=EASE_PRIOR)
+            for name in hands:
+                x = solved[name][0]
+                prev[name] = x
+                if any(solved[name][4]):
+                    WE[name][j - j0] = 1.0
+                    DV[name][j - j0] = np.clip(x[:3] - refs[name][1], -EASE_MAX, EASE_MAX)
+        for name in hands:
+            C = _whittaker(DV[name], WE[name], EASE_LAMBDA)
+            for i in range(N - j0):
+                REF[name][i] = (REF[name][i][0], REF[name][i][1] + C[i])
+        roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
     QP = None
     if FINGER_REFINE:                                   # the fingers once, then their joint paths smoothed: in pass B
         XB = {name: [] for name in hands}               # each finger stays near its smoothed path (no shape it has
@@ -1596,7 +1654,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps):
                                  "angles": {b: {k: round(v, 5) for k, v in d.items()} for b, d in _rig(name).angles(x).items()}}
         pitch, yaw, roll_h, lean = HEAD[j]
         fr["body"] = body.pose(pitch, yaw, roll_h, lean, {h: fr["hands"][h]["wrist"] for h in fr["hands"]},
-                               {h: _hand_fwd(h, solved[h][1]) for h in fr["hands"]})
+                               {h: _hand_fwd(h, solved[h][1]) for h in fr["hands"]}, torso=TORSO[j])
         for h in fr["hands"]:
             fr["hands"][h]["elbow"] = fr["body"]["elbows"][h]
         fr["keys"] = {str(p): round(d, 3) for p, d in keydepth.items()}
@@ -1847,6 +1905,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         wf = np.clip(dynamics.filter_track(H["FREE"], fps, 6.0, 1.0, 1.0), 0, 1)[:, :, None]
         H["Tf"] = wf * soft + (1 - wf) * firm          # a finger off duty goes limp: it trails, floats and settles
         H["WF"] = wf[:, :, 0]                          # (the eased off-duty share, per finger)
+    TORSO = _torso_drive(hands, body, N, fps)
     HEAD = np.array([performer.head_angles(t, beats, downbeats, float(energy[j]), sched) for j, t in enumerate(th)])
     HEAD = dynamics.filter_track(HEAD, fps, *SPRING_HEAD)
     HEAD[:, 1] += dynamics.drift(times, 0.03, seed * 10 + 11)
@@ -1856,7 +1915,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     frames = []
     j0 = int(round(pre * fps))
     if HAND_MODEL == "mpfb":
-        frames = _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps)
+        frames = _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO)
     for j in (range(j0, N) if HAND_MODEL != "mpfb" else ()):
         t = times[j]
         fr = {"t": round(float(t - start), 4), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}

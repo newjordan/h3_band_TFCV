@@ -30,6 +30,12 @@ def _furelise_cal():
     return json.load(open(p))
 
 
+def _cal_parts():
+    """Which FürElise calibration parts apply: RIG_CAL_PARTS=place,hitpad,kdip,span,comfort (default: all but span)."""
+    v = os.environ.get("RIG_CAL_PARTS")
+    return set(v.split(",")) if v else {"place", "hitpad", "kdip", "comfort"}   # span: hurts key sync (fingering)
+
+
 def rotvec(v):
     a = float(np.linalg.norm(v))
     return np.eye(3) if a < 1e-12 else _rot(v / a, a)
@@ -53,7 +59,8 @@ class HandRig:
         self.lo = np.concatenate([c.lo for c in self.chains]); self.hi = np.concatenate([c.hi for c in self.chains])
         self.rng = self.hi - self.lo
         self.q_rest = np.concatenate([c.q_rest for c in self.chains])
-        cpath = os.environ.get("RIG_COMFORT") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "comfort.json")
+        cpath = os.environ.get("RIG_COMFORT") or os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                              "comfort.json" if "comfort" in _cal_parts() else "comfort_mediapipe.json")
         if os.path.exists(cpath):                     # relaxed pose calibrated to measured pianists (calibrate.py)
             q = np.clip(np.array(json.load(open(cpath))[side]), self.lo, self.hi)
             if len(q) == len(self.q_rest):
@@ -63,7 +70,7 @@ class HandRig:
                     if ch.k_dip and q[a + ch.i_pip] > 0.05:   # the tendon's DIP:PIP ratio, per finger, from people
                         ch.k_dip = float(np.clip(q[a + ch.i_dip] / q[a + ch.i_pip], 0.4, 1.0))
         cal = _furelise_cal()
-        if cal and "k_dip" in cal:                 # measured on concert pianists (FürElise): the end joint stays
+        if cal and "k_dip" in cal and "kdip" in _cal_parts():                 # measured on concert pianists (FürElise): the end joint stays
             for ch, k in zip(self.chains[1:], cal["k_dip"]):    # nearly straight while the PIP bends
                 ch.k_dip = max(float(k), 1e-3)
         # comfort is measured in units of how much people actually vary each joint while playing (human IQR / 1.35)
