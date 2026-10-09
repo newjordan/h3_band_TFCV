@@ -41,6 +41,41 @@ class HandRig:
         # the hand's rest frame relative to the root bone, to turn a planned hand frame into a root pose
         self.M_rest = sk.rest_frame                      # rows: across, forward, up (world, at rest)
         self.c_rest = np.mean([sk.h0[f"finger{f}-1"] for f in range(2, 6)], 0)
+        self._centre_abduction()
+        self.lo = np.concatenate([c.lo for c in self.chains]); self.hi = np.concatenate([c.hi for c in self.chains])
+        self.rng = self.hi - self.lo
+        self.q_rest = np.concatenate([c.q_rest for c in self.chains])
+
+    def anatomical_abduction(self, root_rot, root_pos, pts, f):
+        """Finger f's (2-5) abduction in degrees as anatomy measures it: the proximal phalanx against its
+        metacarpal (wrist -> MCP), both seen in the palm plane."""
+        up = root_rot @ (self.sk.R0["wrist"].T @ self.M_rest[2])
+        n = lambda v: v / np.linalg.norm(v)
+        mc = n(pts[f - 1][0] - root_pos); s0 = n(pts[f - 1][1] - pts[f - 1][0])
+        a = n(mc - up * (mc @ up)); b = n(s0 - up * (s0 @ up))
+        return math.degrees(math.atan2(float(np.cross(a, b) @ up), float(a @ b)))
+
+    def _centre_abduction(self):
+        """MakeHuman's rest fingers are already a little spread; put each MCP's abduction range around the
+        anatomical zero (finger in line with its metacarpal) instead of around the rest pose."""
+        Rr, pr = self.sk.rest_root()
+        q = np.concatenate([c.q_rest for c in self.chains])
+        sl = np.cumsum([0] + [len(c.lo) for c in self.chains])
+        x = np.concatenate([pr, np.zeros(3), q])
+        self.lo = np.concatenate([c.lo for c in self.chains]); self.hi = np.concatenate([c.hi for c in self.chains])
+        self.sl = sl
+        for fi, ch in enumerate(self.chains[1:], start=1):
+            i = [k for k, d in enumerate(ch.dofs) if d[1] == "abd"][0]
+            _, _, pts = self.points(x, Rr)
+            m0 = self.anatomical_abduction(Rr, pr, pts, fi + 1)
+            x2 = x.copy(); x2[6 + sl[fi] + i] += 0.05
+            _, _, pts2 = self.points(x2, Rr)
+            gain = (self.anatomical_abduction(Rr, pr, pts2, fi + 1) - m0) / math.degrees(0.05)
+            lim = math.degrees(ch.hi[i])                    # symmetric anatomical limit
+            lo, hi = sorted(((-lim - m0) / gain, (lim - m0) / gain))
+            ch.lo[i], ch.hi[i] = math.radians(lo), math.radians(hi)
+            ch.rng = ch.hi - ch.lo
+            ch.q_rest[i] = float(np.clip(math.radians(-m0 / gain), ch.lo[i], ch.hi[i]))   # comfort: in line
 
     def root_from_hand_frame(self, M, c):
         """Root (wrist bone) rotation and head for a hand frame M (rows across/forward/up) at knuckle centre c."""

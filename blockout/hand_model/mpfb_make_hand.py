@@ -24,7 +24,7 @@ from bl_ext.user_default.mpfb.services.targetservice import TargetService
 for ob in list(bpy.data.objects):
     bpy.data.objects.remove(ob)
 macro = TargetService.get_default_macro_info_dict()
-macro.update(gender=1.0, age=0.5, muscle=0.7, weight=0.6, height=0.75, proportions=0.6)
+macro.update(gender=1.0, age=0.5, muscle=float(os.environ.get("MPFB_MUSCLE", 0.7)), weight=float(os.environ.get("MPFB_WEIGHT", 0.6)), height=0.75, proportions=0.6)
 body = HumanService.create_human(mask_helpers=False, detailed_helpers=True, extra_vertex_groups=True,
                                  feet_on_ground=True, scale=0.1, macro_detail_dict=macro)
 HumanService.add_builtin_rig(body, "default", import_weights=True)
