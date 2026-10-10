@@ -1,0 +1,24 @@
+{
+ "id": "E31",
+ "leg": "H5 reach",
+ "parent": "E29",
+ "hypothesis": "Rolled sub-chords started when the hand can get there (ROLL_STAGGER) add to REACH_SPLIT.",
+ "change": "E29 + ROLL_STAGGER",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "REPAIR_ITERS": 2,
+  "PRESS_OVERSHOOT": 0.003,
+  "REACH_SPLIT": true,
+  "ROLL_STAGGER": true
+ },
+ "env": "HAND_SCALE=1"
+}

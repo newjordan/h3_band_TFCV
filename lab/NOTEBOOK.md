@@ -379,3 +379,9 @@ vambrace normal pass) flow_cos 0.95, flow_err 0.51 (K21 0.94 / 0.54), the best m
 grey plate hand_r 0.10, flow_cos 0.75 (expected: the plate it is scored on lacks the armour). **Conclusion:** with a
 grey plate, matching the plate's geometry to the control is a small gain; the recipe (grey plate + armour geometry in
 the Blender hand + its normal-pass canny + prompt) is stable. Leg K recipe for the film: K22.
+
+### E30 (H5 reach): real-size hand + REACH_SPLIT: 90.5% (+0.8 vs E28)
+Debussy 100.0, Rach 84.2 (unchanged), Chopin 95.6 (+1.7); sideways 152 -> 135; motion unchanged. **Conclusion:** the
+redistribution helps the small hand in the Chopin, but its Rachmaninoff losses are octaves it cannot open to (class a2),
+not hand assignment. Queued ahead of the ablations: E32 = E30 + anatomical thumb/pinky spread (CMC 45, pinky 30 deg),
+E33 = E32 + home spread x1.15.
