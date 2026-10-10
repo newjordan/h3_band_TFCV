@@ -457,3 +457,9 @@ Debussy 96.9 (best big-hand Debussy), Rach 94.7, Chopin 95.7; sideways 59, shall
 0.31 -> 0.66 (x2.1) and shake 1.54 -> 1.75 mm. **Conclusion:** pinning the pad hard on its key during the press is,
 alone, as strong as the whole E29 stack (95.5), and costs motion quality (as the one-window pilot predicted). Queued
 next, ahead of the remaining ablations: E36 = E29 + hard mask, E37 = E29 + middle mask [8,1,8].
+
+### E11 (H1 reverse ladder 1): ragdoll + finger smoothing back on: 75.6% (E10 76.4)
+Real-size hand, every wrist constraint still off, finger joint smoothing restored (current code: every note fingered).
+Finger tremor 1.67 -> 0.60 (x0.36), key sync -0.8, wrist shake unchanged (10.6 mm). **Conclusion:** finger smoothing
+removes most of the ragdoll's finger tremor at almost no accuracy cost; the wrist still wanders (sideways 340). The
+ladder continues with E12 (wrist smoothing) and E14 (wrist joint term) after the contact runs.
