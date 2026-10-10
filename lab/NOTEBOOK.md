@@ -310,3 +310,7 @@ K-d setup: `blender_piano.py --gauntlet` adds a ring at every finger joint and a
 the solved pose exactly), radius from the skinned mesh around each bone (lab/plots/gauntlet_pass.jpg). Queued: K20 =
 K1 (grey plate, the only setup that pins fingers) with the canny of the *gauntlet* normal pass; K19 = K17 with the
 gauntlet chrome plate, its frame 0 pinned and the gauntlet canny.
+
+### K18: K17 at video strength 0.60: hand_r 0.17, flow_cos 0.86
+Holding the v2 plate harder (0.70 -> 0.60) lifts hand_r 0.13 -> 0.17 and frame r 0.70 -> 0.73; flow stays at its best.
+Still inside the chrome band (0.13-0.19): the K-d gauntlet-geometry runs (K20, K19) are next.
