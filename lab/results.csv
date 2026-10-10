@@ -5,3 +5,4 @@ E10,H1 ragdoll-first,E01,"ragdoll ceiling: no wrist smoothing, no wrist-joint te
 E05,H0 baseline,E00,E00 + every note fingered (SPLIT_WIDE) + knuckle-depth scaling,2026-10-10 00:36,29.0,1918,1576,82.17,74.5,74.2,90.6,0,113,3,226,11.5,21.1,1.54,0.305,1497.2,{},HAND_SCALE=1
 E06,H2 data-driven hand,E05,E05 with the real-size hand,2026-10-10 01:05,29.5,1918,1431,74.61,91.8,58.1,88.6,0,201,15,271,10.6,21.6,1.53,0.256,1648.0,{},HAND_SCALE=0.7284
 E20,H4 contact,E05,E05 + press height weight 1.5 -> 3,2026-10-10 01:34,29.5,1918,1678,87.49,84.7,82.0,93.0,0,107,6,127,11.6,21.0,1.56,0.328,1566.5,"{""PRESS_AXES"": [3.0, 1.0, 3.0], ""PRESS_AXES_BLACK"": [3.0, 3.0, 3.0]}",HAND_SCALE=1
+E25,H4 contact,E24,E24 + press overshoot 3 mm,2026-10-10 02:04,33.0,1918,1771,92.34,82.7,90.5,95.2,0,77,5,65,11.5,21.3,1.55,0.347,1648.8,"{""REPAIR_ITERS"": 2, ""PRESS_OVERSHOOT"": 0.003}",HAND_SCALE=1

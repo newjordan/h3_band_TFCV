@@ -172,3 +172,11 @@ overshoot) was already running on E05 weights and stays as defined.
 Beauty-pass canny at strength 0.8 instead of 1.0 (q60 settings otherwise): hand_r 0.07 (q60 0.09), flow_cos 0.69, frame
 r 0.71. **Conclusion:** lowering the weight of a control that carries no finger detail loosens everything and gains
 nothing; the lever is what the control contains (K1), not its weight.
+
+### E25 (H4 contact): repair loop + 3 mm overshoot (E05 weights): 92.3% (+10.2 vs E05)
+Hypothesis: shallow misses are late arrivals and stops at the key bed; verify-and-repair (re-solve the fingers with a
+missed note's press x4 around its onset, 2 passes) plus aiming 3 mm below the bed recovers them. Result: Debussy 82.7,
+Rach 90.5 (+16.3), Chopin 95.2; shallow 226 -> 65, sideways 113 -> 77; wrist dev 11.5 deg, shake 1.55 mm, tremor 0.35
+(+0.04); 33 min vs 29. **Conclusion:** supported; the largest single gain so far, at almost no motion cost. Queued
+next (after E24 = E20 + repair): E26 = E20 weights + repair + overshoot (stack), E27 = 4 repair passes, E28 = E26
+with the real-size hand; then the remaining contact singles and the ablation ladder.

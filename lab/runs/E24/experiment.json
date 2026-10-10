@@ -1,0 +1,21 @@
+{
+ "id": "E24",
+ "leg": "H4 contact",
+ "parent": "E20",
+ "hypothesis": "Verify-and-repair on the best contact weights: re-solving the fingers with each missed note's press boosted (x4 per pass, 2 passes) recovers most of E20's remaining misses.",
+ "change": "E20 + 2 repair passes (REPAIR_W 4)",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "REPAIR_ITERS": 2
+ },
+ "env": "HAND_SCALE=1"
+}

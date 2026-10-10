@@ -233,5 +233,71 @@
    "PRESS_OVERSHOOT": 0.003
   },
   "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E26",
+  "leg": "H4 contact",
+  "parent": "E20",
+  "hypothesis": "The two contact gains stack: E20's press-height weight plus repair + overshoot (E25).",
+  "change": "E20 + 2 repair passes + 3 mm overshoot",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E27",
+  "leg": "H4 contact",
+  "parent": "E26",
+  "hypothesis": "More repair (4 passes) closes more of the remaining misses.",
+  "change": "E26 with 4 repair passes",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 4,
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E28",
+  "leg": "H2 data-driven hand",
+  "parent": "E26",
+  "hypothesis": "The contact stack lifts the real-size hand toward the big hand.",
+  "change": "E26 with the real-size hand",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=0.7284"
  }
 ]
