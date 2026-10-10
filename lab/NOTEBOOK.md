@@ -220,3 +220,11 @@ Same as K1 except the plate in the video stream is Blender's chrome pass. The re
 same control, the plate's pixels decide whether H3 reads "hand" (skin, follows the edges) or "gauntlet" (its own
 armour prior, shape not held). **Conclusion:** the plate at 0.8% weight sets the *category*, the control sets the
 *shape* only when the category is a hand. Next: K11 (chrome first frame pinned), K12 (probe: which heads read it).
+
+### Sideways study, part 1 (E24): what the 83 sideways misses are
+66/83 on black keys; |dx| median 35 mm (25% under 20 mm, 30 over 60 mm); Chopin 47, Rach 30, Debussy 6; the error points
+inward (R pinky lands toward the thumb, R index/thumb toward the pinky): the fingers fall short of the span the
+fingering asks for, often in fast wide figures (e.g. 190.22 s R4 on G#5 then 190.27 s R1 on D#4: 17 semitones in 50 ms).
+Pilot (2 Chopin windows): easing the wrist smoothing for leaps (LEAP_V 1.2 m/s) gains 1 note of 71 and adds shake
+(+0.1-0.8 mm): not the lever. A per-miss diagnosis (impossible as fingered / fingering choice / hand assignment /
+held-note conflict / black-key aim) is running as an agent; report -> lab/lit/sideways_diagnosis.md.
