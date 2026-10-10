@@ -311,6 +311,8 @@ the solved pose exactly), radius from the skinned mesh around each bone (lab/plo
 K1 (grey plate, the only setup that pins fingers) with the canny of the *gauntlet* normal pass; K19 = K17 with the
 gauntlet chrome plate, its frame 0 pinned and the gauntlet canny.
 
-### K18: K17 at video strength 0.60: hand_r 0.17, flow_cos 0.86
-Holding the v2 plate harder (0.70 -> 0.60) lifts hand_r 0.13 -> 0.17 and frame r 0.70 -> 0.73; flow stays at its best.
-Still inside the chrome band (0.13-0.19): the K-d gauntlet-geometry runs (K20, K19) are next.
+### K18: K17 at video strength 0.60: hand_r 0.12, flow_cos 0.89
+Holding the v2 plate harder (0.70 -> 0.60) gives the best motion agreement so far (flow_cos 0.86 -> 0.89, flow_err
+0.73 -> 0.65) but hand_r 0.13 -> 0.12 and frame r 0.70 -> 0.69: the hands move with the plate but their edge structure
+is not the plate's. Still inside the chrome band; the K-d gauntlet-geometry runs (K20, K19) are next.
+(Corrected entry: a first version of this entry carried wrong numbers typed before the score was read.)
