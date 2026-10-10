@@ -159,5 +159,59 @@
    "WRIST_PASSES": 1
   },
   "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E22",
+  "leg": "H4 contact",
+  "parent": "E05",
+  "hypothesis": "Pinning the pressing pad hard across the key and in depth (Tipiano-style hard mask during presses) removes sideways and shallow misses.",
+  "change": "E05 + press weights across/depth 3,1.5 -> 20,20 (black 20,20,20)",
+  "ovr": {
+   "PRESS_AXES": [
+    20.0,
+    1.0,
+    20.0
+   ],
+   "PRESS_AXES_BLACK": [
+    20.0,
+    20.0,
+    20.0
+   ]
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E23",
+  "leg": "H4 contact",
+  "parent": "E05",
+  "hypothesis": "Shallow presses stop at the key bed because the target is the bed itself; aiming 3 mm below it lets contact complete.",
+  "change": "E05 + press overshoot 3 mm",
+  "ovr": {
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E24",
+  "leg": "H4 contact",
+  "parent": "E05",
+  "hypothesis": "Verify-and-repair: re-solving the fingers with each missed note's press boosted (x4 per pass, 2 passes) recovers most misses without touching the wrist.",
+  "change": "E05 + 2 repair passes (REPAIR_W 4)",
+  "ovr": {
+   "REPAIR_ITERS": 2
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E25",
+  "leg": "H4 contact",
+  "parent": "E24",
+  "hypothesis": "Repair and overshoot are complementary (late arrival vs stopping short).",
+  "change": "E24 + press overshoot 3 mm",
+  "ovr": {
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=1"
  }
 ]
