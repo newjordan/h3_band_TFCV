@@ -463,3 +463,9 @@ Real-size hand, every wrist constraint still off, finger joint smoothing restore
 Finger tremor 1.67 -> 0.60 (x0.36), key sync -0.8, wrist shake unchanged (10.6 mm). **Conclusion:** finger smoothing
 removes most of the ragdoll's finger tremor at almost no accuracy cost; the wrist still wanders (sideways 340). The
 ladder continues with E12 (wrist smoothing) and E14 (wrist joint term) after the contact runs.
+
+### E36 (H4 contact): E29 + hard press mask: 97.0% (new best, +1.5); Debussy 100%
+Debussy **100.0**, Rach 96.5, Chopin 97.1; misses 58: sideways 41, shallow 11, short 6. Tremor 0.67 (E29 0.35, x1.9),
+shake 1.76 mm (1.55), wrist dev 11.3 deg. **Conclusion:** the hard mask and the E29 stack add up (E22 95.3, E29 95.5
+-> 97.0): the stack fixes misses the mask leaves and vice versa. The price is finger tremor (x1.9); E37 (middle mask
+[8,1,8]) measures how much of the gain survives at lower tremor. The 100% target is now 58 notes away.
