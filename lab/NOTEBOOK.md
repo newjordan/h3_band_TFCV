@@ -213,3 +213,10 @@ is the main lever (E20 -> E24 +5.7); with shallow nearly solved, **sideways (83)
 beside its key, which repair (a stronger pull on the same target) cannot fix when the target or the reach is wrong.
 Next (after E26-E28): a sideways study -- per-miss geometry (finger, interval to the neighbouring notes, hand span at
 the onset) to separate fingering errors from reach limits.
+
+### K10 (K-c pixel setup): K1 + the chrome-material plate: chrome gauntlets, hands drift (hand_r 0.09)
+Same as K1 except the plate in the video stream is Blender's chrome pass. The render is armoured chrome gauntlets
+(lab/plots/k10cmp.jpg: chrome plate | K1 | K10) but hand_r falls 0.42 -> 0.09 (flow_cos 0.81, frame r 0.75): with the
+same control, the plate's pixels decide whether H3 reads "hand" (skin, follows the edges) or "gauntlet" (its own
+armour prior, shape not held). **Conclusion:** the plate at 0.8% weight sets the *category*, the control sets the
+*shape* only when the category is a hand. Next: K11 (chrome first frame pinned), K12 (probe: which heads read it).
