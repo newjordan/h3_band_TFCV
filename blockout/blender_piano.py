@@ -553,22 +553,23 @@ if PASS == "chrome":                  # the plate in the look H3 should render (
         b.inputs["Roughness"].default_value = rough
     _pbr(M_SKIN, (0.86, 0.86, 0.9), 1.0, 0.12)
     _pbr(M_NAIL, (0.86, 0.86, 0.9), 1.0, 0.12)
-    _pbr(M_CASE, (0.004, 0.004, 0.004), 0.0, 0.06)
+    _pbr(M_CASE, (0.004, 0.004, 0.004), 0.0, 0.18)
     _pbr(M_BLACK, (0.006, 0.006, 0.006), 0.0, 0.1)
     _pbr(M_WHITE, (0.78, 0.75, 0.68), 0.0, 0.25)
     world.use_nodes = True
-    world.node_tree.nodes["Background"].inputs[0].default_value = (0.09, 0.05, 0.025, 1.0)
-    world.node_tree.nodes["Background"].inputs[1].default_value = 0.6
+    _pbr(M_FLOOR, (0.012, 0.007, 0.004), 0.0, 0.5)            # dark wood, a dark smoky room
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.05, 0.028, 0.014, 1.0)
+    world.node_tree.nodes["Background"].inputs[1].default_value = float(opts.get("--world", 0.12))
     scn.cycles.samples = int(opts.get("--samples", 64))
     scn.cycles.use_denoising = False                # this Blender build has no OpenImageDenoise
-    for nm, loc, e, col in (("lamp", (cx + 0.6, 0.5, 1.1), 120, (1.0, 0.62, 0.3)),
-                            ("rim", (cx - 0.9, 0.9, 0.7), 60, (1.0, 0.8, 0.6))):
+    for nm, loc, e, col in (("lamp", (cx + 0.6, 0.5, 1.1), 60, (1.0, 0.62, 0.3)),
+                            ("rim", (cx - 0.9, 0.9, 0.7), 30, (1.0, 0.8, 0.6))):
         L = bpy.data.objects.new(nm, bpy.data.lights.new(nm, "AREA"))
         L.data.energy, L.data.size, L.data.color = e, 0.8, col
         L.location = loc
         L.rotation_euler = (Vector((cx, 0.1, 0)) - L.location).to_track_quat("-Z", "Y").to_euler()
         COL.objects.link(L)
-    for nm, loc, sz, st in (("softbox", (cx, -0.2, 1.6), (1.6, 0.5), 3.0), ("bounce", (cx, 1.2, 0.6), (2.5, 0.6), 0.8)):
+    for nm, loc, sz, st in (("softbox", (cx, -0.2, 1.6), (0.7, 0.25), 2.0), ("bounce", (cx, 1.2, 0.6), (1.2, 0.3), 0.5)):
         bpy.ops.mesh.primitive_plane_add(size=1.0, location=loc)
         pl = bpy.context.active_object; pl.scale = (*sz, 1)
         pl.rotation_euler = (Vector((cx, 0.1, 0.1)) - pl.location).to_track_quat("Z", "Y").to_euler()
