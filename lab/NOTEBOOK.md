@@ -131,3 +131,10 @@ small hand is the better pianist in the lyrical music and fails the chords/octav
 (sideways) and contact (shallow) under stretch; H2 needs reach (a wider span model / wrist that rotates into octaves)
 before it can pass the big hand. Note: E06's local windows ran after the default-off PRESS_OVERSHOOT/REPAIR_ITERS
 switches landed (identical code path at their defaults; checked).
+
+### K2 (K-a): depth-pass control: chrome kept, hands lost (hand_r -0.01)
+Depth control instead of edges: the gauntlets stay chrome (lab/plots/k2cmp.jpg: plate | K1 | K2) but the hands do not
+follow the plate (hand_r -0.01, flow_cos 0.66, frame r 0.65, first second r 0.49). **Conclusion:** depth is too coarse to
+pin fingers and leaves the model free (look kept); dense finger edges pin the hand and take the look. Geometry and
+appearance trade against each other through the control; K6 (normal edges 0.6 + depth) and K7 (normal edges + chrome
+references) test whether both can be held at once.
