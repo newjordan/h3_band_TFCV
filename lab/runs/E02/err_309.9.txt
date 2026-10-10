@@ -1,2 +1,0 @@
-mux_client_request_session: read from master failed: Broken pipe
-ssh: connect to host 10.100.144.1 port 22: Connection timed out

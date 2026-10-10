@@ -559,6 +559,9 @@ def playable(chord, hand):
     return sorted(reach, key=lambda n: n.pitch)
 
 
+SPLIT_WIDE = True           # chords wider than a hand / > 5 keys: rolled sub-chords (False: drop to playable())
+
+
 def slices(notes, tol=SLICE_TOL, hand="R"):
     out = []
     for n in sorted(notes, key=lambda n: (n.start, n.pitch)):
@@ -566,7 +569,22 @@ def slices(notes, tol=SLICE_TOL, hand="R"):
             out[-1].append(n)
         else:
             out.append([n])
-    return [playable(s, hand) for s in out]
+    if not SPLIT_WIDE:
+        return [playable(s, hand) for s in out]
+    res = []                                       # every note gets a finger: a chord wider than a hand or with more
+    for s in out:                                  # than five keys is played as a roll, in onset order (outer voice
+        ns, seen = [], set()                       # first), split into sub-chords that one hand can take
+        for n in sorted(s, key=lambda n: (n.start, n.pitch if hand == "L" else -n.pitch)):
+            if n.pitch not in seen:
+                seen.add(n.pitch); ns.append(n)
+        cur = []
+        for n in ns:
+            ps = [m.pitch for m in cur] + [n.pitch]
+            if cur and (len(ps) > 5 or abs(key_x(max(ps)) - key_x(min(ps))) > HAND_SPAN):
+                res.append(sorted(cur, key=lambda m: m.pitch)); cur = []
+            cur.append(n)
+        res.append(sorted(cur, key=lambda m: m.pitch))
+    return res
 
 
 def _span_cost(fi, pi, fj, pj, hand):
@@ -594,16 +612,29 @@ def fingering(sl, hand):
     """Viterbi over slices. Returns, per slice, a list of (note, finger)."""
     cands = []
     for s in sl:
-        ps = sorted(n.pitch for n in s)
+        ps = sorted({n.pitch for n in s})          # a key doubled in the score (both staves on it) is struck once
+        groups = [[p] for p in ps]                 # more than five notes: one finger takes two neighbouring keys
+        while len(groups) > 5:                     # (the closest pair, a tone or less apart), as pianists do
+            k = min(range(len(groups) - 1), key=lambda i: groups[i + 1][0] - groups[i][-1])
+            if groups[k + 1][0] - groups[k][-1] > 2:
+                break
+            groups[k:k + 2] = [groups[k] + groups[k + 1]]
         cs = []
-        for fs in itertools.combinations(range(5), len(ps)):
+        relax = False
+        for fs in itertools.combinations(range(5), min(len(groups), 5)):
             order = fs if hand == "R" else fs[::-1]
-            a = list(zip(ps, order))
+            a = [(p, f) for g, f in zip(groups, order) for p in g]
             c = sum(_span_cost(f1, p1, f2, p2, hand) for (p1, f1), (p2, f2) in itertools.combinations(a, 2))
             c += sum(3.0 for p, f in a if f == 0 and is_black(p)) + sum(1.0 for p, f in a if f == 4 and is_black(p))
-            if c < 50:
+            if c < 50 or relax:
                 nb = any(is_black(p) for p in ps)
                 cs.append((a, c, _place(a, nb, hand)))
+        if not cs and len(groups) <= 5:            # wider than a hand: a rolled chord (the onsets are a few ms apart);
+            for fs in itertools.combinations(range(5), len(groups)):   # still finger every note, the least-bad
+                order = fs if hand == "R" else fs[::-1]                 # stretch, and let the wrist travel the roll
+                a = [(p, f) for g, f in zip(groups, order) for p in g]
+                c = 50.0 + sum(min(_span_cost(f1, p1, f2, p2, hand), 50.0) for (p1, f1), (p2, f2) in itertools.combinations(a, 2))
+                cs.append((a, c, _place(a, any(is_black(p) for p in ps), hand)))
         cands.append(cs or [([(p, 2) for p in ps[:1]], 0.0, key_x(ps[0]))])
 
     INF = float("inf")

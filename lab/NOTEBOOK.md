@@ -73,3 +73,15 @@ still run to map the frontier, but the route to 100% is the targets/fingering (H
 Our knuckles sat 3.8-4.7 cm into the keys vs the pianists' 0.7 cm (FürElise playing median): the wrist model's
 depth offsets were not scaled to the hand's size. Scaled: Chopin window knuckles 4.3 -> 0.8 cm; key sync per window
 -4 / +2 / -12 (2 of 16 notes) points. Whole-suite measurement: E04.
+
+### Protocol incident (00:16-00:55): E02 and E20 discarded
+Two queue chains ran concurrently and a code change (fingering every note) landed mid-run: local windows used the
+new code, remote windows the old. Both runs were stopped and deleted. Rule from here: one queue chain; code changes
+only between runs (remotes sync at run start, local windows import per window).
+
+### Code changes before E05
+- Every note fingered: `playable()` used to drop notes of chords wider than a hand or with more than five keys
+  (they sounded in the audio, no finger pressed them); now such chords are played as rolled sub-chords in onset
+  order, doubled keys (both staves on one key) are struck once, and a chord too wide for any block fingering still
+  gets the least-bad stretch. All 2,046 suite notes now have a finger (was 2,021).
+- Wrist model depth offsets scale with the hand (knuckles ~0.7 cm into the keys like the pianists).

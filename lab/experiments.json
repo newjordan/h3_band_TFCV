@@ -34,111 +34,29 @@
   "env": "HAND_SCALE=0.7284"
  },
  {
-  "id": "E02",
-  "leg": "H2 data-driven hand",
-  "parent": "E01",
-  "hypothesis": "The F\u00fcrElise wrist model contributes to E01's accuracy.",
-  "change": "E01 without the F\u00fcrElise wrist model (our own planner)",
+  "id": "E05",
+  "leg": "H0 baseline",
+  "parent": "E00",
+  "hypothesis": "Fingering every note (rolled sub-chords for chords wider than a hand or with > 5 keys, doubled keys struck once) and scaling the wrist model's depth to the hand removes the unfingered class and puts the knuckles where pianists' are.",
+  "change": "E00 + every note fingered (SPLIT_WIDE) + knuckle-depth scaling",
   "ovr": {},
-  "env": "HAND_SCALE=0.7284 RIG_WRIST_MODEL=0"
+  "env": "HAND_SCALE=1"
  },
  {
-  "id": "E03",
+  "id": "E06",
   "leg": "H2 data-driven hand",
-  "parent": "E01",
-  "hypothesis": "Moving the strike bands 12 mm toward the key fronts does not cost key sync.",
-  "change": "E01 with strike bands at the F\u00fcrElise positions (no 12 mm shift)",
-  "ovr": {
-   "HITPAD_SHIFT": 0.0
-  },
-  "env": "HAND_SCALE=0.7284"
- },
- {
-  "id": "E11",
-  "leg": "H1 ragdoll-first",
-  "parent": "E10",
-  "hypothesis": "Re-smoothing the finger joints (tremor control) keeps the ragdoll's accuracy.",
-  "change": "E10 + finger joint smoothing",
-  "ovr": {
-   "WRIST_LAMBDA": 0,
-   "WRIST_W": 0,
-   "EASE_MAX": 0.1,
-   "EASE_PRIOR": 0.05,
-   "FINGER_REFINE": true,
-   "WRIST_PASSES": 1
-  },
-  "env": "HAND_SCALE=0.7284"
- },
- {
-  "id": "E12",
-  "leg": "H1 ragdoll-first",
-  "parent": "E11",
-  "hypothesis": "Light wrist-path smoothing costs little accuracy.",
-  "change": "E11 + wrist path smoothing lambda 2",
-  "ovr": {
-   "WRIST_LAMBDA": 2.0,
-   "WRIST_W": 0,
-   "EASE_MAX": 0.1,
-   "EASE_PRIOR": 0.05,
-   "FINGER_REFINE": true,
-   "WRIST_PASSES": 1
-  },
-  "env": "HAND_SCALE=0.7284"
- },
- {
-  "id": "E13",
-  "leg": "H1 ragdoll-first",
-  "parent": "E12",
-  "hypothesis": "Full wrist smoothing (lambda 12) costs accuracy at leaps.",
-  "change": "E11 + wrist path smoothing lambda 12",
-  "ovr": {
-   "WRIST_LAMBDA": 12.0,
-   "WRIST_W": 0,
-   "EASE_MAX": 0.1,
-   "EASE_PRIOR": 0.05,
-   "FINGER_REFINE": true,
-   "WRIST_PASSES": 1
-  },
-  "env": "HAND_SCALE=0.7284"
- },
- {
-  "id": "E14",
-  "leg": "H1 ragdoll-first",
-  "parent": "E12",
-  "hypothesis": "A soft wrist-joint term straightens wrists with small accuracy cost.",
-  "change": "E12 + wrist joint term 0.015",
-  "ovr": {
-   "WRIST_LAMBDA": 2.0,
-   "WRIST_W": 0.015,
-   "EASE_MAX": 0.1,
-   "EASE_PRIOR": 0.05,
-   "FINGER_REFINE": true,
-   "WRIST_PASSES": 1
-  },
-  "env": "HAND_SCALE=0.7284"
- },
- {
-  "id": "E15",
-  "leg": "H1 ragdoll-first",
-  "parent": "E12",
-  "hypothesis": "The full wrist-joint term (0.05) costs accuracy.",
-  "change": "E12 + wrist joint term 0.05",
-  "ovr": {
-   "WRIST_LAMBDA": 2.0,
-   "WRIST_W": 0.05,
-   "EASE_MAX": 0.1,
-   "EASE_PRIOR": 0.05,
-   "FINGER_REFINE": true,
-   "WRIST_PASSES": 1
-  },
+  "parent": "E05",
+  "hypothesis": "Same code with the pianist-sized hand.",
+  "change": "E05 with the real-size hand",
+  "ovr": {},
   "env": "HAND_SCALE=0.7284"
  },
  {
   "id": "E20",
   "leg": "H4 contact",
-  "parent": "E00",
-  "hypothesis": "Most shallow misses come from the press target weighting height half as much as position: weighting it equally drives the keys down.",
-  "change": "E00 + knuckle-depth scaling of the wrist model (in code from 00:00) + press height weight 1.5 -> 3",
+  "parent": "E05",
+  "hypothesis": "Shallow misses come from the press target weighting height half as much as position.",
+  "change": "E05 + press height weight 1.5 -> 3",
   "ovr": {
    "PRESS_AXES": [
     3.0,
@@ -157,7 +75,7 @@
   "id": "E21",
   "leg": "H4 contact",
   "parent": "E20",
-  "hypothesis": "The pressing pad is held up by its own key's surface in the collision model; letting it sink 2 mm removes the remaining shallow misses.",
+  "hypothesis": "The pressing pad is held up by its own key's surface in the collision model.",
   "change": "E20 + pressing pad may sink 3 mm into its own key",
   "ovr": {
    "PRESS_AXES": [
@@ -175,12 +93,71 @@
   "env": "HAND_SCALE=1"
  },
  {
-  "id": "E04",
+  "id": "E07",
   "leg": "H0 baseline",
-  "parent": "E00",
-  "hypothesis": "Scaling the wrist model's depth offsets to the hand's size puts the knuckles where a pianist's are (0.7 cm into the keys) without costing key sync.",
-  "change": "E00 + knuckle-depth scaling (wrist model x and depth offsets scale with the hand)",
-  "ovr": {},
+  "parent": "E05",
+  "hypothesis": "Ablation: the old 'playable()' note dropping costs the unfingered notes.",
+  "change": "E05 with SPLIT_WIDE off (playable() drops notes)",
+  "ovr": {
+   "SPLIT_WIDE": false
+  },
   "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E02",
+  "leg": "H2 data-driven hand",
+  "parent": "E06",
+  "hypothesis": "Ablation: the F\u00fcrElise wrist model contributes to the real-size hand's accuracy.",
+  "change": "E06 without the F\u00fcrElise wrist model",
+  "ovr": {},
+  "env": "HAND_SCALE=0.7284 RIG_WRIST_MODEL=0"
+ },
+ {
+  "id": "E11",
+  "leg": "H1 ragdoll-first",
+  "parent": "E10",
+  "hypothesis": "Reverse ladder 1: finger smoothing back on.",
+  "change": "ragdoll (E10 settings, current code) + finger joint smoothing",
+  "ovr": {
+   "WRIST_LAMBDA": 0,
+   "WRIST_W": 0,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E12",
+  "leg": "H1 ragdoll-first",
+  "parent": "E11",
+  "hypothesis": "Reverse ladder 2: light wrist-path smoothing.",
+  "change": "E11 + wrist smoothing lambda 2",
+  "ovr": {
+   "WRIST_LAMBDA": 2.0,
+   "WRIST_W": 0,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E14",
+  "leg": "H1 ragdoll-first",
+  "parent": "E12",
+  "hypothesis": "Reverse ladder 3: soft wrist-joint term.",
+  "change": "E12 + wrist joint term 0.015",
+  "ovr": {
+   "WRIST_LAMBDA": 2.0,
+   "WRIST_W": 0.015,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
  }
 ]
