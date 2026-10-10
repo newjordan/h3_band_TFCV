@@ -8,6 +8,26 @@ wrists, no shake, no finger tremor, joints inside human range, a real-size hand?
 **Why it matters.** The animation is the motion plate for MiniMax-H3 (ControlNet + plate lock): whatever the plate's
 fingers do, the rendered knight does. A missed key or a twitching finger is visible in the final film.
 
+## Overnight summary (2026-10-10, 00:30-08:15)
+
+**Hands (whole suite, 1,918 notes, key at least half down within 0.25 s):** 82.2% (E05) -> **95.5% (E29)**, motion
+unchanged (wrist deviation ~11.5 deg, shake ~1.55 mm, finger tremor 0.31 -> 0.35).
+- Contact (H4): press height weighted like position (E20 87.5), a verify-and-repair finger pass (E24 93.2), 3 mm
+  press overshoot (E23 93.0); together E26 94.7. Shallow presses 226 -> 25.
+- Reach (H5): an over-wide chord gives its inner note to the other hand when it can take it (E29 95.5). Roll
+  staggering adds nothing (E31). Remaining: ~57 sideways (four-octave chords, fast leaps), 25 shallow, 5 short.
+- Real-size hand (H2): 74.6 -> 90.5% (E30) with the same fixes; Debussy at **100%**; its gap is Rachmaninoff octaves
+  (84%) -> E32/E33 (anatomical thumb/pinky spread, open-hand planning) running.
+- Ragdoll-first (H1) refuted early (E10): loosening constraints made the hand wander off its keys.
+
+**H3 (leg K, single shot kh111 + one check on ov125):** the render follows the Blender hands only when the ControlNet
+input carries per-finger geometry. Chrome plates, pinned frames, plate strength, lockstep anchors and attention (KV)
+pulls on the 32 identified reference-reading heads all left the hands drifting (hand_r 0.12-0.19). ref2va ignores the
+ControlNet entirely. **Recipe that works (K22, confirmed on ov125 as K23):** grey plate + gauntlet/vambrace geometry
+added to the Blender hand (joint rings, cuff, forearm bands) + canny of its normal pass as the control + the
+chrome-knight prompt: steel gauntlets that move with the plate (motion agreement vs the armour geometry 0.95 / 0.92).
+Videos: band site, lab section.
+
 ## Metrics (blockout/eval_suite.py, lab/run.py)
 
 | metric | definition |
