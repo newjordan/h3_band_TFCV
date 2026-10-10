@@ -392,3 +392,9 @@ k23_ov125.mp4: plate | armoured grey plate | K23). Against the matching geometry
 (kh111 K22: 0.95 / 0.51). Whole-frame r vs the grey plate 0.60 (the cafe background replaces the grey room).
 **Conclusion:** the recipe generalises across camera angles. Geometry bug seen from above: the thumb's first ring sits
 on the CMC bone inside the palm and shows as a stray arc; fix: no ring on finger1-1.
+
+### E31 (H5 reach): E29 + ROLL_STAGGER: 95.4% (-0.1): no gain
+Same per section (Chopin 96.6 vs 96.8); sideways 57 -> 48 but 13 "unfingered" appear (the staggered copies of the
+four-octave chords, missed either way, relabelled because the scorer matches fingers by onset); motion unchanged.
+**Conclusion:** ROLL_STAGGER does not add to REACH_SPLIT on the whole suite (as in the pilot); it stays off. The
+remaining misses after E29: ~57 sideways (four-octave chords, fast leaps), 25 shallow, 5 short.

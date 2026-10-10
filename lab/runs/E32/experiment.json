@@ -1,0 +1,23 @@
+{
+ "id": "E32",
+ "leg": "H5 reach",
+ "parent": "E30",
+ "hypothesis": "The real-size hand misses Rachmaninoff octaves because the rig's thumb (CMC 30 deg) and pinky (25 deg) cannot open to the span; anatomical limits (thumb 45, pinky 30) let it reach.",
+ "change": "E30 + thumb CMC abduction 45 deg, pinky 30 deg",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "REPAIR_ITERS": 2,
+  "PRESS_OVERSHOOT": 0.003,
+  "REACH_SPLIT": true
+ },
+ "env": "HAND_SCALE=0.7284 RIG_LIMITS='{\"cmc\":{\"abd\":[-45,45]},\"mcp_edge\":{\"abd\":[-30,30]}}'"
+}
