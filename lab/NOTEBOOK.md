@@ -205,3 +205,11 @@ fl2va (t2v/i2v) model, where the control works (K1: hand_r 0.42):
   and control.
 - K10 = K1 with the chrome plate in the video stream; K11 = K10 + the chrome frame 0 pinned as first frame;
   K12 = K11 with the attention probe (which heads read the pinned frame -> targets for a KV pull in fl2va).
+
+### E24 (H4 contact): E20 weights + repair loop: 93.2% (new best)
+Debussy 88.8, Rach 92.3, Chopin 94.6; shallow 41 (E20 127), sideways 83, short 6; wrist dev 11.6 deg, shake 1.56 mm,
+tremor 0.37 (E20 0.33). 60 min (the toymaker share ran beside the chrome-plate Cycles render). **Conclusion:** repair
+is the main lever (E20 -> E24 +5.7); with shallow nearly solved, **sideways (83) is now the largest class**: the pad is
+beside its key, which repair (a stronger pull on the same target) cannot fix when the target or the reach is wrong.
+Next (after E26-E28): a sideways study -- per-miss geometry (finger, interval to the neighbouring notes, hand span at
+the onset) to separate fingering errors from reach limits.
