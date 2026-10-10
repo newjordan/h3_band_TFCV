@@ -56,6 +56,9 @@ def section_of(t, starts):
 
 
 def cmd_plan(a):
+    global W, H
+    st = settings(a.outdir)
+    W, H = st.get("width", W), st.get("height", H)
     anim = json.load(open(a.edit))
     shots = anim["shots"]
     od = a.outdir
@@ -97,15 +100,23 @@ def cmd_plan(a):
     print(f"{len(chunks)} chunks from {len(shots)} shots; ~{len(chunks) * 14 / 60:.1f} GPU hours")
 
 
+def settings(od):
+    """Per-run overrides from OUTDIR/settings.json: {"width": 640, "height": 352, "steps": 10} (a quick preview)."""
+    p = os.path.join(od, "settings.json")
+    return json.load(open(p)) if os.path.exists(p) else {}
+
+
 def run_tag(od):
     return os.path.basename(os.path.normpath(od)).replace("h3_", "")
 
 
-def config(c, prev_last=None, tag="v17c"):
+def config(c, prev_last=None, tag="v17c", st=None):
+    st = st or {}
     base = f"band/{tag}/{c['id']}"
     j = {"tag": f"{tag}_{c['id']}", "mode": "B", "video": base + ".mp4", "audio": base + ".wav",
          "video_strength": 0.88, "control": {"video": base + "_ctl_canny.mp4", "strength": 1.0},
-         "prompt": prompt(c["view"], c["section"]), "seed": 7, "steps": 20, "width": W, "height": H,
+         "prompt": prompt(c["view"], c["section"]), "seed": 7, "steps": st.get("steps", 20),
+         "width": st.get("width", W), "height": st.get("height", H),
          "length": c["gen"], "scheduler": "beta", "sampler": "res_multistep"}
     if prev_last:
         j["image"] = prev_last
@@ -143,7 +154,7 @@ def cmd_run(a):
             shutil.copy2(last, os.path.join(COMFY_IN, prev_last))
         cfg = os.path.join(od, "configs", c["id"] + ".json")
         os.makedirs(os.path.dirname(cfg), exist_ok=True)
-        json.dump(config(c, prev_last, T), open(cfg, "w"), indent=1)
+        json.dump(config(c, prev_last, T, settings(od)), open(cfg, "w"), indent=1)
         t = time.time()
         r = subprocess.run([sys.executable, RUNNER, cfg], capture_output=True, text=True)
         print(f"{time.strftime('%H:%M:%S')} {c['id']} ({c['view']}, {c['section']}, {c['n']}/{c['gen']} f) "
@@ -155,6 +166,9 @@ def cmd_run(a):
 
 def cmd_assemble(a):
     od = a.outdir
+    global W, H
+    st = settings(od)
+    W, H = st.get("width", W), st.get("height", H)
     P = json.load(open(os.path.join(od, "plan.json")))
     seq = os.path.join(od, "assembled")
     shutil.rmtree(seq, ignore_errors=True); os.makedirs(seq)
