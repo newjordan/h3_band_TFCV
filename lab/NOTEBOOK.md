@@ -180,3 +180,9 @@ Rach 90.5 (+16.3), Chopin 95.2; shallow 226 -> 65, sideways 113 -> 77; wrist dev
 (+0.04); 33 min vs 29. **Conclusion:** supported; the largest single gain so far, at almost no motion cost. Queued
 next (after E24 = E20 + repair): E26 = E20 weights + repair + overshoot (stack), E27 = 4 repair passes, E28 = E26
 with the real-size hand; then the remaining contact singles and the ablation ladder.
+
+### K5 (K-c/lit review: role refs): chrome references + beauty canny: chrome yes, hands no (hand_r 0.07)
+ref2va with three chrome-gauntlet reference images at ref_image_size=max, beauty-pass canny, plate 0.88. The gauntlets
+are chrome (lab/plots/k5cmp.jpg: plate | K1 | K5) but the hands do not follow the plate (hand_r 0.07, flow_cos 0.72,
+frame r 0.69; one reframe at f6). **Conclusion:** the references deliver the look, the beauty canny cannot deliver the
+fingers: same split as K2. K7 (these references + the normal-pass control of K1) is the direct test of both at once.
