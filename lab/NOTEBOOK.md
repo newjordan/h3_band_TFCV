@@ -438,3 +438,10 @@ Debussy 86.7, Rach 83.5, Chopin 93.2; shallow 127 -> 117, sideways 102, short 4;
 **Conclusion:** the own-key collision holds the pad up a little (10 shallow misses), a small effect next to overshoot
 (E23, -82 shallow) and repair (E24, -86); OWN_KEY_GIVE 3 mm is a candidate addition to the E29 stack.
 (Run paused 09:36 for the greyscale v18 render and re-run from scratch at 09:59.)
+
+### E07 (ablation): E05 with SPLIT_WIDE off (old playable() note dropping): 82.7% (E05 82.2)
+Debussy 74.5, Rach 74.4, Chopin 91.6; unfingered 25, sideways 83 (E05 113), shallow 219, short 4.
+**Conclusion:** on the E05 rig, fingering every note was slightly *negative* (-0.6): of the 25 notes it newly
+fingered, few were reached, and the rolled sub-chords pulled the hand off ~30 other notes (sideways 83 -> 113).
+Fingering every note is still the right policy for the film (no key goes down without a finger), but its cost should
+be re-measured on the current stack: queued idea E34 = E29 with SPLIT_WIDE off.

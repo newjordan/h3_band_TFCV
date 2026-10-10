@@ -416,5 +416,53 @@
    "HOME_S": 1.15
   },
   "env": "HAND_SCALE=0.7284 RIG_LIMITS='{\"cmc\":{\"abd\":[-45,45]},\"mcp_edge\":{\"abd\":[-30,30]}}'"
+ },
+ {
+  "id": "E34",
+  "leg": "H5 reach",
+  "parent": "E29",
+  "hypothesis": "Ablation on the current stack: does fingering every note (rolled sub-chords) still cost sideways misses once REACH_SPLIT shares wide chords between hands?",
+  "change": "E29 with SPLIT_WIDE off",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true,
+   "SPLIT_WIDE": false
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E35",
+  "leg": "H4 contact",
+  "parent": "E29",
+  "hypothesis": "Letting the pad sink 3 mm into its own key (E21: -10 shallow on E20) adds to the E29 stack.",
+  "change": "E29 + OWN_KEY_GIVE 3 mm",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true,
+   "OWN_KEY_GIVE": 0.003
+  },
+  "env": "HAND_SCALE=1"
  }
 ]
