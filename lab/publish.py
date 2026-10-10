@@ -26,6 +26,8 @@ m["sections"].insert(0, {"id": "lab", "title": "Piano-hand lab: every note, ever
            ([{"kind": "video", "src": "media/lab/k_armour.mp4", "title": "Leg K: Blender plate | K1 skin (normal-pass edges) | K20 gauntlet geometry | K21 gauntlet + vambrace geometry",
               "note": "Single shot kh111, H3 fl2va + Fun ControlNet on the canny of Blender's normal pass; the armour comes from geometry added to the Blender hand, the plate stays grey."}]
             if os.path.exists(os.path.join(LAB, "plots", "k_armour.mp4")) else []) +
+           ([{"kind": "video", "src": "media/lab/k23_ov125.mp4", "title": "Leg K, K23: the recipe on a second shot (ov125): plate | armoured grey plate | H3"}]
+            if os.path.exists(os.path.join(LAB, "plots", "k23_ov125.mp4")) else []) +
            [{"kind": "image", "src": f"media/lab/{f}", "title": t} for f, t in (
                ("keysync_runs.png", "Key sync by experiment"), ("keysync_sections.png", "Key sync per section"),
                ("misses.png", "Missed notes by kind"), ("tradeoff_wrist.png", "Key sync vs wrist deviation"),

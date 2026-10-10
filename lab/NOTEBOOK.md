@@ -385,3 +385,10 @@ Debussy 100.0, Rach 84.2 (unchanged), Chopin 95.6 (+1.7); sideways 152 -> 135; m
 redistribution helps the small hand in the Chopin, but its Rachmaninoff losses are octaves it cannot open to (class a2),
 not hand assignment. Queued ahead of the ablations: E32 = E30 + anatomical thumb/pinky spread (CMC 45, pinky 30 deg),
 E33 = E32 + home spread x1.15.
+
+### K23: the K22 recipe on a second shot (ov125, overhead): it transfers
+Full knight gauntlets with chainmail over a candle-lit cafe, hands in the plate's positions (lab/plots/k23cmp.jpg and
+k23_ov125.mp4: plate | armoured grey plate | K23). Against the matching geometry: flow_cos 0.92, flow_err 0.56
+(kh111 K22: 0.95 / 0.51). Whole-frame r vs the grey plate 0.60 (the cafe background replaces the grey room).
+**Conclusion:** the recipe generalises across camera angles. Geometry bug seen from above: the thumb's first ring sits
+on the CMC bone inside the palm and shows as a stray arc; fix: no ring on finger1-1.

@@ -410,7 +410,7 @@ if HANDS == "mpfb":
                     if g.weight > 0.6:
                         pts.setdefault(vg[g.group], []).append(MPFB_MESH.matrix_world @ v.co)
             for s_ in "LR":
-                names = [f"finger{f}-{k}" for f in range(1, 6) for k in (1, 2, 3)] + ["wrist"]
+                names = [f"finger{f}-{k}" for f in range(1, 6) for k in (1, 2, 3) if (f, k) != (1, 1)] + ["wrist"]   # no ring on the thumb CMC (inside the palm)
                 for nm in names:
                     b = MPFB_ARM.data.bones.get(f"{nm}.{s_}")
                     if b is None or f"{nm}.{s_}" not in pts:

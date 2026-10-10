@@ -24,3 +24,4 @@ K20,K1 (grey plate) + canny of the gauntlet normal pass (joint rings + cuff),0.2
 K19,gauntlet chrome plate (0.70) + its frame 0 pinned + gauntlet canny,0.12,0.88,0.70,0.70
 K21,K20 + vambrace bands in the control (full armour),0.13,0.79,0.74,0.74
 K22,K21 with a grey plate of the armoured geometry,0.10,0.75,0.72,0.73
+K23,second shot ov125 (overhead): K22 recipe (scored vs gauntlet+vambrace normal pass),0.08,0.92,0.56,0.60
