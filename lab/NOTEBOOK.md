@@ -123,3 +123,11 @@ hands (lab/plots/k1cmp.jpg: plate | q60 | K1). **Conclusion:** K-a supported: th
 when the control resolves the fingers. The dense per-finger edges now pin a *hand*, and the model fills it with its
 prior (skin); the chrome look must be pulled in separately (K-b: KV pull toward a chrome reference on the
 appearance heads, K-c: chrome-material plates) while keeping this control.
+
+### E06 (H2): real-size hand on the E05 code: 74.6% (E05 82.2)
+Debussy 91.8 (+17.3 vs E05), Rach 58.1 (-16.1), Chopin 88.6 (-2.0); sideways 201, shallow 271, short 15. Wrist dev
+10.6 deg, shake 1.5 mm, tremor 0.26 (smoother than the big hand). **Conclusion:** replicates E01 on the new code: the
+small hand is the better pianist in the lyrical music and fails the chords/octaves. The Rachmaninoff losses are reach
+(sideways) and contact (shallow) under stretch; H2 needs reach (a wider span model / wrist that rotates into octaves)
+before it can pass the big hand. Note: E06's local windows ran after the default-off PRESS_OVERSHOOT/REPAIR_ITERS
+switches landed (identical code path at their defaults; checked).
