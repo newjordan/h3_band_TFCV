@@ -266,7 +266,7 @@ def pose_hand(arm, B, s, hd):
     u = (wrist - elbow).normalized()
     root = Matrix([list(r) for r in hd["root"]["rot"]]).to_4x4()
     root.translation = Vector(hd["root"]["pos"])
-    want = {"wrist": root}
+    want = {"wrist": root @ Matrix.Diagonal((sk.scale, sk.scale, sk.scale, 1.0))}   # the rig's hand scale
     for nm, back, share in (("lowerarm02", 0.0, 0.6), ("lowerarm01", B["lowerarm02"].length, 0.2)):
         head = wrist - u * (B["lowerarm02"].length + back)
         r3 = B[nm].matrix_local.to_3x3()

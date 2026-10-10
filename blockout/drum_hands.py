@@ -20,7 +20,7 @@ after the release and closes it on the catch. add() gives each frame's hand "roo
 head), "angles" (every finger joint, as blockout/rig poses them; blender_drums.py drives the skinned hand with
 them) and "fingers" (5 chains of 4 points, thumb first, for checks and the capsule fallback).
 """
-import math
+import json, math, os
 
 import numpy as np
 
@@ -40,6 +40,21 @@ OPEN = 0.6                      # an open hand: this far from the grip to the ri
 STEP = math.radians(0.5)
 OPEN_S, CLOSE_S = 0.06, 0.10    # s to open after a release, to close before a catch
 PALM = (("wrist", (0.1, 0.5, 0.9)), *((f"metacarpal{m}", (0.5, 0.7, 0.9)) for m in range(1, 5)))
+COMFORT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rig", "comfort_mediapipe.json")
+
+
+def _grasp_rig(side):
+    """HandRig with the relaxed pose and DIP:PIP ratios measured on hands in general (COMFORT), in place of the
+    concert pianists' calibration it loads by default: on the keys a pianist's end joints stay nearly straight,
+    in a grasp they curl with the PIP."""
+    rig = HandRig(side)
+    q = np.clip(np.array(json.load(open(COMFORT))[side]), rig.lo, rig.hi)
+    rig.q_rest = q
+    for ch, a, b in zip(rig.chains, rig.sl[:-1], rig.sl[1:]):
+        ch.q_rest = q[a:b].copy()
+        if ch.k_dip and q[a + ch.i_pip] > 0.05:
+            ch.k_dip = float(np.clip(q[a + ch.i_dip] / q[a + ch.i_pip], 0.4, 1.0))
+    return rig
 
 
 def _unit(v):
@@ -80,7 +95,7 @@ class Grip:
 
     def __init__(self, side):
         self.side = side
-        rig = self.rig = HandRig(side)
+        rig = self.rig = _grasp_rig(side)
         sk = rig.sk
         Mh, c0 = rig.M_rest, rig.c_rest                  # rows: hand x, y, z as rest-space vectors
         Rr, pr = sk.rest_root()
