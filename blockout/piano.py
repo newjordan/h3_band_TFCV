@@ -1441,6 +1441,9 @@ FINGER_PRESS_W = 8.0        # ... pinned this hard on the frames the finger is o
 FINGER_PRIOR = 5e-3         # how hard a finger holds its smoothed path in the second solve
 FINGER_SPLIT = True         # with the wrist set, each finger solves on its own
 FREE_FOLLOW = True          # free fingers' float targets move with the solved wrist (across/along the keys)
+PRESS_OVERSHOOT = 0.0       # m the pressing pad aims below the key bed (0: at the bed)
+REPAIR_ITERS = 0            # verify-and-repair passes: re-solve the fingers with missed notes' presses boosted
+REPAIR_W = 4.0              # how much harder a missed note's finger pulls on each repair pass
 OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) key's surface in the collision model
 THUMB_PRESS_GIVE = 0.004    # m a pressing thumb's distal and proximal phalanx may sink past key tops (its side
                             # rests over the neighbouring key's edge as it presses its own)
@@ -1537,7 +1540,8 @@ def _frame_targets(hands, j):
                 continue
             p, kx, cz = a
             top, lev = cz - TIP_R[f], key_lever(p, tg[f, 1])
-            tg[f, 2] = max(tg[f, 2], top - KEY_TRAVEL * lev)     # a key stops on its bed
+            tg[f, 2] = max(tg[f, 2] - PRESS_OVERSHOOT, top - KEY_TRAVEL * lev - PRESS_OVERSHOOT)   # a key stops on its
+            # bed; with PRESS_OVERSHOOT the pad aims a little below it, so contact never stops short of the bottom
             if abs(tg[f, 0] - kx) < WHITE_W:
                 est_depth[p] = max(est_depth.get(p, 0.0), float(np.clip((top - tg[f, 2]) / (KEY_TRAVEL * lev), 0, 1)))
         targets[name] = tg
@@ -1558,7 +1562,8 @@ def _hand_fwd(name, root_rot, root_pos=None):
     return root_rot @ (rig.sk.R0["wrist"].T @ rig.M_rest[1])
 
 
-def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, refs=None, prior=None, qprior=None):
+def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, refs=None, prior=None, qprior=None,
+                 boost=None):
     """Both hands at frame j (two passes: each hand sees the other's latest skin). roots: a set wrist per hand
     (x[:6]); then only the fingers move. forearms: (elbow, band) per hand for the wrist joint term. refs: the
     wrist reference (rot, pos) per hand instead of the plan's; prior: its root_pos weight."""
@@ -1580,6 +1585,8 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
         # a key is narrow across the keyboard and long along it: aim pressing pads hardest in x
         w = [np.array(PRESS_AXES_BLACK if is_black(H["act"][j][f][0]) else PRESS_AXES) * RIG_W["press"] if pressing[f]
              else RIG_W["free"] * (THUMB_REST if f == 0 else 1.0) for f in range(5)]
+        if boost:                                       # repair pass: a finger that missed its key here pulls harder
+            w = [w[f] * boost.get((name, j, f), 1.0) if pressing[f] else w[f] for f in range(5)]
         x_init = solved[name][0] if name in solved else prev.get(name)
         W = {k: v for k, v in RIG_W.items() if k not in ("press", "free")}
         tk = float(H["WF"][j][0]) if "WF" in H else 0.0
@@ -1726,6 +1733,33 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
                 X_[:, a:b] = np.clip(_whittaker(X_[:, a:b], w, FINGER_LAMBDA), rig.lo[a - 6:b - 6], rig.hi[a - 6:b - 6])
             QP[name] = X_
 
+    BOOST = {}
+    for rep in range(REPAIR_ITERS + 1):
+        for H in hands.values():
+            for k in ("tip_miss", "pen", "pen_info"):
+                H.pop(k, None)
+        frames = _pass_b(hands, times, j0, N, start, energy, HEAD, body, T, roots, REF, QP, TORSO, BOOST)
+        if rep == REPAIR_ITERS:
+            break
+        nmiss = 0                                       # verify: every note's key at least half down within 0.25 s
+        for name, H in hands.items():
+            for f in range(5):
+                for e in H["ev"][f]:
+                    a, b = int(round((e[0] - times[j0]) * fps)), int(round((e[0] + 0.25 - times[j0]) * fps))
+                    if a < 0 or a >= len(frames):
+                        continue
+                    d = max(frames[k]["keys"].get(str(e[2]), 0.0) for k in range(a, min(b + 1, len(frames))))
+                    if d >= 0.5:
+                        continue
+                    nmiss += 1
+                    for k in range(max(0, a - int(0.15 * fps)), min(len(frames), b + 1)):
+                        BOOST[(name, j0 + k, f)] = BOOST.get((name, j0 + k, f), 1.0) * REPAIR_W
+        if not nmiss:
+            break
+    return frames
+
+
+def _pass_b(hands, times, j0, N, start, energy, HEAD, body, T, roots, REF, QP, TORSO, BOOST):
     frames = []
     prev = {}
     for j in range(j0, N):                              # pass B: the fingers, from the set wrist
@@ -1734,7 +1768,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
         targets, est_depth = T[j]
         solved = _solve_frame(hands, j, targets, est_depth, prev, roots={n: roots[n][j - j0] for n in hands},
                               refs={n: REF[n][j - j0] for n in hands},
-                              qprior=None if QP is None else {n: QP[n][j - j0] for n in hands})
+                              qprior=None if QP is None else {n: QP[n][j - j0] for n in hands}, boost=BOOST)
         keydepth, press = {}, {}
         for name, H in hands.items():
             x, rr, rp, pts, pressing, pads, ref_pos, miss = solved[name]

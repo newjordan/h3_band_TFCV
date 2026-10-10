@@ -28,7 +28,8 @@ m["sections"].insert(0, {"id": "lab", "title": "Piano-hand lab: every note, ever
                ("misses.png", "Missed notes by kind"), ("tradeoff_wrist.png", "Key sync vs wrist deviation"),
                ("tradeoff_jitter.png", "Key sync vs wrist shake"), ("tradeoff_tremor.png", "Key sync vs finger tremor"),
                ("k_handfidelity.png", "Leg K: H3 render vs Blender plate inside the hands, per run"),
-               ("k_frame_vs_hand.png", "Leg K: whole-frame vs hand-region structure"))
+               ("k_frame_vs_hand.png", "Leg K: whole-frame vs hand-region structure"),
+               ("k1cmp.jpg", "Leg K, K1: plate / q60 (beauty-pass canny) / K1 (normal-pass canny): hands match, chrome lost"))
             if os.path.exists(os.path.join(LAB, "plots", f))]})
 json.dump(m, open(os.path.join(W, "manifest.json"), "w"), indent=1)
 subprocess.run(["python3", os.path.expanduser("~/h3/mv_tools/band_site.py")], capture_output=True)

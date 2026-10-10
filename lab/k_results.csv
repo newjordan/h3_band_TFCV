@@ -6,3 +6,4 @@ jazz3,chrome/jazz prompt + canny + plate,0.09,0.75,0.74,0.72
 jazz4,jazz3 control released last 20%,0.11,0.71,0.82,0.75
 q60,jazz3 at 60 steps,0.09,0.76,0.73,0.73
 refine,q60 re-run at strength 0.5,0.05,0.73,0.76,0.68
+K1,normal-shaded-pass canny control (fingers resolved) + chrome/jazz prompt + plate,0.42,0.85,0.67,0.83

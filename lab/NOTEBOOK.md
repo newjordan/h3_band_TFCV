@@ -114,3 +114,12 @@ Every note fingered + knuckle-depth scaling, big hand. Unfingered 24 -> 0, but t
 sideways (99 -> 113) or shallow (206 -> 226): fingering a rolled tenth does not by itself put a finger on its key in
 time. Debussy 74.5, Rach 74.2, Chopin 90.6; wrist dev 11.5 deg, shake 1.5 mm, tremor 0.31. **Conclusion:** the
 structural class is gone; the remaining errors are contact (shallow) and reach (sideways), the targets of H4 and H2.
+
+### K1 (K-a): control from the normal-shaded pass: hand_r 0.09 -> 0.42, look lost
+Same prompt/seed/plate as q60; the canny control is taken from Blender's normal-shaded pass (every finger has its own
+shading, so its own edges) instead of the grey beauty pass. Inside the hand mask: hand_r 0.42 (q60 0.09, best before
+0.27), flow_cos 0.85 (0.76), flow_err 0.67 (0.73); whole frame r 0.83, no shifts. But the gauntlets became bare human
+hands (lab/plots/k1cmp.jpg: plate | q60 | K1). **Conclusion:** K-a supported: the plate geometry reaches the render only
+when the control resolves the fingers. The dense per-finger edges now pin a *hand*, and the model fills it with its
+prior (skin); the chrome look must be pulled in separately (K-b: KV pull toward a chrome reference on the
+appearance heads, K-c: chrome-material plates) while keeping this control.
