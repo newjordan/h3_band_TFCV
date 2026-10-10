@@ -138,3 +138,14 @@ follow the plate (hand_r -0.01, flow_cos 0.66, frame r 0.65, first second r 0.49
 pin fingers and leaves the model free (look kept); dense finger edges pin the hand and take the look. Geometry and
 appearance trade against each other through the control; K6 (normal edges 0.6 + depth) and K7 (normal edges + chrome
 references) test whether both can be held at once.
+
+### Pilot (one window, Rach 119.9-129.9 s, big hand, E05 code): contact switches
+| variant | key sync | sideways | shallow | short | finger tremor (L,R) |
+|---|---|---|---|---|---|
+| E05 settings | 120/146 (82.2%) | 18 | 8 | 0 | 0.99, 1.13 |
+| REPAIR_ITERS 2 | 129/146 (88.4%) | 12 | 4 | 1 | 1.28, 1.25 |
+| PRESS_OVERSHOOT 3 mm | 125/146 (85.6%) | 16 | 4 | 1 | 1.00, 1.11 |
+| hard press mask [20,1,20] | 128/146 (87.7%) | 14 | 0 | 4 | 2.13, 1.97 |
+Shallow misses in E05 are mostly late arrivals (half have the key not moving at all, pad a median 2 mm above it), so
+repair (boost the finger's press around the onset) fits the failure. The hard mask fixes depth but doubles tremor.
+Whole-suite runs queued ahead of the ablation ladder: E25 (repair + overshoot), E24, E23, E22.
