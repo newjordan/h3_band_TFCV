@@ -167,3 +167,8 @@ Change: PRESS_AXES [3,1,1.5] -> [3,1,3] (black [3,3,3]). Result: Debussy 84.7 (+
 **Conclusion:** supported, and nearly free in motion quality: the finger solve was trading depth for comfort.
 (Clean re-run of the E20 discarded in the protocol incident.) E23/E24 re-based on E20 before they started; E25 (repair +
 overshoot) was already running on E05 weights and stays as defined.
+
+### K4 (lit review: control weight 0.8): hand_r 0.07
+Beauty-pass canny at strength 0.8 instead of 1.0 (q60 settings otherwise): hand_r 0.07 (q60 0.09), flow_cos 0.69, frame
+r 0.71. **Conclusion:** lowering the weight of a control that carries no finger detail loosens everything and gains
+nothing; the lever is what the control contains (K1), not its weight.
