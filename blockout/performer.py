@@ -22,13 +22,19 @@ STYLES = {
     #              nod   sharp  down_acc  lag    sway_roll sway_yaw  pitch  yaw_out  lean  jitter
     "focused":    (0.035, 1.0,  1.3,      0.03,  0.020,    0.015,    0.10,  0.00,    0.02, 0.00),
     "groove":     (0.110, 1.5,  1.5,      0.03,  0.060,    0.040,    0.02,  0.00,    0.03, 0.00),
-    "wild":       (0.330, 3.0,  1.3,      0.02,  0.120,    0.100,   -0.05,  0.00,    0.05, 0.10),
+    "wild":       (0.330, 2.0,  1.3,      0.02,  0.120,    0.100,   -0.05,  0.00,    0.05, 0.10),
     "crowd":      (0.050, 1.0,  2.0,      0.04,  0.030,    0.030,   -0.45,  0.55,    0.00, 0.00),
     "expressive": (0.015, 1.0,  2.0,      0.05,  0.070,    0.060,    0.05,  0.00,    0.10, 0.00),
 }
 KEYS = ("nod", "sharp", "down_acc", "lag", "sway_roll", "sway_yaw", "pitch", "yaw_out", "lean", "jitter")
 STYLE_XFADE = 0.6
 UPPER_ARM, FOREARM = 0.29, 0.26
+try:                                    # the rigged hand's own forearm (elbow -> wrist), so arm and mesh agree
+    import json as _json, os as _os
+    _B = _json.load(open(_os.path.join(_os.path.dirname(__file__), "hand_model", "skeleton.json")))["hands"]["R"]
+    FOREARM = _B["lowerarm01"]["length"] + _B["lowerarm02"]["length"]
+except Exception:
+    pass
 
 
 def style_params(t, schedule):
@@ -61,21 +67,28 @@ def head_angles(t, beats, downbeats, energy, schedule, seed=0):
     ph, i = _beat_phase(t - P["lag"], beats)
     # nod: lands on the beat; sharper styles snap down and float back up
     shape = (0.5 * (1 + math.cos(2 * math.pi * ph))) ** P["sharp"]
-    acc = 1.0
-    if i >= 0 and len(downbeats) and np.min(np.abs(downbeats - beats[i])) < 1e-3:
-        acc = P["down_acc"]
-    nod = P["nod"] * shape * acc * e
     # bar-length sway (period = 2 bars for roll, 4 bars for yaw)
     bar = float(np.median(np.diff(downbeats))) if len(downbeats) > 1 else 2.0
     j = np.searchsorted(downbeats, t, side="right") - 1
     bph = ((t - downbeats[j]) / bar if j >= 0 else t / bar)
     nb = (j if j >= 0 else 0) + bph
+    # the downbeat's accent swells and eases with the bar's own nod shape: a per-beat multiplier would step
+    w = (0.5 * (1 + math.cos(2 * math.pi * bph))) ** P["sharp"] if len(downbeats) and j >= 0 else 0.0
+    acc = 1.0 + (P["down_acc"] - 1.0) * w
+    nod = P["nod"] * shape * acc * e
     roll = P["sway_roll"] * math.sin(math.pi * nb) * e
     yaw = P["sway_yaw"] * math.sin(0.5 * math.pi * nb + 0.7) * e + P["yaw_out"]
     if P["jitter"]:
-        rng = np.random.default_rng(seed + max(i, 0))
-        yaw += P["jitter"] * float(rng.uniform(-1, 1)) * shape
-        roll += 0.5 * P["jitter"] * float(rng.uniform(-1, 1)) * shape
+        # each beat's random tilt, crossfaded in over the beat's first stretch: a fresh draw at the beat
+        # would snap the head
+        u = min(1.0, ph / 0.25)
+        u = u * u * (3 - 2 * u)
+        r0 = np.random.default_rng(seed + max(i, 0))
+        r1 = np.random.default_rng(seed + max(i - 1, 0))
+        draw = (1 - u) * np.array([r1.uniform(-1, 1), r1.uniform(-1, 1)]) + \
+            u * np.array([r0.uniform(-1, 1), r0.uniform(-1, 1)])
+        yaw += P["jitter"] * draw[0] * shape
+        roll += 0.5 * P["jitter"] * draw[1] * shape
     pitch = P["pitch"] + nod
     lean = P["lean"] * energy
     return pitch, yaw, roll, lean
@@ -92,18 +105,101 @@ def rot(pitch_down, yaw, roll):
     return Rz @ Rx @ Ry
 
 
-def arm_ik(shoulder, wrist, side):
-    """Elbow for a 2-bone arm; the elbow points down and out to the player's side."""
+ARM_FOLLOW = 0.85                       # how far the elbow swings to put the forearm in line behind the hand
+
+
+ELBOW_UP = 0.0                          # how far an arm working inside its shoulder lifts its elbow (0..1)
+TORSO_R, ARM_R, TORSO_CLEAR = 0.15, 0.04, 0.012   # torso as a capsule radius, upper-arm radius, clearance (m)
+
+
+SHOULDER_R = 0.065                      # the shoulder balls of the upper-torso hitbox
+
+
+TORSO_HALF_W, TORSO_HALF_D = 0.13, 0.10      # the ribcage at elbow height: narrower than the shoulders (0.19 out), so a
+                                             # hanging upper arm just brushes it; shallower than wide: elbows may come in front
+
+
+def _clear_of_torso(p, torso, skip_shoulder=None):
+    """How far a point of the arm (with the arm's radius) is inside the upper-torso hitbox: an elliptic cylinder
+    (half-width x half-depth in the torso's own frame) between its two ends, plus a sphere at each shoulder
+    (skip_shoulder: the arm's own). <= 0: clear."""
+    a, b = (np.asarray(v, float) for v in torso[:2])
+    R = torso[3] if len(torso) > 3 else np.eye(3)
+    ab = b - a
+    t = float(np.clip((p - a) @ ab / (ab @ ab), 0.0, 1.0))
+    v = R.T @ (p - (a + t * ab))                      # torso frame: x across, y forward, z up
+    ax, ay = TORSO_HALF_W + ARM_R + TORSO_CLEAR, TORSO_HALF_D + ARM_R + TORSO_CLEAR
+    r = math.hypot(v[0] / ax, v[1] / ay)
+    d = (1.0 - r) * min(ax, ay)
+    for name, sp in (torso[2] if len(torso) > 2 else {}).items():
+        if name != skip_shoulder:
+            d = max(d, SHOULDER_R + ARM_R + TORSO_CLEAR - float(np.linalg.norm(p - np.asarray(sp, float))))
+    return d
+
+
+def torso_box(pose):
+    """The upper-torso hitbox of a Body.pose() result: capsule ends and shoulder centres."""
+    R = np.array(pose["torso_rot"]); hips = np.array(pose["hips"]); top = np.array(pose["chest"])
+    return (hips + R @ np.array([0, 0, 0.12]), top - R @ np.array([0, 0, 0.08]),
+            {k: np.array(v) for k, v in pose["shoulders"].items()}, R)
+
+
+def arm_clearance(shoulder, elbow, wrist, torso, own=None):
+    """Worst penetration of the upper arm (its outer half) and forearm into the upper-torso hitbox."""
+    s, e, w = (np.asarray(v, float) for v in (shoulder, elbow, wrist))
+    pts = [s + (e - s) * u for u in (0.75, 1.0)] + [e + (w - e) * u for u in (0.25, 0.5, 0.75)]
+    return max(_clear_of_torso(p, torso, own) for p in pts)
+
+
+def arm_ik(shoulder, wrist, side, hand_fwd=None, torso=None, lift=True):
+    """Elbow for a 2-bone arm; the elbow points down and out to the player's side. With hand_fwd (the hand's
+    wrist -> knuckles direction) the elbow swings around the shoulder-wrist axis so the forearm lines up behind
+    the hand: the arm carries the hand, the wrist doesn't bend to suit the arm."""
     d = wrist - shoulder
     L = float(np.linalg.norm(d))
     L = min(max(L, 1e-4), UPPER_ARM + FOREARM - 1e-3)
     u = d / max(np.linalg.norm(d), 1e-6)
     a = (UPPER_ARM ** 2 - FOREARM ** 2 + L ** 2) / (2 * L)
     h = math.sqrt(max(UPPER_ARM ** 2 - a * a, 0.0))
-    pole = np.array([side * 0.7, -0.2, -1.0])
+    pole = np.array([side * 0.35, -0.3, -1.0])          # elbows hang close to the body, slightly out
     pole -= (pole @ u) * u
     pole /= max(np.linalg.norm(pole), 1e-6)
-    return shoulder + a * u + h * pole
+    if hand_fwd is not None:
+        hf = np.asarray(hand_fwd, float); hf = hf / max(np.linalg.norm(hf), 1e-9)
+        want = wrist - FOREARM * hf - (shoulder + a * u)   # where the elbow would put the forearm in line
+        want -= (want @ u) * u
+        if np.linalg.norm(want) > 1e-6:
+            p2 = ARM_FOLLOW * want / np.linalg.norm(want) + (1 - ARM_FOLLOW) * pole
+            if p2[2] > -0.1:                             # the elbow never rises above the shoulder-wrist line
+                p2[2] = -0.1
+                p2 -= (p2 @ u) * u
+            pole = p2 / max(np.linalg.norm(p2), 1e-6)
+    c = shoulder + a * u
+    el = c + h * pole
+    own = "R" if side > 0 else "L"
+    hf = None if hand_fwd is None else np.asarray(hand_fwd, float) / max(np.linalg.norm(hand_fwd), 1e-9)
+    if torso is not None and (hf is not None or arm_clearance(shoulder, el, wrist, torso, own) > 0):
+        # the elbow swings around the shoulder-wrist axis to where the forearm lines up best behind the hand,
+        # among the spots where the whole arm clears the upper-torso / shoulder hitbox (it rises only if it must)
+        e1 = pole
+        e2 = np.cross(u, e1)
+        best = None
+        for ang in np.linspace(-math.pi, math.pi, 145):
+            e = c + h * (math.cos(ang) * e1 + math.sin(ang) * e2)
+            if e[2] > shoulder[2] + 0.05:                  # never above the shoulder
+                continue
+            pen = max(0.0, arm_clearance(shoulder, e, wrist, torso, own))
+            if hf is not None:
+                fa = (wrist - e) / max(np.linalg.norm(wrist - e), 1e-9)
+                bend = math.acos(float(np.clip(fa @ hf, -1, 1)))
+            else:
+                bend = abs(ang)
+            key = 1000.0 * pen + bend
+            if best is None or key < best[0]:
+                best = (key, e)
+        if best is not None:
+            el = best[1]
+    return el
 
 
 class Body:
@@ -115,9 +211,10 @@ class Body:
         self.gaze = base_gaze_pitch      # where the eyes look at rest (radians below horizontal)
         self.eye_ahead = eye_ahead
 
-    def pose(self, pitch, yaw, roll, lean, wrists):
-        # torso follows the head a little; the head carries the rest
-        Rt = rot(0.25 * pitch + 0.06 + 0.6 * lean, 0.3 * yaw, 0.35 * roll)
+    def pose(self, pitch, yaw, roll, lean, wrists, hand_fwd=None, torso=(0.0, 0.0, 0.0)):
+        # torso follows the head a little; the head carries the rest. torso = (pitch, yaw, roll) the reach adds:
+        # it leans toward a far hand, then turns to open toward that end of the keyboard
+        Rt = rot(0.25 * pitch + 0.06 + 0.6 * lean + torso[0], 0.3 * yaw + torso[1], 0.35 * roll + torso[2])
         top = self.hips + Rt @ np.array([0, 0, self.th])
         shoulders = {"L": self.hips + Rt @ np.array([-self.sh, 0, self.th - 0.03]),
                      "R": self.hips + Rt @ np.array([self.sh, 0, self.th - 0.03])}
@@ -132,7 +229,10 @@ class Body:
                "cam_fwd": (Rg @ np.array([0, 1.0, 0])).tolist(), "cam_up": (Rg @ np.array([0, 0, 1.0])).tolist(),
                "shoulders": {k: v.tolist() for k, v in shoulders.items()}, "elbows": {}}
         for side, w in wrists.items():
-            out["elbows"][side] = arm_ik(shoulders[side], np.asarray(w), 1 if side == "R" else -1).tolist()
+            out["elbows"][side] = arm_ik(shoulders[side], np.asarray(w), 1 if side == "R" else -1,
+                                         None if hand_fwd is None else hand_fwd.get(side),
+                                         torso=(self.hips + Rt @ np.array([0, 0, 0.12]), top - Rt @ np.array([0, 0, 0.08]),
+                                                {k: v for k, v in shoulders.items()}, Rt)).tolist()
         return out
 
 

@@ -2,9 +2,18 @@
 
   H3 Band Drum Events       AUDIO (drum stem) -> DRUM_HITS, with h3band/drum_events.py
   H3 Band Drum Hits (MIDI)  a .mid in the ComfyUI input dir -> DRUM_HITS, with its beat grid
+  H3 Band Drum Teacher      DRUM_HITS -> DRUM_HITS with techniques (choke, rimshot, cross-stick, bell, flam,
+                            ghost) picked by blockout/drum_teacher.py, and the lesson sheet saying why
+  H3 Band Drum Kit          -> DRUM_KIT: a blockout/drum_kit.py preset or a kit spec JSON, laid out by rule
+                            and checked against the hitboxes. Feeds Synth and Blockout.
+  H3 Band Drum Synth        DRUM_HITS -> AUDIO: blockout/drumsynth.py, techniques included (a choked crash
+                            stops dead), so a MIDI alone can drive the whole graph
   H3 Band Drum Blockout     DRUM_HITS -> IMAGE frames: blockout/drums.py kinematics, rendered by Blender
                             (blockout/blender_drums.py). The frames start at `start` seconds into the hits,
-                            so a CreateVideo with the same audio trimmed to `start` lines up.
+                            so a CreateVideo with the same audio trimmed to `start` lines up. `emotion` is a
+                            blockout/drum_style.py timeline ("0:calm,8:intense"); force/range/body/flair >= 0
+                            override every preset's slider. `tosses` adds stick tosses and catches
+                            (blockout/drum_toss.py). The second output is the check and lesson report.
 
 The nodes import the repo's blockout/ and h3band/ code, so they need the repo, not just this file: link the
 comfy_nodes folder into ComfyUI/custom_nodes, or set H3B_REPO to the repo root. Blender comes from H3B_BLENDER
@@ -29,7 +38,7 @@ from PIL import Image
 REPO = Path(os.environ.get("H3B_REPO") or Path(__file__).resolve().parent.parent)
 sys.path.append(str(REPO))
 sys.path.append(str(REPO / "h3band"))
-from blockout import drums, midi as midi_io  # noqa: E402
+from blockout import drum_kit, drum_style, drum_teacher, drum_toss, drums, drumsynth, midi as midi_io  # noqa: E402
 import drum_events  # noqa: E402
 
 BLENDER = os.environ.get("H3B_BLENDER", "blender")
@@ -83,6 +92,72 @@ class H3BandDrumHitsMIDI:
         return ({"hits": hits, "beats": list(beats), "downbeats": list(downbeats)},)
 
 
+class H3BandDrumTeacher:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"hits": ("DRUM_HITS",),
+                             "choke_gap": ("FLOAT", {"default": drum_teacher.CHOKE_GAP, "min": 0.25, "max": 16.0,
+                                                     "step": 0.25, "tooltip": "beats of silence after a loud crash "
+                                                     "that make the teacher choke it"})}}
+
+    RETURN_TYPES = ("DRUM_HITS", "STRING")
+    RETURN_NAMES = ("hits", "lesson")
+    FUNCTION = "run"
+    CATEGORY = "h3band"
+
+    def run(self, hits, choke_gap):
+        taught = [dict(h) for h in hits["hits"]]
+        lesson = drum_teacher.teach(taught, hits["beats"], hits["downbeats"], choke_gap)
+        sheet = drum_teacher.sheet(lesson)
+        logging.info("[H3BandDrumTeacher]\n%s", sheet)
+        return ({**hits, "hits": taught}, sheet)
+
+
+class H3BandDrumKit:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"preset": (list(drum_kit.PRESETS), {"default": "standard"})},
+                "optional": {"spec": ("STRING", {"multiline": True, "default": "", "tooltip":
+                             "kit spec JSON, e.g. {\"double_pedal\": true, \"pieces\": [{\"type\": \"tom\", "
+                             "\"size\": 10}, ...]} (types and sizes in blockout/drum_kit.py); replaces the preset"})}}
+
+    RETURN_TYPES = ("DRUM_KIT", "STRING")
+    RETURN_NAMES = ("kit", "report")
+    FUNCTION = "run"
+    CATEGORY = "h3band"
+
+    def run(self, preset, spec=""):
+        notes = []
+        if spec.strip():
+            src, notes = drum_kit.spec_from_text(spec)
+        else:
+            src = drum_kit.PRESETS[preset]
+        kit = drum_kit.build(src)
+        lines = ["{:<8} {:<7} {:4.1f}in  c {}{}".format(p, k["kind"], k["r"] / 0.0127, [round(x, 3) for x in k["c"]],
+                                                       "  boom stand" if "stand" in k else "")
+                 for p, k in kit.items()]
+        report = "\n".join(notes + lines + [json.dumps(drum_kit.check(kit))])
+        logging.info("[H3BandDrumKit]\n%s", report)
+        return (kit, report)
+
+
+class H3BandDrumSynth:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"hits": ("DRUM_HITS",),
+                             "seed": ("INT", {"default": 0, "min": 0, "max": 2 ** 31 - 1})},
+                "optional": {"kit": ("DRUM_KIT",)}}
+
+    RETURN_TYPES = ("AUDIO",)
+    FUNCTION = "run"
+    CATEGORY = "h3band"
+
+    def run(self, hits, seed, kit=None):
+        hs = drum_kit.remap(hits["hits"], kit) if kit else hits["hits"]
+        wav = drumsynth.render(hs, 0.0, None, seed, kit=kit)
+        return ({"waveform": torch.from_numpy(wav.T.copy()).unsqueeze(0), "sample_rate": drumsynth.SR},)
+
+
 class H3BandDrumBlockout:
     @classmethod
     def INPUT_TYPES(cls):
@@ -95,19 +170,40 @@ class H3BandDrumBlockout:
                              "view": (VIEWS, {"default": "front"}),
                              "head_schedule": ("STRING", {"default": "0:groove"}),
                              "seed": ("INT", {"default": 0, "min": 0, "max": 2 ** 31 - 1})},
-                "optional": {"camera": ("STRING", {"default": ""}),
-                             "engine": (ENGINES, {"default": "WORKBENCH"})}}
+                "optional": {"kit": ("DRUM_KIT",),
+                             "camera": ("STRING", {"default": ""}),
+                             "engine": (ENGINES, {"default": "WORKBENCH"}),
+                             "motion": (list(drums.MOTIONS), {"default": "smooth"}),
+                             "emotion": ("STRING", {"default": "", "tooltip": "e.g. 0:calm,8:intense (presets: "
+                                                    + ", ".join(drum_style.PRESETS) + "); replaces head_schedule"}),
+                             "tosses": ("STRING", {"default": "", "tooltip": "stick tosses, HAND:release_s:catch_s"
+                                                   "[:spins], e.g. R:4.85:5.55; strokes near one go to the other "
+                                                   "hand"}),
+                             **{k: ("FLOAT", {"default": -1.0, "min": -1.0, "max": 1.0, "step": 0.05,
+                                              "tooltip": "0..1 on top of every emotion preset; -1 keeps the preset"})
+                                for k in drum_style.SLIDERS}}}
 
-    RETURN_TYPES = ("IMAGE",)
+    RETURN_TYPES = ("IMAGE", "STRING")
+    RETURN_NAMES = ("frames", "report")
     FUNCTION = "run"
     CATEGORY = "h3band"
 
-    def run(self, hits, start, frames, fps, width, height, view, head_schedule, seed, camera="", engine="WORKBENCH"):
+    def run(self, hits, start, frames, fps, width, height, view, head_schedule, seed, kit=None, camera="",
+            engine="WORKBENCH", motion="smooth", emotion="", tosses="", **sliders):
         if view not in VIEWS or engine not in ENGINES:
             raise ValueError("view must be one of {} and engine one of {}".format(VIEWS, ENGINES))
         sched = [(float(t), st) for t, st in (x.split(":") for x in head_schedule.split(","))]
-        anim = drums.animate(hits["hits"], fps, start, frames / fps, hits["beats"], hits["downbeats"], sched, seed)
-        logging.info("[H3BandDrumBlockout] %s", json.dumps(drums.check(anim)))
+        sliders = {k: v for k, v in sliders.items() if k in drum_style.SLIDERS and v >= 0}
+        if sliders and not emotion.strip():
+            emotion = "0:groove"
+        anim = drums.animate(hits["hits"], fps, start, frames / fps, hits["beats"], hits["downbeats"], sched, seed,
+                             motion, emotion.strip() or None, sliders, kit=kit, tosses=drum_toss.parse(tosses))
+        report = json.dumps(drums.check(anim))
+        if "tosses" in anim:
+            report += "\ntosses " + json.dumps(anim["tosses"])
+        if "lesson" in anim:
+            report += "\n" + drum_teacher.sheet(anim["lesson"])
+        logging.info("[H3BandDrumBlockout] %s", report)
         args = ["--res", "{}x{}".format(width, height), "--view", view, "--engine", engine]
         if camera.strip():
             args += ["--cam", ",".join(str(float(v)) for v in camera.split(","))]
@@ -134,11 +230,15 @@ class H3BandDrumBlockout:
                     out[i] = torch.from_numpy(np.asarray(im.convert("RGB"), dtype=np.float32) / 255.0)
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
-        return (out,)
+        return (out, report)
 
 
 NODE_CLASS_MAPPINGS = {"H3BandDrumEvents": H3BandDrumEvents, "H3BandDrumHitsMIDI": H3BandDrumHitsMIDI,
-                       "H3BandDrumBlockout": H3BandDrumBlockout}
+                       "H3BandDrumTeacher": H3BandDrumTeacher, "H3BandDrumKit": H3BandDrumKit,
+                       "H3BandDrumSynth": H3BandDrumSynth, "H3BandDrumBlockout": H3BandDrumBlockout}
 NODE_DISPLAY_NAME_MAPPINGS = {"H3BandDrumEvents": "H3 Band Drum Events (drum stem -> hits)",
                               "H3BandDrumHitsMIDI": "H3 Band Drum Hits (GM drum MIDI)",
+                              "H3BandDrumTeacher": "H3 Band Drum Teacher (hits -> techniques + lesson)",
+                              "H3BandDrumKit": "H3 Band Drum Kit (preset or spec)",
+                              "H3BandDrumSynth": "H3 Band Drum Synth (hits -> drum audio)",
                               "H3BandDrumBlockout": "H3 Band Drum Blockout (hits -> grey kit frames)"}

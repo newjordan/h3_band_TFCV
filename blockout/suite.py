@@ -2,10 +2,16 @@
 
     python3 -m blockout.suite OUT.mid
 
-The Knight's Suite: "Knight's Theme" (original, A major, 3/4) darkens onto G#7, which is exactly where
-Rachmaninoff's Prelude in C# minor Op. 3 No. 2 sits at bar 45; the agitato climb (bars 35-44), the fff
-four-stave climax and the pp coda follow (bars 35-61). Its last C# hands over to Brahms' Intermezzo in
-A major Op. 118 No. 2, whose melody opens on C# (bars 1-16, then the close, bars 113-124): back home in A.
+The Knight's Suite: "Knight's Theme" (original, A major, 3/4) darkens onto G#7 (V7 of C#) and its last
+bar holds that chord; Debussy's Clair de Lune (Suite bergamasque, D-flat = C# major, 9/8), bars 1-8, answers
+with a plain V7 -> I: bar 1 is the C# major chord (C#-F-G#) in the quiet opening. The excerpt stops at bar 8,
+the half cadence: G# in the bass under a D#/C#/F# chord, i.e. the dominant of C#. Rachmaninoff's Prelude in
+C# minor Op. 3 No. 2 follows at its bar 35 (agitato climb), which opens on a G#-B-D-F diminished seventh over
+that same G#, so the dominant is carried straight through the join (major mode turning minor); the climb
+(bars 35-44), G#7 at bar 45, the fff four-stave climax and the pp coda run to bar 61. Its last C# hands over
+(after one silent bar) to Chopin's Nocturne in
+C# minor Op. posth. (B. 49, Lento con gran espressione), complete: all 64 bars, from the slow introduction to
+the quiet C# pedal coda that ends in C# major. The bar numbers are the fitted bars of our transcription of a free recording (see README).
 
 Output tempo map: one tempo event per output bar so every bar lasts exactly as long as in its source.
 Hands: notes are re-split per onset at the widest pitch gap (track 1 = right hand, track 2 = left hand),
@@ -72,6 +78,46 @@ def knights_theme():
 
 
 # ---------------------------------------------------------------- excerpts
+# ---------------------------------------------------------------- Mozart, Piano Concerto No. 22 K. 482, III
+# The Rondo's opening: the solo piano states the theme alone (p), 6/8 Allegro. Read off the public-domain
+# Breitkopf & Haertel full score (IMSLP / Wikimedia Commons, "Piano Concerto No.22 ... K.482 (IA imslp-...)",
+# p. 39) and checked against the engraved incipit "Mozart Klavierkonzert Nr. 22 KV 482, 3. Satz.png" (Commons).
+# The left hand plays one bass note per bar under it. Bar 8 is the tutti's first bar (the piano's E-flat).
+MOZART_BAR_S = 1.15        # 6/8, dotted quarter = 104
+_E = 1.0                   # an eighth note
+MOZ_RH = [  # (pitch or None for a rest, length in eighths), bar by bar after the pickup
+    [("Eb5", 2), ("Eb5", 1), ("Eb5", 2), ("Eb5", 1)],
+    [("Eb5", 2), ("F5", .25), ("Eb5", .25), ("D5", .25), ("Eb5", .25), ("G5", 1), (None, 1), ("Bb4", 1)],
+    [("F5", 2), ("F5", 1), ("F5", 2), ("F5", 1)],
+    [("F5", 2), ("G5", .25), ("F5", .25), ("E5", .25), ("F5", .25), ("Ab5", 1), (None, 1), ("Bb4", 1)],
+    [("G5", 2), ("G5", 1), ("G5", 2), ("Ab5", .25), ("G5", .25), ("F5", .25), ("G5", .25)],
+    [("Bb5", 3), ("Bb5", 1), ("G5", 1), ("Eb5", 1)],
+    [("F5", 3), ("F5", 1), ("D5", 1), ("Bb4", 1)],
+    [("Eb5", 2), (None, 4)],
+]
+MOZ_LH = ["Eb3", "Eb3", "D3", "D3", "Eb3", "Eb3", "Bb2", "Eb3"]
+
+
+def mozart_theme():
+    """Pickup (an eighth) + 8 bars of 6/8 -> (notes, bars), seconds from 0."""
+    e = MOZART_BAR_S / 6
+    notes = [midi.Note(0.0, 0.85 * e, P("Bb4"), 56, 1)]
+    bars = [(0.0, e, 1, 8)]
+    t = e
+    for b, (rh, lh) in enumerate(zip(MOZ_RH, MOZ_LH)):
+        bars.append((t, MOZART_BAR_S, 6, 8))
+        u = t
+        for k, (p, L) in enumerate(rh):
+            if p is not None:
+                d = L * e
+                acc = 6 if (u - t) < 1e-6 else 0                 # the downbeat a touch stronger
+                notes.append(midi.Note(u, u + (0.92 if L >= 2 else 0.8) * d, P(p), 56 + acc, 1))
+            u += L * e
+        notes.append(midi.Note(t, t + 1.7 * e, P(lh), 48, 2))
+        t += MOZART_BAR_S
+    return notes, bars
+
+
 def excerpt(path, bar_lo, bar_hi, num, den):
     """Bars bar_lo..bar_hi (1-based, inclusive) of a MIDI file, shifted to start at 0."""
     notes = midi.read(path)
@@ -150,27 +196,34 @@ def write(path, notes, bars):
     open(path, "wb").write(data)
 
 
-def knights_suite(rach, brahms):
+# source MIDI track -> hand (1 right, 2 left), per part: the scores' own staves. Splitting per onset at the widest
+# gap put whole right-hand chords into the left hand whenever only one hand struck (156 of 899 Rachmaninoff notes).
+STAVES = [{1: 1, 2: 2}, {1: 1, 2: 2}, {1: 1, 2: 1, 3: 2, 4: 2}, {1: 1, 2: 2}]
+
+
+def knights_suite(clair, rach, chopin):
     parts = [knights_theme(),
+             excerpt(clair, 1, 8, 9, 8),
              excerpt(rach, 35, 61, 4, 4),
-             excerpt(brahms, 1, 16, 3, 4),
-             excerpt(brahms, 113, 124, 3, 4)]
+             excerpt(chopin, 1, 64, 4, 4)]
     notes, bars, t = [], [], 0.0
     marks = []
     for k, (ns, bs) in enumerate(parts):
         marks.append((len(bars) + 1, t))
-        notes += [midi.Note(n.start + t, n.end + t, n.pitch, n.velocity, n.track) for n in ns]
+        mp = STAVES[k]
+        notes += [midi.Note(n.start + t, n.end + t, n.pitch, n.velocity, mp.get(n.track, 1)) for n in ns]
         bars += [(b0 + t, L, num, den) for b0, L, num, den in bs]
         t += sum(b[1] for b in bs)
-        if k == 1:      # a silent 3/4 bar of air between the Rachmaninoff coda and the Brahms
+        if k == 2:      # a silent 3/4 bar of air between the Rachmaninoff coda and the Chopin
             bars.append((t, 2.25, 3, 4)); t += 2.25
-    return resplit(notes), bars, marks
+    return notes, bars, marks       # hands as the scores have them (resplit() only for sources without staves)
 
 
 if __name__ == "__main__":
     import sys
-    rach, brahms = "examples/piano/rach_prelude_op3_no2.mid", "examples/piano/brahms_intermezzo_op118_no2.mid"
-    notes, bars, marks = knights_suite(rach, brahms)
+    clair = "examples/piano/clair_de_lune.mid"
+    rach, chopin = "examples/piano/rach_prelude_op3_no2.mid", "examples/piano/chopin_nocturne_cs_minor_posth.mid"
+    notes, bars, marks = knights_suite(clair, rach, chopin)
     write(sys.argv[1], notes, bars)
     print(f"{len(notes)} notes, {len(bars)} bars, {bars[-1][0] + bars[-1][1]:.1f} s; sections start at bars",
           [m[0] for m in marks], "times", [round(m[1], 1) for m in marks])
