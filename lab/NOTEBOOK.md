@@ -345,3 +345,9 @@ better than any chrome run (hand_r 0.24 vs 0.13-0.19), with the best whole-frame
 The forearms stay skin (no geometry there). **Conclusion:** K-d supported: the *control's geometry* sets the category
 (gauntlet vs hand) while still pinning the shape; the look is carried by the edges, not the plate pixels. Next: K21 =
 the same with vambrace bands along the forearm (lab/plots/gauntlet_pass.jpg), K19 = full gauntlet chrome plate.
+
+### K19: gauntlet chrome plate (0.70) + its frame 0 pinned + gauntlet canny: back to hand_r 0.12
+The render takes the chrome plate's look (polished liquid chrome, dark room) and drifts (hand_r 0.12, frame r 0.70,
+flow_cos 0.88; lab/plots/k19cmp.jpg: gauntlet plate | K20 | K19). Same control as K20 (0.24). **Conclusion:** a chrome
+plate in the video stream costs geometry whatever the control; K20's recipe (grey plate + gauntlet-geometry control +
+prompt) is the one to build on. K21 (K20 + vambrace bands) running.
