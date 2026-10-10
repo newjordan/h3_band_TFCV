@@ -316,3 +316,18 @@ Holding the v2 plate harder (0.70 -> 0.60) gives the best motion agreement so fa
 0.73 -> 0.65) but hand_r 0.13 -> 0.12 and frame r 0.70 -> 0.69: the hands move with the plate but their edge structure
 is not the plate's. Still inside the chrome band; the K-d gauntlet-geometry runs (K20, K19) are next.
 (Corrected entry: a first version of this entry carried wrong numbers typed before the score was read.)
+
+### Sideways study, part 3: reach pilots (4 windows: 119.9 Rach, 189.9 and 269.9 Chopin, 379.9 ending; 247 notes; E26 settings)
+| variant | key sync | sideways | other misses | shake mm | tremor | anatomy-out frames |
+|---|---|---|---|---|---|---|
+| E26 | 220 (89.1%) | 24 | 3 | 1.81 | 0.44 | 1125 |
+| REACH_SPLIT | 226 (91.5%) | 17 | 4 | 1.73 | 0.44 | 1156 |
+| REACH_SPLIT + thumb 45 / pinky 30 deg | 227 (91.9%) | 18 | 2 | 1.74 | 0.46 | 2204 |
+| ROLL_STAGGER | 224 (90.7%) | 11 | 12 | 2.03 | 0.49 | 1177 |
+| both | 223 (90.3%) | 11 | 13 | 1.90 | 0.49 | 1191 |
+ROLL_STAGGER's 11 "unfingered" are the two four-octave Rachmaninoff chords (120.55 s: C#2-C#6, 128.5 s), missed
+either way; only their label changes (the scorer looks fingers up by onset and the staggered copies have new onsets).
+Capping each sub-chord's lag at its note's length changed nothing (identical per window). **Conclusion:** REACH_SPLIT is
+a clean gain (+6, no motion cost); the spread mostly costs anatomy; the stagger trades reach for shake and does not add
+to REACH_SPLIT. Whole-suite queue after E23 (dev branch merged between runs): E29 = E26 + REACH_SPLIT, E30 = E28 (real
+hand) + REACH_SPLIT, E31 = E29 + ROLL_STAGGER; then the remaining ablations (E21, E07, E02, E22, E11-E14).
