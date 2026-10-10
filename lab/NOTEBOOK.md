@@ -451,3 +451,9 @@ Debussy 93.9 (+2.1), Rach 57.4 (-0.7), Chopin 89.7 (+1.1); sideways 201 -> 174, 
 deg (E06 10.6), tremor 0.23 (0.26). **Conclusion:** the learned wrist placement does not raise key sync (+-0.3, within
 noise); it trades a few shallow presses for sideways ones and keeps the wrist ~0.7 deg straighter. It earns its place
 as a motion-naturalness term, not an accuracy term. (Measured on E05-era code; not re-measured on the E29 stack.)
+
+### E22 (H4 contact): E05 + hard press mask (across/depth weight 3,1.5 -> 20,20; black 20,20,20): 95.3%
+Debussy 96.9 (best big-hand Debussy), Rach 94.7, Chopin 95.7; sideways 59, shallow 21, short 10. But finger tremor
+0.31 -> 0.66 (x2.1) and shake 1.54 -> 1.75 mm. **Conclusion:** pinning the pad hard on its key during the press is,
+alone, as strong as the whole E29 stack (95.5), and costs motion quality (as the one-window pilot predicted). Queued
+next, ahead of the remaining ablations: E36 = E29 + hard mask, E37 = E29 + middle mask [8,1,8].
