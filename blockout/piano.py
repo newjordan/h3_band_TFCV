@@ -23,6 +23,7 @@ Rules, in order of application:
    seeded drift keeps the wrists and head alive. Keys are pushed by the sprung fingertips: a key goes down
    only as far as a finger actually presses it.
 """
+import dataclasses
 import itertools, json, math, os
 
 import numpy as np
@@ -535,12 +536,51 @@ if _CAL and "span" in __import__("blockout.rig.hand", fromlist=["_cal_parts"])._
     SPAN.update({(int(k[0]), int(k[1])): tuple(v) for k, v in _CAL["span"].items()})
 
 
+REACH_SPLIT = False          # after the staff split, a hand's chord wider than HAND_SPAN gives its inner-edge note
+                            # to the other hand when that hand can take it (as pianists redistribute between hands)
+
+
 def split_hands(notes):
     tracks = {n.track for n in notes}
     if len(tracks) >= 2:
         hi, lo = sorted(tracks)[:2]
-        return [n for n in notes if n.track == hi], [n for n in notes if n.track != hi]
-    return [n for n in notes if n.pitch >= 60], [n for n in notes if n.pitch < 60]
+        R, L = [n for n in notes if n.track == hi], [n for n in notes if n.track != hi]
+    else:
+        R, L = [n for n in notes if n.pitch >= 60], [n for n in notes if n.pitch < 60]
+    return _reach_split(R, L) if REACH_SPLIT else (R, L)
+
+
+def _reach_split(R, L, tol=None, near=0.30):
+    tol = SLICE_TOL if tol is None else tol
+    R, L = list(R), list(L)
+    hands = {"R": R, "L": L}
+
+    def chord(h, t):
+        return [m for m in hands[h] if abs(m.start - t) < tol]
+
+    def fits(ns):
+        ps = sorted({m.pitch for m in ns})
+        return len(ps) <= 5 and key_x(ps[-1]) - key_x(ps[0]) <= HAND_SPAN
+
+    for _ in range(3):
+        moved = False
+        for h, o in (("R", "L"), ("L", "R")):
+            for n in sorted(hands[h], key=lambda m: m.start):
+                ch = chord(h, n.start)
+                if fits(ch) or n not in ch:
+                    continue
+                inner = min(ch, key=lambda m: m.pitch) if h == "R" else max(ch, key=lambda m: m.pitch)
+                oc = chord(o, inner.start)
+                if oc:
+                    ok = fits(oc + [inner])
+                else:                               # the other hand is free: take it if it is (or was) nearby
+                    rec = [m for m in hands[o] if abs(m.start - inner.start) < near]
+                    ok = bool(rec) and min(abs(key_x(m.pitch) - key_x(inner.pitch)) for m in rec) <= HAND_SPAN / 2
+                if ok:
+                    hands[h].remove(inner); hands[o].append(inner); moved = True
+        if not moved:
+            break
+    return sorted(R, key=lambda m: (m.start, m.pitch)), sorted(L, key=lambda m: (m.start, m.pitch))
 
 
 SLICE_TOL = float(__import__("os").environ.get("SLICE_TOL", "0.05"))   # s: notes this close are one chord (rolled chords)
@@ -559,6 +599,8 @@ def playable(chord, hand):
     return sorted(reach, key=lambda n: n.pitch)
 
 
+ROLL_STAGGER = False        # rolled sub-chords start when the hand can reach them (copies; scoring keeps the score)
+ROLL_V, ROLL_LAG_MAX = 1.5, 0.20   # m/s hand travel in a roll; s, the latest a sub-chord may start (scoring allows 0.25)
 SPLIT_WIDE = True           # chords wider than a hand / > 5 keys: rolled sub-chords (False: drop to playable())
 
 
@@ -577,13 +619,23 @@ def slices(notes, tol=SLICE_TOL, hand="R"):
         for n in sorted(s, key=lambda n: (n.start, n.pitch if hand == "L" else -n.pitch)):
             if n.pitch not in seen:
                 seen.add(n.pitch); ns.append(n)
-        cur = []
+        cur, subs = [], []
         for n in ns:
             ps = [m.pitch for m in cur] + [n.pitch]
             if cur and (len(ps) > 5 or abs(key_x(max(ps)) - key_x(min(ps))) > HAND_SPAN):
-                res.append(sorted(cur, key=lambda m: m.pitch)); cur = []
+                subs.append(sorted(cur, key=lambda m: m.pitch)); cur = []
             cur.append(n)
-        res.append(sorted(cur, key=lambda m: m.pitch))
+        subs.append(sorted(cur, key=lambda m: m.pitch))
+        if ROLL_STAGGER and len(subs) > 1:         # a roll takes time: each later sub-chord is played when the hand
+            lag, prev = 0.0, subs[0]               # can have got there (travel / ROLL_V), at most ROLL_LAG_MAX late; the
+            for k in range(1, len(subs)):          # notes are copies, the score's onsets are untouched
+                cx0 = np.mean([key_x(m.pitch) for m in prev]); cx1 = np.mean([key_x(m.pitch) for m in subs[k]])
+                lag = min(ROLL_LAG_MAX, lag + abs(cx1 - cx0) / ROLL_V)
+                prev = subs[k]
+                subs[k] = [dataclasses.replace(m, start=m.start + min(lag, max(0.0, m.end - m.start - 0.06)),
+                                               end=max(m.end, m.start + lag + 0.05))
+                           for m in subs[k]]      # never past the note's own end (it has to sound while held)
+        res += subs
     return res
 
 
