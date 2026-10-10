@@ -286,3 +286,7 @@ Visually and by every metric K15 = K11 (hand_r 0.17 vs 0.18, flow_cos 0.82, fram
 **Conclusion:** the pinned frame already delivers its look in full through those heads; boosting them changes nothing,
 neither the look nor the geometry. The binding constraint is the plate (category + backdrop), not how strongly the
 model reads its conditioning. K16 (x6, late steps) will confirm; the v2 dark-cafe plate (K17/K18) is the main bet.
+
+### K16: K11 + KV pull x6 on steps 6-19 only: confirms K15 (hand_r 0.19, mean pixel change 3.3/255 vs K11)
+**Conclusion (leg K-b closed for now):** attention re-weighting toward conditioning is not the lever on this shot:
+the model already uses the conditioning it gets; what it gets (plate content, control content) decides the result.
