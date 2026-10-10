@@ -632,8 +632,9 @@ def slices(notes, tol=SLICE_TOL, hand="R"):
                 cx0 = np.mean([key_x(m.pitch) for m in prev]); cx1 = np.mean([key_x(m.pitch) for m in subs[k]])
                 lag = min(ROLL_LAG_MAX, lag + abs(cx1 - cx0) / ROLL_V)
                 prev = subs[k]
-                subs[k] = [dataclasses.replace(m, start=m.start + lag, end=max(m.end, m.start + lag + 0.05))
-                           for m in subs[k]]
+                subs[k] = [dataclasses.replace(m, start=m.start + min(lag, max(0.0, m.end - m.start - 0.06)),
+                                               end=max(m.end, m.start + lag + 0.05))
+                           for m in subs[k]]      # never past the note's own end (it has to sound while held)
         res += subs
     return res
 
