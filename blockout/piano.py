@@ -487,6 +487,10 @@ def set_hand_model(name):
             j = [b[0], (b[0] + b[1]) / 2, (b[1] + b[2]) / 2, b[2] * 0.9]
             r.append(np.minimum.accumulate(j))   # a finger only narrows toward the tip
         FINGER_R = np.array(r)
+        from .rig.skeleton import hand_scale
+        hs_ = hand_scale()                       # a pianist-sized hand (FürElise), as the rig and the renderer use
+        SEG, KNUCKLE, WRIST_OFF, FINGER_R = SEG * hs_, KNUCKLE * hs_, WRIST_OFF * hs_, FINGER_R * hs_
+        PALM_LEN = float(-WRIST_OFF[1])
         # a real hand's natural curl (MCP ~15, PIP ~40 deg) puts the long fingertips ~7 cm below and ~6-7 cm in
         # front of the knuckles, so the knuckle line rides higher and further back than the mannequin's
         KNUCKLE_Z, Y_KN = _rig_rest_height()
@@ -1191,8 +1195,8 @@ TUCK = (-0.050, -0.014, -0.038)     # under hand's free thumb tip, hand-local (x
 OVER_THUMB = (-0.045, 0.000, -0.008)    # over hand's free thumb tip: laid along the index, up at knuckle height
 MIN_GAP, MAX_PUSH = 0.105, 0.03     # m: working gap the hand centres keep where their notes allow; most they give way
 THUMB_GAP = (0.15, 0.20)            # m between hand centres: free thumbs close in to the index .. stay out
-THUMB_IN = 0.8                       # how far an idle thumb draws in to lie along the hand
-THUMB_TUCK = (0.0, 0.0, 0.30, 0.65)  # rad added to an idle thumb's relaxed pose (cmc abd, cmc flex, mcp, ip): the
+THUMB_IN = 0.0                       # how far an idle thumb draws in to lie along the hand
+THUMB_TUCK = (0.0, 0.0, 0.0, 0.0)  # rad added to an idle thumb's relaxed pose (cmc abd, cmc flex, mcp, ip): the
                                      # top joint tucks to clear space
 THUMB_CLOSE = (-0.054, -0.008, -0.030)  # a free thumb drawn in against the index side when the other hand is near
 ROLE_FORCE = None                   # experiment hook: 1.0 = right hand always under, 0.0 = left
@@ -1409,15 +1413,30 @@ FINGER_SMOOTH = 2e-5        # finger joints' frame-to-frame smoothness once the 
 
 
 def _whittaker(Y, w, lam):
-    """Penalised least squares: sum w (z - y)^2 + lam * sum (D2 z)^2, every column of Y."""
+    """Penalised least squares: sum w (z - y)^2 + sum lam_k (D2 z)_k^2, every column of Y. lam: a number or one
+    value per second difference (n - 2), e.g. relaxed where the path has to move fast."""
     import scipy.sparse as sp
     from scipy.sparse.linalg import splu
     n = len(Y)
-    if n < 4 or lam <= 0:
+    if n < 4 or np.all(np.asarray(lam) <= 0):
         return Y.copy()
     D = sp.diags([np.ones(n - 2), -2 * np.ones(n - 2), np.ones(n - 2)], [0, 1, 2], shape=(n - 2, n))
-    lu = splu((sp.diags(w) + lam * (D.T @ D)).tocsc())
+    L = sp.diags(np.broadcast_to(np.asarray(lam, float), (n - 2,)).copy())
+    lu = splu((sp.diags(w) + (D.T @ L @ D)).tocsc())
     return np.stack([lu.solve(w * Y[:, k]) for k in range(Y.shape[1])], 1)
+
+
+LEAP_V = 1e9                # (off: brought the shake back) m/s of the wrist's wanted path past which the smoothing eases off (an arm leaping)
+
+
+def _leap_lambda(P, fps, lam):
+    """Per-step smoothing for a wrist path: full where the hand stays put, down to ~5% where its wanted path
+    moves faster than LEAP_V (a leap), eased over a few frames so the relief starts before the move."""
+    v = np.linalg.norm(np.gradient(P, axis=0), axis=1) * fps
+    from scipy.ndimage import maximum_filter1d, uniform_filter1d
+    v = uniform_filter1d(maximum_filter1d(v, size=int(0.25 * fps) | 1), size=5)
+    k = lam / (1.0 + (v / LEAP_V) ** 2)
+    return np.maximum(k, 0.05 * lam)[1:-1]
 
 
 def _frame_targets(hands, j):
@@ -1544,7 +1563,9 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
     there and solves only the fingers."""
     from .rig.hand import rotvec
     T = {j: _frame_targets(hands, j) for j in range(j0, N)}
-    shoulders = {j: body.pose(*HEAD[j], {}, torso=TORSO[j])["shoulders"] for j in range(j0, N)}
+    _bp = {j: body.pose(*HEAD[j], {}, torso=TORSO[j]) for j in range(j0, N)}
+    shoulders = {j: _bp[j]["shoulders"] for j in range(j0, N)}
+    TORSO_BOX = {j: performer.torso_box(_bp[j]) for j in range(j0, N)}
     REF = {name: [_plan_root(H, name, j) for j in range(j0, N)] for name, H in hands.items()}
     PW = {}
     ns = max(1, int(round(WRIST_STRIKE_T * fps)))
@@ -1559,15 +1580,16 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
         for j in range(j0, N):
             refs = {name: REF[name][j - j0] for name in hands}
             forearms = {name: (performer.arm_ik(np.asarray(shoulders[j][name]), refs[name][1], 1 if name == "R" else -1,
-                                                _hand_fwd(name, *refs[name]), lift=False), WRIST_BAND) for name in hands}
+                                                _hand_fwd(name, *refs[name]), torso=TORSO_BOX[j]), WRIST_BAND) for name in hands}
             solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=WRIST_PRIOR if k else None)
             for name in hands:
                 prev[name] = solved[name][0]
                 XA[name].append(solved[name][0][:6])
         for name in hands:                              # the smoothed path becomes the new reference (offset 0)
             X_ = np.array(XA[name])
-            S_ = _whittaker(X_, PW[name], WRIST_LAMBDA)
-            S_[:, 2:3] = _whittaker(X_[:, 2:3], PW[name], WRIST_LAMBDA * WRIST_LAMBDA_Z)
+            lam = _leap_lambda(X_[:, :3], fps, WRIST_LAMBDA)       # an arm leaps fast: the smoothing lets it
+            S_ = _whittaker(X_, PW[name], lam)
+            S_[:, 2:3] = _whittaker(X_[:, 2:3], PW[name], lam * WRIST_LAMBDA_Z)
             REF[name] = [(rotvec(S_[i, 3:6]) @ REF[name][i][0], S_[i, :3]) for i in range(len(S_))]
     roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
 
@@ -1577,7 +1599,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
         for j in range(j0, N):                                      # give is eased in and out over time
             refs = {name: REF[name][j - j0] for name in hands}
             forearms = {name: (performer.arm_ik(np.asarray(shoulders[j][name]), refs[name][1], 1 if name == "R" else -1,
-                                                _hand_fwd(name, *refs[name]), lift=False), WRIST_BAND) for name in hands}
+                                                _hand_fwd(name, *refs[name]), torso=TORSO_BOX[j]), WRIST_BAND) for name in hands}
             solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=EASE_PRIOR)
             for name in hands:
                 x = solved[name][0]

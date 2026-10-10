@@ -101,7 +101,7 @@ def rot(pitch_down, yaw, roll):
 ARM_FOLLOW = 0.85                       # how far the elbow swings to put the forearm in line behind the hand
 
 
-ELBOW_UP = 0.8                          # how far an arm working inside its shoulder lifts its elbow (0..1)
+ELBOW_UP = 0.0                          # how far an arm working inside its shoulder lifts its elbow (0..1)
 TORSO_R, ARM_R, TORSO_CLEAR = 0.15, 0.045, 0.02   # torso as a capsule radius, upper-arm radius, clearance (m)
 
 
@@ -119,6 +119,13 @@ def _clear_of_torso(p, torso, skip_shoulder=None):
         if name != skip_shoulder:
             d = max(d, SHOULDER_R + ARM_R + TORSO_CLEAR - float(np.linalg.norm(p - np.asarray(sp, float))))
     return d
+
+
+def torso_box(pose):
+    """The upper-torso hitbox of a Body.pose() result: capsule ends and shoulder centres."""
+    R = np.array(pose["torso_rot"]); hips = np.array(pose["hips"]); top = np.array(pose["chest"])
+    return (hips + R @ np.array([0, 0, 0.12]), top - R @ np.array([0, 0, 0.08]),
+            {k: np.array(v) for k, v in pose["shoulders"].items()})
 
 
 def arm_clearance(shoulder, elbow, wrist, torso, own=None):
@@ -151,28 +158,31 @@ def arm_ik(shoulder, wrist, side, hand_fwd=None, torso=None, lift=True):
                 p2[2] = -0.1
                 p2 -= (p2 @ u) * u
             pole = p2 / max(np.linalg.norm(p2), 1e-6)
-    inward = -side * float(wrist[0] - shoulder[0])     # the hand working in across the body: the elbow lifts
-    if lift and inward > 0:                            # and the forearm angles, rather than dropping into the side
-        w = ELBOW_UP * min(1.0, inward / 0.15)
-        upout = np.array([side * 0.8, -0.2, 0.45]); upout -= (upout @ u) * u
-        if np.linalg.norm(upout) > 1e-6:
-            pole = (1 - w) * pole + w * upout / np.linalg.norm(upout)
-            pole -= (pole @ u) * u; pole /= max(np.linalg.norm(pole), 1e-6)
     c = shoulder + a * u
     el = c + h * pole
     own = "R" if side > 0 else "L"
-    if torso is not None and arm_clearance(shoulder, el, wrist, torso, own) > 0:   # never into the upper torso or
-        e1 = pole                                              # a shoulder: swing around the shoulder-wrist axis
-        e2 = np.cross(u, e1)                                   # to the nearest clear spot (least clipping if none)
+    hf = None if hand_fwd is None else np.asarray(hand_fwd, float) / max(np.linalg.norm(hand_fwd), 1e-9)
+    if torso is not None and (hf is not None or arm_clearance(shoulder, el, wrist, torso, own) > 0):
+        # the elbow swings around the shoulder-wrist axis to where the forearm lines up best behind the hand,
+        # among the spots where the whole arm clears the upper-torso / shoulder hitbox (it rises only if it must)
+        e1 = pole
+        e2 = np.cross(u, e1)
         best = None
-        for ang in np.linspace(-math.pi, math.pi, 73):
-            pp = math.cos(ang) * e1 + math.sin(ang) * e2
-            e = c + h * pp
+        for ang in np.linspace(-math.pi, math.pi, 145):
+            e = c + h * (math.cos(ang) * e1 + math.sin(ang) * e2)
+            if e[2] > shoulder[2] + 0.05:                  # never above the shoulder
+                continue
             pen = max(0.0, arm_clearance(shoulder, e, wrist, torso, own))
-            key = (pen, abs(ang))
+            if hf is not None:
+                fa = (wrist - e) / max(np.linalg.norm(wrist - e), 1e-9)
+                bend = math.acos(float(np.clip(fa @ hf, -1, 1)))
+            else:
+                bend = abs(ang)
+            key = 1000.0 * pen + bend
             if best is None or key < best[0]:
                 best = (key, e)
-        el = best[1]
+        if best is not None:
+            el = best[1]
     return el
 
 

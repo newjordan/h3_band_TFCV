@@ -318,7 +318,7 @@ def pose_rig(arm, rest, s, hd):
             r3 = Matrix.Rotation(ang * share, 3, u) @ r3
         m = r3.to_4x4(); m.translation = head
         want[nm] = m
-    want["wrist"] = root
+    want["wrist"] = root @ Matrix.Diagonal((sk.scale, sk.scale, sk.scale, 1.0))   # a pianist-sized hand
     ang = hd["angles"]
     for nm in sk.names:
         pb = arm.pose.bones[f"{nm}.{s}"]

@@ -51,6 +51,17 @@ def _rot(axis, a):
     return np.eye(3) + math.sin(a) * K + (1 - math.cos(a)) * K @ K
 
 
+def hand_scale():
+    """Uniform hand scale from blockout/rig/furelise_cal.json ("hand_scale"); 1 with RIG_NO_FURELISE=1 or HAND_SCALE=1."""
+    import os
+    if os.environ.get("HAND_SCALE"):
+        return float(os.environ["HAND_SCALE"])
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "furelise_cal.json")
+    if os.environ.get("RIG_NO_FURELISE") == "1" or not os.path.exists(p):
+        return 1.0
+    return float(json.load(open(p)).get("hand_scale", 1.0))
+
+
 class Skeleton:
     """One hand. Bone rest data in world space; per joint the local axes of its DOFs and the sign that makes
     positive flexion curl toward the palm."""
@@ -65,6 +76,15 @@ class Skeleton:
         self.L = {n: B[n]["length"] for n in B}
         self.radii = {n: B[n]["radii"] for n in B}
         self.section = {n: B[n].get("section") for n in B}     # [[half-width, +z extent, -z extent] x (u .1 .5 .9)]
+        self.scale = hand_scale()                   # the hand (not the forearm) scaled about the wrist to a pianist's
+        if self.scale != 1.0:
+            hw = self.h0["wrist"].copy()
+            for n in self.names:
+                self.h0[n] = hw + self.scale * (self.h0[n] - hw)
+                self.L[n] = self.L[n] * self.scale
+                self.radii[n] = [r * self.scale if r else r for r in self.radii[n]]
+                if self.section[n]:
+                    self.section[n] = [[v * self.scale if v else v for v in row] if row else row for row in self.section[n]]
         # hand frame at rest: across (thumb side -> pinky side), forward (wrist -> knuckles), up (back of hand)
         mcp = np.array([self.h0[f"finger{f}-1"] for f in range(2, 6)])
         c = mcp.mean(0)
