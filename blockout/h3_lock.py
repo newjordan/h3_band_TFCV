@@ -17,7 +17,7 @@ import argparse, glob, json, os, shutil, subprocess, sys, time
 COMFY_IN = os.path.expanduser("~/comfyui-h3-audio/input")
 COMFY_OUT = os.path.expanduser("~/comfyui-h3-audio/output")
 RUNNER = os.path.expanduser("~/h3audio/h3audio_run.py")
-SUB = "band/v17c"
+SUB = "band/v17c"         # (per run: band/<tag>, tag = OUTDIR name without "h3_")
 FPS = 24
 CHUNK = 124
 VALID = [5 + 17 * k for k in range(1, 8)]          # 22 .. 124
@@ -74,6 +74,7 @@ def cmd_plan(a):
                            "section": section_of(s["start"] + a.start_s, starts)})
             f += n - (1 if f + n < f1 else 0)       # chunks overlap by one frame: the pinned first frame
             k += 1
+    SUB = f"band/{run_tag(od)}"
     os.makedirs(os.path.join(COMFY_IN, SUB), exist_ok=True)
     for c in chunks:
         d = os.path.join(od, "plates", c["id"])
@@ -96,9 +97,13 @@ def cmd_plan(a):
     print(f"{len(chunks)} chunks from {len(shots)} shots; ~{len(chunks) * 14 / 60:.1f} GPU hours")
 
 
-def config(c, prev_last=None):
-    base = f"{SUB}/{c['id']}"
-    j = {"tag": f"v17c_{c['id']}", "mode": "B", "video": base + ".mp4", "audio": base + ".wav",
+def run_tag(od):
+    return os.path.basename(os.path.normpath(od)).replace("h3_", "")
+
+
+def config(c, prev_last=None, tag="v17c"):
+    base = f"band/{tag}/{c['id']}"
+    j = {"tag": f"{tag}_{c['id']}", "mode": "B", "video": base + ".mp4", "audio": base + ".wav",
          "video_strength": 0.88, "control": {"video": base + "_ctl_canny.mp4", "strength": 1.0},
          "prompt": prompt(c["view"], c["section"]), "seed": 7, "steps": 20, "width": W, "height": H,
          "length": c["gen"], "scheduler": "beta", "sampler": "res_multistep"}
@@ -121,13 +126,15 @@ def cmd_run(a):
     for c in P["chunks"]:
         if a.only and c["id"] not in a.only.split(","):
             continue
-        tag = f"v17c_{c['id']}"
+        T = run_tag(od)
+        SUB = f"band/{T}"
+        tag = f"{T}_{c['id']}"
         if output_frames(tag):
             continue
         prev_last = None
         if c["k"] > 0:
             pc = next(x for x in P["chunks"] if x["shot"] == c["shot"] and x["k"] == c["k"] - 1)
-            fr = output_frames(f"v17c_{pc['id']}")
+            fr = output_frames(f"{T}_{pc['id']}")
             if not fr:
                 print(f"{c['id']}: previous chunk not rendered yet, skipping", file=log, flush=True)
                 continue
@@ -136,7 +143,7 @@ def cmd_run(a):
             shutil.copy2(last, os.path.join(COMFY_IN, prev_last))
         cfg = os.path.join(od, "configs", c["id"] + ".json")
         os.makedirs(os.path.dirname(cfg), exist_ok=True)
-        json.dump(config(c, prev_last), open(cfg, "w"), indent=1)
+        json.dump(config(c, prev_last, T), open(cfg, "w"), indent=1)
         t = time.time()
         r = subprocess.run([sys.executable, RUNNER, cfg], capture_output=True, text=True)
         print(f"{time.strftime('%H:%M:%S')} {c['id']} ({c['view']}, {c['section']}, {c['n']}/{c['gen']} f) "
@@ -154,13 +161,13 @@ def cmd_assemble(a):
     i = 0
     missing = 0
     for c in P["chunks"]:
-        fr = output_frames(f"v17c_{c['id']}")
+        fr = output_frames(f"{run_tag(od)}_{c['id']}")
         take = range(1 if c["k"] > 0 else 0, c["n"])
         for k in take:
             src = fr[k] if k < len(fr) else os.path.join(P["frames"], f"f_{c['start'] + k:05d}.png")   # grey if not rendered
             missing += k >= len(fr)
             os.symlink(src, os.path.join(seq, f"a_{i:05d}.png")); i += 1
-    out = os.path.join(od, "v17c_knight.mp4")
+    out = os.path.join(od, f"{run_tag(od)}_knight.mp4")
     sh(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-i", os.path.join(seq, "a_%05d.png"), "-ss",
         f"{P['start_s']:.3f}", "-i", P["audio"], "-vf", f"scale={W}:{H}", "-c:v", "libx264", "-crf", "18",
         "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", out])
