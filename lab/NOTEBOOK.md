@@ -418,3 +418,11 @@ Same per section (Chopin 96.6 vs 96.8); sideways 57 -> 48 but 13 "unfingered" ap
 four-octave chords, missed either way, relabelled because the scorer matches fingers by onset); motion unchanged.
 **Conclusion:** ROLL_STAGGER does not add to REACH_SPLIT on the whole suite (as in the pilot); it stays off. The
 remaining misses after E29: ~57 sideways (four-octave chords, fast leaps), 25 shallow, 5 short.
+
+### E32 (H5 reach, real-size hand): + thumb CMC 45 / pinky 30 deg abduction: 92.5% (+2.0 vs E30)
+Debussy 100.0, Rach 87.1 (+2.9), Chopin 96.9 (+1.3); sideways 135 -> 97; wrist dev 10.7 deg, shake 1.59 mm, tremor
+0.33; joint-frames outside the QA anatomy table 1578 -> 2977 per minute (the table caps finger 2-5 abduction at 25
+deg, so the pinky at up to 30 deg counts as out). **Conclusion:** reach is the small hand's limit; opening the thumb
+and pinky toward their anatomical maximum buys 38 notes. Whether 30 deg pinky abduction is acceptable is a judgement
+call for the animation (pianists stretch toward it in octaves); the thumb part alone is uncontroversial. E33 (+ home
+spread x1.15) next.

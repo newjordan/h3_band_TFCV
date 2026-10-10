@@ -1,0 +1,24 @@
+{
+ "id": "E33",
+ "leg": "H5 reach",
+ "parent": "E32",
+ "hypothesis": "Planning the hand open (home finger spread x1.15) for wide chords puts its centre where both ends can be reached.",
+ "change": "E32 + HOME spread x1.15",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "REPAIR_ITERS": 2,
+  "PRESS_OVERSHOOT": 0.003,
+  "REACH_SPLIT": true,
+  "HOME_S": 1.15
+ },
+ "env": "HAND_SCALE=0.7284 RIG_LIMITS='{\"cmc\":{\"abd\":[-45,45]},\"mcp_edge\":{\"abd\":[-30,30]}}'"
+}
