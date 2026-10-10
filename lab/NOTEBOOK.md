@@ -149,3 +149,13 @@ references) test whether both can be held at once.
 Shallow misses in E05 are mostly late arrivals (half have the key not moving at all, pad a median 2 mm above it), so
 repair (boost the finger's press around the onset) fits the failure. The hard mask fixes depth but doubles tremor.
 Whole-suite runs queued ahead of the ablation ladder: E25 (repair + overshoot), E24, E23, E22.
+
+### K3: attention probe (ref2va, bass-knight reference, canny + plate; 13 blocks x 56 heads x steps 0/4/8/12)
+Video queries put on average 0.3-5% of their attention on the reference image, but a few heads specialise:
+block 12 head 8 0.79 (stable over steps), block 8 head 32 0.40, block 4 head 13 0.49 -> 0.13 (early steps only), block
+16 head 55 0.46 -> 0.23, block 24 head 35 0.35. Reference reading lives in blocks 4-24; from block 28 on it is < 0.13
+everywhere, while text reading peaks late (block 44: 0.83 on one head). lab/plots/k3_probe.png, raw lab/k3_probe.json.
+**Conclusion (K-b):** appearance transfer from the reference runs through ~25 identifiable heads in the first half of
+the network, so a pull can be targeted at them only (rather than all heads, which would also drag the geometry).
+Queued: K8/K9 = K7 (chrome refs + normal-pass control) + KV pull x4 / x8 on the heads with reference mass >= 0.12 in
+blocks 4-36 (24 heads).

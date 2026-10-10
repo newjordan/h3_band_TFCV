@@ -85,9 +85,10 @@ def build(j):
                   strength=float(c.get("strength", 1.0)), start_percent=float(c.get("start", 0.0)),
                   end_percent=float(c.get("end", 1.0)), control_video=["42", 0])
     if j.get("pull"):                                # KV pull toward the reference look (custom_nodes/ks_h3_attn.py)
-        pl = j["pull"]
-        model = n(46, "KSH3RefPull", model=model, blocks=str(pl.get("blocks", "all")), heads=str(pl.get("heads", "all")),
-                  mult=int(pl.get("mult", 3)), segments=pl.get("segments", "ref_img"), steps=str(pl.get("steps", "all")))
+        for i, pl in enumerate(j["pull"] if isinstance(j["pull"], list) else [j["pull"]]):   # a list: per-block heads
+            model = n(46 + 1000 * i, "KSH3RefPull", model=model, blocks=str(pl.get("blocks", "all")),
+                      heads=str(pl.get("heads", "all")), mult=int(pl.get("mult", 3)),
+                      segments=pl.get("segments", "ref_img"), steps=str(pl.get("steps", "all")))
     if j.get("probe"):                               # attention mass per head per segment, written after sampling
         pr = j["probe"]
         model = n(47, "KSH3AttnProbe", model=model, blocks=pr.get("blocks", "0,6,12,18,24,30,36,42,49"),
