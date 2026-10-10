@@ -241,3 +241,10 @@ Debussy 92.9, Rach 94.3, Chopin 95.4; misses 101: sideways 71, shallow 24, short
 mm, tremor 0.35. **Conclusion:** the three contact changes stack (E05 82.2 -> E20 87.5 -> E24 93.2 -> E26 94.7) with
 no motion cost; shallow is nearly gone (226 -> 24). The remaining 5% is 70% sideways: reach/fingering, not contact.
 E27 (4 repair passes) and E28 (real-size hand) run next; the sideways diagnosis decides the following leg.
+
+### K12: probe of the fl2va model with the pinned chrome frame
+The heads that read the pinned first frame ("cond") sit where ref2va's reference heads sit: blocks 4-24 (block 4 h4
+0.38, h12 0.24, h13 0.21; block 8 h2/h44/h35/h46 ~0.2; block 24 h27/h35 0.2), several the same head indices as in
+ref2va (shared base model). Text reading is late again (block 16 h17 0.92, block 44 h38 0.90). lab/plots/k12_probe.png.
+Queued: K15 = K11 + KV pull x4 toward the pinned frame on the 32 heads with cond mass >= 0.10; K16 = x6 only on
+steps 6-19 (the early steps that set geometry left alone).
