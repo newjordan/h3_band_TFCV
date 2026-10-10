@@ -23,6 +23,9 @@ m["sections"].insert(0, {"id": "lab", "title": "Piano-hand lab: every note, ever
             "H1 ragdoll-first (loosen to 100%, then reverse into realism), H2 data-driven real-size hand (FürElise), H3 ablations. "
             f"Notebook: lab/NOTEBOOK.md in newjordan/h3_band_TFCV (ks-wrist). Last run started {ts}; queued: {', '.join(queued) or 'none'}."),
   "items": [{"kind": "table", "title": "Results (whole suite)", "rows": table}] +
+           ([{"kind": "video", "src": "media/lab/k_armour.mp4", "title": "Leg K: Blender plate | K1 skin (normal-pass edges) | K20 gauntlet geometry | K21 gauntlet + vambrace geometry",
+              "note": "Single shot kh111, H3 fl2va + Fun ControlNet on the canny of Blender's normal pass; the armour comes from geometry added to the Blender hand, the plate stays grey."}]
+            if os.path.exists(os.path.join(LAB, "plots", "k_armour.mp4")) else []) +
            [{"kind": "image", "src": f"media/lab/{f}", "title": t} for f, t in (
                ("keysync_runs.png", "Key sync by experiment"), ("keysync_sections.png", "Key sync per section"),
                ("misses.png", "Missed notes by kind"), ("tradeoff_wrist.png", "Key sync vs wrist deviation"),
