@@ -108,3 +108,9 @@ plate correlation (0.7+) was carried by the keyboard: inside the hands the rende
 controls that resolve each finger (normal-shaded pass edges, depth). K-b: appearance and geometry live in different
 heads; a KV pull toward the reference look on the appearance heads gives the look without moving the geometry
 (custom_nodes ks_h3_attn.py: KSH3AttnProbe, KSH3RefPull). K-c: plates in target materials need less strength.
+
+### E05 (H0, new baseline): 82.2% (+0.3 vs E00)
+Every note fingered + knuckle-depth scaling, big hand. Unfingered 24 -> 0, but those notes now mostly miss as
+sideways (99 -> 113) or shallow (206 -> 226): fingering a rolled tenth does not by itself put a finger on its key in
+time. Debussy 74.5, Rach 74.2, Chopin 90.6; wrist dev 11.5 deg, shake 1.5 mm, tremor 0.31. **Conclusion:** the
+structural class is gone; the remaining errors are contact (shallow) and reach (sideways), the targets of H4 and H2.
