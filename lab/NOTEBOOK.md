@@ -191,3 +191,17 @@ fingers: same split as K2. K7 (these references + the normal-pass control of K1)
 hand_r 0.41, flow_cos 0.80, frame r 0.83: geometry as good as K1 at 60% edge weight, but the hands are still bare skin
 (lab/plots/k6cmp.jpg: plate | K1 | K6). **Conclusion:** depth adds nothing to the look; the per-finger edges alone decide
 both the match and the "human hand" reading. The look has to come from the reference side (K7-K9).
+
+### K7: chrome references + normal-pass control: identical to K5 -> ref2va ignores the ControlNet
+K7 differs from K5 only in the control video (normal-pass vs beauty canny) and scores the same to two decimals
+(hand_r 0.07, frame r 0.69, the same worst frame). The two videos differ by 1.4/255 mean luma (max 7). The Fun
+ControlNet patch is wired correctly for the ref2va layout (control rows go to the target video tokens, reference rows
+get zero), so with the ref2va checkpoint the control's residual is effectively drowned out: **in ref2va mode there is no
+structure lock at all**; every ref2va hand result so far (r2, r3, K3, K5, K7) was the model's own hands.
+**Consequence:** K8/K9 (KV pull on ref2va) cancelled (K8 interrupted on the GPU). The look must come in through the
+fl2va (t2v/i2v) model, where the control works (K1: hand_r 0.42):
+- K-c "pixel setup": Blender renders the plate in the target materials (`--pass chrome`: Cycles, mirror-chrome hands
+  and forearms, glossy black piano, warm low light; lab/plots/kh111_chrome_f0.png), same camera and poses as the plate
+  and control.
+- K10 = K1 with the chrome plate in the video stream; K11 = K10 + the chrome frame 0 pinned as first frame;
+  K12 = K11 with the attention probe (which heads read the pinned frame -> targets for a KV pull in fl2va).
