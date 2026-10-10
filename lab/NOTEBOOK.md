@@ -432,3 +432,9 @@ Debussy 99.0 (-1.0), Rach 86.4 (-0.7), Chopin 96.3 (-0.6); sideways 97 -> 116, s
 anatomy unchanged; 49 min. **Conclusion:** planning the hand wider than its rest spacing hurts slightly; the reach gain
 comes from the joint limits, not from the plan. HOME_S stays 1.0. Best real-size hand: E32 (92.5%).
 (Corrected entry: the first version carried numbers typed before the results were read.)
+
+### E21 (H4 contact): E20 + pressing pad may sink 3 mm into its own key: 88.4% (+0.9 vs E20)
+Debussy 86.7, Rach 83.5, Chopin 93.2; shallow 127 -> 117, sideways 102, short 4; tremor 0.32, shake 1.59 mm.
+**Conclusion:** the own-key collision holds the pad up a little (10 shallow misses), a small effect next to overshoot
+(E23, -82 shallow) and repair (E24, -86); OWN_KEY_GIVE 3 mm is a candidate addition to the E29 stack.
+(Run paused 09:36 for the greyscale v18 render and re-run from scratch at 09:59.)

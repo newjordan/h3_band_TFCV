@@ -1,0 +1,11 @@
+{
+ "id": "E07",
+ "leg": "H0 baseline",
+ "parent": "E05",
+ "hypothesis": "Ablation: the old 'playable()' note dropping costs the unfingered notes.",
+ "change": "E05 with SPLIT_WIDE off (playable() drops notes)",
+ "ovr": {
+  "SPLIT_WIDE": false
+ },
+ "env": "HAND_SCALE=1"
+}
