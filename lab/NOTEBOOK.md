@@ -426,3 +426,7 @@ deg, so the pinky at up to 30 deg counts as out). **Conclusion:** reach is the s
 and pinky toward their anatomical maximum buys 38 notes. Whether 30 deg pinky abduction is acceptable is a judgement
 call for the animation (pianists stretch toward it in octaves); the thumb part alone is uncontroversial. E33 (+ home
 spread x1.15) next.
+
+### E33 (H5 reach, real-size hand): E32 + home spread x1.15: 91.2% (-1.3 vs E32)
+Rach 84.9 (-2.2), Chopin 96.5; sideways 97 -> 110. **Conclusion:** planning the hand wider than its rest spacing
+hurts; the reach gain comes from the joint limits, not from the plan. HOME_S stays 1.0. Best real-size hand: E32.
