@@ -280,3 +280,9 @@ Spread pilot (4 Rach windows, E26 settings, RIG_LIMITS pinky 35 deg / thumb CMC 
 (94.4 -> 95.8%), sideways 18 -> 14, but joint-frames outside the QA anatomy table 2663 -> 4177 (+57%; the table caps
 finger 2-5 abduction at 25 deg). **Conclusion:** reach helps but the pinky part is not free; next pilot opens the thumb
 only (not in the 2-5 check; CMC abduction ~45 deg is anatomical) plus pinky 30.
+
+### K15: K11 + KV pull x4 toward the pinned chrome frame on its 32 reading heads: no effect (hand_r 0.17)
+Visually and by every metric K15 = K11 (hand_r 0.17 vs 0.18, flow_cos 0.82, frame r 0.72; lab/plots/k15cmp.jpg).
+**Conclusion:** the pinned frame already delivers its look in full through those heads; boosting them changes nothing,
+neither the look nor the geometry. The binding constraint is the plate (category + backdrop), not how strongly the
+model reads its conditioning. K16 (x6, late steps) will confirm; the v2 dark-cafe plate (K17/K18) is the main bet.

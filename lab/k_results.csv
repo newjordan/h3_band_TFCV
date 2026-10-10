@@ -16,3 +16,4 @@ K10,fl2va + normal-pass canny + chrome-material plate (Blender --pass chrome),0.
 K11,K10 + chrome frame 0 pinned as first frame,0.18,0.83,0.67,0.72
 K13,K10 with the chrome plate held harder (video strength 0.70),0.19,0.85,0.67,0.73
 K14,K10 + lockstep anchors (every 3rd latent frame at 0.6),0.15,0.83,0.69,0.77
+K15,K11 + KV pull x4 toward the pinned frame (32 cond heads),0.17,0.82,0.68,0.72
