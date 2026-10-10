@@ -331,3 +331,9 @@ Capping each sub-chord's lag at its note's length changed nothing (identical per
 a clean gain (+6, no motion cost); the spread mostly costs anatomy; the stagger trades reach for shake and does not add
 to REACH_SPLIT. Whole-suite queue after E23 (dev branch merged between runs): E29 = E26 + REACH_SPLIT, E30 = E28 (real
 hand) + REACH_SPLIT, E31 = E29 + ROLL_STAGGER; then the remaining ablations (E21, E07, E02, E22, E11-E14).
+
+### E23 (H4 contact): E20 + 3 mm overshoot (no repair): 93.0% (+5.5 vs E20)
+Debussy 92.9, Rach 91.1, Chopin 94.7; shallow 127 -> 45, sideways 82; tremor 0.32 (lower than any repair run).
+**Conclusion:** overshoot alone is worth almost as much as repair alone (E24 93.2) and costs no tremor; the two
+overlap (E26 = both: 94.7, +1.5 over either). Contact ladder complete: E05 82.2 -> E20 87.5 -> E23 93.0 / E24 93.2 ->
+E26 94.7. Dev branch merged (REACH_SPLIT, ROLL_STAGGER, default off); E29 running.
