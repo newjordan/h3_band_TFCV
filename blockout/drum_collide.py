@@ -23,7 +23,7 @@ UNDER_BAND = 0.04               # m under a played cymbal's bow where the tip co
 TIP_SINK = 0.006                # m below the playing surface the tip's centre may go (head give + tip radius)
 STICK_R = (0.0075, 0.0055)      # butt, tip radius (blender_drums.py)
 ARM_R = {"upper": (0.046, 0.038), "fore": (0.036, 0.028)}
-THIGH_R, HEAD_R, TORSO_R = (0.075, 0.058), 0.095, 0.11
+THIGH_R, SHIN_R, HEAD_R, TORSO_R = (0.075, 0.058), (0.055, 0.042), 0.095, 0.11
 HOOP_W, HOOP_UP, HOOP_DOWN = 0.008, 0.006, 0.012
 CHINA_EDGE = 0.012              # m a china's edge stands above its bell's base (upturned)
 BOOM_RISE = 0.35                # m a boom arm climbs from the top of its post to the cymbal
@@ -297,6 +297,31 @@ def _seg_contact(a1, b1, r1, a2, b2, r2):
     return depth, c1, n, s
 
 
+def _arm_contacts(fr, parts, tol):
+    """The two hands' fists and forearms against each other (a hand crossed over the other), each pair once. A
+    contact is told from the side whose point is nearer its wrist: the resolver pushes hands, and leaves an
+    overlap near an elbow to place_elbows."""
+    arms = {h: [(p, a, b, r0, r1) for p, a, b, r0, r1, _ in body_parts(fr["hands"][h], h) if p in ("fist", "fore")]
+            for h in ("R", "L")}
+    out = []
+    for pr, ar, br, r0, r1 in arms["R"]:
+        for pl, al, bl, l0, l1 in arms["L"]:
+            s, u, dist, cr, cl = seg_seg(ar, br, al, bl)
+            depth = r0 + s * (r1 - r0) + l0 + u * (l1 - l0) - dist
+            if depth <= tol or (pr not in parts and pl not in parts):
+                continue
+            n = (cr - cl) / dist if dist > 1e-6 else np.array([0.0, 0.0, 1.0])
+            # "fist" capsules count as all wrist end
+            sr, sl = (1.0 if pr == "fist" else s), (1.0 if pl == "fist" else u)
+            if (sr >= sl and pr in parts) or pl not in parts:
+                c = {"hand": "R", "part": pr, "other": f"L.{pl}", "point": cr, "s": float(s), "normal": n}
+            else:
+                c = {"hand": "L", "part": pl, "other": f"R.{pr}", "point": cl, "s": float(u), "normal": -n}
+            c["depth"] = float(depth)
+            out.append(c)
+    return out
+
+
 def contacts(kit, fr, allow=None, tol=TOL, parts=("stick", "fist", "fore", "upper"), normals=False):
     """Clips in one frame (kit already posed): [{"hand", "part", "other", "depth", "point", "s", "normal"?}].
     s is where along the part (0 at its base: butt, elbow, shoulder) the overlap is deepest. The normal (when
@@ -345,6 +370,7 @@ def contacts(kit, fr, allow=None, tol=TOL, parts=("stick", "fist", "fore", "uppe
                     if depth > tol:
                         out.append({"hand": hand, "part": part, "other": name, "depth": float(depth), "point": pt,
                                     "s": float(s0), "normal": nrm})
+    out += _arm_contacts(fr, parts, tol)
     # sticks against each other, and each stick against the other hand's fist and forearm
     if "stick" not in parts:
         return out
@@ -387,9 +413,9 @@ OVER = 1.3              # pushes overshoot a little: the spread and the moving c
 BODY = ("head", "torso")
 POLISH = 3              # last iterations spread over a third of SPREAD_S, to clear what is left locally
 SPREAD_S = 0.08         # s: a correction eases in and out over about this long, so hands move around obstacles
-SWIVEL = tuple(math.radians(a) for a in range(0, 360, 15))     # elbow candidates about the shoulder-wrist axis,
-                                                                # from straight down
-SWIVEL_STAY = 0.5       # cost per rad of changing the swivel from the frame before
+SWIVEL = tuple(math.radians(a) for a in range(0, 360, 5))      # elbow candidates about the shoulder-wrist axis
+SWIVEL_MOVE = 160.0     # cost per (rad per 1/24 s)^2 of turning the swivel: the elbow drifts, it doesn't follow
+                        # strokes (high enough that the 5-degree candidate steps don't read as elbow pops)
 ELBOW_UP = 0.05         # m below the shoulder an elbow rises to before it costs (3 per m)
 ELBOW_SMOOTH_S = 0.05   # s: the elbow's swivel is smoothed over about this long
 
@@ -439,15 +465,29 @@ def _set_chain(hd, base, v, stick, tip_len):
     hd["wrist"] = drum_hands.wrist(grip, d, hd["side"])
 
 
-def _elbow_circle(sh, el, wr):
+def _swivel_refs(sh, wr):
+    """(N, 3) shoulders and wrists -> each frame's swivel reference, square to the shoulder-wrist axis: the
+    world's down at the first frame, then carried along by the least turn that follows the axis. A reference
+    fixed in the world spins about an arm that points along it (down: a wrist straight under its shoulder),
+    and would swing the elbow round with it."""
+    U = np.asarray(wr, float) - np.asarray(sh, float)
+    U /= np.linalg.norm(U, axis=1, keepdims=True)
+    out = np.zeros_like(U)
+    r = np.array([0.0, 0.0, -1.0])
+    for j, u in enumerate(U):
+        r = r - (r @ u) * u
+        if r @ r < 1e-8:
+            r = np.array([0.0, -1.0, 0.0]) - u[1] * u
+        r = out[j] = _unit(r)
+    return out
+
+
+def _elbow_circle(sh, el, wr, ref):
     """The circle an elbow swings on about the shoulder-wrist axis (through el): centre, radius, and in-plane axes
-    e1 (the world's down, square to the axis) and e2."""
+    e1 (ref, square to the axis: _swivel_refs) and e2."""
     u = _unit(wr - sh)
     c = sh + float((el - sh) @ u) * u
-    dn = np.array([0.0, 0.0, -1.0]) + u[2] * u
-    if dn @ dn < 1e-8:
-        dn = np.array([0.0, -1.0, 0.0]) + u[1] * u
-    e1 = _unit(dn)
+    e1 = _unit(ref - (ref @ u) * u)
     return c, float(np.linalg.norm(el - c)), e1, np.cross(u, e1)
 
 
@@ -478,9 +518,9 @@ def resolve(frames, kit_dict, hihat_open, allow, fps, stick, tip_len, arm_len, a
                     hd[key] = hd[key] - shift
             el = arm_ik(sh, hd["wrist"], hd["side"], drum_hands.forward(hd["tip"] - hd["butt"], hd["side"]))
             if swivel:
-                c, r, e1, e2 = _elbow_circle(sh, el, hd["wrist"])
-                a = swivel[h][j]
-                el = c + r * (math.cos(a) * e1 + math.sin(a) * e2)
+                th, refs = swivel[h]
+                c, r, e1, e2 = _elbow_circle(sh, el, hd["wrist"], refs[j])
+                el = c + r * (math.cos(th[j]) * e1 + math.sin(th[j]) * e2)
             hd["elbow"] = el
 
     def push(iters, polish):
@@ -526,12 +566,31 @@ def resolve(frames, kit_dict, hihat_open, allow, fps, stick, tip_len, arm_len, a
                 "max_mm": round(1000 * float(np.linalg.norm(C[h], axis=1).max()), 1)} for h in ("R", "L")}
 
 
+def swivel_path(cost, move):
+    """Viterbi: the candidate per frame that minimises the summed frame costs (N, K) plus move (K, K) between
+    consecutive frames' candidates. Returns (N,) indices."""
+    N, K = cost.shape
+    acc = cost[0].copy()
+    back = np.zeros((N, K), int)
+    cols = np.arange(K)
+    for j in range(1, N):
+        tot = acc[:, None] + move
+        back[j] = np.argmin(tot, axis=0)
+        acc = tot[back[j], cols] + cost[j]
+    path = np.zeros(N, int)
+    path[-1] = int(np.argmin(acc))
+    for j in range(N - 1, 0, -1):
+        path[j - 1] = back[j, path[j]]
+    return path
+
+
 def place_elbows(frames, kit, fps):
     """Each elbow, around its shoulder-wrist axis, where it keeps the arm out of the kit (a Kit), the body and
-    the other hand's stick and fist, and is least awkward (drum_hands.arm_cost: the wrist's bend, the elbow's
-    hang), changing little from the frame before (a big jump would swing the elbow across the arm in one frame).
-    The angle is measured from the world's down, so smoothing it doesn't drag the elbow when arm_ik's own elbow
-    moves. Returns each hand's angles, (N,) rad."""
+    the other hand's stick, fist and forearm, and is least awkward (drum_hands.arm_cost: the wrist's bend, the elbow's
+    hang), over the whole take at once: turning the swivel costs SWIVEL_MOVE per squared rate, so the elbow
+    drifts to where the strokes average out instead of swinging with each one, and moves early and smoothly
+    out of the way of what is coming. The angle is measured from _swivel_refs, so it doesn't drag the
+    elbow when the wrist moves. Returns each hand's (angles (N,) rad, references (N, 3))."""
     N = len(frames)
     sig = ELBOW_SMOOTH_S * fps
     W = int(math.ceil(2.5 * sig))
@@ -542,19 +601,19 @@ def place_elbows(frames, kit, fps):
     s = np.linspace(0, 1, n)
     rad = np.tile(np.concatenate([r0 + s * (r1 - r0) for r0, r1 in (ARM_R["upper"], ARM_R["fore"])]), K)
     far = np.tile(np.concatenate([s, s]) > 0.2, K)        # the shoulder end hangs off the torso: not a clip
+    dA = (A[:, None] - A[None, :] + math.pi) % (2 * math.pi) - math.pi
+    move = SWIVEL_MOVE * (fps / 24.0) ** 2 * dA ** 2
     out = {}
     for h, oh in (("R", "L"), ("L", "R")):
-        th = np.zeros(N)
+        cost = np.zeros((N, K))
         circ = []
-        prev = None
+        refs = _swivel_refs(*(np.array([fr["hands"][h][k] for fr in frames], float) for k in ("shoulder", "wrist")))
         for j, fr in enumerate(frames):
             hd = fr["hands"][h]
             kit.pose(fr)
             sh, el0, wr = (np.asarray(hd[k], float) for k in ("shoulder", "elbow", "wrist"))
-            c, r, e1, e2 = _elbow_circle(sh, el0, wr)
+            c, r, e1, e2 = _elbow_circle(sh, el0, wr, refs[j])
             circ.append((c, r, e1, e2))
-            if prev is None:
-                prev = math.atan2(float((el0 - c) @ e2), float((el0 - c) @ e1))
             # hand_dir: the empty hand's line while its stick is in the air
             d = np.asarray(hd["hand_dir"] if "hand_dir" in hd else np.asarray(hd["tip"]) - np.asarray(hd["butt"]))
             el = c + r * (np.cos(A)[:, None] * e1 + np.sin(A)[:, None] * e2)
@@ -565,19 +624,17 @@ def place_elbows(frames, kit, fps):
                 if name in BODY:
                     sd = np.minimum(sd, np.where(far, _sd_capsule_pts(pts, a, b, r0), 1.0))
             for part, a, b, r0, r1, _ in body_parts(fr["hands"][oh], oh):
-                if part in ("stick", "fist"):
+                if part in ("stick", "fist", "fore"):
                     sd = np.minimum(sd, _sd_capsule_pts(pts, a, b, r0, r1))
             tot = np.clip(rad - sd, 0, None).reshape(K, 2, n).max(2).sum(1)
-            turn = np.abs((A - prev + math.pi) % (2 * math.pi) - math.pi)
-            cost = (1000 * tot + drum_hands.arm_cost(d, h, sh, el, wr)
-                    + 3 * np.maximum(0.0, el[:, 2] - sh[2] + ELBOW_UP) + SWIVEL_STAY * turn)
-            th[j] = prev = float(A[int(np.argmin(cost))])
-        th = np.unwrap(th)
+            cost[j] = (1000 * tot + drum_hands.arm_cost(d, h, sh, el, wr)
+                       + 3 * np.maximum(0.0, el[:, 2] - sh[2] + ELBOW_UP))
+        th = np.unwrap(A[swivel_path(cost, move)])
         th = np.convolve(np.concatenate([np.repeat(th[:1], W), th, np.repeat(th[-1:], W)]), ker, "valid")
         for j, fr in enumerate(frames):
             c, r, e1, e2 = circ[j]
             fr["hands"][h]["elbow"] = c + r * (math.cos(th[j]) * e1 + math.sin(th[j]) * e2)
-        out[h] = th
+        out[h] = (th, refs)
     return out
 
 

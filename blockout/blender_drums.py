@@ -246,8 +246,15 @@ def load_mpfb():
     bones = {s: {b.name[:-2]: b for b in arm.data.bones if b.name.endswith("." + s)} for s in "LR"}
     pts = [mesh.matrix_world @ v.co for v in mesh.data.vertices]
     w, e = bones["R"]["wrist"].head_local, bones["R"]["lowerarm01"].head_local
-    full = max((p - w).dot((e - w).normalized()) for p in pts) > 0.2     # the skin runs (almost) to the elbow
-    return arm, bones, full
+    u = (w - e).normalized()
+    along = [(p - e).dot(u) for p in pts]
+    near = [i for i, a in enumerate(along) if a > -0.01 and (pts[i] - e - u * along[i]).length < 0.08]
+    cut = min(along[i] for i in near)       # where the skinned forearm starts, m from the elbow
+    full = (w - e).length - cut > 0.2       # the skin runs (almost) to the elbow
+    cut_r = max((pts[i] - e - u * along[i]).length for i in near if along[i] < cut + 0.01)
+    end_r = min(((pts[i] - e - u * along[i]).length for i in near if abs(along[i] - cut - 0.012) < 0.008),
+                default=cut_r)              # the skin's width where the sleeve ends: the sleeve tucks under it
+    return arm, bones, full, (cut, cut_r, end_r)
 
 
 _SK = {}
@@ -297,16 +304,21 @@ def pose_hand(arm, B, s, hd):
             pb.matrix_basis = Matrix([list(r) for r in sk.local_rot(nm, hd["angles"].get(nm, {}))]).to_4x4()
 
 
+FULL_FOREARM = False
+if HANDS:
+    MPFB_ARM, MPFB_BONES, FULL_FOREARM, (SKIN_CUT, SKIN_CUT_R, SKIN_END_R) = load_mpfb()
 rig = {}
 for h in ("L", "R"):
-    rig[h] = {"upper": Seg(f"{h}_upper", 0.046, 0.038), "fore": Seg(f"{h}_fore", 0.036, 0.028),
+    # a skinned forearm that runs to the elbow is cut off just short of it: a sleeve a little wider than the cut
+    # covers the elbow end and the cut edge, its tapered end tucked into the skin so no open edge shows
+    fore = Seg(f"{h}_fore", SKIN_CUT_R + 0.003, max(SKIN_END_R - 0.002, 0.008)) if FULL_FOREARM \
+        else Seg(f"{h}_fore", 0.036, 0.028)
+    rig[h] = {"upper": Seg(f"{h}_upper", 0.046, 0.038), "fore": fore,
               "stick": Seg(f"{h}_stick", 0.0075, 0.0055, M["stick"]),
               "thigh": Seg(f"{h}_thigh", 0.075, 0.058), "shin": Seg(f"{h}_shin", 0.055, 0.042),
               "foot": hull_ob(f"{h}_foot")}
     if not HANDS:
         rig[h]["fist"] = sphere(f"{h}_fist", 1.0, M["skin"])
-if HANDS:
-    MPFB_ARM, MPFB_BONES, FULL_FOREARM = load_mpfb()
 torso, pelvis = hull_ob("torso"), hull_ob("pelvis")
 neck = Seg("neck", 0.050, 0.045)
 head = sphere("head", 1.0, M["skin"])
@@ -392,7 +404,7 @@ for i in range(fa, min(fb, len(frames))):
         if HANDS:
             el, wr = Vector(hd["elbow"]), Vector(hd["wrist"])
             if FULL_FOREARM:        # the skinned forearm runs to the elbow: a short sleeve covers its cut edge
-                R["fore"].set(el, el + (wr - el).normalized() * 0.06)
+                R["fore"].set(el, el + (wr - el).normalized() * (SKIN_CUT + 0.012))
                 R["fore"].j1.hide_render = True
             else:                   # the primitive forearm stops short and swallows the hand's forearm stub
                 R["fore"].set(el, wr - (wr - el).normalized() * 0.05)

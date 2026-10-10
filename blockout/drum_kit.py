@@ -37,7 +37,7 @@ import json, math, re
 
 import numpy as np
 
-from . import drum_collide
+from . import drum_collide, drum_hands
 
 
 def _toward(deg):
@@ -82,12 +82,20 @@ STANDARD_ORDER = ("kick", "snare", "tom", "floor", "hihat", "crash", "splash", "
 
 SEAT = np.array([0.0, -0.30])           # layouts centre here; drums.HIPS sits a little behind it
 SHOULDERS = (np.array([0.19, -0.25, 1.10]), np.array([-0.19, -0.25, 1.10]))
+# the drummer's legs at rest as drums.py poses them on the standard pedals (hip, knee, ankle; the right leg also
+# with its heel lifted for a kick): rule-placed pieces keep LEG_CLEAR off them, so the knees have room to swivel
+LEGS = (((0.12, -0.32, 0.60), (0.175, 0.116, 0.589), (0.08, 0.049, 0.185)),
+        ((0.12, -0.32, 0.60), (0.181, 0.114, 0.637), (0.08, 0.049, 0.235)),
+        ((-0.12, -0.32, 0.60), (-0.343, 0.056, 0.555), (-0.347, 0.069, 0.135)))
+LEG_CLEAR = 0.005
 RIM_CLEAR = 0.004                       # m two pieces' rims keep apart (real kits sit this tight)
 TIP_REACH = 0.80                        # m from a shoulder to a strike point the stick's tip can reach
 CHECK_TOL = 0.005                       # m of summed overlap check() lets pass (a few mm of stick airspace)
 TOM_ARC, TOM_MID, TOM_SHIFT, FLOOR_ARC, FLOOR_FROM, GAP = 0.81, 1.0, 3.5, 0.60, 48.0, 0.03
 TOM_MAX, FLOOR_MAX = 75.0, 100.0        # deg from straight ahead the rule layout goes; past it a drum is beside
                                         # or behind the drummer
+FLOOR_Z = 0.57                          # m: floor tom heads stay at least this high, about the top of the right
+                                        # thigh, so a left hand crossing over to play one stays above the leg
 # (theta deg, d m, z m) for cymbals after the first two crashes and the ride, by type preference
 SLOTS = {"centre": (0.0, 1.0, 1.34), "far_left": (-50.0, 0.92, 1.22), "right_high": (58.0, 0.95, 1.30),
          "low_left": (-40.0, 0.82, 1.10)}
@@ -224,7 +232,7 @@ def build(spec):
         polar[pc["id"]] = (th, TOM_ARC, 0.84)
     floors = sorted(by["floor"], key=lambda pc: pc["size"])
     for pc, th in zip(floors, _arc([pc["size"] for pc in floors], FLOOR_ARC, start=FLOOR_FROM)):
-        polar[pc["id"]] = (th, FLOOR_ARC, 0.57)
+        polar[pc["id"]] = (th, FLOOR_ARC, FLOOR_Z)
     for p, (th, _, _) in polar.items():
         lim = TOM_MAX if piece_type(p) == "tom" else FLOOR_MAX
         if abs(th) > lim:
@@ -257,6 +265,7 @@ def build(spec):
                 abs(kit[p]["r"] - STANDARD[p]["r"]) < 0.004:
             kit[p] = dict(STANDARD[p])
     movable = [p for p in auto if kit[p] != STANDARD.get(p)]
+    rule = {p: kit[p]["c"] for p in movable}
     placed = {pc["id"] for pc in pieces if "at" in pc}
     booms = [p for p in kit if kit[p]["kind"] == "cymbal" and p not in placed]
     for p in booms:
@@ -266,6 +275,12 @@ def build(spec):
     if give:        # the hi-hat and snare give way, a little, only for what the rest could not clear
         movable += give
         _settle(kit, movable, scales=(1,))
+    stuck = [p for p in movable if p not in give and clash(kit, p) > CHECK_TOL]
+    for p in stuck:
+        _relocate(kit, p)
+    if stuck:
+        _settle(kit, movable, scales=(1,))
+    _relax(kit, movable, rule)
     for p in booms:
         _place_stand(kit, p)
     if spec.get("double_pedal"):
@@ -312,6 +327,44 @@ def _stick_path(p, k):
     return s + np.linspace(*STICK_PATH, 10)[:, None] * d
 
 
+CHOKE_ARM = 0.036              # m: the forearm behind a fist choking a cymbal
+
+
+def _stick_way(p, k):
+    """(points, radius around each) the stick takes landing on piece p (_stick_path, radius 0), and on a crash,
+    splash or china the hand that chokes it at its near edge (drums.choke_pose, drum_hands.hitbox) and the
+    forearm reaching it from the nearer shoulder."""
+    path = _stick_path(p, k)
+    if piece_type(p) not in ("crash", "splash", "china"):
+        return path, np.zeros(len(path))
+    return _choke_way(tuple(k["c"]), tuple(k["n"]), k["r"], path)
+
+
+_CHOKE = {}
+
+
+def _choke_way(c, n, r, path):
+    key = (c, n, r)
+    if key not in _CHOKE:
+        c, n = np.array(c, float), _unit(n)
+        t = np.array([SEAT[0] - c[0], SEAT[1] - c[1], 0.0])
+        u = _unit(t - (t @ n) * n)
+        g = c + (0.97 * r + 0.02) * u - 0.02 * n
+        d = _unit(_unit([u[0], u[1], 0.0]) + np.array([0, 0, -0.5]))
+        right = np.linalg.norm(g - SHOULDERS[0]) <= np.linalg.norm(g - SHOULDERS[1])
+        sh = SHOULDERS[0 if right else 1]
+        pts, rad = [], []
+        for a, b, r0, r1 in drum_hands.hitbox(g, d, "R" if right else "L"):
+            s = np.linspace(0, 1, 5)
+            pts.append(a + s[:, None] * (b - a)), rad.append(r0 + s * (r1 - r0))
+        w = drum_hands.wrist(g, d, "R" if right else "L")
+        s = np.linspace(0.0, 0.25, 6)
+        pts.append(w + s[:, None] * _unit(sh - w)), rad.append(np.full(len(s), CHOKE_ARM))
+        _CHOKE[key] = (np.concatenate(pts), np.concatenate(rad))
+    pts, rad = _CHOKE[key]
+    return np.concatenate([path, pts]), np.concatenate([np.zeros(len(path)), rad])
+
+
 STRIKE_RISE = np.arange(0.04, 0.301, 0.02)    # m above a drum's strike point its strokes' tip rises through ...
 STRIKE_CLEAR = 0.03                            # ... which no cymbal comes within this of
 
@@ -320,6 +373,20 @@ def _strike_column(p, k):
     """Points straight up from drum p's strike point (sampled finer than a cymbal is thin, so none slips
     between them)."""
     return strike_point(k, SEAT, p) + STRIKE_RISE[:, None] * np.array([0.0, 0.0, 1.0])
+
+
+def _leg_samples(n=8):
+    """Points along the LEGS' thighs and shins, and their radii (drum_collide.THIGH_R, SHIN_R)."""
+    s = np.linspace(0, 1, n)
+    pts, rad = [], []
+    for hip, knee, ankle in LEGS:
+        for a, b, (r0, r1) in ((hip, knee, drum_collide.THIGH_R), (knee, ankle, drum_collide.SHIN_R)):
+            a, b = np.array(a), np.array(b)
+            pts.append(a + s[:, None] * (b - a)), rad.append(r0 + s * (r1 - r0))
+    return np.concatenate(pts), np.concatenate(rad)
+
+
+LEG_PTS = _leg_samples()
 
 
 def _over(sd, clear):
@@ -345,21 +412,27 @@ def clash(kit, p, detail=False):
     mine = [x for x in K.rods if own(x[0])]
     others = [x for x in K.rods if not own(x[0]) and not (p == "kick" and x[0].endswith("_mount"))]
     played = lambda q: kit[q]["kind"] in ("drum", "hihat")
+    struck = lambda q: kit[q]["kind"] in ("drum", "hihat", "cymbal")
     if played(p):
-        air, path = _airspace(kit[p]), _stick_path(p, kit[p])
+        air = _airspace(kit[p])
         out["hardware in its air"] = _rods_over(others, air, 0.01)
-        out["hardware in its stick's way"] = _rods_over(others, path, STICK_CLEAR)
+    way = lambda pts, rad, pieces: _over({key: v - rad for key, v in K.sd(pts, pieces).items()}, STICK_CLEAR)
+    if struck(p):
+        path, prad = _stick_way(p, kit[p])
+        out["hardware in its stick's way"] = _rods_over(others, path, STICK_CLEAR + prad)
     for q in kit:
         if q == p:
             continue
         if played(q):
-            out[f"in air over {q}"] = _over(K.sd(_airspace(kit[q]), [p]), 0.01)
-            qpath = _stick_path(q, kit[q])
-            out[f"in the way of {q}'s stick"] = _over(K.sd(qpath, [p]), STICK_CLEAR) + \
-                _rods_over(mine, qpath, STICK_CLEAR) + _rods_over(mine, _airspace(kit[q]), 0.01)
+            out[f"in air over {q}"] = _over(K.sd(_airspace(kit[q]), [p]), 0.01) + \
+                _rods_over(mine, _airspace(kit[q]), 0.01)
+        if struck(q):
+            qpath, qrad = _stick_way(q, kit[q])
+            out[f"in the way of {q}'s stick"] = way(qpath, qrad, [p]) + _rods_over(mine, qpath, STICK_CLEAR + qrad)
         if played(p):
             out[f"{q} in its air"] = _over(K.sd(air, [q]), 0.01)
-            out[f"{q} in its stick's way"] = _over(K.sd(path, [q]), STICK_CLEAR)
+        if struck(p):
+            out[f"{q} in its stick's way"] = way(path, prad, [q])
         if kit[p]["kind"] == "drum" and kit[q]["kind"] in ("cymbal", "hihat"):
             out[f"{q} over its strike"] = _over(K.sd(_strike_column(p, kit[p]), [q]), STRIKE_CLEAR)
         if kit[q]["kind"] == "drum" and kit[p]["kind"] in ("cymbal", "hihat"):
@@ -369,6 +442,10 @@ def clash(kit, p, detail=False):
         if own(name) or (p == "kick" and name.endswith("_mount")):
             continue
         out[f"{name} through it"] = _over(K.sd(a + np.linspace(0, 1, 12)[:, None] * (b - a), [p]), r + 0.01)
+    lp, lr = LEG_PTS
+    out["in the drummer's legs"] = _over({k: v - lr for k, v in K.sd(lp, [p]).items()}, LEG_CLEAR) + \
+        sum(float(np.clip(r + lr + LEG_CLEAR - drum_collide._sd_capsule_pts(lp, a, b, 0.0), 0, None).sum())
+            for _, a, b, r in mine)
     out.update(_stand_clash(kit, p, K))
     out = {k: round(v, 4) for k, v in out.items() if v > 1e-6}
     return out if detail else sum(out.values())
@@ -419,10 +496,19 @@ def _place_stand(kit, p):
     kit[p] = best[1] or k
 
 
-def reach(k, hips=(0.0, -0.30)):
-    """Distance from the nearer shoulder to piece k's strike point."""
-    s = strike_point(k, hips)
-    return min(float(np.linalg.norm(s - sh)) for sh in SHOULDERS)
+def reach(k, hips=(0.0, -0.30), p=None):
+    """Distance from the nearer shoulder to piece k's strike point (on a ride, also to its bell, which lies
+    further in: drums.technique_pose)."""
+    pts = [strike_point(k, hips)]
+    if p is not None and piece_type(p) == "ride":
+        c, n = np.array(k["c"], float), _unit(k["n"])
+        t = np.array([hips[0] - c[0], hips[1] - c[1], 0.0])
+        pts.append(c + 0.035 * _unit(t - (t @ n) * n) + 0.016 * n)
+    return max(min(float(np.linalg.norm(s - sh)) for sh in SHOULDERS) for s in pts)
+
+
+def _too_low(p, z):
+    return piece_type(p) == "floor" and z < FLOOR_Z - 1e-6
 
 
 def _settle(kit, movable, iters=40, scales=(3, 1)):
@@ -433,7 +519,7 @@ def _settle(kit, movable, iters=40, scales=(3, 1)):
         moved = False
         for p in movable:
             k = kit[p]
-            base = clash(kit, p) + 10 * max(0.0, reach(k) - TIP_REACH)
+            base = clash(kit, p) + 10 * max(0.0, reach(k, p=p) - TIP_REACH)
             if base <= 1e-6:
                 continue
             x, y, z = k["c"]
@@ -441,15 +527,57 @@ def _settle(kit, movable, iters=40, scales=(3, 1)):
             d = math.hypot(x - SEAT[0], y - SEAT[1])
             best = (base, None)
             for dth, dd, dz in steps:
+                if _too_low(p, z + dz):
+                    continue
                 trial = dict(k, c=tuple(round(float(v), 4) for v in _polar(th + dth, d + dd, z + dz)))
                 kit[p] = trial
-                cost = clash(kit, p) + 10 * max(0.0, reach(trial) - TIP_REACH) + 0.002 * (abs(dth) / 3 + abs(dz) / 0.03)
+                cost = clash(kit, p) + 10 * max(0.0, reach(trial, p=p) - TIP_REACH) + 0.002 * (abs(dth) / 3 + abs(dz) / 0.03)
                 if cost < best[0] - 1e-6:
                     best = (cost, trial)
             kit[p] = best[1] if best[1] is not None else k
             moved = moved or best[1] is not None
         if not moved:
             break
+
+
+RELOCATE = [(dth, dd, dz) for dth in range(-24, 25, 6) for dd in (-0.12, -0.08, -0.04, 0.0, 0.04, 0.08, 0.12)
+            for dz in (-0.09, -0.06, -0.03, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15)]
+
+
+def _relax(kit, movable, rule):
+    """Each nudged piece moves back toward its rule spot as far as it stays as clear as it is: a piece pushed
+    aside by one that has since moved on does not stay where it was pushed."""
+    for p in movable:
+        if p not in rule:
+            continue
+        k = kit[p]
+        now = clash(kit, p)
+        c0, c1 = np.array(k["c"], float), np.array(rule[p], float)
+        for t in (1.0, 0.75, 0.5, 0.25):
+            trial = dict(k, c=tuple(round(float(v), 4) for v in c0 + t * (c1 - c0)))
+            kit[p] = trial
+            if clash(kit, p) <= now + 1e-6 and reach(trial, p=p) <= max(TIP_REACH, reach(k, p=p)):
+                break
+            kit[p] = k
+
+
+def _relocate(kit, p):
+    """A piece the nudges left stuck against the rest jumps to the clearest spot of a wider grid around it."""
+    k = kit[p]
+    x, y, z = k["c"]
+    th = math.degrees(math.atan2(x - SEAT[0], y - SEAT[1]))
+    d = math.hypot(x - SEAT[0], y - SEAT[1])
+    best = (clash(kit, p) + 10 * max(0.0, reach(k, p=p) - TIP_REACH), k)
+    for dth, dd, dz in RELOCATE:
+        if _too_low(p, z + dz):
+            continue
+        trial = dict(k, c=tuple(round(float(v), 4) for v in _polar(th + dth, d + dd, z + dz)))
+        kit[p] = trial
+        cost = clash(kit, p) + 10 * max(0.0, reach(trial, p=p) - TIP_REACH) + \
+            0.002 * (abs(dth) / 6 + abs(dd) / 0.04 + abs(dz) / 0.03)
+        if cost < best[0] - 1e-6:
+            best = (cost, trial)
+    kit[p] = best[1]
 
 
 def azimuth(k):
@@ -463,8 +591,8 @@ def check(kit):
     or behind the seat (only hand placement can put them there)."""
     over = {p: round(clash(kit, p), 4) for p in kit}
     return {"pieces": len(kit), "overlaps": {p: v for p, v in over.items() if v > CHECK_TOL},
-            "out_of_reach": {p: round(reach(k), 3) for p, k in kit.items()
-                             if k["kind"] != "kick" and reach(k) > TIP_REACH},
+            "out_of_reach": {p: round(reach(k, p=p), 3) for p, k in kit.items()
+                             if k["kind"] != "kick" and reach(k, p=p) > TIP_REACH},
             **({"behind": b} if (b := {p: round(azimuth(k)) for p, k in kit.items()
                                       if abs(azimuth(k)) > FLOOR_MAX}) else {})}
 

@@ -278,6 +278,12 @@ def wrist(grip, d, side):
     return np.asarray(grip, float) + g.place(d) @ (g.pr - g.F)
 
 
+def grip_at(wrist_pt, d, side):
+    """The grip for a hand whose wrist (as wrist()) is at wrist_pt, holding a stick along d."""
+    g = grip_of(_side(side))
+    return np.asarray(wrist_pt, float) - g.place(_unit(d)) @ (g.pr - g.F)
+
+
 def forward(d, side):
     """The forearm's line (elbow -> wrist) for performer.arm_ik's hand_fwd: the hand's axis turned WRIST_DEV back
     toward its thumb side. A stick lies across the palm well off the hand's axis; with the wrist straight the
@@ -317,12 +323,13 @@ def strain(d, side, elbow, wrist):
 
 
 ELBOW_HANG = (0.35, -0.3, -1.0)     # performer.arm_ik's pole (x toward the hand's side): down, out and back
+PAST_COST = 2.0                     # per rad the wrist bends past its comfortable range
 
 
 def arm_cost(d, side, shoulder, elbow, wrist):
-    """How awkward an elbow is for a stick along d: the wrist bent past its comfortable range (2 per rad), a
-    little toward its neutral (0.3 per rad off flat and WRIST_DEV ulnar), and the elbow off its natural hang
-    about the shoulder-wrist axis (0 .. 2). elbow may be (K, 3) candidates."""
+    """How awkward an elbow is for a stick along d: the wrist bent past its comfortable range (PAST_COST per
+    rad), a little toward its neutral (0.3 per rad off flat and WRIST_DEV ulnar), and the elbow off its
+    natural hang about the shoulder-wrist axis (0 .. 2). elbow may be (K, 3) candidates."""
     sg = 1 if _side(side) == "R" else -1
     f, v = bend(d, side, elbow, wrist)
     sh = np.asarray(shoulder, float)
@@ -331,7 +338,7 @@ def arm_cost(d, side, shoulder, elbow, wrist):
     pole = _unit(pole - (pole @ u) * u)
     off = np.asarray(elbow, float) - sh
     off = _rows(off - np.asarray(off @ u)[..., None] * u)
-    return _scalar(2 * _past(f, v) + 0.3 * (np.abs(f) + np.abs(v + WRIST_DEV)) + (1 - off @ pole))
+    return _scalar(PAST_COST * _past(f, v) + 0.3 * (np.abs(f) + np.abs(v + WRIST_DEV)) + (1 - off @ pole))
 
 
 def hitbox(grip, d, side):

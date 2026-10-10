@@ -98,6 +98,12 @@ LIFT_PITCH = 45                  # deg the stick turns up about the grip for the
 _HOME = {}
 
 
+def _kit_boxes():
+    if "kit" not in _HOME:
+        _HOME["kit"] = drum_collide.Kit(KIT, HIHAT_OPEN)
+    return _HOME["kit"]
+
+
 def _elbows(sh, w, n=24):
     """Elbows around the shoulder-wrist axis."""
     UA, FA = performer.UPPER_ARM, performer.FOREARM
@@ -159,9 +165,7 @@ def grip_home(p, hand):
     turned for the elbow to find room."""
     key = (p, hand)
     if key not in _HOME:
-        if "kit" not in _HOME:
-            _HOME["kit"] = drum_collide.Kit(KIT, HIHAT_OPEN)
-        kit = _HOME["kit"]
+        kit = _kit_boxes()
         s = STRIKE[p]
         a = np.array([ANCHOR_X if hand == "R" else -ANCHOR_X, HIPS[1] + 0.12, 0.0])
         y0 = math.atan2(s[0] - a[0], s[1] - a[1])
@@ -184,6 +188,8 @@ def grip_home(p, hand):
 
 
 HOOP_TOP = 0.006 + 0.0075       # hoop top above the head (blender_drums.py) plus the stick's radius
+CROSS_GRIP_H = 0.058            # m a cross-stick's grip sits above the head: the fingers curled under the stick
+                                # rest on it
 
 
 def _in_plane_toward(p, point):
@@ -209,7 +215,7 @@ def technique_pose(p, hand, tech):
         a = math.atan2(HOOP_TOP, r + 0.008 - 0.10 * r)
     elif tech == "cross_stick" and drum_kit.piece_type(p) == "snare":
         s = c - (r + 0.008) * u + HOOP_TOP * n
-        a = math.atan2(0.03 - HOOP_TOP, TIP)
+        a = math.atan2(CROSS_GRIP_H - HOOP_TOP, TIP)
     elif tech == "bell" and drum_kit.piece_type(p) == "ride":
         s = c + 0.035 * u + 0.016 * n
         a = math.radians(38)
@@ -219,13 +225,54 @@ def technique_pose(p, hand, tech):
     return s, (s + TIP * back, -back)
 
 
+CHOKE_PITCH = range(15, 61, 5)      # deg below level choke_pose tries the stick at
+CHOKE_RIM = (0.012, 0.025)          # m the choking grip sits out past the cymbal's rim and below its plane
+
+
+def _choke_clash(kit, p, hand, grip, d):
+    """How far (m) the fist and stick of a choking hand come inside KIT_CLEAR of the kit: the fist may touch
+    cymbal p (it pinches the rim), the stick past the fist may not."""
+    out = 0.0
+    segs = [(grip + 0.04 * d, grip + TIP * d, *drum_collide.STICK_R, False),
+            (grip - (STICK - TIP) * d, grip, *drum_collide.STICK_R, False)]
+    for a0, b0, r0, r1, pinch in segs + [(*hb, True) for hb in drum_hands.hitbox(grip, d, hand)]:
+        x, rad, _ = drum_collide.samples(a0, b0, r0, r1, 10)
+        sd = np.min(np.stack([v for k, v in kit.sd(x).items() if not (pinch and k[0] == p)]), axis=0)
+        out += float(np.clip(rad + KIT_CLEAR - sd, 0, None).max())
+    return out
+
+
 def choke_pose(p, hand):
-    """Grip and tip targets for a hand pinching cymbal p's edge, the stick pointing back and down from the fist."""
-    c, n, r = np.array(KIT[p]["c"], float), NORMAL[p], KIT[p]["r"]
-    u = _in_plane_toward(p, _anchor(hand))
-    grip = c + 0.97 * r * u + 0.02 * u - 0.02 * n
-    d = _unit(_unit([u[0], u[1], 0.0]) + np.array([0, 0, -0.5]))   # flat enough to clear the hi-hat
-    return grip, grip + TIP * d
+    """Grip and tip targets for a hand pinching cymbal p's rim from the player's side: the fist just out past
+    the rim and under it, the stick (tucked in the palm) pointing on in under the cymbal. Of the headings
+    (YAW_SPAN either side of the way the hand plays p) and pitches (CHOKE_PITCH) it takes the one turned least
+    from the playing stick that leaves the stick clear of the kit and the arm comfortable. The stick stays
+    pointing away from the player: turned down past vertical or back toward the body, the hand would roll over
+    on its way to the cymbal."""
+    key = ("choke", p, hand)
+    if key not in _HOME:
+        kit = _kit_boxes()
+        c, n, r = np.array(KIT[p]["c"], float), NORMAL[p], KIT[p]["r"]
+        u = _in_plane_toward(p, _anchor(hand))
+        grip = c + (r + CHOKE_RIM[0]) * u - CHOKE_RIM[1] * n
+        _, d0 = grip_home(p, hand)
+        y0 = math.atan2(d0[0], d0[1])
+        b = performer.Body(hips=HIPS).pose(0.0, 0.0, 0.0, 0.0, {})
+        sh = np.array(b["shoulders"][hand])
+        torso = (np.array(b["hips"]) + np.array([0, 0, 0.12]), np.array(b["chest"]))
+        best = None
+        for k in range(-YAW_SPAN, YAW_SPAN + 1, 5):
+            for a in CHOKE_PITCH:
+                y, ph = y0 + math.radians(k), math.radians(a)
+                d = np.array([math.sin(y) * math.cos(ph), math.cos(y) * math.cos(ph), -math.sin(ph)])
+                cost = (KIT_COST * _choke_clash(kit, p, hand, grip, d)
+                        + _arm_awkward(hand, grip + TIP * d, d, sh, torso)
+                        + YAW_COST * math.acos(float(np.clip(d @ d0, -1, 1))))
+                if best is None or cost < best[0]:
+                    best = (cost, d)
+        _HOME[key] = (grip, best[1])
+    g, d = _HOME[key]
+    return g.copy(), g + TIP * d
 
 
 # ---------------------------------------------------------------- hits
@@ -517,7 +564,17 @@ BEATER_PIVOT = np.array([KICK_X, 0.24, 0.13])
 BEATER_L = 0.165
 HAT_HEEL = np.array([-0.34, 0.00, 0.03])
 HAT_DIR = _unit([-0.10, 1.0, 0.0])
-THIGH, SHIN = 0.44, 0.45
+THIGH, SHIN = 0.44, 0.42
+# hip joints from HIPS: at the throne top (blender_drums.py, 0.53 m) plus the thigh's radius, so the thighs sit
+# on the seat and run about level to the knees
+HIP_JOINT = np.array([0.12, 0.06, 0.02])
+# knee swivel about the hip-ankle line (rad, positive turns the knee out): candidates, each knee's preferred
+# angle, the clearance the thigh and shin keep from the kit, and the costs that trade them off per frame
+KNEE_SWIVEL = np.radians(np.arange(-20.0, 60.5, 1.0))
+KNEE_PREF = {"R": math.radians(0.5), "L": math.radians(15)}      # on the standard kit the right knee sits
+                                                                # midway between the snare and the floor tom
+LEG_CLEAR = 0.008
+KNEE_PEN_COST, KNEE_PREF_COST, KNEE_MOVE_COST = 2000.0, 1.0, 400.0     # per m, per rad^2, per rad^2 per frame
 # double pedal: the left footboard sits between the main pedal and the hi-hat's, its beater beside the main one
 SLAVE_DX, SLAVE_BEATER_DX = -0.21, -0.08
 DOUBLE_IOI = 0.17       # s: kicks closer than this go foot to foot on a double pedal
@@ -592,15 +649,48 @@ def beater_angle(p):
     return hit - 0.80 * p
 
 
-def leg_ik(hip, ankle, side):
+def leg_ik(hip, ankle, side, swivel=0.0):
+    """Knee for a hip and ankle: forward and up, turned out by `swivel` (rad, may be an array: one knee each)."""
     d = ankle - hip
     L = min(max(float(np.linalg.norm(d)), 1e-4), THIGH + SHIN - 1e-3)
     u = _unit(d)
     a = (THIGH ** 2 - SHIN ** 2 + L ** 2) / (2 * L)
     h = math.sqrt(max(THIGH ** 2 - a * a, 0.0))
     pole = np.array([side * 0.25, 1.0, 0.6])
-    pole -= (pole @ u) * u
-    return hip + a * u + h * _unit(pole)
+    pole = _unit(pole - (pole @ u) * u)
+    out = side * _unit(np.cross(u, pole))
+    sw = np.asarray(swivel, float)[..., None]
+    return hip + a * u + h * (np.cos(sw) * pole + np.sin(sw) * out)
+
+
+def _leg_points(hip, knees, ankle, n=8):
+    """Thigh and shin samples (K, 2n, 3) for K knees, and their radii (2n,)."""
+    s = np.linspace(0, 1, n)[None, :, None]
+    pts = np.concatenate([hip + s * (knees[:, None] - hip), knees[:, None] + s * (ankle - knees[:, None])], 1)
+    s = s[0, :, 0]
+    r = np.concatenate([drum_collide.THIGH_R[0] + s * (drum_collide.THIGH_R[1] - drum_collide.THIGH_R[0]),
+                        drum_collide.SHIN_R[0] + s * (drum_collide.SHIN_R[1] - drum_collide.SHIN_R[0])])
+    return pts, r
+
+
+def place_knees(frames, kit):
+    """Each knee's swivel, frame by frame: the thigh and shin LEG_CLEAR off the kit (drum_collide hitboxes, as
+    each frame poses them), near the knee's preferred angle, turning smoothly (the cheapest path through all the
+    frames). Writes fr["feet"][side]["knee"]."""
+    n = len(KNEE_SWIVEL)
+    for side, sx in (("R", 1), ("L", -1)):
+        cost = np.zeros((len(frames), n))
+        for j, fr in enumerate(frames):
+            fd = fr["feet"][side]
+            hip, ank = np.asarray(fd["hip"], float), np.asarray(fd["ankle"], float)
+            pts, r = _leg_points(hip, leg_ik(hip, ank, sx, KNEE_SWIVEL), ank)
+            sd = np.min(np.stack(list(kit.pose(fr).sd(pts.reshape(-1, 3)).values())), 0).reshape(n, -1)
+            cost[j] = KNEE_PEN_COST * np.clip(r + LEG_CLEAR - sd, 0, None).max(1) + \
+                KNEE_PREF_COST * (KNEE_SWIVEL - KNEE_PREF[side]) ** 2
+        move = KNEE_MOVE_COST * (KNEE_SWIVEL[:, None] - KNEE_SWIVEL[None, :]) ** 2
+        for fr, i in zip(frames, drum_collide.swivel_path(cost, move)):
+            fd = fr["feet"][side]
+            fd["knee"] = leg_ik(np.asarray(fd["hip"], float), np.asarray(fd["ankle"], float), sx, KNEE_SWIVEL[i])
 
 
 def foot_points(heel_pivot, dirxy, angle, ball_s, heel_lift):
@@ -621,21 +711,70 @@ SPRING_LEAN = (2.5, 0.8, 0.6)
 LEAD_HAND, LEAD_HEAD = 0.035, 0.06
 HAND_LIFT, HAND_PULL = 0.30, 0.10   # hand rises this fraction of the tip's height, and draws back
 REST_H = 0.06                       # hover height of a resting tip
-HAND_CLEAR = 0.26                   # m the grip keeps from its shoulder (physics rig)
+WRIST_CLEAR = 0.30                  # m the wrist keeps from its shoulder (physics rig): the elbow folds no
+                                    # tighter than about 60 degrees
+WRIST_EASE_S = 0.10                 # s: the hand eases out over about this long
+WRIST_LIFT = 0.5                    # the wrist rises this fraction of the hand target's lift: the stick turning
+                                    # about the wrist does the rest
+AIM_ITERS, AIM_MIN = 10, 0.32
+STICK_STEEP = (math.radians(50), math.radians(65))  # the stick's angle off level eases off past the first and
+                                                    # never reaches the second
+HEADING_HOLD = 0.5                  # how firmly a steep stick keeps the heading of the way the hand plays
 
 
-def _clear_shoulder(p, sh, side):
-    """Grip p moved forward (and a little out) until it is HAND_CLEAR from the shoulder, when it is closer.
-    The hand lift rises straight up from the grip home, and for pieces near the hips (snare, floor tom) a big
-    lift would end with the fist in the shoulder and the elbow folded flat. One fixed direction keeps the move
-    continuous wherever the hand is."""
-    v = p - sh
-    gap = float(v @ v) - HAND_CLEAR ** 2
-    if gap >= 0:
-        return p
-    fwd = _unit(np.array([0.3 * side, 1.0, 0.0]))
-    b = float(v @ fwd)
-    return p + (math.sqrt(b * b - gap) - b) * fwd
+def _pin(hh):
+    """How pinned (0..1) a tip hh above its surface is to its target."""
+    return math.exp(-max(hh, 0.0) / 0.012)
+
+
+def _tame(d, home):
+    """Stick direction d kept off vertical: its angle off level eased under STICK_STEEP, and its heading held
+    toward home's (the stick direction the hand plays with) as it steepens. Near vertical the heading is ill-
+    defined and the hand's frame across the stick (drum_hands.frame) rolls half a turn as d passes over it;
+    a real stick never goes past about 60 degrees anyway, the arm lifts instead."""
+    s = float(np.clip(d[2], -1, 1))
+    hold = HEADING_HOLD * max(0.0, abs(s) - 0.6) / 0.4
+    h = d[:2] + hold * _unit([home[0], home[1], 0.0])[:2]
+    h = h / max(float(np.linalg.norm(h)), 1e-9)
+    e0, e1 = STICK_STEEP
+    el = abs(math.asin(s))
+    if el > e0:
+        el = e0 + (e1 - e0) * math.tanh((el - e0) / (e1 - e0))
+    el = math.copysign(el, s)
+    return np.array([h[0] * math.cos(el), h[1] * math.cos(el), math.sin(el)])
+
+
+def _stick(w, tipt, hh, hand, home, force=0.0):
+    """(tip, grip, d, wrist) for the hand turning about its wrist w to aim the stick at tipt. A stroke is the
+    wrist's turn: the wrist moves only as much as the hand lifts, the fist swings about it. A tip on the
+    surface stays on its target and the stick slides through the hand to it. A target closer to the wrist
+    than AIM_MIN (a cymbal prep leaning back toward the player, a hand turning onto a choke) is aimed at
+    along the same line from the wrist, AIM_MIN out: nearer, the stick's line through it is ill-defined.
+    home: the stick direction the hand plays with here (_tame); force (0..1) turns the stick onto it outright
+    (a hand on a choke)."""
+    v = tipt - w
+    aim = w + max(float(np.linalg.norm(v)), AIM_MIN) * _unit(v)
+    d = _unit(v)
+    for _ in range(AIM_ITERS):
+        d = _unit(aim - drum_hands.grip_at(w, d, hand))
+    d = _tame(d, home)
+    if force > 0:
+        d = _unit(d + force * (home - d))
+    free = drum_hands.grip_at(w, d, hand) + TIP * d
+    tip = free + _pin(hh) * (tipt - free)
+    grip = tip - TIP * d
+    return tip, grip, d, drum_hands.wrist(grip, d, hand)
+
+
+def _wrist_room(W, SH, fps):
+    """Per frame (N, 3): how far to move the wrist (track W) straight out from its shoulder (SH, per frame) to
+    keep it WRIST_CLEAR away, eased over neighbouring frames (drum_collide.spread). A stroke's lift near the
+    body would otherwise fold the elbow shut, and with the wrist that close to the shoulder the elbow swings
+    wildly about the short shoulder-wrist line."""
+    v = np.asarray(W) - np.asarray(SH)
+    r = np.linalg.norm(v, axis=1)
+    out = np.where((r < WRIST_CLEAR)[:, None], (WRIST_CLEAR - r)[:, None] * v / np.maximum(r, 1e-6)[:, None], 0.0)
+    return drum_collide.spread(out, fps, WRIST_EASE_S)
 
 
 def _snap_curve(t, T, H, rest, fps):
@@ -650,9 +789,12 @@ def _snap_curve(t, T, H, rest, fps):
 
 
 def _hand_track(hs, times, hand, start, fps, motion="smooth", dur=strike_dur, arc_max=None):
-    """Raw targets for one hand: tip target, hand (grip) target, height above the surface, current piece."""
+    """Raw targets for one hand: tip target, hand (grip) target, height above the surface, current piece, the
+    stroke times, the wrist target: the wrist of the hand holding its stick the way it rests (the grip
+    homes' direction between pieces), lifting WRIST_LIFT of the hand target's lift, and that resting stick
+    direction. The stick turns about the wrist to aim at the tip target (_stick)."""
     N = len(times)
-    TIPT, HAND, HH = np.zeros((N, 3)), np.zeros((N, 3)), np.zeros(N)
+    TIPT, HAND, HH, WR, DH = np.zeros((N, 3)), np.zeros((N, 3)), np.zeros(N), np.zeros((N, 3)), np.zeros((N, 3))
     cur = []
     if not hs:
         p = "snare" if hand == "L" else "hihat"
@@ -661,8 +803,10 @@ def _hand_track(hs, times, hand, start, fps, motion="smooth", dur=strike_dur, ar
             TIPT[j] = STRIKE[p] + REST_H * NORMAL[p]
             HAND[j] = g + np.array([0, 0, HAND_LIFT * REST_H])
             HH[j] = REST_H
+            WR[j] = drum_hands.wrist(g, d, hand) + np.array([0, 0, WRIST_LIFT * HAND_LIFT * REST_H])
+            DH[j] = d
             cur.append(p)
-        return TIPT, HAND, HH, cur, []
+        return TIPT, HAND, HH, cur, [], WR, DH
     T = np.array([h["tf"] for h in hs])
     Hh = np.array([h["H"] if "H" in h else stroke_height(h["vel"]) for h in hs])
     LIFT = np.array([h.get("lift", HAND_LIFT) for h in hs])
@@ -700,8 +844,10 @@ def _hand_track(hs, times, hand, start, fps, motion="smooth", dur=strike_dur, ar
         TIPT[j] = s + hh * n
         HAND[j] = g + np.array([0, 0, lift * hh + hand_arc]) - HAND_PULL * h * dh
         HH[j] = hh
+        WR[j] = drum_hands.wrist(g, d, hand) + np.array([0, 0, WRIST_LIFT * lift * hh + hand_arc]) - HAND_PULL * h * dh
+        DH[j] = d
         cur.append(P[a] if w < 0.5 else P[b])
-    return TIPT, HAND, HH, cur, T
+    return TIPT, HAND, HH, cur, T, WR, DH
 
 
 def _kick_track(kicks, times, start, fps):
@@ -786,6 +932,7 @@ LOOSE_FRAMES, LOOSE_AIM = 2, 0.08   # loose: each hand hit moves up to this many
 
 
 CHOKE_IN, CHOKE_OUT, CHOKE_LEAN = 0.16, 0.22, 0.6    # s to reach the edge, s to let go, torso lean while pinching
+CHOKE_TURN = 0.6                    # the stick is on the choke's line by this much of the hand's way to the rim
 TECH_HEIGHT = {"ghost": 0.045, "flam_grace": 0.035, "cross_stick": 0.07}   # m, the most these strokes lift
 
 
@@ -924,15 +1071,19 @@ def _follow_surfaces(tracks, tilt, times, start):
         off = D[k] + (D[k1] - D[k]) * u
         TIPT += off
         HAND += off
+        tr[6][:] += off
     return give
 
 
 def _place_chokes(hand_hits, tracks, times, blocked=()):
     """Moves a free hand onto the cymbal's edge for every choke. Returns {piece: [(t, hold, weight)]}, the torso
-    lean and twist toward the cymbal, and each hand's choke weight (0..1) per frame. blocked: (hand, t0, t1)
-    spans a hand is away (a stick toss)."""
+    lean and twist toward the cymbal, each hand's choke weight (0..1) per frame, and how far (0..1) its stick
+    is turned onto the choke's (_stick's force; the stick turns ahead of the hand, CHOKE_TURN, so it is
+    pointing in under the cymbal before the fist reaches the rim). blocked: (hand, t0, t1) spans a hand is
+    away (a stick toss)."""
     out, lean, twist = {}, np.zeros(len(times)), np.zeros(len(times))
     on = {"R": np.zeros(len(times)), "L": np.zeros(len(times))}
+    turn = {"R": np.zeros(len(times)), "L": np.zeros(len(times))}
     used = {"R": [], "L": []}
     for hand, a, b in blocked:
         used[hand].append((a, b))
@@ -952,19 +1103,23 @@ def _place_chokes(hand_hits, tracks, times, blocked=()):
         used[chosen].append((lo, hi))
         wgt = _smooth((times - (tc - CHOKE_IN)) / CHOKE_IN) * (1 - _smooth((times - (tc + hold)) / CHOKE_OUT))
         grip, tip = choke_pose(p, chosen)
-        _, TIPT, HAND, HH, cur, _ = tracks[chosen]
+        _, TIPT, HAND, HH, cur, _, WR, DH = tracks[chosen]
+        dc = _unit(tip - grip)
+        WR += (drum_hands.wrist(grip, dc, chosen) - WR) * wgt[:, None]
         HAND += (grip - HAND) * wgt[:, None]
         TIPT += (tip - TIPT) * wgt[:, None]
-        TIPT[:, 2] += 0.5 * wgt * (1 - wgt)     # arc over the hi-hat on the way to and from the edge
         HH += (0.3 - HH) * wgt
+        tw = _smooth(np.clip(wgt / CHOKE_TURN, 0, 1))
+        DH[:] = DH + (dc - DH) * tw[:, None]
         for j in np.nonzero(wgt > 0.5)[0]:
             cur[j] = p
         out.setdefault(p, []).append((tc, hold, wgt))
         lean += CHOKE_LEAN * wgt
         twist += -math.atan2(grip[0], grip[1] - HIPS[1]) * wgt
         on[chosen] = np.maximum(on[chosen], wgt)
+        turn[chosen] = np.maximum(turn[chosen], tw)
         h["choke_hand"], h["choke_win"] = chosen, (tc - CHOKE_IN, tc + hold + CHOKE_OUT)
-    return out, lean, twist, on
+    return out, lean, twist, on, turn
 
 
 REACH_LEAN = 7.0    # physics: lean (performer units) per m a strike point lies beyond REACH_EASY from the shoulder
@@ -1097,7 +1252,7 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
         at = lambda t: ON2[int(np.clip(round((t - times[0]) * fps), 0, N - 1))]
         hat_hits = [h for h in hits if h["piece"] != "hihat_pedal" or at(h["t"]) < 0.5]
     OPEN, HEEL_L = _hat_track(hat_hits, times, start, fps, beats)
-    chokes, LEAN, TWIST, CHOKING = _place_chokes(hand_hits, tracks, times,
+    chokes, LEAN, TWIST, CHOKING, TURN = _place_chokes(hand_hits, tracks, times,
                                                  [(ts["hand"], *drum_toss.window(ts)) for ts in tosses])
     if physics:     # lean in to reach a far piece: like a choke's lean, it is not capped by LEAN_MAX
         LEAN += _reach_lean(hand_hits, times)
@@ -1108,18 +1263,18 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
         if h.get("lean") and h.get("hand"):
             LEAN += h["lean"] * _bump(times - h["tf"])
 
-    # hands: springs on the grip, read ahead to cancel the lag
+    # hands: springs on the wrist, read ahead to cancel the lag
     lead = int(round(LEAD_HAND * fps))
-    Hs = {}
+    Ws = {}
     for k, hand in enumerate(("R", "L")):
-        raw = tracks[hand][2]
+        raw = tracks[hand][6]
         if motion == "snap":
-            Hs[hand] = raw
+            Ws[hand] = raw
             continue
         raw = np.concatenate([raw[lead:], np.repeat(raw[-1:], lead, 0)])
         f = dynamics.filter_track(raw, fps, *SPRING_HAND)
         f += np.stack([dynamics.drift(times, 0.004, seed * 10 + 3 * k + i) for i in range(3)], 1)
-        Hs[hand] = f
+        Ws[hand] = f
     # head: beat-driven style + looking toward the hands; torso leans in for far pieces
     th = times + LEAD_HEAD
     onsets = sorted(h["t"] for h in hits)
@@ -1144,6 +1299,10 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
         x = HEAD[:, 3] - cl
         HEAD[:, 3] = np.where(x > 0, LEAN_MAX * np.tanh(x / LEAN_MAX), x) + cl
     body = performer.Body(hips=HIPS, base_gaze_pitch=0.75)
+    if physics:
+        SH = [body.pose(*HEAD[j], {})["shoulders"] for j in range(N)]
+        for hand in ("R", "L"):
+            Ws[hand] = Ws[hand] + _wrist_room(Ws[hand], [s[hand] for s in SH], fps)
     LEG = dynamics.filter_track(np.stack([KLIFT, HEEL_L], 1), fps, *SPRING_LEG)
     if double:
         LEG2 = dynamics.filter_track(KLIFT2[:, None], fps, *SPRING_LEG)[:, 0]
@@ -1157,20 +1316,11 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
         fr = {"t": round(float(t - start), 4), "hands": {}}
         wrists, fwds = {}, {}
         pitch, yaw, roll, lean = HEAD[j]
-        if physics:
-            shoulders = body.pose(pitch, yaw, roll, lean, {})["shoulders"]
         for hand in ("R", "L"):
             tipt, hh = tracks[hand][1][j], tracks[hand][3][j]
-            hs = Hs[hand][j]
-            if physics:
-                hs = _clear_shoulder(hs, np.array(shoulders[hand]), 1 if hand == "R" else -1)
-            d = _unit(tipt - hs)
-            free = hs + TIP * d
-            c = math.exp(-max(hh, 0.0) / 0.012)
-            tip = free + c * (tipt - free)
-            grip = tip - TIP * d
+            tip, grip, d, wrist = _stick(Ws[hand][j], tipt, hh, hand, tracks[hand][7][j], TURN[hand][j])
+            c = _pin(hh)
             butt = grip - (STICK - TIP) * d
-            wrist = drum_hands.wrist(grip, d, hand)
             wrists[hand], fwds[hand] = wrist, drum_hands.forward(d, hand)
             fr["hands"][hand] = {"tip": tip, "grip": grip, "butt": butt, "wrist": wrist, "piece": tracks[hand][4][j],
                                  "pin": c, "side": 1 if hand == "R" else -1}
@@ -1206,8 +1356,9 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
         feet = {}
         for side, (toe, ball, heel, ank) in (("R", (k_toe, k_ball, k_heel, k_ank)), ("L", (h_toe, h_ball, h_heel, h_ank))):
             sx = 1 if side == "R" else -1
-            hip = HIPS + np.array([sx * 0.12, 0.06, -0.05])
-            feet[side] = {"hip": hip, "knee": leg_ik(hip, ank, sx), "ankle": ank, "heel": heel, "ball": ball, "toe": toe}
+            hip = HIPS + HIP_JOINT * np.array([sx, 1, 1])
+            feet[side] = {"hip": hip, "knee": leg_ik(hip, ank, sx, KNEE_PREF[side]), "ankle": ank, "heel": heel,
+                          "ball": ball, "toe": toe}
         fr["feet"] = feet
         fr["kick"] = {"board": round(k_ang, 4), "beater": round(beater_angle(kp), 4)}
         if double:
@@ -1223,6 +1374,7 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
                    "t1": round(h["choke_win"][1] - start, 4)} for h in hand_hits if h.get("choke_hand")]
     resolved = None
     if physics:
+        place_knees(frames, drum_collide.Kit(KIT, HIHAT_OPEN))
         allow = drum_collide.allowed_windows(
             [{"tf": h["tf"] - start, "hand": h["hand"], "piece": h["piece"], "tech": h.get("tech")}
              for h in hand_hits if h.get("hand")], choke_list, fps)
