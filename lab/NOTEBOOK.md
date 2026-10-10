@@ -262,3 +262,21 @@ Articulated gauntlets, frame r 0.77 (best of the chrome runs), hand_r 0.15, flow
 chrome plate | K13 | K14). **Conclusion:** anchors hold the scene (frame r) better than a uniform 0.70 but the hands
 slightly less (0.15 vs 0.19); uniform plate strength is the better hand lever. Both inherit the bright plate backdrop:
 the v2 dark-cafe plate (K17/K18) is the fix.
+
+### E27 (H4 contact): E26 with 4 repair passes: 94.9% (+0.2), 50 min (+50%)
+Debussy 92.9, Rach 94.7, Chopin 95.4; sideways 70, shallow 22, short 5; motion unchanged. **Conclusion:** repair
+saturates at 2 passes; the remainder is not a contact problem. E26's 2 passes stay the default for the stack.
+
+### Sideways study, part 2: agent diagnosis (lab/lit/sideways_diagnosis.md) and a spread pilot
+Of E24's 83 sideways misses (rules in order): 32 physically impossible as planned (sub-chords of an over-wide chord
+start at the same instant, or leaps > 1.5 m/s; 14 of them with the other hand within reach), 13 octave chords that the
+rig's finger layout (HOME spread 120 mm vs 165 mm octave) cannot open to, 9 fingering choice, 4 hand assignment, 4
+held key pinning the hand, 13 black-key aim (mostly octave voicings again), 8 unexplained (likely hand-hand avoidance).
+New switches (branch ks-wrist-dev, default off): ROLL_STAGGER (a rolled sub-chord starts when the hand can get there,
+travel / 1.5 m/s, at most 0.20 s late; note copies, scoring keeps the score's onsets) and REACH_SPLIT (an over-wide
+chord gives its inner-edge note to the other hand when that hand can take it; moves 11 suite notes, several of them
+known misses).
+Spread pilot (4 Rach windows, E26 settings, RIG_LIMITS pinky 35 deg / thumb CMC 45 deg vs 25/30): 408 -> 414 of 432
+(94.4 -> 95.8%), sideways 18 -> 14, but joint-frames outside the QA anatomy table 2663 -> 4177 (+57%; the table caps
+finger 2-5 abduction at 25 deg). **Conclusion:** reach helps but the pinky part is not free; next pilot opens the thumb
+only (not in the 2-5 check; CMC abduction ~45 deg is anatomical) plus pinky 30.
