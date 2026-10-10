@@ -277,7 +277,7 @@ So a blockout needs strokes that move continuously over several frames and land 
 
 ### Drum performance: emotion, force and technique
 
-The same hits can be played gently or hard, and some need a specific technique rather than a plain stroke. Two modules control this, and the defaults are unchanged (the rock groove animates byte-for-byte as before).
+The same hits can be played gently or hard, and some need a specific technique rather than a plain stroke. Two modules control this. Both are opt-in (`--emotion` and `--teach`); without them the blockout plays plain strokes.
 
 **Emotion and force** (`blockout/drum_style.py`). Four sliders, 0 to 1:
 
@@ -312,7 +312,7 @@ These are fixed rules rather than a learned model, so every choice can be explai
   14.42    7  2.00  snare   L    rimshot      loud backbeat on 2: tip and shaft hit head and hoop together
 ```
 
-`examples/drums/technique_groove.mid` is a 9-bar study with one technique per bar (side-stick backbeats, ride bell, a flam, ghost notes, two choked crashes into stops, rimshot backbeats, another choke and a ringing last crash). The teacher finds all of them: 4 cross-sticks, 8 bells, 1 flam, 3 ghosts, 3 chokes, 2 rimshots and 2 ringing crashes. With every preset, the blockout check reports no tip going through a head and a furthest reach of 0.548 m against a 0.55 m arm.
+`examples/drums/technique_groove.mid` is a 9-bar study with one technique per bar (side-stick backbeats, ride bell, a flam, ghost notes, two choked crashes into stops, rimshot backbeats, another choke and a ringing last crash). The teacher finds all of them: 4 cross-sticks, 8 bells, 1 flam, 3 ghosts, 3 chokes, 2 rimshots and 2 ringing crashes. With every preset, the blockout check reports no tip going through a head and a furthest reach of 0.601 m against a 0.603 m arm.
 
 ```bash
 $P -m blockout.drums examples/drums/technique_groove.mid work/tech.json --teach --emotion 0:calm,9:intense \
