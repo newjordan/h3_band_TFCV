@@ -235,3 +235,9 @@ liquid-chrome hands shaped like the plate's (lab/plots/k11cmp.jpg: chrome plate 
 armour of its own shape. **Conclusion:** a pinned frame in the target look is the first input that moves both axes at
 once (look kept, geometry up). Still well under K1's 0.42; next, holding the chrome plate harder (K13 strength 0.70,
 K14 lockstep anchors) and the K12 probe for the heads that read the pinned frame.
+
+### E26 (H4 contact): E20 weights + repair + overshoot: 94.7% (new best)
+Debussy 92.9, Rach 94.3, Chopin 95.4; misses 101: sideways 71, shallow 24, short 6; wrist dev 11.4 deg, shake 1.56
+mm, tremor 0.35. **Conclusion:** the three contact changes stack (E05 82.2 -> E20 87.5 -> E24 93.2 -> E26 94.7) with
+no motion cost; shallow is nearly gone (226 -> 24). The remaining 5% is 70% sideways: reach/fingering, not contact.
+E27 (4 repair passes) and E28 (real-size hand) run next; the sideways diagnosis decides the following leg.

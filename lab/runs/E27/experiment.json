@@ -1,0 +1,22 @@
+{
+ "id": "E27",
+ "leg": "H4 contact",
+ "parent": "E26",
+ "hypothesis": "More repair (4 passes) closes more of the remaining misses.",
+ "change": "E26 with 4 repair passes",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "REPAIR_ITERS": 4,
+  "PRESS_OVERSHOOT": 0.003
+ },
+ "env": "HAND_SCALE=1"
+}
