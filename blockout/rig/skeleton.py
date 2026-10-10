@@ -32,6 +32,9 @@ LIMITS = {
     "tip": {"flex": (-20, 80)},                                  # thumb IP: hyperextends 10-20 deg normally
     "wrist": {"flex": (-70, 70), "abd": (-20, 30)},
 }
+if __import__("os").environ.get("RIG_LIMITS"):       # experiment hook: {"mcp_edge": {"abd": [-40, 40]}, ...}
+    for _k, _v in json.loads(__import__("os").environ["RIG_LIMITS"]).items():
+        LIMITS.setdefault(_k, {}).update({a: tuple(b) for a, b in _v.items()})
 
 
 def joint_kind(bone):

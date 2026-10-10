@@ -102,19 +102,28 @@ ARM_FOLLOW = 0.85                       # how far the elbow swings to put the fo
 
 
 ELBOW_UP = 0.0                          # how far an arm working inside its shoulder lifts its elbow (0..1)
-TORSO_R, ARM_R, TORSO_CLEAR = 0.15, 0.045, 0.02   # torso as a capsule radius, upper-arm radius, clearance (m)
+TORSO_R, ARM_R, TORSO_CLEAR = 0.15, 0.04, 0.012   # torso as a capsule radius, upper-arm radius, clearance (m)
 
 
 SHOULDER_R = 0.065                      # the shoulder balls of the upper-torso hitbox
 
 
+TORSO_HALF_W, TORSO_HALF_D = 0.13, 0.10      # the ribcage at elbow height: narrower than the shoulders (0.19 out), so a
+                                             # hanging upper arm just brushes it; shallower than wide: elbows may come in front
+
+
 def _clear_of_torso(p, torso, skip_shoulder=None):
-    """How far a point of the arm (with the arm's radius) is inside the upper-torso hitbox: a capsule for the
-    torso plus a sphere at each shoulder (skip_shoulder: the arm's own). <= 0: clear."""
+    """How far a point of the arm (with the arm's radius) is inside the upper-torso hitbox: an elliptic cylinder
+    (half-width x half-depth in the torso's own frame) between its two ends, plus a sphere at each shoulder
+    (skip_shoulder: the arm's own). <= 0: clear."""
     a, b = (np.asarray(v, float) for v in torso[:2])
+    R = torso[3] if len(torso) > 3 else np.eye(3)
     ab = b - a
     t = float(np.clip((p - a) @ ab / (ab @ ab), 0.0, 1.0))
-    d = TORSO_R + ARM_R + TORSO_CLEAR - float(np.linalg.norm(p - (a + t * ab)))
+    v = R.T @ (p - (a + t * ab))                      # torso frame: x across, y forward, z up
+    ax, ay = TORSO_HALF_W + ARM_R + TORSO_CLEAR, TORSO_HALF_D + ARM_R + TORSO_CLEAR
+    r = math.hypot(v[0] / ax, v[1] / ay)
+    d = (1.0 - r) * min(ax, ay)
     for name, sp in (torso[2] if len(torso) > 2 else {}).items():
         if name != skip_shoulder:
             d = max(d, SHOULDER_R + ARM_R + TORSO_CLEAR - float(np.linalg.norm(p - np.asarray(sp, float))))
@@ -125,13 +134,13 @@ def torso_box(pose):
     """The upper-torso hitbox of a Body.pose() result: capsule ends and shoulder centres."""
     R = np.array(pose["torso_rot"]); hips = np.array(pose["hips"]); top = np.array(pose["chest"])
     return (hips + R @ np.array([0, 0, 0.12]), top - R @ np.array([0, 0, 0.08]),
-            {k: np.array(v) for k, v in pose["shoulders"].items()})
+            {k: np.array(v) for k, v in pose["shoulders"].items()}, R)
 
 
 def arm_clearance(shoulder, elbow, wrist, torso, own=None):
     """Worst penetration of the upper arm (its outer half) and forearm into the upper-torso hitbox."""
     s, e, w = (np.asarray(v, float) for v in (shoulder, elbow, wrist))
-    pts = [s + (e - s) * u for u in (0.5, 0.75, 1.0)] + [e + (w - e) * u for u in (0.25, 0.5, 0.75)]
+    pts = [s + (e - s) * u for u in (0.75, 1.0)] + [e + (w - e) * u for u in (0.25, 0.5, 0.75)]
     return max(_clear_of_torso(p, torso, own) for p in pts)
 
 
@@ -216,7 +225,7 @@ class Body:
             out["elbows"][side] = arm_ik(shoulders[side], np.asarray(w), 1 if side == "R" else -1,
                                          None if hand_fwd is None else hand_fwd.get(side),
                                          torso=(self.hips + Rt @ np.array([0, 0, 0.12]), top - Rt @ np.array([0, 0, 0.08]),
-                                                {k: v for k, v in shoulders.items()})).tolist()
+                                                {k: v for k, v in shoulders.items()}, Rt)).tolist()
         return out
 
 

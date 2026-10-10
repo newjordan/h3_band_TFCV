@@ -1426,6 +1426,55 @@ def _whittaker(Y, w, lam):
     return np.stack([lu.solve(w * Y[:, k]) for k in range(Y.shape[1])], 1)
 
 
+WRIST_MODEL = os.environ.get("RIG_WRIST_MODEL", "1") == "1"   # the FürElise wrist model drives the wrist reference
+WRIST_MODEL_PRIOR = 0.3     # its pull in the first whole-hand pass (our own plan only got 0.02)
+_WM = None
+
+
+def _wrist_model():
+    global _WM
+    if _WM is None:
+        p = os.path.join(os.path.dirname(__file__), "rig", "furelise_wrist.json")
+        _WM = json.load(open(p)) if os.path.exists(p) else {}
+    return _WM
+
+
+def _learned_wrist(H, name, ts):
+    """Wrist position per frame time from the FürElise model: placement at each strike group from the struck keys
+    and the fingers striking them, and the pianists' travel curve between groups (ballistic for big moves, landing
+    early). Long gaps hold, then travel over the last second."""
+    M = _wrist_model()
+    if not M or not H["fing"]:
+        return None
+    hs_ = __import__("blockout.rig.skeleton", fromlist=["hand_scale"]).hand_scale()
+    k = hs_ / (17.7 / 24.3) if hs_ != 1.0 else 24.3 / 17.7   # model offsets are for a 17.7 cm hand
+    on, P = [], []
+    for sl in H["fing"]:
+        v = []
+        for n, f in sl:
+            key = f"{name}{f}.{'black' if is_black(n.pitch) else 'white'}"
+            o = M["offset"].get(key) or M["offset"].get(f"{name}{f}.white")
+            v.append(np.array([key_x(n.pitch), 0.0, 0.0]) + np.array(o["median"]) * np.array([k, 1.0, 1.0]))
+        on.append(sl[0][0].start); P.append(np.mean(v, 0))
+    on, P = np.array(on), np.array(P)
+    tau = np.array(M["travel"]["small"]["tau"])
+    cs, cl = np.array(M["travel"]["small"]["median"]), np.array(M["travel"]["large"]["median"])
+    out = np.empty((len(ts), 3))
+    for i, t in enumerate(ts):
+        g = int(np.searchsorted(on, t, side="right")) - 1
+        if g < 0:
+            out[i] = P[0]; continue
+        if g >= len(on) - 1:
+            out[i] = P[-1]; continue
+        t0, t1 = on[g], on[g + 1]
+        t0 = max(t0, t1 - 1.0)
+        u = float(np.clip((t - t0) / max(t1 - t0, 1e-6), 0, 1))
+        d = P[g + 1] - P[g]
+        c = cl if np.linalg.norm(d[:2]) > 0.04 else cs
+        out[i] = P[g] + d * float(np.interp(u, tau, c))
+    return out
+
+
 LEAP_V = 1e9                # (off: brought the shake back) m/s of the wrist's wanted path past which the smoothing eases off (an arm leaping)
 
 
@@ -1567,6 +1616,13 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
     shoulders = {j: _bp[j]["shoulders"] for j in range(j0, N)}
     TORSO_BOX = {j: performer.torso_box(_bp[j]) for j in range(j0, N)}
     REF = {name: [_plan_root(H, name, j) for j in range(j0, N)] for name, H in hands.items()}
+    first_prior = None
+    if WRIST_MODEL:                                     # where a pianist's wrist goes (FürElise), not our plan
+        for name, H in hands.items():
+            P = _learned_wrist(H, name, times[j0:N])
+            if P is not None:
+                REF[name] = [(r[0], p_) for r, p_ in zip(REF[name], P)]
+        first_prior = WRIST_MODEL_PRIOR
     PW = {}
     ns = max(1, int(round(WRIST_STRIKE_T * fps)))
     for name, H in hands.items():
@@ -1581,7 +1637,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
             refs = {name: REF[name][j - j0] for name in hands}
             forearms = {name: (performer.arm_ik(np.asarray(shoulders[j][name]), refs[name][1], 1 if name == "R" else -1,
                                                 _hand_fwd(name, *refs[name]), torso=TORSO_BOX[j]), WRIST_BAND) for name in hands}
-            solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=WRIST_PRIOR if k else None)
+            solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=WRIST_PRIOR if k else first_prior)
             for name in hands:
                 prev[name] = solved[name][0]
                 XA[name].append(solved[name][0][:6])
