@@ -428,6 +428,22 @@ if HANDS == "mpfb":
                     o.matrix_parent_inverse = Matrix.Identity(4)
                     o.location = (0, -b.length + (0.012 if nm == "wrist" else 0.002), 0)   # at the joint (bone head)
                     o.rotation_euler = (-math.pi / 2, 0, 0)                               # cylinder axis -> bone
+            global GBANDS
+            GBANDS = {}
+            for s_ in "LR":                 # vambrace: bands along the forearm, placed per frame elbow -> wrist
+                w_ = MPFB_ARM.data.bones[f"wrist.{s_}"].head_local; e_ = MPFB_ARM.data.bones[f"lowerarm01.{s_}"].head_local
+                ax = (w_ - e_).normalized()
+                fa = [p for g in ("lowerarm01", "lowerarm02") for p in pts.get(f"{g}.{s_}", [])]
+                rr = sorted(((p - e_) - ax * (p - e_).dot(ax)).length for p in fa) or [0.03]
+                r = rr[len(rr) // 2] * 1.10
+                GBANDS[s_] = []
+                for k in range(5):
+                    bpy.ops.mesh.primitive_cylinder_add(radius=1.0, depth=1.0, vertices=32)
+                    o = bpy.context.active_object; o.name = f"vambrace_{s_}{k}"
+                    o.data.materials.append(M_SKIN)
+                    for pl in o.data.polygons:
+                        pl.use_smooth = True
+                    GBANDS[s_].append((o, 0.2 + 0.15 * k, r * (1.0 - 0.12 * k / 4)))
         _gaunt()
 
 rig = {}
@@ -715,6 +731,10 @@ for i in FRAME_IDS:
                 R["forearm"].set(el, el + (wr - el).normalized() * 0.06)   # a short sleeve covers its cut edge
                 R["forearm"].j1.hide_render = True
             (pose_rig if "angles" in hd else pose_mpfb)(MPFB_ARM, MPFB_REST, h, hd)
+            for o, t, r in globals().get("GBANDS", {}).get(h, []):
+                d = wr - el
+                rot = Vector((0, 0, 1)).rotation_difference(d.normalized()).to_matrix().to_4x4()
+                o.matrix_world = Matrix.Translation(el + d * t) @ rot @ Matrix.Diagonal((r, r, 0.022, 1))
             if "angles" in hd and opts.get("--fkcheck"):
                 bpy.context.view_layer.update()
                 for f in range(5):

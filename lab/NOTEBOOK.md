@@ -337,3 +337,11 @@ Debussy 92.9, Rach 91.1, Chopin 94.7; shallow 127 -> 45, sideways 82; tremor 0.3
 **Conclusion:** overshoot alone is worth almost as much as repair alone (E24 93.2) and costs no tremor; the two
 overlap (E26 = both: 94.7, +1.5 over either). Contact ladder complete: E05 82.2 -> E20 87.5 -> E23 93.0 / E24 93.2 ->
 E26 94.7. Dev branch merged (REACH_SPLIT, ROLL_STAGGER, default off); E29 running.
+
+### K20 (K-d): K1 with the gauntlet geometry's canny: steel gauntlets on the plate's hands (hand_r 0.24, frame r 0.79)
+Grey plate, chrome/jazz prompt, control = canny of the normal pass with joint rings and a wrist cuff. H3 now draws
+**steel gauntlets** on the hands (lab/plots/k20cmp.jpg: gauntlet chrome plate | K1 | K20), following the plate
+better than any chrome run (hand_r 0.24 vs 0.13-0.19), with the best whole-frame match so far (0.79) and flow_cos 0.84.
+The forearms stay skin (no geometry there). **Conclusion:** K-d supported: the *control's geometry* sets the category
+(gauntlet vs hand) while still pinning the shape; the look is carried by the edges, not the plate pixels. Next: K21 =
+the same with vambrace bands along the forearm (lab/plots/gauntlet_pass.jpg), K19 = full gauntlet chrome plate.
