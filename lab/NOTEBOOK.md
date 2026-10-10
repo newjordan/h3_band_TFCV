@@ -290,3 +290,10 @@ model reads its conditioning. K16 (x6, late steps) will confirm; the v2 dark-caf
 ### K16: K11 + KV pull x6 on steps 6-19 only: confirms K15 (hand_r 0.19, mean pixel change 3.3/255 vs K11)
 **Conclusion (leg K-b closed for now):** attention re-weighting toward conditioning is not the lever on this shot:
 the model already uses the conditioning it gets; what it gets (plate content, control content) decides the result.
+
+### E28 (H2): contact stack (E26) on the real-size hand: 89.7% (E06 74.6, +15.1); Debussy 100%
+Debussy **100.0** (first section at 100%), Rach 84.2, Chopin 93.9; sideways 152, shallow 28, short 18; wrist dev
+10.4 deg (big hand 11.4), shake 1.55 mm, tremor 0.33. **Conclusion:** the contact fixes lift the pianist-sized hand by
+15 points and make it the better hand for lyrical music; it now fails only on reach (sideways is 76% of its misses,
+concentrated in the Rachmaninoff chords/octaves): exactly the classes the sideways switches target (REACH_SPLIT,
+ROLL_STAGGER, thumb-led spread). The real-size hand is the one to take to 100%.
