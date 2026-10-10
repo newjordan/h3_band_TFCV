@@ -37,8 +37,8 @@ def pose_points(rig, q):
     return np.asarray([rp] + [p for P in pts for p in P], float)
 
 
-def calibrate(side="R"):
-    ref = json.load(open(hs.REF))
+def calibrate(side="R", ref_path=None):
+    ref = json.load(open(ref_path or hs.REF))
     T = targets(ref)
     rig = HandRig(side)
 

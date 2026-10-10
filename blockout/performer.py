@@ -101,7 +101,50 @@ def rot(pitch_down, yaw, roll):
 ARM_FOLLOW = 0.85                       # how far the elbow swings to put the forearm in line behind the hand
 
 
-def arm_ik(shoulder, wrist, side, hand_fwd=None):
+ELBOW_UP = 0.0                          # how far an arm working inside its shoulder lifts its elbow (0..1)
+TORSO_R, ARM_R, TORSO_CLEAR = 0.15, 0.04, 0.012   # torso as a capsule radius, upper-arm radius, clearance (m)
+
+
+SHOULDER_R = 0.065                      # the shoulder balls of the upper-torso hitbox
+
+
+TORSO_HALF_W, TORSO_HALF_D = 0.13, 0.10      # the ribcage at elbow height: narrower than the shoulders (0.19 out), so a
+                                             # hanging upper arm just brushes it; shallower than wide: elbows may come in front
+
+
+def _clear_of_torso(p, torso, skip_shoulder=None):
+    """How far a point of the arm (with the arm's radius) is inside the upper-torso hitbox: an elliptic cylinder
+    (half-width x half-depth in the torso's own frame) between its two ends, plus a sphere at each shoulder
+    (skip_shoulder: the arm's own). <= 0: clear."""
+    a, b = (np.asarray(v, float) for v in torso[:2])
+    R = torso[3] if len(torso) > 3 else np.eye(3)
+    ab = b - a
+    t = float(np.clip((p - a) @ ab / (ab @ ab), 0.0, 1.0))
+    v = R.T @ (p - (a + t * ab))                      # torso frame: x across, y forward, z up
+    ax, ay = TORSO_HALF_W + ARM_R + TORSO_CLEAR, TORSO_HALF_D + ARM_R + TORSO_CLEAR
+    r = math.hypot(v[0] / ax, v[1] / ay)
+    d = (1.0 - r) * min(ax, ay)
+    for name, sp in (torso[2] if len(torso) > 2 else {}).items():
+        if name != skip_shoulder:
+            d = max(d, SHOULDER_R + ARM_R + TORSO_CLEAR - float(np.linalg.norm(p - np.asarray(sp, float))))
+    return d
+
+
+def torso_box(pose):
+    """The upper-torso hitbox of a Body.pose() result: capsule ends and shoulder centres."""
+    R = np.array(pose["torso_rot"]); hips = np.array(pose["hips"]); top = np.array(pose["chest"])
+    return (hips + R @ np.array([0, 0, 0.12]), top - R @ np.array([0, 0, 0.08]),
+            {k: np.array(v) for k, v in pose["shoulders"].items()}, R)
+
+
+def arm_clearance(shoulder, elbow, wrist, torso, own=None):
+    """Worst penetration of the upper arm (its outer half) and forearm into the upper-torso hitbox."""
+    s, e, w = (np.asarray(v, float) for v in (shoulder, elbow, wrist))
+    pts = [s + (e - s) * u for u in (0.75, 1.0)] + [e + (w - e) * u for u in (0.25, 0.5, 0.75)]
+    return max(_clear_of_torso(p, torso, own) for p in pts)
+
+
+def arm_ik(shoulder, wrist, side, hand_fwd=None, torso=None, lift=True):
     """Elbow for a 2-bone arm; the elbow points down and out to the player's side. With hand_fwd (the hand's
     wrist -> knuckles direction) the elbow swings around the shoulder-wrist axis so the forearm lines up behind
     the hand: the arm carries the hand, the wrist doesn't bend to suit the arm."""
@@ -124,7 +167,32 @@ def arm_ik(shoulder, wrist, side, hand_fwd=None):
                 p2[2] = -0.1
                 p2 -= (p2 @ u) * u
             pole = p2 / max(np.linalg.norm(p2), 1e-6)
-    return shoulder + a * u + h * pole
+    c = shoulder + a * u
+    el = c + h * pole
+    own = "R" if side > 0 else "L"
+    hf = None if hand_fwd is None else np.asarray(hand_fwd, float) / max(np.linalg.norm(hand_fwd), 1e-9)
+    if torso is not None and (hf is not None or arm_clearance(shoulder, el, wrist, torso, own) > 0):
+        # the elbow swings around the shoulder-wrist axis to where the forearm lines up best behind the hand,
+        # among the spots where the whole arm clears the upper-torso / shoulder hitbox (it rises only if it must)
+        e1 = pole
+        e2 = np.cross(u, e1)
+        best = None
+        for ang in np.linspace(-math.pi, math.pi, 145):
+            e = c + h * (math.cos(ang) * e1 + math.sin(ang) * e2)
+            if e[2] > shoulder[2] + 0.05:                  # never above the shoulder
+                continue
+            pen = max(0.0, arm_clearance(shoulder, e, wrist, torso, own))
+            if hf is not None:
+                fa = (wrist - e) / max(np.linalg.norm(wrist - e), 1e-9)
+                bend = math.acos(float(np.clip(fa @ hf, -1, 1)))
+            else:
+                bend = abs(ang)
+            key = 1000.0 * pen + bend
+            if best is None or key < best[0]:
+                best = (key, e)
+        if best is not None:
+            el = best[1]
+    return el
 
 
 class Body:
@@ -136,9 +204,10 @@ class Body:
         self.gaze = base_gaze_pitch      # where the eyes look at rest (radians below horizontal)
         self.eye_ahead = eye_ahead
 
-    def pose(self, pitch, yaw, roll, lean, wrists, hand_fwd=None):
-        # torso follows the head a little; the head carries the rest
-        Rt = rot(0.25 * pitch + 0.06 + 0.6 * lean, 0.3 * yaw, 0.35 * roll)
+    def pose(self, pitch, yaw, roll, lean, wrists, hand_fwd=None, torso=(0.0, 0.0, 0.0)):
+        # torso follows the head a little; the head carries the rest. torso = (pitch, yaw, roll) the reach adds:
+        # it leans toward a far hand, then turns to open toward that end of the keyboard
+        Rt = rot(0.25 * pitch + 0.06 + 0.6 * lean + torso[0], 0.3 * yaw + torso[1], 0.35 * roll + torso[2])
         top = self.hips + Rt @ np.array([0, 0, self.th])
         shoulders = {"L": self.hips + Rt @ np.array([-self.sh, 0, self.th - 0.03]),
                      "R": self.hips + Rt @ np.array([self.sh, 0, self.th - 0.03])}
@@ -154,7 +223,9 @@ class Body:
                "shoulders": {k: v.tolist() for k, v in shoulders.items()}, "elbows": {}}
         for side, w in wrists.items():
             out["elbows"][side] = arm_ik(shoulders[side], np.asarray(w), 1 if side == "R" else -1,
-                                         None if hand_fwd is None else hand_fwd.get(side)).tolist()
+                                         None if hand_fwd is None else hand_fwd.get(side),
+                                         torso=(self.hips + Rt @ np.array([0, 0, 0.12]), top - Rt @ np.array([0, 0, 0.08]),
+                                                {k: v for k, v in shoulders.items()}, Rt)).tolist()
         return out
 
 
