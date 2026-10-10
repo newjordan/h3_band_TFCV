@@ -38,7 +38,8 @@ m["sections"].insert(0, {"id": "lab", "title": "Piano-hand lab: every note, ever
                ("kh111_chrome_f0.png", "Leg K: Blender plate in target materials (--pass chrome), frame 0"),
                ("k10cmp.jpg", "Leg K, K10: chrome plate / K1 / K10 (K1 + chrome plate): chrome, but hands drift"),
                ("k11cmp.jpg", "Leg K, K11: chrome plate / K10 / K11 (+ chrome first frame): chrome, hands closer"),
-               ("k12_probe.png", "Leg K, K3/K12 probes: where H3 reads references, the pinned frame and the text"))
+               ("k12_probe.png", "Leg K, K3/K12 probes: where H3 reads references, the pinned frame and the text"),
+               ("k13cmp.jpg", "Leg K, K13: chrome plate / K11 / K13 (plate held at 0.70): gauntlets, plate backdrop leaks"))
             if os.path.exists(os.path.join(LAB, "plots", f))]})
 json.dump(m, open(os.path.join(W, "manifest.json"), "w"), indent=1)
 subprocess.run(["python3", os.path.expanduser("~/h3/mv_tools/band_site.py")], capture_output=True)

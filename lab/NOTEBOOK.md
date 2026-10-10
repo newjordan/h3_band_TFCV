@@ -248,3 +248,11 @@ The heads that read the pinned first frame ("cond") sit where ref2va's reference
 ref2va (shared base model). Text reading is late again (block 16 h17 0.92, block 44 h38 0.90). lab/plots/k12_probe.png.
 Queued: K15 = K11 + KV pull x4 toward the pinned frame on the 32 heads with cond mass >= 0.10; K16 = x6 only on
 steps 6-19 (the early steps that set geometry left alone).
+
+### K13: chrome plate held harder (video strength 0.88 -> 0.70): hand_r 0.19, flow_cos 0.85
+Articulated chrome gauntlets (plates, knuckle joints) shaped like the plate's hands; hand_r 0.19 (K10 0.09, K11 0.18),
+flow_cos 0.85 (= K1), frame r 0.73. But the plate's environment now comes through: the Blender chrome pass lit a beige
+studio, not a dark cafe (lab/plots/k13cmp.jpg: chrome plate | K11 | K13). **Conclusion:** plate strength is a usable
+geometry lever once the plate is in the target look; the plate must then be the *whole* target look (dark smoky
+room, amber practicals), not only the hands. Next: darker cafe environment in `--pass chrome`, then K13 + K11's pinned
+frame.
