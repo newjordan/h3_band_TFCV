@@ -256,3 +256,9 @@ studio, not a dark cafe (lab/plots/k13cmp.jpg: chrome plate | K11 | K13). **Conc
 geometry lever once the plate is in the target look; the plate must then be the *whole* target look (dark smoky
 room, amber practicals), not only the hands. Next: darker cafe environment in `--pass chrome`, then K13 + K11's pinned
 frame.
+
+### K14: K10 + lockstep anchors (every 3rd latent frame held at 0.6, others 0.88): hand_r 0.15
+Articulated gauntlets, frame r 0.77 (best of the chrome runs), hand_r 0.15, flow_cos 0.83 (lab/plots/k14cmp.jpg:
+chrome plate | K13 | K14). **Conclusion:** anchors hold the scene (frame r) better than a uniform 0.70 but the hands
+slightly less (0.15 vs 0.19); uniform plate strength is the better hand lever. Both inherit the bright plate backdrop:
+the v2 dark-cafe plate (K17/K18) is the fix.
