@@ -297,3 +297,12 @@ Debussy **100.0** (first section at 100%), Rach 84.2, Chopin 93.9; sideways 152,
 15 points and make it the better hand for lyrical music; it now fails only on reach (sideways is 76% of its misses,
 concentrated in the Rachmaninoff chords/octaves): exactly the classes the sideways switches target (REACH_SPLIT,
 ROLL_STAGGER, thumb-led spread). The real-size hand is the one to take to 100%.
+
+### K17: dark-cafe chrome plate (v2) at 0.70 + its frame 0 pinned: the plate's look, hand_r 0.13
+The render takes on the v2 plate's look (dark room, black piano, liquid-chrome hands; lab/plots/k17cmp.jpg: v2 plate |
+K13 | K17), flow_cos 0.86 (best so far), but hand_r 0.13 (K13 0.19) and frame r 0.70. **Conclusion:** across K10-K17
+the chrome runs sit at hand_r 0.13-0.19 whatever the plate strength, anchors, pinned frame or attention pull; only a
+skin-hand reading (K1/K6) follows the finger edges (0.41-0.42). A smooth chrome hand is read as a single blob whose
+fingers H3 re-draws. Hypothesis K-d: give the plate *gauntlet geometry* (segmented finger plates, knuckle rings, a
+cuff) so that the control edges describe a gauntlet's fingers, not a hand's, and the "gauntlet" reading inherits the
+edges the way the "hand" reading does.
