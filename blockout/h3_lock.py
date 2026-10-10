@@ -88,7 +88,7 @@ def cmd_plan(a):
             sh(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-i", os.path.join(d, "p_%05d.png"),
                 "-vf", f"scale={W}:{H}", "-c:v", "libx264", "-crf", "12", "-pix_fmt", "yuv420p", base + ".mp4"])
             sh([os.path.expanduser("~/comfyui-h3-audio/.venv/bin/python"),
-                os.path.expanduser("~/h3/results/lockstep/make_controls.py"), d, base + "_ctl", str(W), str(H)])
+                os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "h3_tools", "make_controls.py"), d, base + "_ctl", str(W), str(H)])
             sh(["ffmpeg", "-v", "error", "-y", "-ss", f"{a.start_s + c['start'] / FPS:.5f}", "-i", a.audio, "-af", "apad",
                 "-t", f"{c['gen'] / FPS:.5f}", "-ar", "48000", "-ac", "2", base + ".wav"])
     json.dump({"edit": a.edit, "frames": a.frames, "audio": a.audio, "start_s": a.start_s, "chunks": chunks},
