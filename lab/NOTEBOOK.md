@@ -445,3 +445,9 @@ Debussy 74.5, Rach 74.4, Chopin 91.6; unfingered 25, sideways 83 (E05 113), shal
 fingered, few were reached, and the rolled sub-chords pulled the hand off ~30 other notes (sideways 83 -> 113).
 Fingering every note is still the right policy for the film (no key goes down without a finger), but its cost should
 be re-measured on the current stack: queued idea E34 = E29 with SPLIT_WIDE off.
+
+### E02 (ablation): E06 (real-size hand, E05 code) without the FürElise wrist model: 74.9% (E06 74.6)
+Debussy 93.9 (+2.1), Rach 57.4 (-0.7), Chopin 89.7 (+1.1); sideways 201 -> 174, shallow 271 -> 289; wrist dev 11.3
+deg (E06 10.6), tremor 0.23 (0.26). **Conclusion:** the learned wrist placement does not raise key sync (+-0.3, within
+noise); it trades a few shallow presses for sideways ones and keeps the wrist ~0.7 deg straighter. It earns its place
+as a motion-naturalness term, not an accuracy term. (Measured on E05-era code; not re-measured on the E29 stack.)
