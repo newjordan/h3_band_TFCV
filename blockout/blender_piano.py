@@ -401,6 +401,34 @@ if HANDS == "mpfb":
     _ys = [MPFB_MESH.matrix_world @ v.co for v in MPFB_MESH.data.vertices]
     _w = MPFB_ARM.data.bones["wrist.R"].head_local; _e = MPFB_ARM.data.bones["lowerarm01.R"].head_local
     MPFB_FULL_FOREARM = max(((p - _w).dot((_e - _w).normalized()) for p in _ys)) > 0.2
+    if "--gauntlet" in sys.argv:        # gauntlet geometry on the hand: a ring at every finger joint and a cuff at the
+        def _gaunt():                   # wrist, parented to the bones (so they follow the solved pose exactly); the
+            vg = {g.index: g.name for g in MPFB_MESH.vertex_groups}      # normal/canny control then shows plated
+            pts = {}                                                    # fingers, not a bare hand
+            for v in MPFB_MESH.data.vertices:
+                for g in v.groups:
+                    if g.weight > 0.6:
+                        pts.setdefault(vg[g.group], []).append(MPFB_MESH.matrix_world @ v.co)
+            for s_ in "LR":
+                names = [f"finger{f}-{k}" for f in range(1, 6) for k in (1, 2, 3)] + ["wrist"]
+                for nm in names:
+                    b = MPFB_ARM.data.bones.get(f"{nm}.{s_}")
+                    if b is None or f"{nm}.{s_}" not in pts:
+                        continue
+                    a, d = b.head_local, (b.tail_local - b.head_local).normalized()
+                    rr = sorted(((p - a) - d * (p - a).dot(d)).length for p in pts[f"{nm}.{s_}"])
+                    r = rr[len(rr) // 2] * (1.25 if nm == "wrist" else 1.12)
+                    depth = (0.022 if nm == "wrist" else min(0.006, 0.3 * b.length))
+                    bpy.ops.mesh.primitive_cylinder_add(radius=r, depth=depth, vertices=28)
+                    o = bpy.context.active_object; o.name = f"ring_{nm}_{s_}"
+                    o.data.materials.append(M_SKIN)
+                    for pl in o.data.polygons:
+                        pl.use_smooth = True
+                    o.parent, o.parent_type, o.parent_bone = MPFB_ARM, "BONE", f"{nm}.{s_}"
+                    o.matrix_parent_inverse = Matrix.Identity(4)
+                    o.location = (0, -b.length + (0.012 if nm == "wrist" else 0.002), 0)   # at the joint (bone head)
+                    o.rotation_euler = (-math.pi / 2, 0, 0)                               # cylinder axis -> bone
+        _gaunt()
 
 rig = {}
 for h in ("L", "R"):

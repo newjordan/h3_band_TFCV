@@ -306,3 +306,7 @@ skin-hand reading (K1/K6) follows the finger edges (0.41-0.42). A smooth chrome 
 fingers H3 re-draws. Hypothesis K-d: give the plate *gauntlet geometry* (segmented finger plates, knuckle rings, a
 cuff) so that the control edges describe a gauntlet's fingers, not a hand's, and the "gauntlet" reading inherits the
 edges the way the "hand" reading does.
+K-d setup: `blender_piano.py --gauntlet` adds a ring at every finger joint and a wrist cuff, bone-parented (they follow
+the solved pose exactly), radius from the skinned mesh around each bone (lab/plots/gauntlet_pass.jpg). Queued: K20 =
+K1 (grey plate, the only setup that pins fingers) with the canny of the *gauntlet* normal pass; K19 = K17 with the
+gauntlet chrome plate, its frame 0 pinned and the gauntlet canny.
