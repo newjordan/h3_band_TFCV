@@ -8,7 +8,7 @@ Rules (each sets h["tech"] and h["why"] on a hit):
   rimshot      a loud snare (vel >= RIM_VEL) on beat 2 or 4: tip on the head and shaft on the hoop together.
                Without a beat grid, any snare at vel >= RIM_VEL_NO_GRID.
   cross_stick  GM side stick (note 37): the stick lies across the snare and its far end clicks the rim.
-  bell         GM ride bell (note 53): the tip comes down steeply on the ride's bell.
+  bell         GM ride bell (note 53): the tip lands on the ride's bell.
   flam         a soft hit FLAM_MIN-FLAM_MAX s before a louder one on the same drum: the grace note is a low
                stroke from the other hand, the main stroke lands just after it.
   ghost        a snare at vel < GHOST_VEL: a wrist stroke a few centimetres off the head.
@@ -64,7 +64,7 @@ def teach(hits, beats=None, downbeats=None, choke_gap=CHOKE_GAP):
         if note == 37:
             h["tech"], h["why"] = "cross_stick", "GM side stick: lay the stick across the snare, click the far rim"
         elif note == 53:
-            h["tech"], h["why"] = "bell", "GM ride bell: bring the tip down steeply on the bell"
+            h["tech"], h["why"] = "bell", "GM ride bell: play the tip on the bell"
         elif p in CYMBALS and v >= CHOKE_VEL:
             later = times[(times > h["t"] + 0.03) & struck]
             if not len(later):

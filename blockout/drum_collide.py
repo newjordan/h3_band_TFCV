@@ -4,7 +4,8 @@ The shapes match what blender_drums.py draws. Every round piece is a solid of re
 its parts are 2D shapes (rectangles, or thick segments for cymbal bows) in the (radial q, height d) plane of
 the piece, posed per frame by the piece's tilt (and the hi-hat's lift). Stands and tom mounts are rods. The
 drummer is capsules: stick, fist (the hand around the stick: palm and knuckles, drum_hands.hitbox), forearm,
-upper arm, thigh, head.
+upper arm, and, for the sticks, fists and forearms to stay out of, the head, torso and thighs of the drawn MPFB2
+body (TORSO_CAPS, THIGH_TOP).
 
     python -m blockout.drum_collide ANIM.json        # report every clip in an animation from drums.py
 
@@ -24,6 +25,12 @@ TIP_SINK = 0.006                # m below the playing surface the tip's centre m
 STICK_R = (0.0075, 0.0055)      # butt, tip radius (blender_drums.py)
 ARM_R = {"upper": (0.046, 0.038), "fore": (0.036, 0.028)}
 THIGH_R, SHIN_R, HEAD_R, TORSO_R = (0.075, 0.058), (0.055, 0.042), 0.095, 0.11
+# The drawn drummer (hand_model/mpfb_body.blend, shirt and jeans on) as the hands, sticks and forearms meet it. The
+# torso: two chains of capsules side by side in the torso's frame (x across, y forward, z up from the hips point),
+# deepest at the lap and lower belly. The thigh's flesh sits above its hip-knee line: (rise, radius) at hip and knee.
+TORSO_CAPS = tuple(((x, y0, z0), (x, y1, z1), 0.13) for x in (-0.035, 0.035)
+                   for (y0, z0), (y1, z1) in (((0.065, 0.13), (0.015, 0.27)), ((0.015, 0.27), (0.01, 0.47))))
+THIGH_TOP = ((0.03, 0.09), (0.02, 0.075))
 HOOP_W, HOOP_UP, HOOP_DOWN = 0.008, 0.006, 0.012
 CHINA_EDGE = 0.012              # m a china's edge stands above its bell's base (upturned)
 BOOM_RISE = 0.35                # m a boom arm climbs from the top of its post to the cymbal
@@ -242,7 +249,7 @@ def samples(a, b, r0, r1, n):
 
 def body_parts(hd, hand):
     """Capsules of one hand's chain: [(part, a, b, r0, r1, samples)]. The "fist" is the hand around the stick
-    (drum_hands.hitbox: palm, and knuckles with the fingers curled under)."""
+    (drum_hands.hitbox: palm, knuckles, the fingers curled under the stick and the thumb along it)."""
     tip, butt, grip = np.array(hd["tip"]), np.array(hd["butt"]), np.array(hd["grip"])
     d = np.array(hd["hand_dir"]) if "hand_dir" in hd else _unit(tip - butt)     # hand_dir: stick in the air
     return [("stick", butt, tip, *STICK_R, 18),
@@ -279,13 +286,23 @@ def _under_bow(kit, p, pts):
     return np.where((q < q1) & (d < top - TIP_SINK) & (d > top - UNDER_BAND), top - d, 0.0)
 
 
+def torso_caps(b):
+    """TORSO_CAPS posed by a performer.Body.pose() result: [(a, b, radius)]."""
+    hips, R = np.array(b["hips"], float), np.array(b["torso_rot"], float)
+    return [(hips + R @ np.array(a), hips + R @ np.array(c), r) for a, c, r in TORSO_CAPS]
+
+
 def _body_obstacles(fr):
     """Capsules of the drummer's own body that sticks and fists must stay out of: [(name, a, b, r0, r1)]."""
     b = fr["body"]
-    out = [("head", np.array(b["head"]), np.array(b["head"]), HEAD_R, HEAD_R),
-           ("torso", np.array(b["hips"]) + np.array([0, 0, 0.12]), np.array(b["chest"]), TORSO_R, TORSO_R)]
+    out = [("head", np.array(b["head"]), np.array(b["head"]), HEAD_R, HEAD_R)]
+    out += [("torso", a, c, r, r) for a, c, r in torso_caps(b)]
     for side, fd in fr["feet"].items():
-        out.append((f"{side}.thigh", np.array(fd["hip"]), np.array(fd["knee"]), *THIGH_R))
+        hip, knee = np.array(fd["hip"], float), np.array(fd["knee"], float)
+        u = _unit(knee - hip)
+        up = _unit(np.array([0.0, 0.0, 1.0]) - u[2] * u)
+        (h0, r0), (h1, r1) = THIGH_TOP
+        out.append((f"{side}.thigh", hip + h0 * up, knee + h1 * up, r0, r1))
     return out
 
 
@@ -364,7 +381,7 @@ def contacts(kit, fr, allow=None, tol=TOL, parts=("stick", "fist", "fore", "uppe
                             g[ax] = kit._one(pts[j] + dp, key) - kit._one(pts[j] - dp, key)
                         c["normal"] = _unit(g)
                     out.append(c)
-            if part in ("stick", "fist"):
+            if part in ("stick", "fist", "fore"):
                 for name, oa, ob, o0, o1 in obst:
                     depth, pt, nrm, s0 = _seg_contact(a, b, (r0, r1), oa, ob, (o0, o1))
                     if depth > tol:

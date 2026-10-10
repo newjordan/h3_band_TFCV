@@ -84,7 +84,7 @@ def head_angles(t, beats, downbeats, energy, schedule, seed=0):
         u = min(1.0, ph / 0.25)
         u = u * u * (3 - 2 * u)
         r0 = np.random.default_rng(seed + max(i, 0))
-        r1 = np.random.default_rng(seed + max(i, 0) - 1)
+        r1 = np.random.default_rng(seed + max(i - 1, 0))
         draw = (1 - u) * np.array([r1.uniform(-1, 1), r1.uniform(-1, 1)]) + \
             u * np.array([r0.uniform(-1, 1), r0.uniform(-1, 1)])
         yaw += P["jitter"] * draw[0] * shape

@@ -34,9 +34,11 @@ GAP = 0.001                     # m between the stick and the palm's skin
 GRIP_ROLL = math.radians(25)
 WRIST_DEV = math.radians(30)    # ulnar deviation: the hand bent toward the pinky side off the forearm's line
 DEV_OK = (math.radians(-35), math.radians(15))      # wrist deviation that costs nothing (- ulnar, + radial) ...
-FLEX_OK = (math.radians(-40), math.radians(40))     # ... and flexion (+ the hand bent toward the palm)
+FLEX_OK = (math.radians(-30), math.radians(25))     # ... and flexion (+ the hand bent toward the palm)
 THUMB_AT = math.radians(35)     # where the thumb pad meets the stick: from the thumb side up toward the back
 OPEN = 0.6                      # an open hand: this far from the grip to the rig's relaxed pose
+FINGER_SKIN = 0.008             # m of finger round a joint (hitbox)
+THUMB_R = (0.030, 0.019, 0.016)     # m of the drawn thumb's skin round its three bones (MPFB2 body, hitbox)
 STEP = math.radians(0.5)
 OPEN_S, CLOSE_S = 0.06, 0.10    # s to open after a release, to close before a catch
 PALM = (("wrist", (0.1, 0.5, 0.9)), *((f"metacarpal{m}", (0.5, 0.7, 0.9)) for m in range(1, 5)))
@@ -137,8 +139,30 @@ class Grip:
         self.F, self.Rr, self.pr = F, Rr, pr
         self.arm_r = math.cos(WRIST_DEV) * Mh[1] - math.sin(WRIST_DEV) * Mh[0]
         mcp = [sk.h0[f"finger{f}-1"] for f in (2, 5)]
-        self.box = [(pr, c0, 0.030, 0.027), (mcp[0] - 0.014 * Mh[2], mcp[1] - 0.014 * Mh[2], 0.024, 0.022)]
+        self.box = [(pr, c0, 0.030, 0.027), (mcp[0] - 0.014 * Mh[2], mcp[1] - 0.014 * Mh[2], 0.024, 0.022),
+                    *self._finger_box(rig, bases, q)]
         self.sink = self._report(bases, p0, s)
+
+    @staticmethod
+    def _finger_box(rig, bases, q):
+        """Capsules (a, b, r, r) around the fingers, which the palm and knuckle capsules stop short of: the index
+        finger curled under the stick (it hangs some 5 cm below it), its middle and end phalanges, and the other
+        three fingers' PIPs and DIPs, each wide enough for its joints plus FINGER_SKIN; and the thumb's three bones
+        along the stick (THUMB_R)."""
+        def cover(pts, a, b):
+            ab = b - a
+            r = max(float(np.linalg.norm(x - (a + np.clip((x - a) @ ab / (ab @ ab), 0, 1) * ab))) for x in pts)
+            return a, b, r + FINGER_SKIN, r + FINGER_SKIN
+
+        joints = []
+        for ci in range(5):
+            ch = rig.chains[ci]
+            p, R = ch.fk(*bases[ci], q[rig.sl[ci]:rig.sl[ci + 1]])
+            joints.append((p[0], p[1], p[2], p[2] + R[2][:, 1] * ch.L[2]))     # MCP, PIP, DIP, tip
+        (_, a, b, c), pip, dip = joints[1], [j[1] for j in joints[2:]], [j[2] for j in joints[2:]]
+        thumb = [(joints[0][k], joints[0][k + 1], r, r) for k, r in enumerate(THUMB_R)]
+        return [cover([a, b], a, b), cover([b, c], b, c), cover(pip, pip[0], pip[-1]), cover(dip, dip[0], dip[-1]),
+                *thumb]
 
     @staticmethod
     def _chain_sink(ch, base, qc, first, p0, s):
@@ -324,12 +348,19 @@ def strain(d, side, elbow, wrist):
 
 ELBOW_HANG = (0.35, -0.3, -1.0)     # performer.arm_ik's pole (x toward the hand's side): down, out and back
 PAST_COST = 2.0                     # per rad the wrist bends past its comfortable range
+FLEX_W, DEV_W = 0.8, 0.3            # per rad the wrist bends off flat, and off WRIST_DEV ulnar
+HANG_W = 1.2                        # times the elbow's turn off its hang (0 .. 2)
+STICK_ARM = math.radians(45)        # the stick may leave the forearm's line by this much ...
+STICK_ARM_COST = 2.0                # ... then costs this per rad
 
 
 def arm_cost(d, side, shoulder, elbow, wrist):
     """How awkward an elbow is for a stick along d: the wrist bent past its comfortable range (PAST_COST per
-    rad), a little toward its neutral (0.3 per rad off flat and WRIST_DEV ulnar), and the elbow off its
-    natural hang about the shoulder-wrist axis (0 .. 2). elbow may be (K, 3) candidates."""
+    rad) and off its neutral (FLEX_W, DEV_W), the elbow off its natural hang about the shoulder-wrist axis
+    (HANG_W), and the stick past STICK_ARM off the forearm's line. Flexion costs more than the hang: an elbow
+    hanging low under a raised hand leaves the forearm pointing up and the wrist cocked over to bring the stick
+    down, so the elbow comes up and out until the forearm lies along the stick. elbow may be (K, 3)
+    candidates."""
     sg = 1 if _side(side) == "R" else -1
     f, v = bend(d, side, elbow, wrist)
     sh = np.asarray(shoulder, float)
@@ -338,11 +369,15 @@ def arm_cost(d, side, shoulder, elbow, wrist):
     pole = _unit(pole - (pole @ u) * u)
     off = np.asarray(elbow, float) - sh
     off = _rows(off - np.asarray(off @ u)[..., None] * u)
-    return _scalar(PAST_COST * _past(f, v) + 0.3 * (np.abs(f) + np.abs(v + WRIST_DEV)) + (1 - off @ pole))
+    fa = _rows(np.asarray(wrist, float) - np.asarray(elbow, float))
+    off_line = np.arccos(np.clip(fa @ _unit(d), -1, 1))
+    return _scalar(PAST_COST * _past(f, v) + FLEX_W * np.abs(f) + DEV_W * np.abs(v + WRIST_DEV)
+                   + HANG_W * (1 - off @ pole) + STICK_ARM_COST * np.maximum(off_line - STICK_ARM, 0))
 
 
 def hitbox(grip, d, side):
-    """[(a, b, r0, r1)] capsules covering the hand: the palm, and the knuckles with the fingers curled under."""
+    """[(a, b, r0, r1)] capsules covering the hand: the palm, the knuckles, the fingers curled under the stick and
+    the thumb along it (Grip._finger_box)."""
     g = grip_of(_side(side))
     d = _unit(d)
     T, grip = g.place(d), np.asarray(grip, float)

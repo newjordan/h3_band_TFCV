@@ -4,7 +4,7 @@ animates, drum_collide.py turns into hitboxes and blender_drums.py builds.
 Spec (JSON):
   {"name": "big", "double_pedal": true,
    "pieces": [{"type": "tom", "size": 8}, {"type": "crash", "size": 19, "id": "crash3"},
-              {"type": "ride", "size": 22, "at": [0.63, 0.44, 1.04], "tilt": 10}, ...]}
+              {"type": "ride", "size": 22, "at": [0.66, 0.36, 0.94], "tilt": 10}, ...]}
 
   type   kick, snare, hihat, tom (rack), floor, crash, splash, china, ride
   size   diameter in inches (default per type, TYPES)
@@ -29,7 +29,8 @@ Then every rule-placed piece that is not exactly a standard piece is nudged (azi
 it clears the rest of the kit and its hardware (drum_collide.py hitboxes), the air above every head, the
 column a stroke rises through over each drum's strike point (no cymbal hangs there) and the path the stick
 takes to it, and pulled in until the stick's tip reaches its strike point from a shoulder. If
-that leaves the hi-hat or snare clashing, they give way a little too. check() reports what is left.
+that leaves the hi-hat, snare or ride clashing, they give way a little too (the ride further if it has to).
+check() reports what is left.
 
     python -m blockout.drum_kit big [--out kit.json]       # build a preset or a spec file, print the check
 """
@@ -50,19 +51,19 @@ def _toward(deg):
 # strike: how far from the centre toward the drummer the stick lands (fraction of r),
 # pitch: stick angle below horizontal at contact.
 STANDARD = {
-    "kick":   {"kind": "kick", "c": (0.06, 0.34, 0.28), "r": 0.28, "n": (0, -1, 0), "depth": 0.40},
-    "snare":  {"kind": "drum", "c": (-0.08, 0.15, 0.68), "r": 0.178, "n": _toward(6), "depth": 0.13,
+    "kick":   {"kind": "kick", "c": (0.06, 0.41, 0.28), "r": 0.28, "n": (0, -1, 0), "depth": 0.40},
+    "snare":  {"kind": "drum", "c": (-0.08, 0.22, 0.68), "r": 0.178, "n": _toward(6), "depth": 0.13,
                "strike": 0.30, "pitch": 14},
     "tom1":   {"kind": "drum", "c": (-0.14, 0.49, 0.84), "r": 0.127, "n": _toward(22), "depth": 0.20,
                "strike": 0.30, "pitch": 20},
     "tom2":   {"kind": "drum", "c": (0.17, 0.50, 0.84), "r": 0.152, "n": _toward(22), "depth": 0.22,
                "strike": 0.30, "pitch": 20},
-    "floor":  {"kind": "drum", "c": (0.45, 0.10, 0.57), "r": 0.20, "n": _toward(3), "depth": 0.40,
+    "floor":  {"kind": "drum", "c": (0.45, 0.10, 0.63), "r": 0.20, "n": _toward(3), "depth": 0.40,
                "strike": 0.35, "pitch": 16},
-    "hihat":  {"kind": "hihat", "c": (-0.40, 0.30, 0.92), "r": 0.178, "n": (0, 0, 1), "strike": 0.55, "pitch": 5},
+    "hihat":  {"kind": "hihat", "c": (-0.40, 0.37, 0.92), "r": 0.178, "n": (0, 0, 1), "strike": 0.55, "pitch": 5},
     "crash":  {"kind": "cymbal", "c": (-0.42, 0.60, 1.22), "r": 0.23, "n": _toward(14), "strike": 0.85, "pitch": 2},
     "crash2": {"kind": "cymbal", "c": (0.42, 0.66, 1.25), "r": 0.23, "n": _toward(14), "strike": 0.85, "pitch": 2},
-    "ride":   {"kind": "cymbal", "c": (0.63, 0.44, 1.04), "r": 0.26, "n": _toward(10), "strike": 0.55, "pitch": 5},
+    "ride":   {"kind": "cymbal", "c": (0.66, 0.36, 0.94), "r": 0.26, "n": _toward(10), "strike": 0.55, "pitch": 5},
 }
 
 # per type: kind, default size (in), shell depth (m, or per inch for toms), strike, pitch, tilt (deg)
@@ -84,9 +85,9 @@ SEAT = np.array([0.0, -0.30])           # layouts centre here; drums.HIPS sits a
 SHOULDERS = (np.array([0.19, -0.25, 1.10]), np.array([-0.19, -0.25, 1.10]))
 # the drummer's legs at rest as drums.py poses them on the standard pedals (hip, knee, ankle; the right leg also
 # with its heel lifted for a kick): rule-placed pieces keep LEG_CLEAR off them, so the knees have room to swivel
-LEGS = (((0.12, -0.32, 0.60), (0.175, 0.116, 0.589), (0.08, 0.049, 0.185)),
-        ((0.12, -0.32, 0.60), (0.181, 0.114, 0.637), (0.08, 0.049, 0.235)),
-        ((-0.12, -0.32, 0.60), (-0.343, 0.056, 0.555), (-0.347, 0.069, 0.135)))
+LEGS = (((0.12, -0.32, 0.60), (0.173, 0.117, 0.595), (0.08, 0.119, 0.185)),
+        ((0.12, -0.32, 0.60), (0.18, 0.114, 0.643), (0.08, 0.119, 0.235)),
+        ((-0.12, -0.32, 0.60), (-0.329, 0.064, 0.548), (-0.347, 0.139, 0.135)))
 LEG_CLEAR = 0.005
 RIM_CLEAR = 0.004                       # m two pieces' rims keep apart (real kits sit this tight)
 TIP_REACH = 0.80                        # m from a shoulder to a strike point the stick's tip can reach
@@ -271,11 +272,14 @@ def build(spec):
     for p in booms:
         _place_stand(kit, p)
     _settle(kit, movable)
-    give = [p for p in ("hihat", "snare") if p not in placed and clash(kit, p) > CHECK_TOL]
-    if give:        # the hi-hat and snare give way, a little, only for what the rest could not clear
+    ride = next((pc["id"] for pc in by["ride"][:1]), None)
+    give = [p for p in ("hihat", "snare", ride) if p and p not in placed and clash(kit, p) > CHECK_TOL]
+    if give:        # the hi-hat, snare and ride give way, a little, only for what the rest could not clear
         movable += give
         _settle(kit, movable, scales=(1,))
     stuck = [p for p in movable if p not in give and clash(kit, p) > CHECK_TOL]
+    if ride in give and clash(kit, ride) > CHECK_TOL:
+        stuck.insert(0, ride)       # a ride on its boom can move further than the hi-hat and snare
     for p in stuck:
         _relocate(kit, p)
     if stuck:
