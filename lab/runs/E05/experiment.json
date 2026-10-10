@@ -1,0 +1,9 @@
+{
+ "id": "E05",
+ "leg": "H0 baseline",
+ "parent": "E00",
+ "hypothesis": "Fingering every note (rolled sub-chords for chords wider than a hand or with > 5 keys, doubled keys struck once) and scaling the wrist model's depth to the hand removes the unfingered class and puts the knuckles where pianists' are.",
+ "change": "E00 + every note fingered (SPLIT_WIDE) + knuckle-depth scaling",
+ "ovr": {},
+ "env": "HAND_SCALE=1"
+}

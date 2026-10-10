@@ -1,0 +1,9 @@
+{
+ "id": "E06",
+ "leg": "H2 data-driven hand",
+ "parent": "E05",
+ "hypothesis": "Same code with the pianist-sized hand.",
+ "change": "E05 with the real-size hand",
+ "ovr": {},
+ "env": "HAND_SCALE=0.7284"
+}

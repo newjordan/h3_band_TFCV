@@ -85,3 +85,26 @@ only between runs (remotes sync at run start, local windows import per window).
   order, doubled keys (both staves on one key) are struck once, and a chord too wide for any block fingering still
   gets the least-bad stretch. All 2,046 suite notes now have a finger (was 2,021).
 - Wrist model depth offsets scale with the hand (knuckles ~0.7 cm into the keys like the pianists).
+
+## Leg K: H3 internals (making the render match the Blender plate)
+
+**Problem.** Structure lock (Fun ControlNet Union 2.0 on plate edges + plate in the video stream) fixed the camera
+and the hand placement, but the look went generic and the hands are not the Blender hands. Effort per frame is not
+the lever: 60 steps vs 20 (same seed) and a 0.5-strength refinement pass changed nothing measurable.
+
+**Metric (h3_tools/motionmatch.py).** Blender renders an exact hand mask (`--pass mask`); inside it: edge-structure
+correlation plate vs render (hand_r) and dense optical-flow agreement (flow_cos, flow_err). The earlier whole-frame
+plate correlation (0.7+) was carried by the keyboard: inside the hands the renders score hand_r 0.05-0.27.
+
+| render (shot kh111, 124 f, 1280x704) | hand_r | flow_cos | flow_err |
+|---|---|---|---|
+| r1: fl2va + canny + plate 0.88 (candy-cane sleeves) | 0.27 | 0.82 | 0.69 |
+| jazz3: + chrome/jazz prompt | 0.09 | 0.75 | 0.74 |
+| q60: jazz3 at 60 steps | 0.09 | 0.76 | 0.73 |
+| refine: q60 re-run at strength 0.5 | 0.05 | 0.73 | 0.76 |
+| r2/r3: ref2va bass-knight reference (+ plate) | 0.09 / 0.17 | 0.62 / 0.67 | 0.85 / 0.79 |
+
+**Hypotheses.** K-a: the control lacks finger information (grey fingers on grey: few edges inside the hand) ->
+controls that resolve each finger (normal-shaded pass edges, depth). K-b: appearance and geometry live in different
+heads; a KV pull toward the reference look on the appearance heads gives the look without moving the geometry
+(custom_nodes ks_h3_attn.py: KSH3AttnProbe, KSH3RefPull). K-c: plates in target materials need less strength.

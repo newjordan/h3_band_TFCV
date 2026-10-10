@@ -518,6 +518,7 @@ else:
     scn.display.render_aa = "16"
 
 PASS = opts.get("--pass")           # depth: an inverse-depth control image (near = white) for H3 Fun ControlNet
+                                    # mask: the hands (and forearms) white, everything else black, flat (for metrics)
 if PASS == "depth":
     near, far = (float(v) for v in opts.get("--depth-range", "0.12,2.5").split(","))
     scn.view_settings.view_transform = "Standard"
@@ -534,6 +535,26 @@ if PASS == "depth":
     comp = nt.nodes.new("CompositorNodeComposite")
     nt.links.new(rl.outputs["Depth"], inv.inputs[1]); nt.links.new(inv.outputs[0], mr.inputs[0])
     nt.links.new(mr.outputs[0], comp.inputs["Image"])
+
+if PASS == "normal":                  # shaded by surface normal: every finger, knuckle and key edge a distinct colour
+    scn.display.shading.light = "MATCAP"
+    scn.display.shading.studio_light = "check_normal+y.exr"
+    scn.display.shading.color_type = "SINGLE"
+    scn.display.shading.show_shadows = False
+    scn.display.shading.show_cavity = False
+    scn.view_settings.view_transform = "Standard"
+if PASS == "mask":
+    scn.display.shading.light = "FLAT"
+    scn.display.shading.color_type = "OBJECT"
+    scn.display.shading.show_shadows = False
+    scn.display.shading.show_cavity = False
+    scn.display.render_aa = "OFF"
+    scn.view_settings.view_transform = "Standard"
+    world.color = (0, 0, 0)
+    for ob in COL.objects:
+        ob.color = (0, 0, 0, 1)
+    if globals().get("MPFB_MESH") is not None:
+        MPFB_MESH.color = (1, 1, 1, 1)
 
 MESHQA = opts.get("--meshqa")      # OUT.json: no render; count skinned-mesh self-intersections per frame, by body part
 if MESHQA:

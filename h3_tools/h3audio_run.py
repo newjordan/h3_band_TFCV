@@ -84,6 +84,14 @@ def build(j):
         model = n(43, "MiniMaxH3FunControlNetApply", model=model, model_patch=patch, vae=vae,
                   strength=float(c.get("strength", 1.0)), start_percent=float(c.get("start", 0.0)),
                   end_percent=float(c.get("end", 1.0)), control_video=["42", 0])
+    if j.get("pull"):                                # KV pull toward the reference look (custom_nodes/ks_h3_attn.py)
+        pl = j["pull"]
+        model = n(46, "KSH3RefPull", model=model, blocks=str(pl.get("blocks", "all")), heads=str(pl.get("heads", "all")),
+                  mult=int(pl.get("mult", 3)), segments=pl.get("segments", "ref_img"), steps=str(pl.get("steps", "all")))
+    if j.get("probe"):                               # attention mass per head per segment, written after sampling
+        pr = j["probe"]
+        model = n(47, "KSH3AttnProbe", model=model, blocks=pr.get("blocks", "0,6,12,18,24,30,36,42,49"),
+                  steps=pr.get("steps", "0,5,10,15"), out_path=pr["out"])
     avae = n(4, "VAELoader", vae_name="minimax_h3_audio_vae_fp32.safetensors")
     aud = n(6, "LoadAudio", audio=j["audio"])
     mode = j["mode"]
@@ -136,6 +144,8 @@ def build(j):
     g["13"] = {"class_type": "SamplerCustomAdvanced", "inputs": {"noise": noise, "guider": guider, "sampler": smp,
                "sigmas": sig, "latent_image": lat}}
     out = ["13", 0]
+    if j.get("probe"):
+        out = n(48, "KSH3AttnProbeDump", latent=out)
     img = n(14, "VAEDecode", samples=out, vae=vae)
     au = n(15, "VAEDecodeAudio", samples=out, vae=avae)
     v = n(16, "CreateVideo", images=img, audio=au, fps=24.0)
