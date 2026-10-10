@@ -1,5 +1,5 @@
 {
- "piece": "The Knight's Suite: Knight's Theme (original) -> Debussy Clair de Lune, bars 1-8 -> Rachmaninoff Prelude in C# minor Op. 3 No. 2, bars 35-61 -> Mozart Piano Concerto No. 22 K. 482, III, Rondo theme -> Chopin Nocturne in C# minor Op. posth. (B. 49), transcribed bars 1-8 and 58-64",
+ "piece": "The Knight's Suite: Knight's Theme (original) -> Debussy Clair de Lune, bars 1-8 -> Rachmaninoff Prelude in C# minor Op. 3 No. 2, bars 35-61 -> Chopin Nocturne in C# minor Op. posth. (B. 49), complete (our transcription, 64 bars)",
  "source": "Suite bars (blockout/suite.py). Values interpolate between rows. Tempo multiplies each source's own tempo.",
  "rows": [
   {
@@ -140,90 +140,92 @@
   },
   {
    "bar": 53,
-   "strength": 0.42,
-   "touch": 0.35,
-   "freedom": 0.35,
-   "tempo": 1.0,
-   "head": "groove",
-   "mark": "Mozart: Piano Concerto No. 22 K. 482, III. Rondo theme (E-flat major, solo)"
-  },
-  {
-   "bar": 58,
-   "strength": 0.48,
-   "touch": 0.4,
-   "freedom": 0.35,
-   "tempo": 1.0
-  },
-  {
-   "bar": 61,
-   "strength": 0.3,
-   "touch": 0.25,
-   "freedom": 0.45,
-   "tempo": 0.95,
-   "head": "expressive"
-  },
-  {
-   "bar": 63,
    "strength": 0.16,
-   "touch": 0.04,
-   "freedom": 0.8,
-   "tempo": 0.92,
-   "head": "expressive",
-   "mark": "Chopin: Lento con gran espressione (C# minor)"
-  },
-  {
-   "bar": 66,
-   "strength": 0.18,
    "touch": 0.05,
-   "freedom": 0.85,
-   "tempo": 0.9
+   "freedom": 0.8,
+   "tempo": 0.98,
+   "head": "expressive",
+   "mark": "Chopin: Nocturne in C# minor Op. posth., complete (Lento con gran espressione)"
   },
   {
-   "bar": 67,
-   "strength": 0.3,
+   "bar": 57,
+   "strength": 0.28,
    "touch": 0.1,
    "freedom": 0.8,
-   "tempo": 0.93,
+   "tempo": 0.98,
    "head": "focused",
    "mark": "the first theme"
   },
   {
-   "bar": 70,
+   "bar": 65,
    "strength": 0.32,
    "touch": 0.12,
    "freedom": 0.85,
-   "tempo": 0.92
+   "tempo": 0.98
   },
   {
-   "bar": 71,
+   "bar": 73,
+   "strength": 0.3,
+   "touch": 0.14,
+   "freedom": 0.8,
+   "tempo": 1.0,
+   "head": "expressive",
+   "mark": "the middle section"
+  },
+  {
+   "bar": 85,
+   "strength": 0.38,
+   "touch": 0.18,
+   "freedom": 0.8,
+   "tempo": 1.0
+  },
+  {
+   "bar": 97,
+   "strength": 0.34,
+   "touch": 0.12,
+   "freedom": 0.85,
+   "tempo": 0.98,
+   "head": "focused",
+   "mark": "the theme returns"
+  },
+  {
+   "bar": 104,
+   "strength": 0.48,
+   "touch": 0.2,
+   "freedom": 0.9,
+   "tempo": 1.0,
+   "head": "expressive",
+   "mark": "the cascading runs"
+  },
+  {
+   "bar": 110,
    "strength": 0.22,
    "touch": 0.06,
    "freedom": 0.8,
-   "tempo": 0.92,
-   "head": "expressive",
+   "tempo": 0.96,
    "mark": "the close: C# pedal"
   },
   {
-   "bar": 75,
+   "bar": 114,
    "strength": 0.14,
    "touch": 0.03,
    "freedom": 0.85,
-   "tempo": 0.9
+   "tempo": 0.95
   },
   {
-   "bar": 76,
+   "bar": 115,
    "strength": 0.08,
    "touch": 0.02,
    "freedom": 0.8,
-   "tempo": 0.88,
+   "tempo": 0.92,
    "mark": "C# major"
   },
   {
-   "bar": 77,
+   "bar": 116,
    "strength": 0.04,
    "touch": 0.01,
    "freedom": 0.8,
-   "tempo": 0.8
+   "tempo": 0.85
   }
  ]
 }
