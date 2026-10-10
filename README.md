@@ -131,11 +131,15 @@ Zone runs gave lip sync, but not instruments: H3 doesn't learn a strum or a key 
 | `hand_model/` | `mpfb_make_hand.py` makes the hand (Blender 4.2+ with the MPFB2 extension, run on an x86-64 box). `mpfb_hands.blend` is the skinned hands and rig. `mpfb_hands.json` has the rest bones and measured finger radii. `piano.py --hand mpfb` (default) takes its segment lengths, knuckle layout, palm length and radii from this file, and solves the thumb with joint limits (CMC cone, MCP/IP hinges). MPFB2 code is GPL-3.0; the generated meshes are CC0. |
 | `sampler.py` | Sampled grand piano (SFZ+FLAC) with automatic pedal and room reverb. |
 | `synth.py` | Dependency-free additive piano, for quick timing checks. |
-| `drums.py` | Drum kit layout, sticking (beam search over hand preference, travel and crossing), velocity-scaled strokes landing on the onset frame, sprung wrists, kick and hi-hat pedals with leg IK, cymbal swing. Plain numpy. Reads a GM drum MIDI or a hit list from `h3band/drum_events.py`. |
-| `blender_drums.py` | Blender renderer: grey kit and capsule drummer, `front`, `three4`, `side`, `over`, `top` views, or `--cam` for any eye and look-at point. |
+| `drums.py` | Sticking (beam search over hand preference, travel and crossing), velocity-scaled strokes landing on the onset frame, sprung wrists, kick and hi-hat pedals with leg IK, double pedal. With physics on (the default): hitboxes, cymbals as damped oscillators, per-surface rebound and head give. Plain numpy. Reads a GM drum MIDI or a hit list from `h3band/drum_events.py`. |
+| `drum_kit.py` | Kits as data: presets (`standard`, `double_pedal`, `big`) or a typed spec of pieces by type and size, laid out by rule around the seat and nudged until nothing clashes and every piece is in reach. |
+| `drum_hands.py` | The piano's rigged MPFB2 hand (`blockout/rig`) holding a stick. The grip is solved once per side: the stick runs under the palm from the heel to the index finger, fingers 2-5 close on it until each bone touches, and the thumb presses at the fulcrum. Gives the wrist the arm reaches for, the fist hitbox, wrist bend and strain costs for the arm planner, and an open hand for the stick toss. |
+| `drum_collide.py` | Signed-distance hitboxes for the kit, stands and drummer. Moves sticks, fists and elbows out of anything they are not playing, including the other hand's stick and arm, and reports any clip left (`python -m blockout.drum_collide ANIM.json`). |
+| `drum_toss.py` | Stick toss and catch: the hand flicks the stick up, it flies on a ballistic arc turning end over end, and lands back in the hand. |
+| `blender_drums.py` | Blender renderer: grey kit and capsule drummer with the skinned MPFB2 hands posed from `drum_hands.py` (older JSONs get a fist), `front`, `three4`, `side`, `over`, `top` views, or `--cam` for any eye and look-at point. |
 | `drum_style.py` | Drummer emotion: `force`, `range`, `body`, `flair` sliders, the `calm` / `groove` / `intense` / `showy` presets built from them, and a timeline that crossfades between presets. Sets stroke heights, arm lift, torso lean and cymbal follow-through. |
 | `drum_teacher.py` | Technique teacher: reads the hits in their musical context and picks chokes, rimshots, cross-sticks, ride bell, flams and ghost notes, with the reason for each. `drums.py` plays them. |
-| `drum_groove.py` | Writes the original example grooves (`examples/drums/rock_groove.mid`, `technique_groove.mid` with `--song technique`). |
+| `drum_groove.py` | Writes the original example grooves (`examples/drums/rock_groove.mid`, `technique_groove.mid` with `--song technique`, a 30 s big-kit piece with `--song showcase`, a gap for a stick toss with `--song toss`). |
 | `drumsynth.py` | Numpy drum synth: a hit list to a WAV, for timing checks and as ground truth for `drum_events.py`. Sounds the techniques too (a choked crash stops dead). |
 
 ```bash
@@ -162,7 +166,7 @@ blender -b --factory-startup -P blockout/blender_drums.py -- work/drums.json wor
 $P -m blockout.drums work/drum_events.json work/drums.json --beats $H3B_BEATS
 ```
 
-`drums.py` prints a check after every run: stick-tip contact error on the onset frames (about 0.06 mm max on the example), frames where a tip goes through a head (0), kicks with the beater on the head on their onset frame (all), and the furthest reach against the arm length.
+`drums.py` prints a check after every run: stick-tip contact error on the onset frames (about 0.1 mm max on the example), frames where a tip goes through a head (0), kicks with the beater on the head on their onset frame (all), and the furthest reach against the arm length. `--clips` adds the hitbox report (frames where a stick, fist or arm goes into something it isn't playing). `--kit` plays on another kit and `--toss` adds stick tosses; see [Drum kits, physics and stick tosses](#drum-kits-physics-and-stick-tosses).
 
 `drum_events.py` is a band-energy heuristic, not a transcriber. Pass `--truth HITS.json` to score it against a known hit list: render a MIDI through `drums.py --hits-out` and `drumsynth.py`, then detect on the WAV. On the synthesized example grooves it finds kick, snare, hi-hat and crash at about 0.7–0.9 recall and 0.9–1.0 precision. Ride hits come out at about 0.6 and toms are unreliable. The numbers for each piece are in the module docstring. A real mixed stem will score lower, so check the hit list before rendering a long take.
 
@@ -177,8 +181,9 @@ Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brah
 | **H3 Band Drum Events** | `AUDIO` (a drum stem) | `DRUM_HITS` from `h3band/drum_events.py` |
 | **H3 Band Drum Hits (MIDI)** | a GM drum `.mid` in the input dir | `DRUM_HITS` with the MIDI's beat grid |
 | **H3 Band Drum Teacher** | `DRUM_HITS`, `choke_gap` (beats of silence that make a loud crash a choke) | `DRUM_HITS` with techniques, and the lesson sheet as a `STRING` |
-| **H3 Band Drum Synth** | `DRUM_HITS`, seed | `AUDIO`: `blockout/drumsynth.py`, techniques included |
-| **H3 Band Drum Blockout** | `DRUM_HITS`, `start` (s), `frames`, `fps`, size, view or `camera`, head schedule, `motion` (smooth / snap / loose), `emotion` timeline, `force` / `range` / `body` / `flair` overrides | `IMAGE`: grey kit frames from `blockout/drums.py`, rendered by Blender; a report `STRING` (contact check, tiers, lesson) |
+| **H3 Band Drum Kit** | a preset, or a kit spec typed as JSON (prose and code fences around it are fine) | `DRUM_KIT` from `blockout/drum_kit.py`, and a report `STRING` (what the parser changed, each piece, the clash and reach check) |
+| **H3 Band Drum Synth** | `DRUM_HITS`, seed, optional `DRUM_KIT` | `AUDIO`: `blockout/drumsynth.py`, techniques included, tuned and panned by the kit |
+| **H3 Band Drum Blockout** | `DRUM_HITS`, `start` (s), `frames`, `fps`, size, view or `camera`, head schedule, `motion` (smooth / snap / loose), `emotion` timeline, `force` / `range` / `body` / `flair` overrides, optional `DRUM_KIT`, `tosses` | `IMAGE`: grey kit frames from `blockout/drums.py`, rendered by Blender; a report `STRING` (contact check, tiers, tosses, lesson) |
 
 The frames begin at `start` seconds into the hits, so `TrimAudioDuration` (start = `start`, duration = frames / fps) gives the matching audio for `CreateVideo`. The same frames can be VAE-encoded as the take for an H3 zone run. `examples/workflows/drum_blockout_api.json` is the stem → hits → blockout → MP4 graph in API format.
 
@@ -347,6 +352,37 @@ The grey blockout, then the seed 42 take, at the roll peak, both crash hits, bot
 
 So the sliders change how hard the blockout drummer plays, and H3 follows that when it keeps the blockout's camera. The technique teacher works in the blockout: the lesson sheet, the check and the grey frames. Two runs aren't enough to say how often H3 keeps the camera, and the small techniques need a closer camera or a lower denoise before H3 can show them.
 
+### Drum kits, physics and stick tosses
+
+Everything here is rules and geometry, no learned model, so a blockout can be checked frame by frame.
+
+**Physics** (on by default; `--no-physics` turns it off for comparison, and then sticks and arms do go through the kit). The kit, its stands and the drummer are signed-distance hitboxes (`blockout/drum_collide.py`) matching what Blender draws. The hands are the rigged MPFB2 hands from the piano, closed on the sticks (`blockout/drum_hands.py`). Each piece gets a home grip: the hand's turn about the stick is searched for the wrist bend, arm strain and elbow position that cost least, kept clear of the kit at the strike and at the top of the stroke. The hips sit 8 cm behind the point the kits are laid out around, which gives the elbows room beside the torso. A stroke under a hanging cymbal or hi-hat is capped below it. After the strokes are planned, sticks, fists and arms are pushed out of anything they aren't playing. Then each elbow picks the swivel that keeps its forearm off the drums, the torso and the other hand's stick and fist, and a last push cleans up what moved. Hands that meet push each other apart, and a tip held on a head gives less. The hi-hat is one solid (both cymbals and the gap), so a stick can't wedge between them. Cymbals swing as damped oscillators and the next stroke meets them where they are. Each surface has its own rebound, and heads give a little under the tip. On the rock, technique and showcase grooves, on the standard and big kits, the clip report finds 0 clipping frames, with tip contact within 0.1 mm on every onset frame.
+
+**Kits** (`blockout/drum_kit.py`). A kit is a list of pieces by type and size:
+
+```json
+{"double_pedal": true, "pieces": [{"type": "tom", "size": 8}, {"type": "tom", "size": 10}, {"type": "floor", "size": 16},
+  {"type": "crash", "size": 18}, {"type": "china", "size": 18}, {"type": "ride", "size": 22, "at": [0.63, 0.44, 1.04], "tilt": 10}]}
+```
+
+Kick, snare and hi-hat go where the standard kit has them (added if missing). Rack toms go on an arc smallest to largest, floor toms on a second arc to the right, and cymbals at the standard spots, then in fixed slots. Then each piece moves until it clears the kit, its hardware, the air above every head and the stick's path to it, and stays within reach. No cymbal or hi-hat may hang over the column of air a stick rises through above another drum's strike point. A piece can also be placed by hand with `at`. Layouts the rules can't fit (eight rack toms, a floor tom behind the seat) raise an error that says to place them by hand. The typed-spec parser accepts aliases ("bass drum", "floor tom", "Hi-Hat"), sizes like `"14x5.5"`, and prose around the JSON, and reports every change it makes. GM notes are pointed at the kit's pieces: the six GM toms spread over however many toms it has, and 55 / 52 go to its splash and china. The presets are `standard`, `double_pedal` and `big` (double pedal, six toms, three crashes, splash, china, ride).
+
+![Big kit, four cameras](docs/drums/big_kit.jpg)
+
+**Stick toss** (`blockout/drum_toss.py`). `--toss R:4.85:5.55[:spins]` takes the right hand off the kit: it moves to a spot in front of the chest, flicks the stick up, and catches it 0.7 s later. The stick flies as a rigid body on a ballistic arc, turning end over end at the rate the wrist gave it, and lands in the pose the hand holds it in. The wrist gives with the spin at the catch. Strokes near the toss go to the other hand. A toss over strokes that can't move, or two overlapping tosses by one hand, is an error.
+
+![Stick toss, 4x slow motion](docs/drums/stick_toss.jpg)
+
+```bash
+$P -m blockout.drum_groove work/showcase.mid --song showcase
+$P -m blockout.drums work/showcase.mid work/show_big.json --kit big --teach --dur 30 --clips --hits-out work/show_hits.json \
+   --emotion 0:groove,6.4:calm,12.9:intense,19.3:showy,25.7:intense
+$P -m blockout.drumsynth work/show_hits.json work/show_big.wav --dur 30 --kit big
+$P -m blockout.drum_groove work/toss.mid --song toss
+$P -m blockout.drums work/toss.mid work/toss.json --toss R:4.85:5.55 --clips
+$P -m blockout.drum_kit my_kit.json            # lay out a typed kit and print the check
+```
+
 ## Hackathon tasks
 
 - [ ] **Per-zone audio binding.** Bind each stem to its zone inside one run: multiple audio segments plus an attention bias, so stem A's tokens reach only zone A's video tokens.
@@ -356,6 +392,7 @@ So the sliders change how hard the blockout drummer plays, and H3 follows that w
 - [x] **Drum blockout.** Stick tips and pedals on the drum-stem hits or a GM drum MIDI (`blockout/drums.py`, `blockout/blender_drums.py`, `h3band/drum_events.py`).
 - [x] **H3 over the drum blockout.** Go: at denoise 0.6–0.8 the sticks keep the blockout's timing (p 0.005 at 0.8), audio alone doesn't (`h3band/sdk_drum_h3.py`, `h3band/drum_sync_score.py`). Which drum each stroke lands on doesn't carry over yet. Strokes have to be smooth but not exact (`--motion`).
 - [x] **Drum emotion, force and technique.** Slider presets with crossfades (`blockout/drum_style.py`) and a rule-based technique teacher for chokes, rimshots, cross-stick, bell, flams and ghosts (`blockout/drum_teacher.py`), plus the Teacher and Synth nodes. Over H3, force carries over on one seed out of two, and the choke pinch doesn't carry over yet.
+- [x] **Drum kits, physics and stick tosses.** Hitboxes and a clip resolver (`blockout/drum_collide.py`), cymbal dynamics, rebound and head give, kits from presets or typed specs (`blockout/drum_kit.py`, H3 Band Drum Kit node), and a stick toss and catch (`blockout/drum_toss.py`). 0 clipping frames on every example groove.
 - [ ] **Bass blockout.** Bass fingers on the bass note onsets.
 - [x] **Comfy nodes for the drum blockout.** Drum Events / Drum Hits (MIDI) / Drum Blockout render, driven through the Comfy SDK (`h3band/sdk_drum_blockout.py`).
 - [ ] **Comfy nodes for the rest of the chain.** Piano and guitar blockout render nodes, then blockout → H3 Band Zone Latent end to end through the SDK.

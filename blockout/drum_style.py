@@ -87,7 +87,8 @@ def lean_kick(h, s):
     return s["body"] * 0.30 * float(np.clip((h - 0.20) / 0.25, 0.0, 1.0))
 
 
-def rebound(piece, s):
-    """Rebound fraction of the prep height; crashes follow through higher with flair (the ride is played, not
-    swung at)."""
-    return 0.5 + (0.7 * s["flair"] if piece in ("crash", "crash2") else 0.0)
+def rebound(piece, s, base=0.5):
+    """Rebound fraction of the prep height; base is the surface's own rebound. Crashes follow through higher
+    with flair (the ride is played, not swung at)."""
+    kind = piece.split("_")[0].rstrip("0123456789")       # drum_kit.piece_type
+    return base + (0.7 * s["flair"] if kind in ("crash", "splash", "china") else 0.0)

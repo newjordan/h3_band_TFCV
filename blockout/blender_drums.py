@@ -107,7 +107,6 @@ def pivot(name, c, n):
 
 # ------------------------------------------------------------------ kit
 pivots = {}
-hat_top = None
 for p, k in KIT.items():
     c, n, r = Vector(k["c"]), Vector(k["n"]), k["r"]
     e = pivots[p] = pivot(p, c, n)
@@ -119,27 +118,24 @@ for p, k in KIT.items():
         cyl(p + "_hoop2", r + 0.008, r + 0.008, -d - 0.006, -d + 0.012, M["hoop"], e, caps=False)
         if k["kind"] == "kick":
             cyl(p + "_reso", r, r, -d, -d + 0.004, M["head"], e)
-        bottom = c - n * d
-        if p == "snare":
-            tripod("snare_stand", bottom, 0.22, 0.25)
-        elif p == "floor":
-            for a in (30, 150, 270):
-                o = Vector((math.cos(math.radians(a)), math.sin(math.radians(a)), 0)) * (r + 0.02)
-                rod(f"floor_leg{a}", c + o + Vector((0, 0, -0.05)), (c + o * 1.25).to_2d().to_3d(), 0.008, M["hw"])
-        elif p in ("tom1", "tom2"):
-            kc = Vector(KIT["kick"]["c"]) + Vector((0, KIT["kick"]["depth"] * 0.4, KIT["kick"]["r"]))
-            rod(p + "_mount", bottom, kc, 0.011, M["hw"])
     else:
-        cyl(p + "_bow", r, 0.03, -0.003, 0.009, M["metal"], e, segs=48)
+        if p.rstrip("0123456789") == "china":      # edge turned up (drum_collide.piece_parts)
+            cyl(p + "_bow", r, 0.03, 0.012, 0.0, M["metal"], e, segs=48)
+        else:
+            cyl(p + "_bow", r, 0.03, -0.003, 0.009, M["metal"], e, segs=48)
         cyl(p + "_bell", 0.055, 0.02, 0.006, 0.026, M["metal"], e)
         if k["kind"] == "hihat":
-            hat_top = e
             cyl(p + "_bottom", r, 0.03, -0.010, -0.004, M["metal"], e, segs=48)
-
-            tripod("hihat_stand", c - Vector((0, 0, 0.012)), 0.24, 0.30)
-            rod("hihat_rod", c - Vector((0, 0, 0.012)), c + Vector((0, 0, 0.06)), 0.004, M["hw"])
-        else:
-            tripod(p + "_stand", c - n * 0.02, 0.28, 0.35 if c.z > 1.1 else 0.30)
+# stands, tom mounts and floor-tom legs: the hitbox rods (drum_collide.stands); a post gets tripod feet
+FEET = {"snare": 0.22, "hihat": 0.24, "tom": 0.24}
+if "stands" not in anim:
+    print("blender_drums: this JSON has no 'stands' (made before drums.py wrote them); drawing no hardware")
+for name, a, b, r in anim.get("stands", ()):
+    if name.endswith("_stand"):
+        owner = name[:-len("_stand")].rstrip("0123456789")
+        tripod(name, b, FEET.get(owner, 0.28), a[2])
+    else:
+        rod(name, a, b, r, M["hw"])
 # hi-hat top cymbal (bow + bell) rides up when the pedal opens
 hat_moving = [ob for ob in bpy.data.objects if ob.name in ("hihat_bow", "hihat_bell")]
 
@@ -168,6 +164,15 @@ rod("beater_post_r", (bp.x + 0.05, bp.y, 0.0), (bp.x + 0.05, bp.y, bp.z + 0.02),
 beater = bpy.data.objects.new("beater", None); COL.objects.link(beater)
 cyl("beater_shaft", 0.005, 0.005, 0.0, kp["beater_len"] - 0.02, M["hw"], beater, segs=12)
 cyl("beater_ball", 0.032, 0.032, kp["beater_len"] - 0.03, kp["beater_len"] + 0.01, M["head"], beater, segs=24)
+beater2 = None
+if "heel2" in kp:       # double pedal: second footboard, its beater beside the first, a drive shaft between
+    kick_board2 = pedal("kick_pedal2", kp["heel2"], (0, 1), kp["len"])
+    bp2 = Vector(kp["beater_pivot2"])
+    beater2 = bpy.data.objects.new("beater2", None); COL.objects.link(beater2)
+    cyl("beater2_shaft", 0.005, 0.005, 0.0, kp["beater_len"] - 0.02, M["hw"], beater2, segs=12)
+    cyl("beater2_ball", 0.032, 0.032, kp["beater_len"] - 0.03, kp["beater_len"] + 0.01, M["head"], beater2, segs=24)
+    h2 = Vector(kp["heel2"])
+    rod("drive_shaft", (h2.x, h2.y + kp["len"] + 0.02, 0.05), (bp2.x - 0.05, bp2.y, bp2.z), 0.006, M["hw"])
 
 # throne, rug, floor
 hips0 = Vector(frames[0]["body"]["hips"])
@@ -218,12 +223,90 @@ def set_hull(ob, pts):
     bm.to_mesh(ob.data); bm.free()
 
 
+# ------------------------------------------------------------------ MPFB2 hands (blockout/hand_model)
+# The piano's rigged, skinned CC0 hand. drum_hands.py solves the grip on the same rig (blockout/rig), so each
+# frame's "root" and "angles" pose the bones by pure forward kinematics, as blender_piano.pose_rig does.
+HANDS = "angles" in frames[0]["hands"]["R"]         # older JSONs get a fist
+HAND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hand_model")
+
+
+def load_mpfb():
+    with bpy.data.libraries.load(os.path.join(HAND_DIR, "mpfb_hands.blend")) as (src, dst):
+        dst.objects = ["hands", "Human.rig"]
+    mesh, arm = dst.objects
+    for o in (mesh, arm):
+        COL.objects.link(o)
+    mesh.data.materials.clear()
+    mesh.data.materials.append(M["skin"])
+    for p in mesh.data.polygons:
+        p.use_smooth = True
+    sub = mesh.modifiers.new("smooth", "SUBSURF")      # after the armature: smooth the posed mesh
+    sub.levels, sub.render_levels = 1, 2
+    arm.hide_render = True
+    bones = {s: {b.name[:-2]: b for b in arm.data.bones if b.name.endswith("." + s)} for s in "LR"}
+    pts = [mesh.matrix_world @ v.co for v in mesh.data.vertices]
+    w, e = bones["R"]["wrist"].head_local, bones["R"]["lowerarm01"].head_local
+    full = max((p - w).dot((e - w).normalized()) for p in pts) > 0.2     # the skin runs (almost) to the elbow
+    return arm, bones, full
+
+
+_SK = {}
+
+
+def pose_hand(arm, B, s, hd):
+    """The wrist bone takes the solved root pose, every finger bone its joint rotation about its own rest axes,
+    and the two forearm bones run from the elbow to the wrist, sharing some of the hand's roll."""
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from blockout.rig.skeleton import Skeleton
+    if s not in _SK:
+        _SK[s] = Skeleton(s)
+    sk = _SK[s]
+    B = B[s]
+    wrist, elbow = Vector(hd["wrist"]), Vector(hd["elbow"])
+    u = (wrist - elbow).normalized()
+    root = Matrix([list(r) for r in hd["root"]["rot"]]).to_4x4()
+    root.translation = Vector(hd["root"]["pos"])
+    want = {"wrist": root}
+    for nm, back, share in (("lowerarm02", 0.0, 0.6), ("lowerarm01", B["lowerarm02"].length, 0.2)):
+        head = wrist - u * (B["lowerarm02"].length + back)
+        r3 = B[nm].matrix_local.to_3x3()
+        r3 = r3.col[1].normalized().rotation_difference(u).to_matrix() @ r3
+        rigid = root.to_3x3() @ B["wrist"].matrix_local.to_3x3().inverted() @ B[nm].matrix_local.to_3x3()
+        za, zb = r3.col[2] - u * r3.col[2].dot(u), rigid.col[2] - u * rigid.col[2].dot(u)
+        if za.length > 1e-6 and zb.length > 1e-6:
+            ang = za.normalized().angle(zb.normalized())
+            if za.normalized().cross(zb.normalized()).dot(u) < 0:
+                ang = -ang
+            r3 = Matrix.Rotation(ang * share, 3, u) @ r3
+        m = r3.to_4x4()
+        m.translation = head
+        want[nm] = m
+
+    def basis(nm):
+        b = B[nm]
+        if b.parent is None:
+            return b.matrix_local.inverted() @ want[nm]
+        pn = b.parent.name[:-2]
+        return (b.parent.matrix_local.inverted() @ b.matrix_local).inverted() @ want[pn].inverted() @ want[nm]
+
+    for nm in ("lowerarm01", "lowerarm02", *sk.names):
+        pb = arm.pose.bones[f"{nm}.{s}"]
+        if nm in want:
+            pb.matrix_basis = basis(nm)
+        else:
+            pb.matrix_basis = Matrix([list(r) for r in sk.local_rot(nm, hd["angles"].get(nm, {}))]).to_4x4()
+
+
 rig = {}
 for h in ("L", "R"):
     rig[h] = {"upper": Seg(f"{h}_upper", 0.046, 0.038), "fore": Seg(f"{h}_fore", 0.036, 0.028),
-              "fist": sphere(f"{h}_fist", 1.0, M["skin"]), "stick": Seg(f"{h}_stick", 0.0075, 0.0055, M["stick"]),
+              "stick": Seg(f"{h}_stick", 0.0075, 0.0055, M["stick"]),
               "thigh": Seg(f"{h}_thigh", 0.075, 0.058), "shin": Seg(f"{h}_shin", 0.055, 0.042),
               "foot": hull_ob(f"{h}_foot")}
+    if not HANDS:
+        rig[h]["fist"] = sphere(f"{h}_fist", 1.0, M["skin"])
+if HANDS:
+    MPFB_ARM, MPFB_BONES, FULL_FOREARM = load_mpfb()
 torso, pelvis = hull_ob("torso"), hull_ob("pelvis")
 neck = Seg("neck", 0.050, 0.045)
 head = sphere("head", 1.0, M["skin"])
@@ -298,15 +381,27 @@ for i in range(fa, min(fb, len(frames))):
     kick_board.matrix_world = BASE[kick_board.name] @ Matrix.Rotation(fr["kick"]["board"], 4, "X")
     hat_board.matrix_world = BASE[hat_board.name] @ Matrix.Rotation(fr["hihat"]["board"], 4, "X")
     beater.matrix_world = Matrix.Translation(bp) @ Matrix.Rotation(-fr["kick"]["beater"], 4, "X")
+    if beater2:
+        kick_board2.matrix_world = BASE[kick_board2.name] @ Matrix.Rotation(fr["kick"]["board2"], 4, "X")
+        beater2.matrix_world = Matrix.Translation(bp2) @ Matrix.Rotation(-fr["kick"]["beater2"], 4, "X")
     for h, hd in fr["hands"].items():
         R = rig[h]
         R["upper"].set(hd["shoulder"], hd["elbow"])
         R["fore"].set(hd["elbow"], hd["wrist"])
         R["stick"].set(hd["butt"], hd["tip"])
-        d = (Vector(hd["tip"]) - Vector(hd["butt"])).normalized()
-        R["fist"].matrix_world = (Matrix.Translation(Vector(hd["grip"]) - d * 0.012)
-                                  @ Vector((0, 0, 1)).rotation_difference(d).to_matrix().to_4x4()
-                                  @ Matrix.Diagonal((0.042, 0.038, 0.055, 1)))
+        if HANDS:
+            el, wr = Vector(hd["elbow"]), Vector(hd["wrist"])
+            if FULL_FOREARM:        # the skinned forearm runs to the elbow: a short sleeve covers its cut edge
+                R["fore"].set(el, el + (wr - el).normalized() * 0.06)
+                R["fore"].j1.hide_render = True
+            else:                   # the primitive forearm stops short and swallows the hand's forearm stub
+                R["fore"].set(el, wr - (wr - el).normalized() * 0.05)
+            pose_hand(MPFB_ARM, MPFB_BONES, h, hd)
+        else:
+            d = Vector(hd["hand_dir"]) if "hand_dir" in hd else (Vector(hd["tip"]) - Vector(hd["butt"])).normalized()
+            R["fist"].matrix_world = (Matrix.Translation(Vector(hd["grip"]) - d * 0.012)
+                                      @ Vector((0, 0, 1)).rotation_difference(d).to_matrix().to_4x4()
+                                      @ Matrix.Diagonal((0.042, 0.038, 0.055, 1)))
         fd = fr["feet"][h]
         R["thigh"].set(fd["hip"], fd["knee"])
         R["shin"].set(fd["knee"], fd["ankle"])

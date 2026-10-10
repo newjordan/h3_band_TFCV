@@ -26,8 +26,12 @@ CHOKE_VEL, CHOKE_GAP = 90, 1.0
 RIM_VEL, RIM_VEL_NO_GRID = 112, 118
 GHOST_VEL = 50
 FLAM_MIN, FLAM_MAX = 0.012, 0.05
-CYMBALS = ("crash", "crash2")
-DRUMS = ("snare", "tom1", "tom2", "floor")
+CYMBALS = ("crash", "splash", "china")      # piece types (drum_kit.piece_type): crash2 is a crash
+DRUMS = ("snare", "tom", "floor")
+
+
+def _ptype(p):
+    return p.split("_")[0].rstrip("0123456789")       # drum_kit.piece_type
 
 
 def _grid(beats, downbeats):
@@ -56,7 +60,7 @@ def teach(hits, beats=None, downbeats=None, choke_gap=CHOKE_GAP):
     struck = np.array([h["piece"] != "hihat_pedal" for h in hs])
 
     for i, h in enumerate(hs):
-        p, v, note = h["piece"], h["vel"], h.get("note")
+        p, v, note = _ptype(h["piece"]), h["vel"], h.get("note")
         if note == 37:
             h["tech"], h["why"] = "cross_stick", "GM side stick: lay the stick across the snare, click the far rim"
         elif note == 53:
@@ -87,7 +91,7 @@ def teach(hits, beats=None, downbeats=None, choke_gap=CHOKE_GAP):
                 h["tech"], h["why"] = "rimshot", "loud snare: tip and shaft hit head and hoop together"
 
     for i, h in enumerate(hs):   # flams last: a grace note outranks ghost
-        if h["piece"] not in DRUMS:
+        if _ptype(h["piece"]) not in DRUMS:
             continue
         for g in hs[max(i - 4, 0):i]:
             dt = h["t"] - g["t"]
