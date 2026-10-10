@@ -228,3 +228,10 @@ fingering asks for, often in fast wide figures (e.g. 190.22 s R4 on G#5 then 190
 Pilot (2 Chopin windows): easing the wrist smoothing for leaps (LEAP_V 1.2 m/s) gains 1 note of 71 and adds shake
 (+0.1-0.8 mm): not the lever. A per-miss diagnosis (impossible as fingered / fingering choice / hand assignment /
 held-note conflict / black-key aim) is running as an agent; report -> lab/lit/sideways_diagnosis.md.
+
+### K11: K10 + the chrome frame 0 pinned as first frame: chrome and half the geometry back (hand_r 0.18)
+hand_r 0.09 -> 0.18, flow_cos 0.83, flow_err 0.67 (= K1), frame r 0.72; warm amber cafe light. The hands read as
+liquid-chrome hands shaped like the plate's (lab/plots/k11cmp.jpg: chrome plate | K10 | K11) rather than K10's
+armour of its own shape. **Conclusion:** a pinned frame in the target look is the first input that moves both axes at
+once (look kept, geometry up). Still well under K1's 0.42; next, holding the chrome plate harder (K13 strength 0.70,
+K14 lockstep anchors) and the K12 probe for the heads that read the pinned frame.
