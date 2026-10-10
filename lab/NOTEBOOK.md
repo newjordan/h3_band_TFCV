@@ -159,3 +159,11 @@ everywhere, while text reading peaks late (block 44: 0.83 on one head). lab/plot
 the network, so a pull can be targeted at them only (rather than all heads, which would also drag the geometry).
 Queued: K8/K9 = K7 (chrome refs + normal-pass control) + KV pull x4 / x8 on the heads with reference mass >= 0.12 in
 blocks 4-36 (24 heads).
+
+### E20 (H4 contact): press height weighted like position: 87.5% (+5.3 vs E05)
+Hypothesis: shallow misses come from the press target weighting height (1.5) half as much as across-key position (3).
+Change: PRESS_AXES [3,1,1.5] -> [3,1,3] (black [3,3,3]). Result: Debussy 84.7 (+10.2), Rach 82.0 (+7.8), Chopin 93.0
+(+2.4); shallow 226 -> 127, sideways 113 -> 107, short 6; wrist dev 11.6 deg, shake 1.56 mm, tremor 0.33 (E05 0.31).
+**Conclusion:** supported, and nearly free in motion quality: the finger solve was trading depth for comfort.
+(Clean re-run of the E20 discarded in the protocol incident.) E23/E24 re-based on E20 before they started; E25 (repair +
+overshoot) was already running on E05 weights and stays as defined.
