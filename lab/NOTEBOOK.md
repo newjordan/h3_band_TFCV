@@ -427,6 +427,8 @@ and pinky toward their anatomical maximum buys 38 notes. Whether 30 deg pinky ab
 call for the animation (pianists stretch toward it in octaves); the thumb part alone is uncontroversial. E33 (+ home
 spread x1.15) next.
 
-### E33 (H5 reach, real-size hand): E32 + home spread x1.15: 91.2% (-1.3 vs E32)
-Rach 84.9 (-2.2), Chopin 96.5; sideways 97 -> 110. **Conclusion:** planning the hand wider than its rest spacing
-hurts; the reach gain comes from the joint limits, not from the plan. HOME_S stays 1.0. Best real-size hand: E32.
+### E33 (H5 reach, real-size hand): E32 + home spread x1.15: 91.9% (-0.6 vs E32)
+Debussy 99.0 (-1.0), Rach 86.4 (-0.7), Chopin 96.3 (-0.6); sideways 97 -> 116, shallow 24, short 16; motion and
+anatomy unchanged; 49 min. **Conclusion:** planning the hand wider than its rest spacing hurts slightly; the reach gain
+comes from the joint limits, not from the plan. HOME_S stays 1.0. Best real-size hand: E32 (92.5%).
+(Corrected entry: the first version carried numbers typed before the results were read.)
