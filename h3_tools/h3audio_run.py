@@ -92,6 +92,14 @@ def build(j):
         pr = j["probe"]
         model = n(47, "KSH3AttnProbe", model=model, blocks=pr.get("blocks", "0,6,12,18,24,30,36,42,49"),
                   steps=pr.get("steps", "0,5,10,15"), out_path=pr["out"])
+    if j.get("control2"):                            # a second Fun ControlNet patch chained on the first
+        c2 = j["control2"]
+        patch2 = n(50, "ModelPatchLoader", name=c2.get("patch", "minimax_h3_fun_controlnet_union_2.0_pruned_bf16.safetensors"))
+        cv2_ = n(51, "LoadVideo", file=c2["video"])
+        g["52"] = {"class_type": "GetVideoComponents", "inputs": {"video": cv2_}}
+        model = n(53, "MiniMaxH3FunControlNetApply", model=model, model_patch=patch2, vae=vae,
+                  strength=float(c2.get("strength", 1.0)), start_percent=float(c2.get("start", 0.0)),
+                  end_percent=float(c2.get("end", 1.0)), control_video=["52", 0])
     avae = n(4, "VAELoader", vae_name="minimax_h3_audio_vae_fp32.safetensors")
     aud = n(6, "LoadAudio", audio=j["audio"])
     mode = j["mode"]
