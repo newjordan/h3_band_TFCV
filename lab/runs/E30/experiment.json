@@ -1,0 +1,23 @@
+{
+ "id": "E30",
+ "leg": "H5 reach",
+ "parent": "E28",
+ "hypothesis": "Same for the real-size hand, whose misses are 76% reach.",
+ "change": "E28 + REACH_SPLIT",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "REPAIR_ITERS": 2,
+  "PRESS_OVERSHOOT": 0.003,
+  "REACH_SPLIT": true
+ },
+ "env": "HAND_SCALE=0.7284"
+}

@@ -351,3 +351,9 @@ The render takes the chrome plate's look (polished liquid chrome, dark room) and
 flow_cos 0.88; lab/plots/k19cmp.jpg: gauntlet plate | K20 | K19). Same control as K20 (0.24). **Conclusion:** a chrome
 plate in the video stream costs geometry whatever the control; K20's recipe (grey plate + gauntlet-geometry control +
 prompt) is the one to build on. K21 (K20 + vambrace bands) running.
+
+### E29 (H5 reach): E26 + REACH_SPLIT: 95.5% (new best, +0.7)
+Debussy 92.9, Rach 94.4, Chopin 96.8 (+1.4); sideways 71 -> 57, shallow 25, short 5; motion unchanged (wrist dev
+11.6 deg, shake 1.55 mm, tremor 0.35). **Conclusion:** redistributing over-wide chords between hands removes 14
+sideways misses at no motion cost; it becomes part of the default stack. Remaining 87 misses: sideways 57 (the
+four-octave chords and fast leaps), shallow 25, short 5. E30 (real-size hand + REACH_SPLIT) running.
