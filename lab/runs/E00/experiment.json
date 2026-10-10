@@ -1,0 +1,9 @@
+{
+ "id": "E00",
+ "leg": "H0 baseline",
+ "parent": "",
+ "hypothesis": "Reference point: the current rig (v17D code + torso hitbox fix + F\u00fcrElise wrist model) with the oversized MPFB hand.",
+ "change": "big hand (24.3 cm), all current fixes, strike bands 12 mm toward the key fronts",
+ "ovr": {},
+ "env": "HAND_SCALE=1"
+}

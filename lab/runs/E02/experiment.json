@@ -1,0 +1,9 @@
+{
+ "id": "E02",
+ "leg": "H2 data-driven hand",
+ "parent": "E01",
+ "hypothesis": "The F\u00fcrElise wrist model contributes to E01's accuracy.",
+ "change": "E01 without the F\u00fcrElise wrist model (our own planner)",
+ "ovr": {},
+ "env": "HAND_SCALE=0.7284 RIG_WRIST_MODEL=0"
+}

@@ -1,0 +1,16 @@
+{
+ "id": "E10",
+ "leg": "H1 ragdoll-first",
+ "parent": "E01",
+ "hypothesis": "With every motion constraint loosened (a free ragdoll wrist), the real-size hand reaches ~100% key sync; the remaining misses are structural (unfingered notes), not kinematic.",
+ "change": "ragdoll ceiling: no wrist smoothing, no wrist-joint term, ease up to 10 cm on a weak spring, no finger smoothing",
+ "ovr": {
+  "WRIST_LAMBDA": 0,
+  "WRIST_W": 0,
+  "EASE_MAX": 0.1,
+  "EASE_PRIOR": 0.05,
+  "FINGER_REFINE": false,
+  "WRIST_PASSES": 1
+ },
+ "env": "HAND_SCALE=0.7284"
+}

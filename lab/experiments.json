@@ -1,0 +1,186 @@
+[
+ {
+  "id": "E00",
+  "leg": "H0 baseline",
+  "parent": "",
+  "hypothesis": "Reference point: the current rig (v17D code + torso hitbox fix + F\u00fcrElise wrist model) with the oversized MPFB hand.",
+  "change": "big hand (24.3 cm), all current fixes, strike bands 12 mm toward the key fronts",
+  "ovr": {},
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E01",
+  "leg": "H2 data-driven hand",
+  "parent": "E00",
+  "hypothesis": "A pianist-sized hand (F\u00fcrElise median 17.7 cm) driven by the F\u00fcrElise wrist model plays the suite about as accurately as the oversized hand.",
+  "change": "real-size hand (scale 0.728)",
+  "ovr": {},
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E10",
+  "leg": "H1 ragdoll-first",
+  "parent": "E01",
+  "hypothesis": "With every motion constraint loosened (a free ragdoll wrist), the real-size hand reaches ~100% key sync; the remaining misses are structural (unfingered notes), not kinematic.",
+  "change": "ragdoll ceiling: no wrist smoothing, no wrist-joint term, ease up to 10 cm on a weak spring, no finger smoothing",
+  "ovr": {
+   "WRIST_LAMBDA": 0,
+   "WRIST_W": 0,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": false,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E02",
+  "leg": "H2 data-driven hand",
+  "parent": "E01",
+  "hypothesis": "The F\u00fcrElise wrist model contributes to E01's accuracy.",
+  "change": "E01 without the F\u00fcrElise wrist model (our own planner)",
+  "ovr": {},
+  "env": "HAND_SCALE=0.7284 RIG_WRIST_MODEL=0"
+ },
+ {
+  "id": "E03",
+  "leg": "H2 data-driven hand",
+  "parent": "E01",
+  "hypothesis": "Moving the strike bands 12 mm toward the key fronts does not cost key sync.",
+  "change": "E01 with strike bands at the F\u00fcrElise positions (no 12 mm shift)",
+  "ovr": {
+   "HITPAD_SHIFT": 0.0
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E11",
+  "leg": "H1 ragdoll-first",
+  "parent": "E10",
+  "hypothesis": "Re-smoothing the finger joints (tremor control) keeps the ragdoll's accuracy.",
+  "change": "E10 + finger joint smoothing",
+  "ovr": {
+   "WRIST_LAMBDA": 0,
+   "WRIST_W": 0,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E12",
+  "leg": "H1 ragdoll-first",
+  "parent": "E11",
+  "hypothesis": "Light wrist-path smoothing costs little accuracy.",
+  "change": "E11 + wrist path smoothing lambda 2",
+  "ovr": {
+   "WRIST_LAMBDA": 2.0,
+   "WRIST_W": 0,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E13",
+  "leg": "H1 ragdoll-first",
+  "parent": "E12",
+  "hypothesis": "Full wrist smoothing (lambda 12) costs accuracy at leaps.",
+  "change": "E11 + wrist path smoothing lambda 12",
+  "ovr": {
+   "WRIST_LAMBDA": 12.0,
+   "WRIST_W": 0,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E14",
+  "leg": "H1 ragdoll-first",
+  "parent": "E12",
+  "hypothesis": "A soft wrist-joint term straightens wrists with small accuracy cost.",
+  "change": "E12 + wrist joint term 0.015",
+  "ovr": {
+   "WRIST_LAMBDA": 2.0,
+   "WRIST_W": 0.015,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E15",
+  "leg": "H1 ragdoll-first",
+  "parent": "E12",
+  "hypothesis": "The full wrist-joint term (0.05) costs accuracy.",
+  "change": "E12 + wrist joint term 0.05",
+  "ovr": {
+   "WRIST_LAMBDA": 2.0,
+   "WRIST_W": 0.05,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E20",
+  "leg": "H4 contact",
+  "parent": "E00",
+  "hypothesis": "Most shallow misses come from the press target weighting height half as much as position: weighting it equally drives the keys down.",
+  "change": "E00 + knuckle-depth scaling of the wrist model (in code from 00:00) + press height weight 1.5 -> 3",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ]
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E21",
+  "leg": "H4 contact",
+  "parent": "E20",
+  "hypothesis": "The pressing pad is held up by its own key's surface in the collision model; letting it sink 2 mm removes the remaining shallow misses.",
+  "change": "E20 + pressing pad may sink 3 mm into its own key",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "OWN_KEY_GIVE": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E04",
+  "leg": "H0 baseline",
+  "parent": "E00",
+  "hypothesis": "Scaling the wrist model's depth offsets to the hand's size puts the knuckles where a pianist's are (0.7 cm into the keys) without costing key sync.",
+  "change": "E00 + knuckle-depth scaling (wrist model x and depth offsets scale with the hand)",
+  "ovr": {},
+  "env": "HAND_SCALE=1"
+ }
+]

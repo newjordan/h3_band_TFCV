@@ -1,0 +1,20 @@
+{
+ "id": "E20",
+ "leg": "H4 contact",
+ "parent": "E00",
+ "hypothesis": "Most shallow misses come from the press target weighting height half as much as position: weighting it equally drives the keys down.",
+ "change": "E00 + press height weight 1.5 -> 3 (white and black)",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ]
+ },
+ "env": "HAND_SCALE=1"
+}

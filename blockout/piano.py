@@ -78,7 +78,11 @@ HITPAD = {"white": (0.010, 0.055), "black": (_BY0 + 0.004, _BY0 + 0.025)}     # 
 
 
 def hitpad(p, f, near_black=False):
-    return (HITPAD_B if is_black(p) else HITPAD_WN if near_black else HITPAD_W)[f]
+    lo, hi = (HITPAD_B if is_black(p) else HITPAD_WN if near_black else HITPAD_W)[f]
+    if HITPAD_SHIFT:                          # strike nearer the key fronts (negative = toward the player)
+        floor = (WHITE_L - BLACK_L + 0.006) if is_black(p) else 0.006
+        lo, hi = max(floor, lo + HITPAD_SHIFT), max(floor + 0.008, hi + HITPAD_SHIFT)
+    return lo, hi
 
 
 def contact(p, near_black=False, f=2):
@@ -232,6 +236,7 @@ KNUCKLE = np.array([[-0.046, -0.040, -0.022],      # thumb CMC: low, out to the 
 FINGER_R = np.array([(0.0115, 0.0105, 0.0095, 0.0085), (0.0095, 0.0088, 0.0080, 0.0070),
                      (0.0098, 0.0090, 0.0082, 0.0072), (0.0093, 0.0085, 0.0078, 0.0068),
                      (0.0085, 0.0078, 0.0070, 0.0062)])
+HITPAD_SHIFT = -0.012       # m: every strike band moved toward the key fronts (the user: fingers further back on the keys)
 PITCH0 = 0.0               # rad: the palm's resting pitch (+ = wrist above the knuckles); calibrated from FürElise
 KNUCKLE_Z = 0.064          # knuckle line height over white key tops (mannequin; set_hand_model sets the real hand's)
 Y_KN = -0.006              # knuckle line's resting distance from the white key fronts
@@ -1358,7 +1363,7 @@ def _key_env(keydepth, pressing, other=None, rig=None):
             C = np.array([s_[3] for s_ in S_]); low = np.array([s_[4] for s_ in S_])
             W_ = np.array([s_[5] for s_ in S_])
             d = surface_under_soft_v(C[:, 0], C[:, 1], 0.8 * W_, DW, DB) - low
-            d -= np.array([(THUMB_PRESS_GIVE if f == 0 and i >= 1 else 0.001) if pressing[f] and (i == 2 and u >= 0.5 or f == 0 and i >= 1)
+            d -= np.array([(THUMB_PRESS_GIVE if f == 0 and i >= 1 else OWN_KEY_GIVE) if pressing[f] and (i == 2 and u >= 0.5 or f == 0 and i >= 1)
                            else 0.0 for f, i, u, *_r in S_])   # a pressing thumb lies over the neighbour's edge
             d[low > 0.02] = 0.0                        # well above every key top
             out.extend(np.maximum(d, 0.0))             # (a pressing pad rests on its own lowered key, not a neighbour)
@@ -1405,6 +1410,7 @@ FINGER_PRESS_W = 8.0        # ... pinned this hard on the frames the finger is o
 FINGER_PRIOR = 5e-3         # how hard a finger holds its smoothed path in the second solve
 FINGER_SPLIT = True         # with the wrist set, each finger solves on its own
 FREE_FOLLOW = True          # free fingers' float targets move with the solved wrist (across/along the keys)
+OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) key's surface in the collision model
 THUMB_PRESS_GIVE = 0.004    # m a pressing thumb's distal and proximal phalanx may sink past key tops (its side
                             # rests over the neighbouring key's edge as it presses its own)
 SOFT_ENV = True             # collisions as eased per-sample residuals (False: v16's single hard-edged penalty)
@@ -1454,7 +1460,8 @@ def _learned_wrist(H, name, ts):
         for n, f in sl:
             key = f"{name}{f}.{'black' if is_black(n.pitch) else 'white'}"
             o = M["offset"].get(key) or M["offset"].get(f"{name}{f}.white")
-            v.append(np.array([key_x(n.pitch), 0.0, 0.0]) + np.array(o["median"]) * np.array([k, 1.0, 1.0]))
+            v.append(np.array([key_x(n.pitch), 0.0, 0.0]) + np.array(o["median"]) * np.array([k, k, 1.0]))  # offsets
+            # scale with the hand (x and depth), so the knuckles land where a pianist's do whatever the hand's size
         on.append(sl[0][0].start); P.append(np.mean(v, 0))
     on, P = np.array(on), np.array(P)
     tau = np.array(M["travel"]["small"]["tau"])

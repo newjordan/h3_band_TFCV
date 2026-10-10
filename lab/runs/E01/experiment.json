@@ -1,0 +1,9 @@
+{
+ "id": "E01",
+ "leg": "H2 data-driven hand",
+ "parent": "E00",
+ "hypothesis": "A pianist-sized hand (F\u00fcrElise median 17.7 cm) driven by the F\u00fcrElise wrist model plays the suite about as accurately as the oversized hand.",
+ "change": "real-size hand (scale 0.728)",
+ "ovr": {},
+ "env": "HAND_SCALE=0.7284"
+}
