@@ -186,3 +186,8 @@ ref2va with three chrome-gauntlet reference images at ref_image_size=max, beauty
 are chrome (lab/plots/k5cmp.jpg: plate | K1 | K5) but the hands do not follow the plate (hand_r 0.07, flow_cos 0.72,
 frame r 0.69; one reframe at f6). **Conclusion:** the references deliver the look, the beauty canny cannot deliver the
 fingers: same split as K2. K7 (these references + the normal-pass control of K1) is the direct test of both at once.
+
+### K6 (K-a): normal-pass canny 0.6 + depth (two ControlNet patches): hand_r 0.41, still skin
+hand_r 0.41, flow_cos 0.80, frame r 0.83: geometry as good as K1 at 60% edge weight, but the hands are still bare skin
+(lab/plots/k6cmp.jpg: plate | K1 | K6). **Conclusion:** depth adds nothing to the look; the per-finger edges alone decide
+both the match and the "human hand" reading. The look has to come from the reference side (K7-K9).
