@@ -22,3 +22,4 @@ K17,dark-cafe chrome plate v2 at 0.70 + its frame 0 pinned + normal canny,0.13,0
 K18,K17 at video strength 0.60,0.12,0.89,0.65,0.69
 K20,K1 (grey plate) + canny of the gauntlet normal pass (joint rings + cuff),0.24,0.84,0.68,0.79
 K19,gauntlet chrome plate (0.70) + its frame 0 pinned + gauntlet canny,0.12,0.88,0.70,0.70
+K21,K20 + vambrace bands in the control (full armour),0.13,0.79,0.74,0.74

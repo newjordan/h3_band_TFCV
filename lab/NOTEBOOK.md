@@ -357,3 +357,18 @@ Debussy 92.9, Rach 94.4, Chopin 96.8 (+1.4); sideways 71 -> 57, shallow 25, shor
 11.6 deg, shake 1.55 mm, tremor 0.35). **Conclusion:** redistributing over-wide chords between hands removes 14
 sideways misses at no motion cost; it becomes part of the default stack. Remaining 87 misses: sideways 57 (the
 four-octave chords and fast leaps), shallow 25, short 5. E30 (real-size hand + REACH_SPLIT) running.
+
+### K21 (K-d): K20 + vambrace bands: full armour on the plate's arms; the edge metric stops being fair
+Steel gauntlets and banded vambraces on both arms, in the plate's positions (lab/plots/k21cmp.jpg: plate | K20 | K21,
+two moments). Against the grey plate: hand_r 0.13 (K20 0.24), flow_cos 0.79, frame r 0.74. Cross-scored against the
+three Blender normal passes (plain / + gauntlet / + gauntlet and vambrace) as references:
+| render | vs plain: hand_r / flow_cos / flow_err | vs gauntlet | vs gauntlet+vambrace |
+|---|---|---|---|
+| K1 (skin) | 0.26 / 0.68 / 0.71 | 0.24 / 0.80 / 0.68 | 0.14 / 0.90 / 0.68 |
+| K20 | 0.13 / 0.80 / 0.68 | 0.19 / 0.88 / 0.66 | 0.04 / 0.92 / 0.67 |
+| K21 | 0.01 / 0.79 / 0.72 | 0.07 / 0.85 / 0.66 | 0.04 / **0.94 / 0.54** |
+**Conclusion:** the edge-structure score (hand_r) ranks the smooth skin hand first against *every* reference,
+including the armoured ones: it rewards smooth outlines and cannot rank armour detail, so it is retired as the lead
+metric for armoured renders. Motion agreement against the matching geometry is fair, and there K21 is the best
+render of the whole leg (flow_cos 0.94, flow_err 0.54). Next metric: a geometry-matched score (render vs the
+normal pass of the same armour, silhouette IoU of the hand mask, per-finger flow).
