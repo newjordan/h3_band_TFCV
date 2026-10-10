@@ -372,3 +372,10 @@ including the armoured ones: it rewards smooth outlines and cannot rank armour d
 metric for armoured renders. Motion agreement against the matching geometry is fair, and there K21 is the best
 render of the whole leg (flow_cos 0.94, flow_err 0.54). Next metric: a geometry-matched score (render vs the
 normal pass of the same armour, silhouette IoU of the hand mask, per-finger flow).
+
+### K22: K21 with a grey plate of the armoured geometry (plate and control agree)
+Visually = K21 (lab/plots/k22cmp.jpg: armoured grey plate | K21 | K22). Against the matching geometry (gauntlet +
+vambrace normal pass) flow_cos 0.95, flow_err 0.51 (K21 0.94 / 0.54), the best motion match of leg K; against the bare
+grey plate hand_r 0.10, flow_cos 0.75 (expected: the plate it is scored on lacks the armour). **Conclusion:** with a
+grey plate, matching the plate's geometry to the control is a small gain; the recipe (grey plate + armour geometry in
+the Blender hand + its normal-pass canny + prompt) is stable. Leg K recipe for the film: K22.
