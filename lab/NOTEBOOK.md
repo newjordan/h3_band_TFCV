@@ -483,3 +483,19 @@ near vertical/degenerate in `edit` view, (b) `pose_mpfb` lowerarm chain aim — 
 (130 mm, hand_track slice boundary) with pad span to 195 mm — check slice assignment/split for L hand there.
 Next: dump `frames[j]["hands"][*]["root"]["rot"]` for j in 250-252 s (rot discontinuity = flip), and check Seg.set
 for a normals/roll flip; also re-check with `--hands capsule` to separate rig from renderer.
+
+### Probe: no rotation/position discontinuity in the animation at 248-252 s
+`lab/probe_glitch_248.py` (2026-10-10 20:34): max per-frame hand-root rotation 8.4 deg (L) / 3.7 deg (R),
+no wrist jump > 50 mm in the window. So the animation data itself is smooth — the glitch (crossed arms,
+splayed hand off the keys, open tube ends) is introduced at the RENDER side (blender_piano.py: Seg placement /
+mpfb lowerarm aim) or is an accumulation of the L-hand wander (xh -0.154 -> -0.024 jumps, 195 mm pad span)
+that reads as splay at camera. Next: render the window with `--hands capsule` and `--hands mpfb` from the same
+frames JSON and diff; inspect `Seg.set` roll and the mpfb `lowerarm01/02` aim when the wrist yaw is extreme.
+
+### E37 (H4): E29 + middle press mask [8,1,8]: 96.56% (E36 96.98)
+Debussy 93.9, Rach 96.3, Chopin 97.1. The middle mask keeps 97% of the hard mask's gain; check tremor column
+in results.csv — if it is back near E29's 0.35, E37 is the better trade (E36's cost was tremor x1.9).
+E37 trade measured: tremor does NOT come back with the middle mask — jitter 1.70 mm / tremor 0.7 stays at E36's
+level (1.76 / 0.67), while keysync drops 0.4 pt (96.98 -> 96.56; Debussy 100 -> 93.9). So E36 (hard mask) stays
+best: its only cost, tremor x1.9 vs E29, is identical in E37. Anatomy_out is the same 11-12/min for both —
+the tremor is not what causes the 248-252 s glitch either.
