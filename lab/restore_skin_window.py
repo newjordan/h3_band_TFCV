@@ -32,7 +32,7 @@ from blockout.rig.hand import HandRig
 from blockout.rig.skin_contact import restore_pose, pose_vector, musical_anchors
 from blockout.skin import Skin
 from blockout.subdivision import catmull_clark
-from blockout.piano_geometry import PianoScene
+from blockout.piano_geometry import scene_from_animation
 
 source = json.loads(args.animation.read_text())
 anim = copy.deepcopy(source)
@@ -64,7 +64,7 @@ if args.score_holds:
 anchors = {}
 for index in range(start, stop):
     frame = source['frames'][index]
-    scene = PianoScene(source['keyboard'], frame['keys'], music_desk=True)
+    scene = scene_from_animation(source, frame, music_desk=True)
     for side, skin in skins.items():
         anchors[index, side] = musical_anchors(skin, surfaces[side][0],
             surfaces[side][0] @ skin.from_frame(frame['hands'][side]), frame['hands'][side], scene, keys,
@@ -85,7 +85,7 @@ for sweep in range(args.sweeps):
     indices = range(start, stop) if sweep % 2 == 0 else range(stop - 1, start - 1, -1)
     for index in indices:
         frame = source['frames'][index]
-        scene = PianoScene(source['keyboard'], frame['keys'], music_desk=True)
+        scene = scene_from_animation(source, frame, music_desk=True)
         for side, rig in rigs.items():
             previous, following = (anim['frames'][n]['hands'][side] for n in (index - 1, index + 1))
             begun = time.monotonic()

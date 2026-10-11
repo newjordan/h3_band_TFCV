@@ -1,0 +1,136 @@
+{
+  "source": "/home/frosty40/h3/rig_realism/artifacts/realism/notched_pose_probe.anim.json",
+  "source_sha256": "b324c9183d5c28c43eec96fecdf9c4a4bfc18a58c040b7ffbc6361d467dda875",
+  "hand_scale": 1.0,
+  "subdivision_levels": 2,
+  "limit_surface": true,
+  "tolerance_mm": 0.01,
+  "scope": "static rendered hand/forearm skin versus keys, casework, desk and floor; both quad diagonals",
+  "exclusions": [
+    "self collision",
+    "interhand collision",
+    "upper arm/body mesh",
+    "continuous time"
+  ],
+  "full_timeline": false,
+  "seconds": 0.53534723399207,
+  "instrument_clear": true,
+  "affected_frames": 0,
+  "maximum_penetration_mm": 0.0,
+  "records": [
+    {
+      "frame": 23,
+      "time": 0.9583,
+      "hands": {
+        "L": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.01000000393740208,
+          "worst_vertex": 2109,
+          "worst_position": [
+            -0.06156164593226081,
+            0.09050828769350694,
+            0.012010000003937402
+          ],
+          "worst_solid": "key56",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true
+        },
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.009999993455864567,
+          "worst_vertex": 13295,
+          "worst_position": [
+            0.21433004392757973,
+            0.00034252147756153495,
+            -0.009981950288136268
+          ],
+          "worst_solid": "key76",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true
+        }
+      }
+    },
+    {
+      "frame": 24,
+      "time": 1.0,
+      "hands": {
+        "L": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.010000005601317613,
+          "worst_vertex": 23900,
+          "worst_position": [
+            -0.2182224801989148,
+            0.014945728149782473,
+            -0.00900695830376973
+          ],
+          "worst_solid": "key45",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true
+        },
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.010000819588585827,
+          "worst_vertex": 23897,
+          "worst_position": [
+            0.2134317539160922,
+            0.0003425209904586616,
+            -0.00998194949268601
+          ],
+          "worst_solid": "key76",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true
+        }
+      }
+    },
+    {
+      "frame": 25,
+      "time": 1.0417,
+      "hands": {
+        "L": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.009999996505541398,
+          "worst_vertex": 7565,
+          "worst_position": [
+            -0.08910999999650558,
+            0.0964026460776076,
+            0.00953129514475443
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true
+        },
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.01695801484606832,
+          "worst_vertex": 12428,
+          "worst_position": [
+            0.214382408983493,
+            0.0003289358969366547,
+            -0.0099761836562672
+          ],
+          "worst_solid": "key76",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true
+        }
+      }
+    }
+  ]
+}

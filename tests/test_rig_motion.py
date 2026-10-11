@@ -1,4 +1,6 @@
 import copy
+from pathlib import Path
+import tempfile
 import unittest
 
 import numpy as np
@@ -7,6 +9,7 @@ from blockout.performer import UPPER_ARM, FOREARM
 from blockout.rig.hand import HandRig, rotvec
 from blockout.rig.motion import interpolate_frame, rotation_angle
 from blockout.rig.skin_contact import continuous_elbow
+from blockout.rig.path_checkpoint import save_checkpoint, load_checkpoint
 
 
 def fixture(rig, root, rotation, q, time):
@@ -24,6 +27,28 @@ def fixture(rig, root, rotation, q, time):
 
 
 class MotionTests(unittest.TestCase):
+    def test_failed_path_numeric_state_roundtrips_and_rejects_mismatched_geometry(self):
+        rig = HandRig('R')
+        rotation, _ = rig.sk.rest_root()
+        frames = [fixture(rig, [.15, -.1, .03], rotation, rig.q_rest, 0.)]
+        identity = dict(source='frozen-source', geometry='notched')
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'working.checkpoint.npz'
+            save_checkpoint(path, frames, {'R': rig}, identity, 2)
+            resumed, metadata = load_checkpoint(path, frames, {'R': rig}, identity)
+            self.assertFalse(metadata['candidate_exported'])
+            self.assertEqual(metadata['sweeps_completed'], 2)
+            np.testing.assert_allclose(resumed[0]['hands']['R']['fingers'], frames[0]['hands']['R']['fingers'], atol=1e-12)
+            self.assertEqual(resumed[0]['hands']['R']['angles'], frames[0]['hands']['R']['angles'])
+            with self.assertRaisesRegex(ValueError, 'identity differs'):
+                load_checkpoint(path, frames, {'R': rig}, dict(identity, geometry='rectangular'))
+            with np.load(path, allow_pickle=False) as stored:
+                corrupt = {name: stored[name].copy() for name in stored.files}
+            corrupt['R_rotations'][0, 0, 0] = float('nan')
+            np.savez_compressed(path, **corrupt)
+            with self.assertRaisesRegex(ValueError, 'numeric pose'):
+                load_checkpoint(path, frames, {'R': rig}, identity)
+
     def test_interpolation_keeps_anatomy_and_both_arm_lengths(self):
         rig = HandRig('R')
         rotation, _ = rig.sk.rest_root()

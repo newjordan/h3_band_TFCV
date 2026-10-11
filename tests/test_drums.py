@@ -3,10 +3,33 @@ import unittest
 
 import numpy as np
 
-from blockout.drums import DEFAULT_KIT, Drum, Drummer, Rig, demo_events, segment_distance, solve_arm, stick_clearance
+from blockout.drums import DEFAULT_KIT, Drum, Drummer, Rig, demo_events, segment_distance, segment_distances, solve_arm, stick_clearance
 
 
 class DrummerTests(unittest.TestCase):
+    def test_broadcast_segment_distances_match_scalar_and_degenerate_cases(self):
+        rng = np.random.default_rng(6194)
+        a, b, c, d = rng.normal(size=(4, 32, 3))
+        b[0] = a[0]
+        d[1] = c[1]
+        expected = [segment_distance(*points) for points in zip(a, b, c, d)]
+        np.testing.assert_allclose(segment_distances(a, b, c, d), expected, atol=1e-12)
+
+    def test_opposite_stick_cannot_pass_through_a_finger_with_clear_sticks(self):
+        class BrokenGrip(Drummer):
+            def pose(self, side, t):
+                pose = super().pose(side, t)
+                if side == 'L':
+                    other = super().pose('R', t)
+                    pose['fingers'][0] = np.linspace(other['butt'], other['tip'], 4)
+                return pose
+        model = BrokenGrip([dict(time=.5, drum='snare', hand='R')])
+        report = model.audit([.5])
+        self.assertGreater(report['min_stick_gap_mm'], 0.)
+        self.assertFalse(report['passed'])
+        self.assertIn('finger_opposite_stick_collision', report['violations'])
+        self.assertLess(report['min_finger_opposite_stick_gap_mm'], -11.)
+
     def test_arm_keeps_lengths_and_bounds_even_when_target_is_unreachable(self):
         rig = Rig()
         rng = np.random.default_rng(812)

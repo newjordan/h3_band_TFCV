@@ -1,0 +1,137 @@
+{
+  "source": "/home/frosty40/h3/rig_realism/artifacts/realism/restore_exposed_holds_window.anim.json",
+  "source_sha256": "165fc657d06829e3c9ce9e3bcea7b9851aa0eff8811e17b23a61874cfed5b3ce",
+  "geometry": {
+    "key_shape": "rectangular"
+  },
+  "geometry_override": false,
+  "scope": "sampled moving key/key solids and key/case solids",
+  "exclusions": [
+    "case/case assembly",
+    "forces",
+    "continuous time"
+  ],
+  "tolerance_mm": 0.01,
+  "notched": false,
+  "include_case": true,
+  "clear": false,
+  "records": [
+    {
+      "frame": "rest",
+      "contacts": []
+    },
+    {
+      "frame": 23,
+      "time": 0.9583,
+      "contacts": [
+        {
+          "first": "key45",
+          "second": "keybed",
+          "minimum_translation_mm": 8.655617986293468
+        },
+        {
+          "first": "key69",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        },
+        {
+          "first": "key71",
+          "second": "keybed",
+          "minimum_translation_mm": 7.674769071268544
+        },
+        {
+          "first": "key72",
+          "second": "key73",
+          "minimum_translation_mm": 6.249999999999978
+        },
+        {
+          "first": "key73",
+          "second": "key74",
+          "minimum_translation_mm": 3.665756368889774
+        },
+        {
+          "first": "key74",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        },
+        {
+          "first": "key76",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        }
+      ]
+    },
+    {
+      "frame": 24,
+      "time": 1.0,
+      "contacts": [
+        {
+          "first": "key45",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        },
+        {
+          "first": "key69",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        },
+        {
+          "first": "key71",
+          "second": "keybed",
+          "minimum_translation_mm": 5.640072680580991
+        },
+        {
+          "first": "key72",
+          "second": "key73",
+          "minimum_translation_mm": 6.249999999999978
+        },
+        {
+          "first": "key73",
+          "second": "key74",
+          "minimum_translation_mm": 2.986174694717408
+        },
+        {
+          "first": "key74",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        },
+        {
+          "first": "key76",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        }
+      ]
+    },
+    {
+      "frame": 25,
+      "time": 1.0417,
+      "contacts": [
+        {
+          "first": "key45",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        },
+        {
+          "first": "key69",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        },
+        {
+          "first": "key72",
+          "second": "key73",
+          "minimum_translation_mm": 6.249999999999978
+        },
+        {
+          "first": "key73",
+          "second": "key74",
+          "minimum_translation_mm": 6.249999999999978
+        },
+        {
+          "first": "key76",
+          "second": "keybed",
+          "minimum_translation_mm": 8.952609051129157
+        }
+      ]
+    }
+  ]
+}

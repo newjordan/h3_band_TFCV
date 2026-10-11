@@ -150,6 +150,46 @@ def stick_clearance(first, second, rig):
                segment_distance(d, d, a, b)-rig.tip_radius-rig.stick_radius)
 
 
+def segment_distances(a, b, c, d):
+    """Broadcast finite segment distances for complete grip capsule checks."""
+    a, b, c, d = np.broadcast_arrays(*[np.asarray(p, float) for p in (a, b, c, d)])
+    u, v, w = b-a, d-c, a-c
+    dot = lambda first, second: np.sum(first*second, axis=-1)
+    aa, bb, cc = dot(u, u), dot(u, v), dot(v, v)
+    dd, ee = dot(u, w), dot(v, w)
+    candidates = []
+    for s in (0., 1.):
+        t = np.clip((ee+bb*s)/np.maximum(cc, 1e-30), 0., 1.)
+        candidates.append(np.linalg.norm(w+s*u-t[..., None]*v, axis=-1))
+    for t in (0., 1.):
+        s = np.clip((bb*t-dd)/np.maximum(aa, 1e-30), 0., 1.)
+        candidates.append(np.linalg.norm(w+s[..., None]*u-t*v, axis=-1))
+    determinant = aa*cc-bb*bb
+    denominator = np.where(determinant > 1e-15, determinant, 1.)
+    s, t = (bb*ee-cc*dd)/denominator, (aa*ee-bb*dd)/denominator
+    interior = np.linalg.norm(w+s[..., None]*u-t[..., None]*v, axis=-1)
+    valid = (determinant > 1e-15) & (s >= 0) & (s <= 1) & (t >= 0) & (t <= 1)
+    candidates.append(np.where(valid, interior, np.inf))
+    return np.minimum.reduce(candidates)
+
+
+def interhand_grip_clearances(first, second, rig):
+    """Signed finger/finger and finger/opposite-stick capsule clearances."""
+    segments = []
+    for pose in (first, second):
+        fingers = np.asarray(pose['fingers'])
+        segments.append((fingers[:, :-1].reshape(-1, 3), fingers[:, 1:].reshape(-1, 3)))
+    a, b = segments[0]
+    c, d = segments[1]
+    finger_gap = float(segment_distances(a[:, None], b[:, None], c[None], d[None]).min()) - 2*rig.finger_radius
+    stick_gap = math.inf
+    for (a, b), other in zip(segments, (second, first)):
+        shaft = float(segment_distances(a, b, other['butt'], other['tip']).min()) - rig.finger_radius - rig.stick_radius
+        tip = float(segment_distances(a, b, other['tip'], other['tip']).min()) - rig.finger_radius - rig.tip_radius
+        stick_gap = min(stick_gap, shaft, tip)
+    return finger_gap, stick_gap
+
+
 def _plane_tangent(direction, normal):
     tangent = direction-normal*np.dot(direction, normal)
     if np.linalg.norm(tangent) < 1e-8:
@@ -314,6 +354,7 @@ class Drummer:
                  "max_surface_penetration_mm": 0., "min_stick_gap_mm": math.inf,
                  "max_finger_surface_penetration_mm": 0.,
                  "min_finger_gap_mm": math.inf, "min_grip_gap_mm": math.inf,
+                 "min_interhand_finger_gap_mm": math.inf, "min_finger_opposite_stick_gap_mm": math.inf,
                  "max_grip_detachment_mm": 0., "elbow_min_deg": 180., "elbow_max_deg": 0.}
         stats.update(max_wrist_speed_m_s=0., max_tip_speed_m_s=0.)
         previous = None
@@ -331,6 +372,9 @@ class Drummer:
             previous = t, poses
             stats["min_stick_gap_mm"] = min(stats["min_stick_gap_mm"],
                                             1000*stick_clearance(*poses, rig))
+            finger_gap, opposite_stick_gap = interhand_grip_clearances(*poses, rig)
+            stats['min_interhand_finger_gap_mm'] = min(stats['min_interhand_finger_gap_mm'], 1000*finger_gap)
+            stats['min_finger_opposite_stick_gap_mm'] = min(stats['min_finger_opposite_stick_gap_mm'], 1000*opposite_stick_gap)
             for p in poses:
                 stats["max_reach_error_mm"] = max(stats["max_reach_error_mm"], 1000*p["reach_error"])
                 stats["elbow_min_deg"] = min(stats["elbow_min_deg"], p["elbow_flex_deg"])
@@ -393,6 +437,8 @@ class Drummer:
             "finger_drum_penetration": stats["max_finger_surface_penetration_mm"] < .5,
             "stick_collision": stats["min_stick_gap_mm"] >= 0,
             "finger_collision": stats["min_finger_gap_mm"] >= 2.,
+            "interhand_finger_collision": stats['min_interhand_finger_gap_mm'] >= 2.,
+            "finger_opposite_stick_collision": stats['min_finger_opposite_stick_gap_mm'] >= 0.,
             "grip_penetration": stats["min_grip_gap_mm"] > -.01,
             "lost_grip": stats["max_grip_detachment_mm"] < .5,
             "arm_stretch": stats["max_arm_length_error_mm"] < .001,
@@ -405,6 +451,8 @@ class Drummer:
         stats["violations"] = [name for name, passed in gates.items() if not passed]
         stats["missed_events"] = missed
         stats["passed"] = not stats["violations"]
+        stats['scope'] = 'sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces'
+        stats['exclusions'] = ['rendered hand/body/costume meshes', 'arm and drum-shell collision', 'continuous time', 'force dynamics', 'feet/pedals']
         return stats
 
 

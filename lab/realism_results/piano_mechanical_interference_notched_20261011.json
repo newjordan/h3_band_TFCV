@@ -1,0 +1,39 @@
+{
+  "source": "/home/frosty40/h3/rig_realism/artifacts/realism/notched_pose_probe.anim.json",
+  "source_sha256": "b324c9183d5c28c43eec96fecdf9c4a4bfc18a58c040b7ffbc6361d467dda875",
+  "geometry": {
+    "key_shape": "notched"
+  },
+  "geometry_override": false,
+  "scope": "sampled moving key/key solids and key/case solids",
+  "exclusions": [
+    "case/case assembly",
+    "forces",
+    "continuous time"
+  ],
+  "tolerance_mm": 0.01,
+  "notched": true,
+  "include_case": true,
+  "clear": true,
+  "records": [
+    {
+      "frame": "rest",
+      "contacts": []
+    },
+    {
+      "frame": 23,
+      "time": 0.9583,
+      "contacts": []
+    },
+    {
+      "frame": 24,
+      "time": 1.0,
+      "contacts": []
+    },
+    {
+      "frame": 25,
+      "time": 1.0417,
+      "contacts": []
+    }
+  ]
+}

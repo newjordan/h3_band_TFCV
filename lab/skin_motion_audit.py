@@ -34,7 +34,7 @@ from blockout.rig.motion import interpolate_frame, rotation_angle, bend_plane_an
 from blockout.skin import Skin
 from blockout.skin_contacts import key_support
 from blockout.subdivision import catmull_clark
-from blockout.piano_geometry import PianoScene
+from blockout.piano_geometry import scene_from_animation
 from lab.skin_audit import hand_audit, quad_triangles
 
 anim = json.loads(args.animation.read_text())
@@ -68,7 +68,7 @@ for index in range(start, stop - 1):
     for step in steps:
         fraction = step / args.substeps
         frame = interpolate_frame(first, second, fraction, rigs)
-        scene = PianoScene(anim['keyboard'], frame['keys'], music_desk=True)
+        scene = scene_from_animation(anim, frame, music_desk=True)
         hands, support = {}, {}
         absolute = anim.get('start', 0.) + frame['t']
         required = ({int(n.pitch) for n in score_notes if n.start + .080 <= absolute <= n.end}

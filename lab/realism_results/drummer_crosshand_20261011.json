@@ -1,0 +1,2008 @@
+{
+  "schema": "drummer-crosshand-contact-experiment/v1",
+  "hypothesis": "Complete cross-hand grip capsules catch interactions omitted by separate hand/stick audits.",
+  "ablation": "Identical frozen stress events and kinematic controller; expanded collision gate. No motion repair claimed.",
+  "code_sha256": "67e84479761785a8aa1e71df199c3213b244911589c9b43e0f9a2cf12ea7c599",
+  "input_sha256": {
+    "roll_qa.json": "4a76b0c8d7219dcf98a1b20efdf11977d93d5158483232c4d75cb5cdb30de5d2",
+    "stress_qa.json": "dd526c668cc8f8cc5298915f4ec2a3ad6259906ffbfb419c7383ec68771b30d9",
+    "crosshand_demo.json": "4685e0ceb64a91ca684e73c1ea650a10d7c4f1900121fb010997683d59aba433"
+  },
+  "sample_rate_hz": 240,
+  "demo": {
+    "events": [
+      {
+        "time": 0.3,
+        "drum": "hihat",
+        "hand": "L",
+        "velocity": 0.45
+      },
+      {
+        "time": 0.55,
+        "drum": "snare",
+        "hand": "R",
+        "velocity": 0.85
+      },
+      {
+        "time": 0.8,
+        "drum": "hihat",
+        "hand": "L",
+        "velocity": 0.35
+      },
+      {
+        "time": 1.05,
+        "drum": "snare",
+        "hand": "R",
+        "velocity": 0.25
+      },
+      {
+        "time": 1.3,
+        "drum": "tom",
+        "hand": "L",
+        "velocity": 0.65
+      },
+      {
+        "time": 1.55,
+        "drum": "ride",
+        "hand": "R",
+        "velocity": 0.95
+      },
+      {
+        "time": 1.8,
+        "drum": "snare",
+        "hand": "L",
+        "velocity": 0.6
+      },
+      {
+        "time": 1.9,
+        "drum": "snare",
+        "hand": "R",
+        "velocity": 0.7
+      },
+      {
+        "time": 2.0,
+        "drum": "snare",
+        "hand": "L",
+        "velocity": 0.5
+      },
+      {
+        "time": 2.1,
+        "drum": "snare",
+        "hand": "R",
+        "velocity": 0.8
+      }
+    ],
+    "rig": {
+      "upper_arm": 0.3,
+      "forearm": 0.27,
+      "elbow_min_deg": 15.0,
+      "elbow_max_deg": 145.0,
+      "stick_length": 0.406,
+      "grip_to_tip": 0.29,
+      "stick_radius": 0.006,
+      "tip_radius": 0.009,
+      "finger_radius": 0.0055,
+      "wrist_to_grip": 0.055,
+      "strike_pitch": 0.24,
+      "min_hand_interval": 0.075,
+      "restitution": 0.55,
+      "max_wrist_speed": 3.0,
+      "max_tip_speed": 9.0
+    },
+    "kit": [
+      {
+        "name": "snare",
+        "center": [
+          0.0,
+          0.18,
+          0.1
+        ],
+        "radius": 0.16,
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "hihat",
+        "center": [
+          -0.32,
+          0.22,
+          0.23
+        ],
+        "radius": 0.18,
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "name": "tom",
+        "center": [
+          0.12,
+          0.43,
+          0.22
+        ],
+        "radius": 0.15,
+        "normal": [
+          0.0,
+          -0.11914522061843064,
+          0.9928768384869221
+        ]
+      },
+      {
+        "name": "ride",
+        "center": [
+          0.4,
+          0.32,
+          0.26
+        ],
+        "radius": 0.23,
+        "normal": [
+          -0.09938079899999067,
+          -0.04969039949999533,
+          0.9938079899999066
+        ]
+      }
+    ],
+    "qa": {
+      "samples": 601,
+      "events": 10,
+      "hits": 10,
+      "max_contact_error_mm": 7.112366251504909e-14,
+      "max_reach_error_mm": 0.0,
+      "max_arm_length_error_mm": 1.1102230246251565e-13,
+      "max_stick_length_error_mm": 1.6653345369377348e-13,
+      "max_surface_penetration_mm": 7.112366251504909e-14,
+      "min_stick_gap_mm": 46.09165521356559,
+      "max_finger_surface_penetration_mm": 0.0,
+      "min_finger_gap_mm": 5.99999999999996,
+      "min_grip_gap_mm": -5.898059818321144e-14,
+      "min_interhand_finger_gap_mm": 210.674905057931,
+      "min_finger_opposite_stick_gap_mm": 92.61153907302231,
+      "max_grip_detachment_mm": 5.0306980803327406e-14,
+      "elbow_min_deg": 74.15209000035071,
+      "elbow_max_deg": 124.35057398923126,
+      "max_wrist_speed_m_s": 1.294837324214049,
+      "max_tip_speed_m_s": 3.0352099846232523,
+      "violations": [],
+      "missed_events": [],
+      "passed": true,
+      "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+      "exclusions": [
+        "rendered hand/body/costume meshes",
+        "arm and drum-shell collision",
+        "continuous time",
+        "force dynamics",
+        "feet/pedals"
+      ]
+    }
+  },
+  "roll": {
+    "events": [
+      {
+        "time": 0.3071,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "R"
+      },
+      {
+        "time": 0.3571,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "L"
+      },
+      {
+        "time": 0.4071,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "R"
+      },
+      {
+        "time": 0.4571,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "L"
+      },
+      {
+        "time": 0.5071,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "R"
+      },
+      {
+        "time": 0.5570999999999999,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "L"
+      },
+      {
+        "time": 0.6071,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "R"
+      },
+      {
+        "time": 0.6571,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "L"
+      },
+      {
+        "time": 0.7071000000000001,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "R"
+      },
+      {
+        "time": 0.7571,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "L"
+      },
+      {
+        "time": 0.8070999999999999,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "R"
+      },
+      {
+        "time": 0.8571,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "L"
+      },
+      {
+        "time": 0.9071,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "R"
+      },
+      {
+        "time": 0.9571000000000001,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "L"
+      },
+      {
+        "time": 1.0071,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "R"
+      },
+      {
+        "time": 1.0571,
+        "drum": "snare",
+        "velocity": 0.6,
+        "hand": "L"
+      }
+    ],
+    "qa": {
+      "samples": 377,
+      "events": 16,
+      "hits": 16,
+      "max_contact_error_mm": 8.673617379884035e-15,
+      "max_reach_error_mm": 0.0,
+      "max_arm_length_error_mm": 1.1102230246251565e-13,
+      "max_stick_length_error_mm": 1.1102230246251565e-13,
+      "max_surface_penetration_mm": 0.0,
+      "min_stick_gap_mm": 46.88067200284729,
+      "max_finger_surface_penetration_mm": 0.0,
+      "min_finger_gap_mm": 5.999999999999981,
+      "min_grip_gap_mm": -3.642919299551295e-14,
+      "min_interhand_finger_gap_mm": 210.7709906159794,
+      "min_finger_opposite_stick_gap_mm": 208.20469051135564,
+      "max_grip_detachment_mm": 2.7755575615628914e-14,
+      "elbow_min_deg": 90.39141778963216,
+      "elbow_max_deg": 97.66797498590316,
+      "max_wrist_speed_m_s": 0.4681758723495209,
+      "max_tip_speed_m_s": 2.468563690570137,
+      "violations": [],
+      "missed_events": [],
+      "passed": true,
+      "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+      "exclusions": [
+        "rendered hand/body/costume meshes",
+        "arm and drum-shell collision",
+        "continuous time",
+        "force dynamics",
+        "feet/pedals"
+      ]
+    }
+  },
+  "stress": [
+    {
+      "pattern": 0,
+      "events": [
+        {
+          "time": 0.40370000000000006,
+          "drum": "snare",
+          "velocity": 0.6954145652316608,
+          "hand": "R"
+        },
+        {
+          "time": 0.4687,
+          "drum": "hihat",
+          "velocity": 0.7311661872663171,
+          "hand": "L"
+        },
+        {
+          "time": 0.5137,
+          "drum": "ride",
+          "velocity": 0.5332659433679299,
+          "hand": "R"
+        },
+        {
+          "time": 0.5587,
+          "drum": "hihat",
+          "velocity": 0.7659848299072866,
+          "hand": "L"
+        },
+        {
+          "time": 0.6587000000000001,
+          "drum": "snare",
+          "velocity": 0.9638855547213883,
+          "hand": "R"
+        },
+        {
+          "time": 0.7037,
+          "drum": "hihat",
+          "velocity": 0.3785131384353344,
+          "hand": "L"
+        },
+        {
+          "time": 0.8037000000000001,
+          "drum": "hihat",
+          "velocity": 0.3279154494639167,
+          "hand": "R"
+        },
+        {
+          "time": 0.9537,
+          "drum": "snare",
+          "velocity": 0.15028392044037192,
+          "hand": "L"
+        },
+        {
+          "time": 1.0537,
+          "drum": "ride",
+          "velocity": 0.6839556527100029,
+          "hand": "R"
+        },
+        {
+          "time": 1.2037,
+          "drum": "ride",
+          "velocity": 0.2766805903941755,
+          "hand": "L"
+        },
+        {
+          "time": 1.2687000000000002,
+          "drum": "ride",
+          "velocity": 0.8621537321802861,
+          "hand": "R"
+        },
+        {
+          "time": 1.3137,
+          "drum": "snare",
+          "velocity": 0.4339589314017005,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 400,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 0.34985755722868017,
+        "min_stick_gap_mm": -9.65584709757319,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999967,
+        "min_grip_gap_mm": -6.071532165918825e-14,
+        "max_grip_detachment_mm": 5.377642775528102e-14,
+        "elbow_min_deg": 65.16185653948875,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 6.238176038017932,
+        "max_tip_speed_m_s": 7.836945756875424,
+        "violations": [
+          "stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 401,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 0.34985755722868017,
+        "min_stick_gap_mm": -9.65584709757319,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999967,
+        "min_grip_gap_mm": -6.071532165918825e-14,
+        "min_interhand_finger_gap_mm": 105.78914328674212,
+        "min_finger_opposite_stick_gap_mm": 83.81693201038475,
+        "max_grip_detachment_mm": 5.377642775528102e-14,
+        "elbow_min_deg": 65.16185653948875,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 6.238176038017932,
+        "max_tip_speed_m_s": 7.836945756875424,
+        "violations": [
+          "stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 1,
+      "events": [
+        {
+          "time": 0.3687,
+          "drum": "tom",
+          "velocity": 0.3969081141722274,
+          "hand": "R"
+        },
+        {
+          "time": 0.4137,
+          "drum": "tom",
+          "velocity": 0.3309998373925517,
+          "hand": "L"
+        },
+        {
+          "time": 0.5137,
+          "drum": "ride",
+          "velocity": 0.6674209728853171,
+          "hand": "R"
+        },
+        {
+          "time": 0.5787,
+          "drum": "hihat",
+          "velocity": 0.31752005212903994,
+          "hand": "L"
+        },
+        {
+          "time": 0.6237,
+          "drum": "hihat",
+          "velocity": 0.7035125503800531,
+          "hand": "R"
+        },
+        {
+          "time": 0.6687000000000001,
+          "drum": "snare",
+          "velocity": 0.35206995180619516,
+          "hand": "L"
+        },
+        {
+          "time": 0.7686999999999999,
+          "drum": "tom",
+          "velocity": 0.560075566119961,
+          "hand": "R"
+        },
+        {
+          "time": 0.8137000000000001,
+          "drum": "ride",
+          "velocity": 0.9844237058516634,
+          "hand": "L"
+        },
+        {
+          "time": 0.8587,
+          "drum": "snare",
+          "velocity": 0.21337155383980655,
+          "hand": "R"
+        },
+        {
+          "time": 0.9037000000000002,
+          "drum": "snare",
+          "velocity": 0.24264940180245528,
+          "hand": "L"
+        },
+        {
+          "time": 1.0537,
+          "drum": "ride",
+          "velocity": 0.7137445041098227,
+          "hand": "R"
+        },
+        {
+          "time": 1.0987000000000002,
+          "drum": "ride",
+          "velocity": 0.6379524961339009,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 348,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 51.97109539805616,
+        "min_stick_gap_mm": -1.6948314639376443,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999964,
+        "min_grip_gap_mm": -6.591949208711867e-14,
+        "max_grip_detachment_mm": 5.0306980803327406e-14,
+        "elbow_min_deg": 58.48428690839157,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 7.645569168986765,
+        "max_tip_speed_m_s": 12.80947540763665,
+        "violations": [
+          "drum_penetration",
+          "stick_collision",
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 349,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 51.97109539805616,
+        "min_stick_gap_mm": -1.6948314639376443,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999964,
+        "min_grip_gap_mm": -6.591949208711867e-14,
+        "min_interhand_finger_gap_mm": -1.3291679906945568,
+        "min_finger_opposite_stick_gap_mm": 7.751885438616286,
+        "max_grip_detachment_mm": 5.0306980803327406e-14,
+        "elbow_min_deg": 58.48428690839157,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 7.645569168986765,
+        "max_tip_speed_m_s": 12.80947540763665,
+        "violations": [
+          "drum_penetration",
+          "stick_collision",
+          "interhand_finger_collision",
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 2,
+      "events": [
+        {
+          "time": 0.3687,
+          "drum": "snare",
+          "velocity": 0.8687495892356771,
+          "hand": "R"
+        },
+        {
+          "time": 0.43370000000000003,
+          "drum": "snare",
+          "velocity": 0.24797723252201564,
+          "hand": "L"
+        },
+        {
+          "time": 0.5837000000000001,
+          "drum": "ride",
+          "velocity": 0.2361066127267532,
+          "hand": "R"
+        },
+        {
+          "time": 0.6287,
+          "drum": "ride",
+          "velocity": 0.3038628628369628,
+          "hand": "L"
+        },
+        {
+          "time": 0.7787,
+          "drum": "tom",
+          "velocity": 0.5676236923578697,
+          "hand": "R"
+        },
+        {
+          "time": 0.8237000000000001,
+          "drum": "hihat",
+          "velocity": 0.2474974778185508,
+          "hand": "L"
+        },
+        {
+          "time": 0.9737,
+          "drum": "hihat",
+          "velocity": 0.9166282686860666,
+          "hand": "R"
+        },
+        {
+          "time": 1.1237000000000001,
+          "drum": "tom",
+          "velocity": 0.17078517140097393,
+          "hand": "L"
+        },
+        {
+          "time": 1.1687,
+          "drum": "hihat",
+          "velocity": 0.790632172127694,
+          "hand": "R"
+        },
+        {
+          "time": 1.2337000000000002,
+          "drum": "snare",
+          "velocity": 0.15408116739222988,
+          "hand": "L"
+        },
+        {
+          "time": 1.3337000000000003,
+          "drum": "ride",
+          "velocity": 0.7652158409721976,
+          "hand": "R"
+        },
+        {
+          "time": 1.4837000000000002,
+          "drum": "tom",
+          "velocity": 0.9074886231584667,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 441,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 5.693353453701135,
+        "min_stick_gap_mm": -10.87266589488114,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999964,
+        "min_grip_gap_mm": -6.071532165918825e-14,
+        "max_grip_detachment_mm": 4.683753385137379e-14,
+        "elbow_min_deg": 65.22822301487248,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 4.78030385030047,
+        "max_tip_speed_m_s": 8.406707307765993,
+        "violations": [
+          "drum_penetration",
+          "stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 442,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 5.693353453701135,
+        "min_stick_gap_mm": -10.87266589488114,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999964,
+        "min_grip_gap_mm": -6.071532165918825e-14,
+        "min_interhand_finger_gap_mm": -4.3868271465565885,
+        "min_finger_opposite_stick_gap_mm": -10.13216958946944,
+        "max_grip_detachment_mm": 4.683753385137379e-14,
+        "elbow_min_deg": 65.22822301487248,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 4.78030385030047,
+        "max_tip_speed_m_s": 8.406707307765993,
+        "violations": [
+          "drum_penetration",
+          "stick_collision",
+          "interhand_finger_collision",
+          "finger_opposite_stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 3,
+      "events": [
+        {
+          "time": 0.3487,
+          "drum": "tom",
+          "velocity": 0.7814291786567168,
+          "hand": "R"
+        },
+        {
+          "time": 0.44870000000000004,
+          "drum": "snare",
+          "velocity": 0.9918174070722612,
+          "hand": "L"
+        },
+        {
+          "time": 0.5487000000000001,
+          "drum": "tom",
+          "velocity": 0.6869249336813462,
+          "hand": "R"
+        },
+        {
+          "time": 0.6137000000000001,
+          "drum": "snare",
+          "velocity": 0.9050463424140909,
+          "hand": "L"
+        },
+        {
+          "time": 0.7637,
+          "drum": "hihat",
+          "velocity": 0.9195532438669047,
+          "hand": "R"
+        },
+        {
+          "time": 0.8087000000000002,
+          "drum": "snare",
+          "velocity": 0.752939604593258,
+          "hand": "L"
+        },
+        {
+          "time": 0.8737000000000001,
+          "drum": "tom",
+          "velocity": 0.3295152606462661,
+          "hand": "R"
+        },
+        {
+          "time": 0.9387000000000001,
+          "drum": "ride",
+          "velocity": 0.7336248527235477,
+          "hand": "L"
+        },
+        {
+          "time": 1.0887,
+          "drum": "snare",
+          "velocity": 0.9071171307062359,
+          "hand": "R"
+        },
+        {
+          "time": 1.1337000000000002,
+          "drum": "ride",
+          "velocity": 0.6084527500798455,
+          "hand": "L"
+        },
+        {
+          "time": 1.2837,
+          "drum": "tom",
+          "velocity": 0.679732185641518,
+          "hand": "R"
+        },
+        {
+          "time": 1.3837000000000002,
+          "drum": "snare",
+          "velocity": 0.4604164558629201,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 417,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 2.6020852139652106e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 2.6020852139652106e-14,
+        "min_stick_gap_mm": 12.624482247497347,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999964,
+        "min_grip_gap_mm": -6.938893903907228e-14,
+        "max_grip_detachment_mm": 4.5102810375396984e-14,
+        "elbow_min_deg": 57.8049157872612,
+        "elbow_max_deg": 97.66797498590316,
+        "max_wrist_speed_m_s": 5.356479692791685,
+        "max_tip_speed_m_s": 8.505358813783833,
+        "violations": [
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 418,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 2.6020852139652106e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 2.6020852139652106e-14,
+        "min_stick_gap_mm": 12.624482247497347,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999964,
+        "min_grip_gap_mm": -6.938893903907228e-14,
+        "min_interhand_finger_gap_mm": -0.17105892650382154,
+        "min_finger_opposite_stick_gap_mm": -1.3524232848490456,
+        "max_grip_detachment_mm": 4.5102810375396984e-14,
+        "elbow_min_deg": 57.8049157872612,
+        "elbow_max_deg": 97.66797498590316,
+        "max_wrist_speed_m_s": 5.356479692791685,
+        "max_tip_speed_m_s": 8.505358813783833,
+        "violations": [
+          "interhand_finger_collision",
+          "finger_opposite_stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 4,
+      "events": [
+        {
+          "time": 0.40370000000000006,
+          "drum": "hihat",
+          "velocity": 0.5763204388097559,
+          "hand": "L"
+        },
+        {
+          "time": 0.5537000000000001,
+          "drum": "hihat",
+          "velocity": 0.4866513433787788,
+          "hand": "R"
+        },
+        {
+          "time": 0.7037,
+          "drum": "snare",
+          "velocity": 0.20417011417572617,
+          "hand": "L"
+        },
+        {
+          "time": 0.7687,
+          "drum": "snare",
+          "velocity": 0.5592330149240572,
+          "hand": "R"
+        },
+        {
+          "time": 0.8687,
+          "drum": "tom",
+          "velocity": 0.475690868785394,
+          "hand": "L"
+        },
+        {
+          "time": 0.9687000000000001,
+          "drum": "hihat",
+          "velocity": 0.2954061869949493,
+          "hand": "R"
+        },
+        {
+          "time": 1.0137,
+          "drum": "snare",
+          "velocity": 0.4972864139377423,
+          "hand": "L"
+        },
+        {
+          "time": 1.1137000000000001,
+          "drum": "tom",
+          "velocity": 0.5588419359134967,
+          "hand": "R"
+        },
+        {
+          "time": 1.1787,
+          "drum": "hihat",
+          "velocity": 0.9795706629433598,
+          "hand": "L"
+        },
+        {
+          "time": 1.2237,
+          "drum": "tom",
+          "velocity": 0.7453924878283131,
+          "hand": "R"
+        },
+        {
+          "time": 1.2687000000000002,
+          "drum": "hihat",
+          "velocity": 0.7291931965345168,
+          "hand": "L"
+        },
+        {
+          "time": 1.3687000000000002,
+          "drum": "tom",
+          "velocity": 0.3412239559855088,
+          "hand": "R"
+        }
+      ],
+      "previous_qa": {
+        "samples": 413,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 2.42861286636753e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 2.42861286636753e-14,
+        "min_stick_gap_mm": -11.88051434908056,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -5.724587470723463e-14,
+        "max_grip_detachment_mm": 4.336808689942018e-14,
+        "elbow_min_deg": 77.18671568526787,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 3.6415915272450374,
+        "max_tip_speed_m_s": 6.432066751977954,
+        "violations": [
+          "stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 414,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 2.42861286636753e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 2.42861286636753e-14,
+        "min_stick_gap_mm": -11.88051434908056,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -5.724587470723463e-14,
+        "min_interhand_finger_gap_mm": 28.467656744280536,
+        "min_finger_opposite_stick_gap_mm": -10.827694724494254,
+        "max_grip_detachment_mm": 4.336808689942018e-14,
+        "elbow_min_deg": 77.18671568526787,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 3.6415915272450374,
+        "max_tip_speed_m_s": 6.432066751977954,
+        "violations": [
+          "stick_collision",
+          "finger_opposite_stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 5,
+      "events": [
+        {
+          "time": 0.4537,
+          "drum": "ride",
+          "velocity": 0.8182386285152633,
+          "hand": "R"
+        },
+        {
+          "time": 0.6037,
+          "drum": "ride",
+          "velocity": 0.9462907780573832,
+          "hand": "L"
+        },
+        {
+          "time": 0.7537,
+          "drum": "hihat",
+          "velocity": 0.42719946623621996,
+          "hand": "R"
+        },
+        {
+          "time": 0.8187,
+          "drum": "ride",
+          "velocity": 0.27074262293237816,
+          "hand": "L"
+        },
+        {
+          "time": 0.9686999999999999,
+          "drum": "hihat",
+          "velocity": 0.14661657767040837,
+          "hand": "R"
+        },
+        {
+          "time": 1.0687,
+          "drum": "ride",
+          "velocity": 0.9629193946856205,
+          "hand": "L"
+        },
+        {
+          "time": 1.1337,
+          "drum": "hihat",
+          "velocity": 0.633567182924666,
+          "hand": "R"
+        },
+        {
+          "time": 1.1786999999999999,
+          "drum": "snare",
+          "velocity": 0.5627881237263562,
+          "hand": "L"
+        },
+        {
+          "time": 1.2787,
+          "drum": "snare",
+          "velocity": 0.2312396473579798,
+          "hand": "R"
+        },
+        {
+          "time": 1.4286999999999999,
+          "drum": "tom",
+          "velocity": 0.43959368654135844,
+          "hand": "L"
+        },
+        {
+          "time": 1.4736999999999998,
+          "drum": "hihat",
+          "velocity": 0.8185441680128576,
+          "hand": "R"
+        },
+        {
+          "time": 1.5386999999999997,
+          "drum": "tom",
+          "velocity": 0.6250854512610121,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 454,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.6653345369377348e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": -14.15266780185317,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999953,
+        "min_grip_gap_mm": -6.938893903907228e-14,
+        "max_grip_detachment_mm": 4.336808689942018e-14,
+        "elbow_min_deg": 55.06230008924502,
+        "elbow_max_deg": 108.82916304290784,
+        "max_wrist_speed_m_s": 6.265682843722179,
+        "max_tip_speed_m_s": 7.919429369413948,
+        "violations": [
+          "stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 455,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.6653345369377348e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": -14.15266780185317,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999953,
+        "min_grip_gap_mm": -6.938893903907228e-14,
+        "min_interhand_finger_gap_mm": -5.510158587951312,
+        "min_finger_opposite_stick_gap_mm": -10.88006918252949,
+        "max_grip_detachment_mm": 4.336808689942018e-14,
+        "elbow_min_deg": 55.06230008924502,
+        "elbow_max_deg": 108.82916304290784,
+        "max_wrist_speed_m_s": 6.265682843722179,
+        "max_tip_speed_m_s": 7.919429369413948,
+        "violations": [
+          "stick_collision",
+          "interhand_finger_collision",
+          "finger_opposite_stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 6,
+      "events": [
+        {
+          "time": 0.3487,
+          "drum": "hihat",
+          "velocity": 0.11226868153111139,
+          "hand": "L"
+        },
+        {
+          "time": 0.44870000000000004,
+          "drum": "ride",
+          "velocity": 0.4904125118850663,
+          "hand": "R"
+        },
+        {
+          "time": 0.5487000000000001,
+          "drum": "ride",
+          "velocity": 0.6722477173301689,
+          "hand": "L"
+        },
+        {
+          "time": 0.6137000000000001,
+          "drum": "snare",
+          "velocity": 0.9155544321015097,
+          "hand": "R"
+        },
+        {
+          "time": 0.7637,
+          "drum": "snare",
+          "velocity": 0.40325603351885086,
+          "hand": "L"
+        },
+        {
+          "time": 0.8287000000000002,
+          "drum": "hihat",
+          "velocity": 0.4832504519312455,
+          "hand": "R"
+        },
+        {
+          "time": 0.8737000000000001,
+          "drum": "snare",
+          "velocity": 0.5357719054529876,
+          "hand": "L"
+        },
+        {
+          "time": 0.9737000000000002,
+          "drum": "tom",
+          "velocity": 0.5442890342794154,
+          "hand": "R"
+        },
+        {
+          "time": 1.0737,
+          "drum": "hihat",
+          "velocity": 0.39633005706495994,
+          "hand": "L"
+        },
+        {
+          "time": 1.1387000000000003,
+          "drum": "ride",
+          "velocity": 0.5638972462376068,
+          "hand": "R"
+        },
+        {
+          "time": 1.2387000000000001,
+          "drum": "hihat",
+          "velocity": 0.4288232220184848,
+          "hand": "L"
+        },
+        {
+          "time": 1.3887000000000003,
+          "drum": "snare",
+          "velocity": 0.5159899511065562,
+          "hand": "R"
+        }
+      ],
+      "previous_qa": {
+        "samples": 418,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": -9.780260708980679,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -7.45931094670027e-14,
+        "max_grip_detachment_mm": 4.5102810375396984e-14,
+        "elbow_min_deg": 65.01977456900745,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 3.587364507646165,
+        "max_tip_speed_m_s": 6.921765788798585,
+        "violations": [
+          "stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 419,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": -9.780260708980679,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -7.45931094670027e-14,
+        "min_interhand_finger_gap_mm": 91.24300479732173,
+        "min_finger_opposite_stick_gap_mm": 4.262456068248894,
+        "max_grip_detachment_mm": 4.5102810375396984e-14,
+        "elbow_min_deg": 65.01977456900745,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 3.587364507646165,
+        "max_tip_speed_m_s": 6.921765788798585,
+        "violations": [
+          "stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 7,
+      "events": [
+        {
+          "time": 0.3487,
+          "drum": "tom",
+          "velocity": 0.2307951273716389,
+          "hand": "R"
+        },
+        {
+          "time": 0.49870000000000003,
+          "drum": "ride",
+          "velocity": 0.3867657856707857,
+          "hand": "L"
+        },
+        {
+          "time": 0.5437000000000001,
+          "drum": "hihat",
+          "velocity": 0.6806539937172096,
+          "hand": "R"
+        },
+        {
+          "time": 0.6436999999999999,
+          "drum": "snare",
+          "velocity": 0.7972696160426106,
+          "hand": "L"
+        },
+        {
+          "time": 0.6887,
+          "drum": "snare",
+          "velocity": 0.5915246360111758,
+          "hand": "R"
+        },
+        {
+          "time": 0.7537,
+          "drum": "hihat",
+          "velocity": 0.14209438653519196,
+          "hand": "L"
+        },
+        {
+          "time": 0.9037,
+          "drum": "tom",
+          "velocity": 0.12630064249164963,
+          "hand": "R"
+        },
+        {
+          "time": 1.0537,
+          "drum": "hihat",
+          "velocity": 0.2763730461327196,
+          "hand": "L"
+        },
+        {
+          "time": 1.1187,
+          "drum": "hihat",
+          "velocity": 0.9497169509183585,
+          "hand": "R"
+        },
+        {
+          "time": 1.2687,
+          "drum": "tom",
+          "velocity": 0.8292321593891724,
+          "hand": "L"
+        },
+        {
+          "time": 1.3687,
+          "drum": "snare",
+          "velocity": 0.46664572299897034,
+          "hand": "R"
+        },
+        {
+          "time": 1.5187,
+          "drum": "tom",
+          "velocity": 0.20205267705728125,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 449,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 2.6020852139652106e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 2.6020852139652106e-14,
+        "min_stick_gap_mm": -9.879006563806966,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -6.418476861114186e-14,
+        "max_grip_detachment_mm": 4.163336342344337e-14,
+        "elbow_min_deg": 60.75920312473993,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 4.763275003687729,
+        "max_tip_speed_m_s": 5.943899900078663,
+        "violations": [
+          "stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 450,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 2.6020852139652106e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 2.6020852139652106e-14,
+        "min_stick_gap_mm": -9.879006563806966,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -6.418476861114186e-14,
+        "min_interhand_finger_gap_mm": -0.7137590778550917,
+        "min_finger_opposite_stick_gap_mm": -10.316946353232652,
+        "max_grip_detachment_mm": 4.163336342344337e-14,
+        "elbow_min_deg": 60.75920312473993,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 4.763275003687729,
+        "max_tip_speed_m_s": 5.943899900078663,
+        "violations": [
+          "stick_collision",
+          "interhand_finger_collision",
+          "finger_opposite_stick_collision",
+          "wrist_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 8,
+      "events": [
+        {
+          "time": 0.3487,
+          "drum": "ride",
+          "velocity": 0.6861832085682656,
+          "hand": "R"
+        },
+        {
+          "time": 0.49870000000000003,
+          "drum": "hihat",
+          "velocity": 0.7160762276577902,
+          "hand": "L"
+        },
+        {
+          "time": 0.5987,
+          "drum": "tom",
+          "velocity": 0.751028792094943,
+          "hand": "R"
+        },
+        {
+          "time": 0.6987000000000001,
+          "drum": "hihat",
+          "velocity": 0.2887187387211709,
+          "hand": "L"
+        },
+        {
+          "time": 0.8487,
+          "drum": "tom",
+          "velocity": 0.5560798197286312,
+          "hand": "R"
+        },
+        {
+          "time": 0.9487000000000001,
+          "drum": "ride",
+          "velocity": 0.19947522761948397,
+          "hand": "L"
+        },
+        {
+          "time": 1.0137,
+          "drum": "snare",
+          "velocity": 0.5370062575001175,
+          "hand": "R"
+        },
+        {
+          "time": 1.0587,
+          "drum": "hihat",
+          "velocity": 0.38677110125665415,
+          "hand": "L"
+        },
+        {
+          "time": 1.1037000000000001,
+          "drum": "ride",
+          "velocity": 0.5933838572052674,
+          "hand": "R"
+        },
+        {
+          "time": 1.1687,
+          "drum": "tom",
+          "velocity": 0.5118667580868893,
+          "hand": "L"
+        },
+        {
+          "time": 1.2337,
+          "drum": "snare",
+          "velocity": 0.30887297079426196,
+          "hand": "R"
+        },
+        {
+          "time": 1.2987,
+          "drum": "tom",
+          "velocity": 0.31789820824503295,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 396,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 12.577786201116192,
+        "min_stick_gap_mm": 33.500150358175844,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999953,
+        "min_grip_gap_mm": -6.938893903907228e-14,
+        "max_grip_detachment_mm": 4.336808689942018e-14,
+        "elbow_min_deg": 65.23683467063898,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 6.523277645392595,
+        "max_tip_speed_m_s": 12.796966849911543,
+        "violations": [
+          "drum_penetration",
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 397,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 12.577786201116192,
+        "min_stick_gap_mm": 33.500150358175844,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999953,
+        "min_grip_gap_mm": -6.938893903907228e-14,
+        "min_interhand_finger_gap_mm": 9.781594211858216,
+        "min_finger_opposite_stick_gap_mm": 20.792459874640173,
+        "max_grip_detachment_mm": 4.336808689942018e-14,
+        "elbow_min_deg": 65.23683467063898,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 6.523277645392595,
+        "max_tip_speed_m_s": 12.796966849911543,
+        "violations": [
+          "drum_penetration",
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 9,
+      "events": [
+        {
+          "time": 0.4537,
+          "drum": "snare",
+          "velocity": 0.8211197138520938,
+          "hand": "R"
+        },
+        {
+          "time": 0.6037,
+          "drum": "hihat",
+          "velocity": 0.2630308333469233,
+          "hand": "L"
+        },
+        {
+          "time": 0.6487,
+          "drum": "tom",
+          "velocity": 0.11098406255556845,
+          "hand": "R"
+        },
+        {
+          "time": 0.7137,
+          "drum": "ride",
+          "velocity": 0.8851822037985447,
+          "hand": "L"
+        },
+        {
+          "time": 0.8137000000000001,
+          "drum": "ride",
+          "velocity": 0.545994138893382,
+          "hand": "R"
+        },
+        {
+          "time": 0.9637,
+          "drum": "hihat",
+          "velocity": 0.5583628186861656,
+          "hand": "L"
+        },
+        {
+          "time": 1.0087000000000002,
+          "drum": "snare",
+          "velocity": 0.6710162277231654,
+          "hand": "R"
+        },
+        {
+          "time": 1.1587,
+          "drum": "snare",
+          "velocity": 0.633051454743817,
+          "hand": "L"
+        },
+        {
+          "time": 1.3087000000000002,
+          "drum": "ride",
+          "velocity": 0.41964101351715866,
+          "hand": "R"
+        },
+        {
+          "time": 1.4587,
+          "drum": "ride",
+          "velocity": 0.9795538096107721,
+          "hand": "L"
+        },
+        {
+          "time": 1.5237,
+          "drum": "hihat",
+          "velocity": 0.9788527615777063,
+          "hand": "R"
+        },
+        {
+          "time": 1.5687,
+          "drum": "snare",
+          "velocity": 0.9517172862337844,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 461,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": -11.89637982333509,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -6.765421556309548e-14,
+        "max_grip_detachment_mm": 4.5102810375396984e-14,
+        "elbow_min_deg": 64.17946187340678,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 6.510889594992888,
+        "max_tip_speed_m_s": 12.725997745820807,
+        "violations": [
+          "stick_collision",
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 462,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": -11.89637982333509,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -6.765421556309548e-14,
+        "min_interhand_finger_gap_mm": -2.971651734655776,
+        "min_finger_opposite_stick_gap_mm": -7.1193788548913455,
+        "max_grip_detachment_mm": 4.5102810375396984e-14,
+        "elbow_min_deg": 64.17946187340678,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 6.510889594992888,
+        "max_tip_speed_m_s": 12.725997745820807,
+        "violations": [
+          "stick_collision",
+          "interhand_finger_collision",
+          "finger_opposite_stick_collision",
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 10,
+      "events": [
+        {
+          "time": 0.40370000000000006,
+          "drum": "snare",
+          "velocity": 0.17152019454263773,
+          "hand": "R"
+        },
+        {
+          "time": 0.4687,
+          "drum": "snare",
+          "velocity": 0.11210718138841747,
+          "hand": "L"
+        },
+        {
+          "time": 0.5137,
+          "drum": "ride",
+          "velocity": 0.7817294070039331,
+          "hand": "R"
+        },
+        {
+          "time": 0.6637,
+          "drum": "tom",
+          "velocity": 0.4703396448517916,
+          "hand": "L"
+        },
+        {
+          "time": 0.7087,
+          "drum": "ride",
+          "velocity": 0.9116349517830923,
+          "hand": "R"
+        },
+        {
+          "time": 0.7737,
+          "drum": "snare",
+          "velocity": 0.9475582067910059,
+          "hand": "L"
+        },
+        {
+          "time": 0.8387,
+          "drum": "hihat",
+          "velocity": 0.1962040762197177,
+          "hand": "R"
+        },
+        {
+          "time": 0.9037,
+          "drum": "snare",
+          "velocity": 0.6779406759040936,
+          "hand": "L"
+        },
+        {
+          "time": 1.0036999999999998,
+          "drum": "tom",
+          "velocity": 0.184753748594345,
+          "hand": "R"
+        },
+        {
+          "time": 1.0687,
+          "drum": "hihat",
+          "velocity": 0.6536206830697295,
+          "hand": "L"
+        },
+        {
+          "time": 1.1337,
+          "drum": "tom",
+          "velocity": 0.35821953246697724,
+          "hand": "R"
+        },
+        {
+          "time": 1.2836999999999998,
+          "drum": "ride",
+          "velocity": 0.6348095443772457,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 393,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.6653345369377348e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": 25.751867937352184,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999967,
+        "min_grip_gap_mm": -6.418476861114186e-14,
+        "max_grip_detachment_mm": 3.9898639947466563e-14,
+        "elbow_min_deg": 58.51479493745823,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 4.809059934388687,
+        "max_tip_speed_m_s": 10.791619414607053,
+        "violations": [
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 394,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.6653345369377348e-13,
+        "max_stick_length_error_mm": 1.6653345369377348e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": 25.751867937352184,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.999999999999967,
+        "min_grip_gap_mm": -6.418476861114186e-14,
+        "min_interhand_finger_gap_mm": 1.1041451032351053,
+        "min_finger_opposite_stick_gap_mm": 11.993629536750447,
+        "max_grip_detachment_mm": 3.9898639947466563e-14,
+        "elbow_min_deg": 58.51479493745823,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 4.809059934388687,
+        "max_tip_speed_m_s": 10.791619414607053,
+        "violations": [
+          "interhand_finger_collision",
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    },
+    {
+      "pattern": 11,
+      "events": [
+        {
+          "time": 0.40370000000000006,
+          "drum": "ride",
+          "velocity": 0.34205077435905706,
+          "hand": "R"
+        },
+        {
+          "time": 0.5537000000000001,
+          "drum": "hihat",
+          "velocity": 0.30756898649973285,
+          "hand": "L"
+        },
+        {
+          "time": 0.6187,
+          "drum": "tom",
+          "velocity": 0.7142688113549144,
+          "hand": "R"
+        },
+        {
+          "time": 0.7187000000000001,
+          "drum": "ride",
+          "velocity": 0.2865248540949958,
+          "hand": "L"
+        },
+        {
+          "time": 0.8687,
+          "drum": "ride",
+          "velocity": 0.6162239516898294,
+          "hand": "R"
+        },
+        {
+          "time": 0.9337000000000002,
+          "drum": "ride",
+          "velocity": 0.36481040174349977,
+          "hand": "L"
+        },
+        {
+          "time": 0.9987000000000001,
+          "drum": "ride",
+          "velocity": 0.4476262928746344,
+          "hand": "R"
+        },
+        {
+          "time": 1.0987,
+          "drum": "hihat",
+          "velocity": 0.3060805319021771,
+          "hand": "L"
+        },
+        {
+          "time": 1.1437000000000002,
+          "drum": "ride",
+          "velocity": 0.746194180658788,
+          "hand": "R"
+        },
+        {
+          "time": 1.1887,
+          "drum": "tom",
+          "velocity": 0.8371791732328409,
+          "hand": "L"
+        },
+        {
+          "time": 1.3387000000000002,
+          "drum": "ride",
+          "velocity": 0.9852362541643356,
+          "hand": "R"
+        },
+        {
+          "time": 1.4887000000000001,
+          "drum": "hihat",
+          "velocity": 0.6684551791437732,
+          "hand": "L"
+        }
+      ],
+      "previous_qa": {
+        "samples": 442,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": -11.474150854458584,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -7.28583859910259e-14,
+        "max_grip_detachment_mm": 4.163336342344337e-14,
+        "elbow_min_deg": 60.94270001707905,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 5.64411628531095,
+        "max_tip_speed_m_s": 10.387304882374119,
+        "violations": [
+          "stick_collision",
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false
+      },
+      "qa": {
+        "samples": 443,
+        "events": 12,
+        "hits": 12,
+        "max_contact_error_mm": 7.112366251504909e-14,
+        "max_reach_error_mm": 0.0,
+        "max_arm_length_error_mm": 1.1102230246251565e-13,
+        "max_stick_length_error_mm": 1.1102230246251565e-13,
+        "max_surface_penetration_mm": 7.112366251504909e-14,
+        "min_stick_gap_mm": -11.474150854458584,
+        "max_finger_surface_penetration_mm": 0.0,
+        "min_finger_gap_mm": 5.99999999999996,
+        "min_grip_gap_mm": -7.28583859910259e-14,
+        "min_interhand_finger_gap_mm": -4.841684350209379,
+        "min_finger_opposite_stick_gap_mm": -7.72656547545489,
+        "max_grip_detachment_mm": 4.163336342344337e-14,
+        "elbow_min_deg": 60.94270001707905,
+        "elbow_max_deg": 124.35057398923126,
+        "max_wrist_speed_m_s": 5.64411628531095,
+        "max_tip_speed_m_s": 10.387304882374119,
+        "violations": [
+          "stick_collision",
+          "interhand_finger_collision",
+          "finger_opposite_stick_collision",
+          "wrist_speed",
+          "tip_speed"
+        ],
+        "missed_events": [],
+        "passed": false,
+        "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+        "exclusions": [
+          "rendered hand/body/costume meshes",
+          "arm and drum-shell collision",
+          "continuous time",
+          "force dynamics",
+          "feet/pedals"
+        ]
+      }
+    }
+  ],
+  "stress_summary": {
+    "patterns": 12,
+    "accepted": 0,
+    "contacts": 144,
+    "violations": {
+      "stick_collision": 9,
+      "wrist_speed": 12,
+      "drum_penetration": 3,
+      "interhand_finger_collision": 8,
+      "tip_speed": 5,
+      "finger_opposite_stick_collision": 7
+    }
+  },
+  "conclusion": "Demo and roll acceptance is limited to this kinematic proxy scope; retained failures are not performances.",
+  "scope": "sampled kinematic arms, rigid sticks, retained grip capsules and finite drum surfaces",
+  "exclusions": [
+    "rendered hand/body/costume meshes",
+    "arm and drum-shell collision",
+    "continuous time",
+    "force dynamics",
+    "feet/pedals"
+  ]
+}

@@ -35,7 +35,7 @@ from blockout.rig.hand import HandRig
 from blockout.rig.skin_contact import pose_vector, musical_anchors, restore_pose
 from blockout.skin import Skin
 from blockout.subdivision import catmull_clark
-from blockout.piano_geometry import PianoScene
+from blockout.piano_geometry import scene_from_animation
 
 source = json.loads(args.animation.read_text())
 anim = copy.deepcopy(source)
@@ -49,7 +49,7 @@ for side in args.sides:
     for index in map(int, args.frames.split(',')):
         frame = source['frames'][index]
         hand = frame['hands'][side]
-        scene = PianoScene(source['keyboard'], frame['keys'], music_desk=True)
+        scene = scene_from_animation(source, frame, music_desk=True)
         vertices = surface[0] @ skin.from_frame(hand)
         anchors = musical_anchors(skin, surface[0], vertices, hand, scene, keys, mode=args.anchor_mode)
         start = time.monotonic()

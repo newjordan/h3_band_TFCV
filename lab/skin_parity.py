@@ -22,6 +22,7 @@ def main():
     from blockout.skin import Skin
     from blockout.rig.skeleton import hand_scale
     from blockout.piano_geometry import PianoScene
+    from blockout.key_shapes import NotchedPianoScene
     output.parent.mkdir(parents=True, exist_ok=True)
     sys.argv = ['blender_piano.py', '--', str(source), str(output.parent / 'parity_scene'),
                 '--frames', str(indices[0]), '--meshqa', str(output.with_suffix('.mesh.json'))]
@@ -47,14 +48,17 @@ def main():
         triangles = np.array([tri.vertices for tri in deformed.loop_triangles], dtype=np.int32)
         polygons = np.array([poly.vertices[:] for poly in deformed.polygons], dtype=np.int32)
         evaluated.to_mesh_clear()
-        scene = PianoScene(anim['keyboard'], frame['keys'], music_desk=True)
+        scene_type = NotchedPianoScene if renderer['KEY_SHAPE'] == 'notched' else PianoScene
+        scene = scene_type(anim['keyboard'], frame['keys'], music_desk=True)
         box_error = 0.
         signs = np.array([[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)])
         for bi, spec in enumerate(scene.specs):
+            if spec.pitch is not None and spec is not next(p for p in scene.specs if p.pitch == spec.pitch):
+                continue
             ob = bpy.data.objects[spec.name]
             actual = np.array([ob.matrix_world @ vertex.co for vertex in ob.data.vertices])
-            local = scene.centers[bi] + signs * scene.half[bi]
-            expected = local @ scene.rotations[bi].T + scene.origins[bi]
+            ids = [j for j, p in enumerate(scene.specs) if p.pitch == spec.pitch] if spec.pitch is not None else [bi]
+            expected = np.unique(np.concatenate([(scene.centers[j] + signs * scene.half[j]) @ scene.rotations[j].T + scene.origins[j] for j in ids]), axis=0)
             error = np.linalg.norm(actual[:, None, :] - expected[None, :, :], axis=2)
             box_error = max(box_error, float(max(error.min(0).max(), error.min(1).max())) * 1000.)
         if levels:

@@ -81,16 +81,44 @@ def box(name, x0, x1, y0, y1, z0, z1, m, origin=None):
 # ------------------------------------------------------------------ piano
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from blockout.piano_geometry import piano_boxes
+from blockout.key_shapes import notched_boxes, key_outline
+
+KEY_SHAPE = opts.get('--key-shape', anim.get('geometry', {}).get('key_shape', 'rectangular'))
+if KEY_SHAPE not in ('rectangular', 'notched'):
+    raise ValueError('Unknown key geometry')
+
+
+def shaped_key(parts, material):
+    """One watertight prism, using the exact union of head/stem colliders."""
+    shape = key_outline(parts)
+    origin = Vector(parts[0].origin)
+    n = len(shape)
+    vertices = [tuple(Vector((x, y, z)) - origin) for z in (parts[0].lower[2], parts[0].upper[2]) for x, y in shape]
+    faces = [tuple(range(n - 1, -1, -1)), tuple(range(n, 2 * n))]
+    faces += [(i, (i + 1) % n, (i + 1) % n + n, i + n) for i in range(n)]
+    mesh = bpy.data.meshes.new(parts[0].name)
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    ob = bpy.data.objects.new(parts[0].name, mesh)
+    ob.location = origin
+    ob.data.materials.append(material)
+    COL.objects.link(ob)
+    return ob
 
 keys = {}
 xs = [k["x"] for k in anim["keyboard"]]
 X0, X1 = min(xs) - 0.02, max(xs) + 0.02
 VIEW = opts.get("--view", "pov")
 materials = dict(white=M_WHITE, black=M_BLACK, case=M_CASE, floor=M_FLOOR)
-for spec in piano_boxes(anim["keyboard"], music_desk=VIEW == "pov"):
+KEY_SPECS = (notched_boxes if KEY_SHAPE == 'notched' else piano_boxes)(anim['keyboard'], music_desk=VIEW == 'pov')
+parts_by_pitch = {spec.pitch: [p for p in KEY_SPECS if p.pitch == spec.pitch] for spec in KEY_SPECS if spec.pitch is not None}
+for spec in KEY_SPECS:
+    if spec.pitch is not None and spec is not parts_by_pitch[spec.pitch][0]:
+        continue
     lo, hi = spec.lower, spec.upper
-    ob = box(spec.name, lo[0], hi[0], lo[1], hi[1], lo[2], hi[2],
-             materials[spec.material], origin=spec.origin)
+    ob = (shaped_key(parts_by_pitch[spec.pitch], materials[spec.material])
+          if KEY_SHAPE == 'notched' and spec.pitch is not None else
+          box(spec.name, lo[0], hi[0], lo[1], hi[1], lo[2], hi[2], materials[spec.material], origin=spec.origin))
     if spec.pitch is None:
         continue
     keys[str(spec.pitch)] = ob
@@ -671,10 +699,10 @@ if MESHQA:
     NV = len(me0.vertices)
 
     KEY_BOXES = []
-    for key in anim["keyboard"]:
-        ob = keys[str(key["pitch"])]
-        corners = np.array([list(v.co) for v in ob.data.vertices])
-        KEY_BOXES.append((key["pitch"], ob, corners.min(0), corners.max(0)))
+    for spec in KEY_SPECS:
+        if spec.pitch is not None:
+            ob = keys[str(spec.pitch)]
+            KEY_BOXES.append((spec.pitch, ob, np.asarray(spec.lower) - spec.origin, np.asarray(spec.upper) - spec.origin))
     LAST_CO = {}
     PARTS_HIT = {}
 

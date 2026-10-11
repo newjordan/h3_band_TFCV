@@ -1,0 +1,39 @@
+name = "skin-contact-trajectory"
+description = "Review connected anatomical contact motion, empirical gates and human form priors."
+deadline_secs = 900
+
+[[node]]
+id = "evidence"
+persona = "librarian"
+tools = "none"
+pool = "research"
+pool_max_inflight = 2
+prompt = """Review the supplied primary-source notes and local measured facts without tool calls. Return at most 180 words on the proposed connected-motion experiment and its justified scope. Attribute sources; this is an excerpt-based review, not independent full-paper verification. Task: {task}"""
+
+[[node]]
+id = "counterevidence"
+persona = "librarian"
+tools = "none"
+pool = "research"
+pool_max_inflight = 2
+prompt = """Return at most 180 words identifying the strongest failure or misleading acceptance risk in this exact trajectory/contact/form experiment. Use only supplied facts and primary notes. No tools or broad literature survey. Task: {task}"""
+
+[[node]]
+id = "constraints"
+persona = "librarian"
+tools = "none"
+pool = "research"
+pool_max_inflight = 2
+prompt = """Define decisive acceptance/rejection gates and one useful ablation in at most 180 words. Separate geometric constraints, musical support, engineering speed bounds, human-reference priors and continuous collision proof. No tools. Task: {task}"""
+
+[[node]]
+id = "synthesize"
+depends_on = ["evidence", "counterevidence", "constraints"]
+prompt = """Propose the next connected-motion experiment in at most 300 words using only upstream evidence. Explain whether frozen-pose coordinate corrections can answer it or whether shared control knots need to move. Keep all geometry, notes, anatomy and scale accounted for. Do not claim sampled pass proves CCD, naturalness, force dynamics or a complete performance. Task: {task}"""
+
+[[node]]
+id = "verify"
+persona = "reviewer"
+depends_on = ["synthesize"]
+gate = { verdict = true, retry = "synthesize", credit_to = "synthesize", max_retries = 1 }
+prompt = """Audit the substantive experiment proposal, attribution, nonlinear articulated path scope, stable contact, dropped-note accounting and human-prior uncertainty. The graph is still running; an upstream node need not supply a completed graph-run receipt. Judge the proposed method, not an execution receipt. Reject a failure report without a substantive proposal, weaker-scope success claims, silent geometry/anatomy changes or optimizer-only acceptance. The supplied primary notes permit an excerpt-based methodological review; do not require independent source fetches from tool-less nodes or imply empirical rig approval. Keep feedback below 200 words and include the verdict. Task: {task}\nCandidate: {output:synthesize}"""

@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from blockout.skin import Skin
 from blockout.subdivision import catmull_clark
-from blockout.piano_geometry import PianoScene
+from blockout.piano_geometry import scene_from_animation
 
 
 def quad_triangles(faces):
@@ -69,7 +69,7 @@ def main():
     records, start = [], time.monotonic()
     for index in ids:
         frame = anim['frames'][index]
-        scene = PianoScene(anim['keyboard'], frame['keys'], music_desk=True)
+        scene = scene_from_animation(anim, frame, music_desk=True)
         hands = {}
         for side, skin in skins.items():
             vertices = surfaces[side][0] @ skin.from_frame(frame['hands'][side])

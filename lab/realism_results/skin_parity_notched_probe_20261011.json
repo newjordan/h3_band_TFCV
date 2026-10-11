@@ -1,0 +1,49 @@
+{
+  "source": "/home/frosty40/h3/rig_realism/artifacts/realism/notched_pose_probe.anim.json",
+  "hand_scale": 1.0,
+  "surface": "normalized_linear_blend_then_catmull_clark",
+  "subdivision_levels": 2,
+  "limit_surface": true,
+  "boundary_smooth": "ALL",
+  "tolerance_mm": 0.01,
+  "records": [
+    {
+      "frame": 23,
+      "side": "both",
+      "vertices": 56338,
+      "data_file": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_parity_notched_probe_frame23.npz",
+      "scene_box_maximum_error_mm": 9.58917037508859e-05,
+      "topology_count_matches": true,
+      "vertex_mapping_bijective": true,
+      "surface_faces_match": true,
+      "maximum_error_mm": 0.0010946724186906114,
+      "rms_error_mm": 0.0006699566180663811
+    },
+    {
+      "frame": 24,
+      "side": "both",
+      "vertices": 56338,
+      "data_file": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_parity_notched_probe_frame24.npz",
+      "scene_box_maximum_error_mm": 9.58917037508859e-05,
+      "topology_count_matches": true,
+      "vertex_mapping_bijective": true,
+      "surface_faces_match": true,
+      "maximum_error_mm": 0.0011490145831712234,
+      "rms_error_mm": 0.0006961984709378279
+    },
+    {
+      "frame": 25,
+      "side": "both",
+      "vertices": 56338,
+      "data_file": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_parity_notched_probe_frame25.npz",
+      "scene_box_maximum_error_mm": 9.58917037508859e-05,
+      "topology_count_matches": true,
+      "vertex_mapping_bijective": true,
+      "surface_faces_match": true,
+      "maximum_error_mm": 0.0012372314846576232,
+      "rms_error_mm": 0.000741378369574699
+    }
+  ],
+  "passed": true,
+  "validation": "complete"
+}

@@ -1,0 +1,2727 @@
+{
+  "source": "/home/frosty40/h3/rig_realism/artifacts/realism/notched_pose_probe.anim.json",
+  "window": [
+    23,
+    26
+  ],
+  "sample_fps": 240,
+  "interpolation": "linear anatomical joints/roots/key depths; SO(3) wrist; exact two-bone elbow circle",
+  "continuous_time_proven": false,
+  "exclusions": [
+    "exact self/interhand/body/costume",
+    "CCD proof",
+    "score note completeness"
+  ],
+  "sampled_instrument_clear": false,
+  "samples": 21,
+  "affected_samples": 18,
+  "maximum_penetration_mm": 3.328055735651921,
+  "motion": [
+    {
+      "frame": 23,
+      "side": "R",
+      "joint_speed_rad_s": 9.507726806399983,
+      "wrist_speed_m_s": 0.13534355437243484,
+      "wrist_angular_speed_rad_s": 0.7518172262218504,
+      "elbow_plane_speed_rad_s": 0.047468374110291846
+    },
+    {
+      "frame": 23,
+      "side": "L",
+      "joint_speed_rad_s": 6.6005944804290095,
+      "wrist_speed_m_s": 0.1405095889132822,
+      "wrist_angular_speed_rad_s": 1.1513910997802335,
+      "elbow_plane_speed_rad_s": 0.49978398084603
+    },
+    {
+      "frame": 24,
+      "side": "R",
+      "joint_speed_rad_s": 10.127406187645155,
+      "wrist_speed_m_s": 0.2646585639125936,
+      "wrist_angular_speed_rad_s": 1.9850933714630108,
+      "elbow_plane_speed_rad_s": 0.3609140712611838
+    },
+    {
+      "frame": 24,
+      "side": "L",
+      "joint_speed_rad_s": 9.514767391767007,
+      "wrist_speed_m_s": 0.11229988830573334,
+      "wrist_angular_speed_rad_s": 1.9421444535296228,
+      "elbow_plane_speed_rad_s": 0.6582446140816661
+    }
+  ],
+  "records": [
+    {
+      "frame": 23,
+      "fraction": 0.0,
+      "time": 0.9583,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.009978041442237559,
+          "worst_vertex": 9949,
+          "worst_position": [
+            0.17580252284979936,
+            0.07881234159116172,
+            0.004555586356133029
+          ],
+          "worst_solid": "key73",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -1.7017141255154522e-06
+        },
+        "L": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.009914178909060933,
+          "worst_vertex": 2109,
+          "worst_position": [
+            -0.06156168570940732,
+            0.09050824252648401,
+            0.012009914178909061
+          ],
+          "worst_solid": "key56",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": 9.04234230894585e-07
+        }
+      },
+      "sampled_motion": {},
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 24216,
+              "top_gap_mm": 0.09997669580023102,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": 0.009978041442237559,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 1.0
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.10000183885737896,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 13295,
+              "top_gap_mm": 0.010010226200068643,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 23,
+      "fraction": 0.1,
+      "time": 0.96247,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.0011096467589163939,
+          "worst_vertex": 13295,
+          "worst_position": [
+            0.2142620728414144,
+            0.0003795650762062304,
+            -0.00998838718942529
+          ],
+          "worst_solid": "key76",
+          "vertex_contacts": {},
+          "triangle_contacts": {
+            "key76": 7
+          },
+          "triangle_intersections": 7,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.0031126816546211966
+        },
+        "L": {
+          "penetrating_vertices": 1,
+          "maximum_penetration_mm": 0.021396508032036493,
+          "minimum_clearance_mm": -0.021396508032036493,
+          "worst_vertex": 2109,
+          "worst_position": [
+            -0.06366857818898336,
+            0.09138217855873311,
+            0.011978603491967964
+          ],
+          "worst_solid": "key56",
+          "vertex_contacts": {
+            "key56": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.021396508032036493
+            }
+          },
+          "triangle_contacts": {
+            "key56": 12
+          },
+          "triangle_intersections": 12,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -3.6800638109762973e-06
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.507726806399956,
+          "wrist_speed_m_s": 0.13534355437243384,
+          "wrist_angular_speed_rad_s": 0.7518172262218451,
+          "elbow_plane_speed_rad_s": 0.0732456778821534
+        },
+        "L": {
+          "joint_speed_rad_s": 6.600594480428993,
+          "wrist_speed_m_s": 0.14050958891328288,
+          "wrist_angular_speed_rad_s": 1.151391099780226,
+          "elbow_plane_speed_rad_s": 0.5196508109726944
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": false,
+              "vertex": 24216,
+              "top_gap_mm": 0.11651109729823567,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": 0.005695176759582671,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 0.9932000000000001
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.07019189264271086,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 13295,
+              "top_gap_mm": 0.0011096467589170353,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": [
+          69
+        ]
+      }
+    },
+    {
+      "frame": 23,
+      "fraction": 0.2,
+      "time": 0.9666400000000002,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.002081591948014175,
+          "minimum_clearance_mm": -0.002081591948014175,
+          "worst_vertex": 13295,
+          "worst_position": [
+            0.21419168159603372,
+            0.00041470898598092724,
+            -0.009989239128426699
+          ],
+          "worst_solid": "key76",
+          "vertex_contacts": {},
+          "triangle_contacts": {
+            "key69": 5,
+            "key76": 8
+          },
+          "triangle_intersections": 13,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.005525342306030023
+        },
+        "L": {
+          "penetrating_vertices": 7,
+          "maximum_penetration_mm": 0.08489689451150577,
+          "minimum_clearance_mm": -0.08489689451150577,
+          "worst_vertex": 23901,
+          "worst_position": [
+            -0.21733338625986057,
+            0.025753932962774735,
+            -0.008180782430810423
+          ],
+          "worst_solid": "key45",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 6,
+              "maximum_penetration_mm": 0.08489689451150577
+            },
+            "key56": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.01054049059391951
+            }
+          },
+          "triangle_contacts": {
+            "key45": 45,
+            "key56": 13
+          },
+          "triangle_intersections": 58,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -7.272128649260523e-06
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.507726806399706,
+          "wrist_speed_m_s": 0.13534355437243065,
+          "wrist_angular_speed_rad_s": 0.7518172262218336,
+          "elbow_plane_speed_rad_s": 0.07030172668547312
+        },
+        "L": {
+          "joint_speed_rad_s": 6.600594480428817,
+          "wrist_speed_m_s": 0.14050958891327886,
+          "wrist_angular_speed_rad_s": 1.1513910997802035,
+          "elbow_plane_speed_rad_s": 0.5166559533792546
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": false,
+              "vertex": 24216,
+              "top_gap_mm": 0.13484502449544547,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": 0.0024320151021765823,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 0.9864
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.0470416423232856,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 13295,
+              "top_gap_mm": -0.002081591948014133,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": [
+          69
+        ]
+      }
+    },
+    {
+      "frame": 23,
+      "fraction": 0.3,
+      "time": 0.97081,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.0001829816154170355,
+          "worst_vertex": 9949,
+          "worst_position": [
+            0.17576519237474175,
+            0.0785121442188475,
+            0.004666499920306031
+          ],
+          "worst_solid": "key73",
+          "vertex_contacts": {},
+          "triangle_contacts": {
+            "key69": 7,
+            "key76": 9
+          },
+          "triangle_intersections": 16,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": -0.007242055036955214
+        },
+        "L": {
+          "penetrating_vertices": 9,
+          "maximum_penetration_mm": 0.1461505190682253,
+          "minimum_clearance_mm": -0.1461505190682253,
+          "worst_vertex": 23901,
+          "worst_position": [
+            -0.21733533835673924,
+            0.02428389255089057,
+            -0.008363204002994947
+          ],
+          "worst_solid": "key45",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 9,
+              "maximum_penetration_mm": 0.1461505190682253
+            }
+          },
+          "triangle_contacts": {
+            "key45": 61
+          },
+          "triangle_intersections": 61,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": -9.87242020251966e-06
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.507726806400466,
+          "wrist_speed_m_s": 0.13534355437244344,
+          "wrist_angular_speed_rad_s": 0.7518172262218769,
+          "elbow_plane_speed_rad_s": 0.06734627523717225
+        },
+        "L": {
+          "joint_speed_rad_s": 6.6005944804293435,
+          "wrist_speed_m_s": 0.14050958891328394,
+          "wrist_angular_speed_rad_s": 1.1513910997802845,
+          "elbow_plane_speed_rad_s": 0.5137080732257954
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": false,
+              "vertex": 24216,
+              "top_gap_mm": 0.15499345802932285,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": 0.0001829816154170355,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 0.9796
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.03053959750739336,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 13295,
+              "top_gap_mm": 0.00042224896665629604,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": [
+          69
+        ]
+      }
+    },
+    {
+      "frame": 23,
+      "fraction": 0.4,
+      "time": 0.9749800000000001,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.001057547425069305,
+          "minimum_clearance_mm": -0.001057547425069305,
+          "worst_vertex": 9949,
+          "worst_position": [
+            0.1757532838498112,
+            0.07840745774935957,
+            0.004705319270457846
+          ],
+          "worst_solid": "key73",
+          "vertex_contacts": {},
+          "triangle_contacts": {
+            "key69": 8,
+            "key76": 14
+          },
+          "triangle_intersections": 22,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.008265330269449297
+        },
+        "L": {
+          "penetrating_vertices": 12,
+          "maximum_penetration_mm": 0.1811706732489926,
+          "minimum_clearance_mm": -0.1811706732489926,
+          "worst_vertex": 23901,
+          "worst_position": [
+            -0.21733188478851925,
+            0.022804833068801312,
+            -0.00852051987984157
+          ],
+          "worst_solid": "key45",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 12,
+              "maximum_penetration_mm": 0.1811706732489926
+            }
+          },
+          "triangle_contacts": {
+            "key45": 77
+          },
+          "triangle_intersections": 77,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": -1.1481398855955893e-05
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.507726806399706,
+          "wrist_speed_m_s": 0.13534355437243042,
+          "wrist_angular_speed_rad_s": 0.7518172262218323,
+          "elbow_plane_speed_rad_s": 0.06437946884772607
+        },
+        "L": {
+          "joint_speed_rad_s": 6.600594480428817,
+          "wrist_speed_m_s": 0.1405095889132823,
+          "wrist_angular_speed_rad_s": 1.1513910997802057,
+          "elbow_plane_speed_rad_s": 0.5108067064841295
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": false,
+              "vertex": 24216,
+              "top_gap_mm": 0.17697120076042422,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": -0.001057547425069305,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 0.9728
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.02067336979041128,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 13295,
+              "top_gap_mm": 0.008605873691289562,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": [
+          69
+        ]
+      }
+    },
+    {
+      "frame": 23,
+      "fraction": 0.5,
+      "time": 0.97915,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 1,
+          "maximum_penetration_mm": 0.022984722253347606,
+          "minimum_clearance_mm": -0.022984722253347606,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.11582155367055207,
+            0.0004271559849596497,
+            -0.010009357764855011
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.022984722253347606
+            }
+          },
+          "triangle_contacts": {
+            "key69": 12,
+            "key76": 14
+          },
+          "triangle_intersections": 26,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 1.1102230246251565e-13,
+          "proxy_self_clearance_mm": -0.00859781558528068
+        },
+        "L": {
+          "penetrating_vertices": 14,
+          "maximum_penetration_mm": 0.1958002013203418,
+          "minimum_clearance_mm": -0.1958002013203418,
+          "worst_vertex": 13302,
+          "worst_position": [
+            -0.21789194642984144,
+            0.021982516965306658,
+            -0.008614808608593764
+          ],
+          "worst_solid": "key45",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 14,
+              "maximum_penetration_mm": 0.1958002013203418
+            }
+          },
+          "triangle_contacts": {
+            "key45": 87
+          },
+          "triangle_intersections": 87,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -1.2099525171713199e-05
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.507726806400209,
+          "wrist_speed_m_s": 0.13534355437243764,
+          "wrist_angular_speed_rad_s": 0.751817226221871,
+          "elbow_plane_speed_rad_s": 0.0614014548057804
+        },
+        "L": {
+          "joint_speed_rad_s": 6.6005944804291685,
+          "wrist_speed_m_s": 0.14050958891328333,
+          "wrist_angular_speed_rad_s": 1.151391099780256,
+          "elbow_plane_speed_rad_s": 0.5079514039994489
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": false,
+              "vertex": 776,
+              "top_gap_mm": -0.022984722253347203,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": -0.0012952444230478893,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 0.966
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.017429672975578146,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 13295,
+              "top_gap_mm": 0.02245295311080133,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": [
+          69
+        ]
+      }
+    },
+    {
+      "frame": 23,
+      "fraction": 0.6,
+      "time": 0.98332,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0021528335713109914,
+          "minimum_clearance_mm": -0.0021528335713109914,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.11605573434690006,
+            0.0005188848145686624,
+            -0.009982355166124045
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {},
+          "triangle_contacts": {
+            "key69": 5,
+            "key76": 13
+          },
+          "triangle_intersections": 18,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.008242293768207995
+        },
+        "L": {
+          "penetrating_vertices": 16,
+          "maximum_penetration_mm": 0.20148908088155926,
+          "minimum_clearance_mm": -0.20148908088155926,
+          "worst_vertex": 13302,
+          "worst_position": [
+            -0.21788002491412375,
+            0.020486746301038736,
+            -0.008744891145182359
+          ],
+          "worst_solid": "key45",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 15,
+              "maximum_penetration_mm": 0.20148908088155926
+            },
+            "key54": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.06776217171509079
+            }
+          },
+          "triangle_contacts": {
+            "key45": 93,
+            "key54": 13
+          },
+          "triangle_intersections": 106,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -1.1727260062349698e-05
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.50772680639996,
+          "wrist_speed_m_s": 0.13534355437243403,
+          "wrist_angular_speed_rad_s": 0.7518172262218423,
+          "elbow_plane_speed_rad_s": 0.058412382492740625
+        },
+        "L": {
+          "joint_speed_rad_s": 6.600594480428989,
+          "wrist_speed_m_s": 0.14050958891328277,
+          "wrist_angular_speed_rad_s": 1.1513910997802432,
+          "elbow_plane_speed_rad_s": 0.5051417308230296
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 776,
+              "top_gap_mm": -0.0021528335713116207,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": -0.0005358302685928851,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 0.9592
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.020794323468972135,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 13295,
+              "top_gap_mm": 0.041946126342462565,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 23,
+      "fraction": 0.7,
+      "time": 0.98749,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 1,
+          "maximum_penetration_mm": 0.018709995587628397,
+          "minimum_clearance_mm": -0.018709995587628397,
+          "worst_vertex": 608,
+          "worst_position": [
+            0.21451968524608922,
+            0.00035649352150285386,
+            -0.010009791343508724
+          ],
+          "worst_solid": "key76",
+          "vertex_contacts": {
+            "key76": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.018709995587628397
+            }
+          },
+          "triangle_contacts": {
+            "key69": 4,
+            "key76": 18
+          },
+          "triangle_intersections": 22,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.007201680785265049
+        },
+        "L": {
+          "penetrating_vertices": 16,
+          "maximum_penetration_mm": 0.18060050135147374,
+          "minimum_clearance_mm": -0.18060050135147374,
+          "worst_vertex": 13302,
+          "worst_position": [
+            -0.21786370406709654,
+            0.018982718645345946,
+            -0.008849486177766696
+          ],
+          "worst_solid": "key45",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 13,
+              "maximum_penetration_mm": 0.18060050135147374
+            },
+            "key54": {
+              "vertices": 3,
+              "maximum_penetration_mm": 0.046509649239454
+            }
+          },
+          "triangle_contacts": {
+            "key45": 82,
+            "key54": 27
+          },
+          "triangle_intersections": 109,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": -1.036506477002097e-05
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.507726806399953,
+          "wrist_speed_m_s": 0.13534355437243648,
+          "wrist_angular_speed_rad_s": 0.7518172262218543,
+          "elbow_plane_speed_rad_s": 0.055412403495122324
+        },
+        "L": {
+          "joint_speed_rad_s": 6.600594480428989,
+          "wrist_speed_m_s": 0.14050958891328277,
+          "wrist_angular_speed_rad_s": 1.151391099780226,
+          "elbow_plane_speed_rad_s": 0.50237726557199
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 776,
+              "top_gap_mm": 0.020543099745883756,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": 0.0012149258562348109,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 0.9524
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.030752240847744375,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 13295,
+              "top_gap_mm": 0.06706700241250577,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 23,
+      "fraction": 0.8,
+      "time": 0.99166,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.003951206673766944,
+          "worst_vertex": 9949,
+          "worst_position": [
+            0.17570809419635086,
+            0.07796548110018706,
+            0.004869800582483967
+          ],
+          "worst_solid": "key73",
+          "vertex_contacts": {},
+          "triangle_contacts": {
+            "key69": 4,
+            "key76": 11
+          },
+          "triangle_intersections": 15,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.005479023709667116
+        },
+        "L": {
+          "penetrating_vertices": 13,
+          "maximum_penetration_mm": 0.13304485000074917,
+          "minimum_clearance_mm": -0.13304485000074917,
+          "worst_vertex": 13302,
+          "worst_position": [
+            -0.21784346524209014,
+            0.017470844393903784,
+            -0.00892848060466207
+          ],
+          "worst_solid": "key45",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 10,
+              "maximum_penetration_mm": 0.13304485000074917
+            },
+            "key54": {
+              "vertices": 3,
+              "maximum_penetration_mm": 0.015150455304747262
+            }
+          },
+          "triangle_contacts": {
+            "key45": 66,
+            "key54": 27
+          },
+          "triangle_intersections": 93,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": -8.013400908113422e-06
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.507726806399965,
+          "wrist_speed_m_s": 0.13534355437243717,
+          "wrist_angular_speed_rad_s": 0.7518172262218491,
+          "elbow_plane_speed_rad_s": 0.05240167171473624
+        },
+        "L": {
+          "joint_speed_rad_s": 6.600594480428999,
+          "wrist_speed_m_s": 0.1405095889132796,
+          "wrist_angular_speed_rad_s": 1.1513910997802304,
+          "elbow_plane_speed_rad_s": 0.4996575998112223
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 776,
+              "top_gap_mm": 0.045117436345158544,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": 0.003951206673766944,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 0.9456
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.04728744860414146,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 608,
+              "top_gap_mm": 0.01190306360034381,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 23,
+      "fraction": 0.9,
+      "time": 0.99583,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.007667147008670258,
+          "worst_vertex": 9949,
+          "worst_position": [
+            0.17569736447369683,
+            0.07784915588164225,
+            0.004913214671593683
+          ],
+          "worst_solid": "key73",
+          "vertex_contacts": {},
+          "triangle_contacts": {
+            "key76": 8
+          },
+          "triangle_intersections": 8,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.003077498585928387
+        },
+        "L": {
+          "penetrating_vertices": 5,
+          "maximum_penetration_mm": 0.07296480845467648,
+          "minimum_clearance_mm": -0.07296480845467648,
+          "worst_vertex": 23900,
+          "worst_position": [
+            -0.21824858094687552,
+            0.01647198695523121,
+            -0.008961380965094187
+          ],
+          "worst_solid": "key45",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 5,
+              "maximum_penetration_mm": 0.07296480845467648
+            }
+          },
+          "triangle_contacts": {
+            "key45": 39
+          },
+          "triangle_intersections": 39,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -4.672730384916446e-06
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.507726806399953,
+          "wrist_speed_m_s": 0.1353435543724309,
+          "wrist_angular_speed_rad_s": 0.7518172262218414,
+          "elbow_plane_speed_rad_s": 0.04938034347695341
+        },
+        "L": {
+          "joint_speed_rad_s": 6.600594480428989,
+          "wrist_speed_m_s": 0.14050958891328588,
+          "wrist_angular_speed_rad_s": 1.151391099780233,
+          "elbow_plane_speed_rad_s": 0.49698233745805453
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          73,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 776,
+              "top_gap_mm": 0.07158434555383536,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "73": [
+            {
+              "supported": true,
+              "vertex": 9949,
+              "top_gap_mm": 0.007667147008670258,
+              "box": "key73",
+              "side": "R",
+              "finger": 3,
+              "key_depth": 0.9388000000000001
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.07038307506450661,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 608,
+              "top_gap_mm": 0.048102239832444535,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.0,
+      "time": 1.0,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.010041596668376729,
+          "worst_vertex": 23897,
+          "worst_position": [
+            0.21343170166823092,
+            0.00034246725024001106,
+            -0.00998191221282075
+          ],
+          "worst_solid": "key76",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -4.082419645390356e-07
+        },
+        "L": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.010007922301319763,
+          "worst_vertex": 8288,
+          "worst_position": [
+            -0.0845826489031016,
+            0.09308235086437743,
+            0.01201000792230132
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -3.435154175002175e-07
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 9.50772680639996,
+          "wrist_speed_m_s": 0.13534355437243384,
+          "wrist_angular_speed_rad_s": 0.7518172262218463,
+          "elbow_plane_speed_rad_s": 0.0463485776348299
+        },
+        "L": {
+          "joint_speed_rad_s": 6.600594480428992,
+          "wrist_speed_m_s": 0.1405095889132796,
+          "wrist_angular_speed_rad_s": 1.1513910997802317,
+          "elbow_plane_speed_rad_s": 0.4943510942090943
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 776,
+              "top_gap_mm": 0.09995780473483218,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "74": [
+            {
+              "supported": true,
+              "vertex": 11956,
+              "top_gap_mm": 0.10002135448566965,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 23897,
+              "top_gap_mm": 0.01004159666837622,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.1,
+      "time": 1.00417,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 2,
+          "maximum_penetration_mm": 0.02462599310176436,
+          "minimum_clearance_mm": -0.02462599310176436,
+          "worst_vertex": 9949,
+          "worst_position": [
+            0.17583669066357896,
+            0.07778519712920093,
+            0.004907644873493033
+          ],
+          "worst_solid": "key73",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.023985862576630587
+            },
+            "key73": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.02462599310176436
+            }
+          },
+          "triangle_contacts": {
+            "key69": 15,
+            "key70": 6,
+            "key73": 12
+          },
+          "triangle_intersections": 33,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": -0.0034987159471967094
+        },
+        "L": {
+          "penetrating_vertices": 87,
+          "maximum_penetration_mm": 1.0727772899089099,
+          "minimum_clearance_mm": -1.0727772899089099,
+          "worst_vertex": 8288,
+          "worst_position": [
+            -0.08579874478973798,
+            0.09347304082874068,
+            0.01092722271009109
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 53,
+              "maximum_penetration_mm": 0.6891157531858267
+            },
+            "key54": {
+              "vertices": 34,
+              "maximum_penetration_mm": 1.0727772899089099
+            }
+          },
+          "triangle_contacts": {
+            "key45": 272,
+            "key54": 187
+          },
+          "triangle_intersections": 459,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": 0.0019963985106574017
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.12740618764517,
+          "wrist_speed_m_s": 0.26465856391259235,
+          "wrist_angular_speed_rad_s": 1.985093371463059,
+          "elbow_plane_speed_rad_s": 0.3129897439345212
+        },
+        "L": {
+          "joint_speed_rad_s": 9.514767391767018,
+          "wrist_speed_m_s": 0.11229988830573563,
+          "wrist_angular_speed_rad_s": 1.9421444535296046,
+          "elbow_plane_speed_rad_s": 0.6847534611355599
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": false,
+              "vertex": 776,
+              "top_gap_mm": -0.02398586257663047,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "74": [
+            {
+              "supported": false,
+              "vertex": 23313,
+              "top_gap_mm": 0.9445343610213676,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 0.9
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 23897,
+              "top_gap_mm": 0.022151978313591003,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": [
+          69,
+          74
+        ]
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.2,
+      "time": 1.00834,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 5,
+          "maximum_penetration_mm": 0.11911544211374442,
+          "minimum_clearance_mm": -0.11911544211374442,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.11695008929430353,
+            0.0009205822016404448,
+            -0.010072758603494351
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.11911544211374442
+            },
+            "key70": {
+              "vertices": 2,
+              "maximum_penetration_mm": 0.05317845877193805
+            },
+            "key73": {
+              "vertices": 2,
+              "maximum_penetration_mm": 0.05086903449986156
+            }
+          },
+          "triangle_contacts": {
+            "key69": 17,
+            "key70": 23,
+            "key73": 20,
+            "key76": 8
+          },
+          "triangle_intersections": 68,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": -0.0062211949649372544
+        },
+        "L": {
+          "penetrating_vertices": 164,
+          "maximum_penetration_mm": 2.0723604201533794,
+          "minimum_clearance_mm": -2.0723604201533794,
+          "worst_vertex": 8288,
+          "worst_position": [
+            -0.08702763957984666,
+            0.0938424165630926,
+            0.009853981883371993
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 111,
+              "maximum_penetration_mm": 1.278240989822566
+            },
+            "key54": {
+              "vertices": 53,
+              "maximum_penetration_mm": 2.0723604201533794
+            }
+          },
+          "triangle_contacts": {
+            "key45": 523,
+            "key54": 278
+          },
+          "triangle_intersections": 801,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": 0.0035461685277907856
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.127406187645143,
+          "wrist_speed_m_s": 0.2646585639125918,
+          "wrist_angular_speed_rad_s": 1.9850933714629708,
+          "elbow_plane_speed_rad_s": 0.31660040795766864
+        },
+        "L": {
+          "joint_speed_rad_s": 9.514767391767004,
+          "wrist_speed_m_s": 0.11229988830572829,
+          "wrist_angular_speed_rad_s": 1.9421444535295909,
+          "elbow_plane_speed_rad_s": 0.6821794496208844
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          69,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 24162,
+              "top_gap_mm": 0.048995826873049854,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "74": [
+            {
+              "supported": false,
+              "vertex": 3114,
+              "top_gap_mm": 2.0353541841420975,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 0.8
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 23897,
+              "top_gap_mm": 0.03423909467359492,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": [
+          74
+        ]
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.3,
+      "time": 1.01251,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 8,
+          "maximum_penetration_mm": 0.18586065925487588,
+          "minimum_clearance_mm": -0.18586065925487588,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.11692040869635248,
+            0.000930365798613027,
+            -0.010138999210708974
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 2,
+              "maximum_penetration_mm": 0.18586065925487588
+            },
+            "key70": {
+              "vertices": 3,
+              "maximum_penetration_mm": 0.09708001720210024
+            },
+            "key73": {
+              "vertices": 2,
+              "maximum_penetration_mm": 0.06668072187717561
+            },
+            "key76": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.017718754578455176
+            }
+          },
+          "triangle_contacts": {
+            "key69": 26,
+            "key70": 33,
+            "key73": 20,
+            "key76": 13
+          },
+          "triangle_intersections": 92,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 1.1102230246251565e-13,
+          "proxy_self_clearance_mm": -0.008166894769727484
+        },
+        "L": {
+          "penetrating_vertices": 228,
+          "maximum_penetration_mm": 2.7411310719817736,
+          "minimum_clearance_mm": -2.7411310719817736,
+          "worst_vertex": 8285,
+          "worst_position": [
+            -0.0862794117719665,
+            0.09241641432599319,
+            0.009258868928018226
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 157,
+              "maximum_penetration_mm": 1.7358576154464789
+            },
+            "key54": {
+              "vertices": 71,
+              "maximum_penetration_mm": 2.7411310719817736
+            }
+          },
+          "triangle_contacts": {
+            "key45": 712,
+            "key54": 362
+          },
+          "triangle_intersections": 1074,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": 0.0046499393848414144
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.127406187645143,
+          "wrist_speed_m_s": 0.2646585639125926,
+          "wrist_angular_speed_rad_s": 1.9850933714630141,
+          "elbow_plane_speed_rad_s": 0.3202130155826703
+        },
+        "L": {
+          "joint_speed_rad_s": 9.514767391766977,
+          "wrist_speed_m_s": 0.11229988830573542,
+          "wrist_angular_speed_rad_s": 1.9421444535296457,
+          "elbow_plane_speed_rad_s": 0.67961973055235
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          45,
+          69,
+          74,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 13993,
+              "top_gap_mm": -0.007983725653158339,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "74": [
+            {
+              "supported": false,
+              "vertex": 23293,
+              "top_gap_mm": 3.6078099032115536,
+              "box": "key74",
+              "side": "R",
+              "finger": 4,
+              "key_depth": 0.7
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 23897,
+              "top_gap_mm": 0.04603086478697373,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ],
+          "45": [
+            {
+              "supported": true,
+              "vertex": 1197,
+              "top_gap_mm": -0.0028263382237758905,
+              "box": "key45",
+              "side": "L",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": [
+          74
+        ]
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.4,
+      "time": 1.01668,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 7,
+          "maximum_penetration_mm": 0.2246790143735095,
+          "minimum_clearance_mm": -0.2246790143735095,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.11689266031084285,
+            0.0009180066457049332,
+            -0.010178729155232796
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.2246790143735095
+            },
+            "key70": {
+              "vertices": 3,
+              "maximum_penetration_mm": 0.12982639675843122
+            },
+            "key73": {
+              "vertices": 2,
+              "maximum_penetration_mm": 0.07237514590384408
+            },
+            "key76": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.028460882639899654
+            }
+          },
+          "triangle_contacts": {
+            "key69": 28,
+            "key70": 41,
+            "key73": 20,
+            "key76": 13
+          },
+          "triangle_intersections": 102,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.0093350539434843
+        },
+        "L": {
+          "penetrating_vertices": 271,
+          "maximum_penetration_mm": 3.061677027364661,
+          "minimum_clearance_mm": -3.061677027364661,
+          "worst_vertex": 2121,
+          "worst_position": [
+            -0.08551783434713613,
+            0.09557395645708013,
+            0.008938322972635339
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 186,
+              "maximum_penetration_mm": 2.066430463587246
+            },
+            "key54": {
+              "vertices": 85,
+              "maximum_penetration_mm": 3.061677027364661
+            }
+          },
+          "triangle_contacts": {
+            "key45": 830,
+            "key54": 428
+          },
+          "triangle_intersections": 1258,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": 0.005308832664757332
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.127406187645143,
+          "wrist_speed_m_s": 0.26465856391259673,
+          "wrist_angular_speed_rad_s": 1.9850933714629986,
+          "elbow_plane_speed_rad_s": 0.32382735812183205
+        },
+        "L": {
+          "joint_speed_rad_s": 9.514767391767057,
+          "wrist_speed_m_s": 0.11229988830573563,
+          "wrist_angular_speed_rad_s": 1.9421444535296313,
+          "elbow_plane_speed_rad_s": 0.6770743138602765
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          45,
+          69,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 13863,
+              "top_gap_mm": -0.004385394158189442,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 23897,
+              "top_gap_mm": 0.05726648380169985,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ],
+          "45": [
+            {
+              "supported": true,
+              "vertex": 13495,
+              "top_gap_mm": -0.007075054514248088,
+              "box": "key45",
+              "side": "L",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.5,
+      "time": 1.02085,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 7,
+          "maximum_penetration_mm": 0.2360550284135985,
+          "minimum_clearance_mm": -0.2360550284135985,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.11686730816527338,
+            0.0008827138816939336,
+            -0.010192486839050855
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 2,
+              "maximum_penetration_mm": 0.2360550284135985
+            },
+            "key70": {
+              "vertices": 2,
+              "maximum_penetration_mm": 0.13666827902136802
+            },
+            "key73": {
+              "vertices": 2,
+              "maximum_penetration_mm": 0.06827173963848757
+            },
+            "key76": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.0174943448063309
+            }
+          },
+          "triangle_contacts": {
+            "key69": 32,
+            "key70": 40,
+            "key73": 20,
+            "key76": 13
+          },
+          "triangle_intersections": 105,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": -0.00972509963234093
+        },
+        "L": {
+          "penetrating_vertices": 313,
+          "maximum_penetration_mm": 3.328055735651921,
+          "minimum_clearance_mm": -3.328055735651921,
+          "worst_vertex": 25197,
+          "worst_position": [
+            -0.08567211093122522,
+            0.09682236340097089,
+            0.008671944264348079
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 208,
+              "maximum_penetration_mm": 2.2859475439168335
+            },
+            "key54": {
+              "vertices": 105,
+              "maximum_penetration_mm": 3.328055735651921
+            }
+          },
+          "triangle_contacts": {
+            "key45": 921,
+            "key54": 520
+          },
+          "triangle_intersections": 1441,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": 0.0055241171849265
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.127406187645196,
+          "wrist_speed_m_s": 0.26465856391259684,
+          "wrist_angular_speed_rad_s": 1.985093371463038,
+          "elbow_plane_speed_rad_s": 0.32744322843844914
+        },
+        "L": {
+          "joint_speed_rad_s": 9.514767391766977,
+          "wrist_speed_m_s": 0.11229988830573505,
+          "wrist_angular_speed_rad_s": 1.9421444535296029,
+          "elbow_plane_speed_rad_s": 0.6745432120533826
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          45,
+          69,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 24216,
+              "top_gap_mm": 0.004508556245237743,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 23897,
+              "top_gap_mm": 0.06769712604593123,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ],
+          "45": [
+            {
+              "supported": true,
+              "vertex": 5883,
+              "top_gap_mm": 0.025367558946183973,
+              "box": "key45",
+              "side": "L",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.6,
+      "time": 1.02502,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 4,
+          "maximum_penetration_mm": 0.22049947181463844,
+          "minimum_clearance_mm": -0.22049947181463844,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.1168448328486909,
+            0.0008237242580329709,
+            -0.010180835128507105
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.22049947181463844
+            },
+            "key70": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.13098382880294412
+            },
+            "key73": {
+              "vertices": 2,
+              "maximum_penetration_mm": 0.054694959761951434
+            }
+          },
+          "triangle_contacts": {
+            "key69": 23,
+            "key70": 40,
+            "key73": 20,
+            "key76": 7
+          },
+          "triangle_intersections": 90,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": -0.009336646875626395
+        },
+        "L": {
+          "penetrating_vertices": 322,
+          "maximum_penetration_mm": 3.1330801457054163,
+          "minimum_clearance_mm": -3.1330801457054163,
+          "worst_vertex": 25198,
+          "worst_position": [
+            -0.08596691985429462,
+            0.09527652882269085,
+            0.008639442600800185
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 193,
+              "maximum_penetration_mm": 2.365237866455441
+            },
+            "key54": {
+              "vertices": 129,
+              "maximum_penetration_mm": 3.1330801457054163
+            }
+          },
+          "triangle_contacts": {
+            "key45": 859,
+            "key54": 625
+          },
+          "triangle_intersections": 1484,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": 0.005297207466789869
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.127406187645143,
+          "wrist_speed_m_s": 0.26465856391259235,
+          "wrist_angular_speed_rad_s": 1.9850933714630123,
+          "elbow_plane_speed_rad_s": 0.33106042100291566
+        },
+        "L": {
+          "joint_speed_rad_s": 9.514767391767004,
+          "wrist_speed_m_s": 0.11229988830572867,
+          "wrist_angular_speed_rad_s": 1.9421444535296186,
+          "elbow_plane_speed_rad_s": 0.6720264400124222
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          45,
+          69,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 13863,
+              "top_gap_mm": -0.0032163035257419792,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 12428,
+              "top_gap_mm": -0.0076172018110894505,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ],
+          "45": [
+            {
+              "supported": true,
+              "vertex": 13609,
+              "top_gap_mm": 0.014015531270407186,
+              "box": "key45",
+              "side": "L",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.7,
+      "time": 1.02919,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 3,
+          "maximum_penetration_mm": 0.1785485777229343,
+          "minimum_clearance_mm": -0.1785485777229343,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.11682573044129733,
+            0.000740302829227046,
+            -0.010144360519670602
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.1785485777229343
+            },
+            "key70": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.03432744333067839
+            },
+            "key73": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.03197396596910616
+            }
+          },
+          "triangle_contacts": {
+            "key69": 17,
+            "key70": 42,
+            "key73": 12,
+            "key76": 6
+          },
+          "triangle_intersections": 77,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 1.1102230246251565e-13,
+          "proxy_self_clearance_mm": -0.00816949780826394
+        },
+        "L": {
+          "penetrating_vertices": 288,
+          "maximum_penetration_mm": 2.769020167070618,
+          "minimum_clearance_mm": -2.769020167070618,
+          "worst_vertex": 7323,
+          "worst_position": [
+            -0.08633097983292942,
+            0.0956314602528856,
+            0.008963126571609886
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 135,
+              "maximum_penetration_mm": 2.0753798623216695
+            },
+            "key54": {
+              "vertices": 153,
+              "maximum_penetration_mm": 2.769020167070618
+            }
+          },
+          "triangle_contacts": {
+            "key45": 623,
+            "key54": 729
+          },
+          "triangle_intersections": 1352,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": 0.004629662174878216
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.127406187645143,
+          "wrist_speed_m_s": 0.26465856391259235,
+          "wrist_angular_speed_rad_s": 1.985093371462957,
+          "elbow_plane_speed_rad_s": 0.3346787319469708
+        },
+        "L": {
+          "joint_speed_rad_s": 9.514767391767004,
+          "wrist_speed_m_s": 0.11229988830573563,
+          "wrist_angular_speed_rad_s": 1.942144453529608,
+          "elbow_plane_speed_rad_s": 0.6695240147915562
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          45,
+          69,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 13863,
+              "top_gap_mm": 0.03720418571345835,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 12428,
+              "top_gap_mm": 0.0009423523725331873,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ],
+          "45": [
+            {
+              "supported": true,
+              "vertex": 12402,
+              "top_gap_mm": -0.004244392381421276,
+              "box": "key45",
+              "side": "L",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.8,
+      "time": 1.03336,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 2,
+          "maximum_penetration_mm": 0.11076324040922535,
+          "minimum_clearance_mm": -0.11076324040922535,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.11681051141387223,
+            0.0006317435865222385,
+            -0.010083672292659888
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.11076324040922535
+            },
+            "key70": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.020428819039020052
+            }
+          },
+          "triangle_contacts": {
+            "key69": 17,
+            "key70": 41,
+            "key76": 5
+          },
+          "triangle_intersections": 63,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.0062236407357106616
+        },
+        "L": {
+          "penetrating_vertices": 247,
+          "maximum_penetration_mm": 2.218071947198197,
+          "minimum_clearance_mm": -2.218071947198197,
+          "worst_vertex": 7551,
+          "worst_position": [
+            -0.08688192805280184,
+            0.09759046510122171,
+            0.009680488274391804
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 83,
+              "maximum_penetration_mm": 1.4398013296191559
+            },
+            "key54": {
+              "vertices": 164,
+              "maximum_penetration_mm": 2.218071947198197
+            }
+          },
+          "triangle_contacts": {
+            "key45": 405,
+            "key54": 775
+          },
+          "triangle_intersections": 1180,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": 0.003523182526695215
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.127406187645196,
+          "wrist_speed_m_s": 0.26465856391259684,
+          "wrist_angular_speed_rad_s": 1.985093371463111,
+          "elbow_plane_speed_rad_s": 0.3382979591169845
+        },
+        "L": {
+          "joint_speed_rad_s": 9.51476739176703,
+          "wrist_speed_m_s": 0.11229988830573524,
+          "wrist_angular_speed_rad_s": 1.94214445352963,
+          "elbow_plane_speed_rad_s": 0.6670359554240668
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          45,
+          69,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 13863,
+              "top_gap_mm": 0.1034429694519351,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 12428,
+              "top_gap_mm": 0.007970120223551575,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ],
+          "45": [
+            {
+              "supported": true,
+              "vertex": 25662,
+              "top_gap_mm": 0.0064029974899932895,
+              "box": "key45",
+              "side": "L",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 0.9,
+      "time": 1.03753,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 1,
+          "maximum_penetration_mm": 0.01772819979936266,
+          "minimum_clearance_mm": -0.01772819979936266,
+          "worst_vertex": 776,
+          "worst_position": [
+            0.11679969949960545,
+            0.0004973700344282479,
+            -0.009999401655866285
+          ],
+          "worst_solid": "key69",
+          "vertex_contacts": {
+            "key69": {
+              "vertices": 1,
+              "maximum_penetration_mm": 0.01772819979936266
+            }
+          },
+          "triangle_contacts": {
+            "key69": 12,
+            "key70": 18
+          },
+          "triangle_intersections": 30,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": -0.003499249082212011
+        },
+        "L": {
+          "penetrating_vertices": 144,
+          "maximum_penetration_mm": 1.2639417540910718,
+          "minimum_clearance_mm": -1.2639417540910718,
+          "worst_vertex": 7565,
+          "worst_position": [
+            -0.08783605824590897,
+            0.09618094589683276,
+            0.010551474745090302
+          ],
+          "worst_solid": "key54",
+          "vertex_contacts": {
+            "key45": {
+              "vertices": 27,
+              "maximum_penetration_mm": 0.6893935712844763
+            },
+            "key54": {
+              "vertices": 117,
+              "maximum_penetration_mm": 1.2639417540910718
+            }
+          },
+          "triangle_contacts": {
+            "key45": 158,
+            "key54": 564,
+            "front_rail": 5
+          },
+          "triangle_intersections": 727,
+          "instrument_clear": false,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": 0.001979610674534421
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.127406187645143,
+          "wrist_speed_m_s": 0.26465856391258746,
+          "wrist_angular_speed_rad_s": 1.9850933714629795,
+          "elbow_plane_speed_rad_s": 0.34191790212616796
+        },
+        "L": {
+          "joint_speed_rad_s": 9.514767391767004,
+          "wrist_speed_m_s": 0.11229988830572867,
+          "wrist_angular_speed_rad_s": 1.9421444535296575,
+          "elbow_plane_speed_rad_s": 0.664562282734821
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          45,
+          69,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": false,
+              "vertex": 776,
+              "top_gap_mm": -0.017728199799362167,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 12428,
+              "top_gap_mm": 0.01326648733874405,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ],
+          "45": [
+            {
+              "supported": true,
+              "vertex": 748,
+              "top_gap_mm": 0.0034265727736165247,
+              "box": "key45",
+              "side": "L",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": [
+          69
+        ]
+      }
+    },
+    {
+      "frame": 24,
+      "fraction": 1.0,
+      "time": 1.0417,
+      "hands": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.016948990470335528,
+          "worst_vertex": 12428,
+          "worst_position": [
+            0.21438232508104826,
+            0.0003289226386126115,
+            -0.00997619644255718
+          ],
+          "worst_solid": "key76",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 5.551115123125783e-14,
+          "proxy_self_clearance_mm": 6.624505857061314e-07
+        },
+        "L": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.009961563903395504,
+          "worst_vertex": 9974,
+          "worst_position": [
+            -0.1583803277108945,
+            0.10572719192685479,
+            0.012009961563903396
+          ],
+          "worst_solid": "key49",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true,
+          "joint_bounds_excess_rad": 0.0,
+          "arm_length_error_mm": 0.0,
+          "proxy_self_clearance_mm": 9.2805924230277e-07
+        }
+      },
+      "sampled_motion": {
+        "R": {
+          "joint_speed_rad_s": 10.127406187645143,
+          "wrist_speed_m_s": 0.26465856391259684,
+          "wrist_angular_speed_rad_s": 1.9850933714630024,
+          "elbow_plane_speed_rad_s": 0.3455383624048733
+        },
+        "L": {
+          "joint_speed_rad_s": 9.514767391767004,
+          "wrist_speed_m_s": 0.11229988830573542,
+          "wrist_angular_speed_rad_s": 1.9421444535296195,
+          "elbow_plane_speed_rad_s": 0.6621030191572536
+        }
+      },
+      "held_score": {
+        "required_pitches": [
+          45,
+          69,
+          76
+        ],
+        "contacts": {
+          "69": [
+            {
+              "supported": true,
+              "vertex": 776,
+              "top_gap_mm": 0.0999487869900619,
+              "box": "key69",
+              "side": "R",
+              "finger": 1,
+              "key_depth": 1.0
+            }
+          ],
+          "76": [
+            {
+              "supported": true,
+              "vertex": 23897,
+              "top_gap_mm": 0.09998772675555967,
+              "box": "key76",
+              "side": "R",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ],
+          "45": [
+            {
+              "supported": true,
+              "vertex": 3577,
+              "top_gap_mm": 0.09997774758229236,
+              "box": "key45",
+              "side": "L",
+              "finger": 5,
+              "key_depth": 1.0
+            }
+          ]
+        },
+        "unsupported_pitches": []
+      }
+    }
+  ],
+  "held_score_checked": true,
+  "held_score_scope": "skin support and key depth >= 0.5 after 80 ms settling; onset/accidental-note completeness and forces excluded",
+  "held_score_unsupported_observations": 10,
+  "held_score_required_observations": 74,
+  "sampled_motion_maxima": {
+    "joint_speed_rad_s": 10.127406187645196,
+    "wrist_speed_m_s": 0.26465856391259684,
+    "wrist_angular_speed_rad_s": 1.985093371463111,
+    "elbow_plane_speed_rad_s": 0.6847534611355599
+  },
+  "sampled_proxy_self_intersections": 18
+}

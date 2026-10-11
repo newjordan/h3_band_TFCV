@@ -20,6 +20,19 @@ class BoxSpec:
     length: float | None = None
 
 
+def scene_from_animation(animation, frame, music_desk=False):
+    """Honor the geometry identity serialized for the production renderer."""
+    shape = animation.get('geometry', {}).get('key_shape', 'rectangular')
+    if shape == 'rectangular':
+        scene_type = PianoScene
+    elif shape == 'notched':
+        from .key_shapes import NotchedPianoScene
+        scene_type = NotchedPianoScene
+    else:
+        raise ValueError('Unknown key geometry')
+    return scene_type(animation['keyboard'], frame.get('keys', {}), music_desk=music_desk)
+
+
 def piano_boxes(keyboard, music_desk=False):
     if not keyboard:
         raise ValueError('A piano scene requires a keyboard')
