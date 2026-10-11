@@ -1,0 +1,34 @@
+{
+  "schema": "composure-render-comparison/v1",
+  "status": "prepared",
+  "records": [
+    {
+      "trial": "baseline",
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.anim.json",
+      "source_sha256": "cf290e9240b1b0941f2733bb71eac6dffdd3226446baf56d6b6f22c820593256",
+      "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.preview.anim.json",
+      "animation_sha256": "b834f723e523c2aacc0b8ce3768aebf19ca44f76211c5b1229832e601fcc03e8",
+      "frames": 72,
+      "fps": 12,
+      "original_pose_key_body_data_preserved": true
+    },
+    {
+      "trial": "both",
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_both.anim.json",
+      "source_sha256": "7b5b862237d2a28cc26327b4bc87a21b8e424a3d403d9da8681e66c1f4036cf8",
+      "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_both.preview.anim.json",
+      "animation_sha256": "4aaf9265a2915ed7e1584810712ab177e3df55f8269caecd499aa64fde65bb3f",
+      "frames": 72,
+      "fps": 12,
+      "original_pose_key_body_data_preserved": true
+    }
+  ],
+  "fps": 12,
+  "duration_seconds": 6.0,
+  "resolution_each": [
+    768,
+    432
+  ],
+  "candidate_exported": false,
+  "full_performance_accepted": false
+}

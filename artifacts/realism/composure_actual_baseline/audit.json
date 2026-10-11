@@ -1,0 +1,6776 @@
+{
+  "schema": "frozen-skin-deformation-audit/v1",
+  "snapshots": {
+    "status": "complete",
+    "hand_scale": 0.7284,
+    "candidate_exported": false,
+    "records": [
+      {
+        "context": "baseline_frame48",
+        "frame": 48,
+        "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.anim.json",
+        "source_sha256": "cf290e9240b1b0941f2733bb71eac6dffdd3226446baf56d6b6f22c820593256",
+        "mode": "linear",
+        "subdivision_levels": 2,
+        "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_baseline/frame48.npz",
+        "mesh_sha256": "edd839b9c154eff5b7259e05ceca8a53afdaf66b5fd5cbca8bfbdde74ae1f900",
+        "trial": "baseline",
+        "vertices": 56338,
+        "quads": 56256,
+        "triangles": 112512
+      },
+      {
+        "context": "baseline_frame108",
+        "frame": 108,
+        "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.anim.json",
+        "source_sha256": "cf290e9240b1b0941f2733bb71eac6dffdd3226446baf56d6b6f22c820593256",
+        "mode": "linear",
+        "subdivision_levels": 2,
+        "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_baseline/frame108.npz",
+        "mesh_sha256": "77d084529355ca481f5a8329fad6196063051ecc6ef73095d488cefb9bd1d39f",
+        "trial": "baseline",
+        "vertices": 56338,
+        "quads": 56256,
+        "triangles": 112512
+      }
+    ],
+    "input_sha256": {
+      "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.anim.json": "cf290e9240b1b0941f2733bb71eac6dffdd3226446baf56d6b6f22c820593256",
+      "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+      "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+      "/home/frosty40/h3/rig_realism/lab/composure_snapshot.py": "6a5b0ad6c47e3485181f18533e1f06725f2173bcb099fcb256d2c2f373cf5ea1"
+    },
+    "scope": "Actual unchanged production skin, same two matched times in each trial; no trajectory acceptance",
+    "source_unchanged_during_run": true
+  },
+  "snapshots_sha256": "33693213d6737b632b001821b911385cc598a8e356aac341a1f075225cbfe76f",
+  "code_sha256": {
+    "lab/skin_deformation_audit.py": "6b5abb72f826a64a6fccba5ae84174ac569a89cf69036bfabf8f6394f641854b",
+    "blockout/mesh_self.py": "7ba8eb431bd735dba3fcca81c05787d01bfe999418c24da82499aa0657d17715",
+    "blockout/triangle_contact.py": "2e52ae065af1d867bacec0ee29c064a598a2df31910cc004e8db4d1b50a25f2d",
+    "blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "blockout/subdivision.py": "cfe964d593e7011557f9e2b53592d576a0c96f3751c3322bc223593bf72b550a",
+    "blockout/piano_geometry.py": "1ed0f12bf5670efed7ed09951d08ab5051cf35a858335f443e5d52f9517db8fe",
+    "blockout/key_shapes.py": "e759a83ea02f740e34c3e7ba7ae42fac0ac1704268c55765eba44a08c6f3416e",
+    "blockout/skin_contacts.py": "f08212c02291f6c876abe91eac683184eee14baae81f042daef4afd18f26b280",
+    "lab/skin_audit.py": "66cbc48081554902536ffd2504051c124e6c533ba8682c135d31ffdae4c0c376",
+    "blockout/hand_model/skin_bind.npz": "9ba727f8ae6d07747907becbb7f3dfbf3ea7103397bf30103c84f1661c406f63"
+  },
+  "records": [
+    {
+      "context": "baseline_frame48",
+      "frame": 48,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.anim.json",
+      "source_sha256": "cf290e9240b1b0941f2733bb71eac6dffdd3226446baf56d6b6f22c820593256",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_baseline/frame48.npz",
+      "mesh_sha256": "edd839b9c154eff5b7259e05ceca8a53afdaf66b5fd5cbca8bfbdde74ae1f900",
+      "trial": "baseline",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512,
+      "mapping_from_identical_linear_topology": true,
+      "lbs_parity_maximum_error_mm": 0.0008880413567128353,
+      "surface_intersection_clear": false,
+      "self_intersections": 212,
+      "degenerate_triangles": 0,
+      "scope_counts": [
+        {
+          "R_self": 200
+        },
+        {
+          "R_self": 212
+        }
+      ],
+      "region_counts": [
+        {
+          "finger1-2.R \u2194 metacarpal1.R": 20,
+          "finger1-2.R/metacarpal1.R \u2194 metacarpal1.R": 4,
+          "finger1-2.R \u2194 finger1-2.R/metacarpal1.R": 3,
+          "metacarpal1.R \u2194 metacarpal1.R": 2,
+          "finger3-1.R \u2194 finger3-2.R": 156,
+          "finger3-2.R \u2194 finger3-2.R": 6,
+          "finger3-1.R/finger3-2.R \u2194 finger3-2.R": 6,
+          "finger3-1.R \u2194 finger3-1.R/finger3-2.R": 3
+        },
+        {
+          "finger1-2.R \u2194 metacarpal1.R": 22,
+          "finger1-2.R/metacarpal1.R \u2194 metacarpal1.R": 7,
+          "finger1-2.R \u2194 finger1-2.R/metacarpal1.R": 8,
+          "finger3-1.R \u2194 finger3-2.R": 161,
+          "finger3-1.R/finger3-2.R \u2194 finger3-2.R": 5,
+          "finger3-2.R \u2194 finger3-2.R": 6,
+          "finger3-1.R \u2194 finger3-1.R/finger3-2.R": 3
+        }
+      ],
+      "mesh_audit": {
+        "surface_intersection_clear": false,
+        "unexpected_surface_intersections": 212,
+        "degenerate_triangles": 0,
+        "triangulations": [
+          {
+            "surface_intersection_clear": false,
+            "unexpected_surface_intersections": 200,
+            "pairs": [
+              [
+                23709,
+                25912
+              ],
+              [
+                24733,
+                25912
+              ],
+              [
+                25912,
+                79965
+              ],
+              [
+                25912,
+                79966
+              ],
+              [
+                25912,
+                80989
+              ],
+              [
+                25912,
+                80990
+              ],
+              [
+                24744,
+                25913
+              ],
+              [
+                24744,
+                82168
+              ],
+              [
+                24745,
+                82168
+              ],
+              [
+                80990,
+                82168
+              ],
+              [
+                81000,
+                82168
+              ],
+              [
+                79967,
+                80981
+              ],
+              [
+                24720,
+                79967
+              ],
+              [
+                80976,
+                80987
+              ],
+              [
+                24720,
+                80987
+              ],
+              [
+                23710,
+                82158
+              ],
+              [
+                24732,
+                80976
+              ],
+              [
+                24722,
+                24732
+              ],
+              [
+                23710,
+                80981
+              ],
+              [
+                23710,
+                25901
+              ],
+              [
+                23710,
+                24724
+              ],
+              [
+                79966,
+                82158
+              ],
+              [
+                23710,
+                82157
+              ],
+              [
+                25902,
+                79966
+              ],
+              [
+                80999,
+                82169
+              ],
+              [
+                24744,
+                82169
+              ],
+              [
+                24743,
+                82169
+              ],
+              [
+                24743,
+                25914
+              ],
+              [
+                79966,
+                82159
+              ],
+              [
+                17028,
+                61322
+              ],
+              [
+                61322,
+                73284
+              ],
+              [
+                5255,
+                61322
+              ],
+              [
+                5067,
+                5255
+              ],
+              [
+                5067,
+                61511
+              ],
+              [
+                5067,
+                5254
+              ],
+              [
+                5254,
+                61323
+              ],
+              [
+                61323,
+                61510
+              ],
+              [
+                5068,
+                61510
+              ],
+              [
+                5068,
+                61509
+              ],
+              [
+                5069,
+                61509
+              ],
+              [
+                5069,
+                61508
+              ],
+              [
+                61322,
+                73069
+              ],
+              [
+                73069,
+                73101
+              ],
+              [
+                5066,
+                73069
+              ],
+              [
+                5068,
+                5253
+              ],
+              [
+                5069,
+                5252
+              ],
+              [
+                16813,
+                73101
+              ],
+              [
+                61324,
+                61509
+              ],
+              [
+                61325,
+                61508
+              ],
+              [
+                4823,
+                61325
+              ],
+              [
+                3675,
+                61078
+              ],
+              [
+                59931,
+                61078
+              ],
+              [
+                3674,
+                4823
+              ],
+              [
+                3674,
+                61079
+              ],
+              [
+                59930,
+                61079
+              ],
+              [
+                3675,
+                4822
+              ],
+              [
+                4822,
+                59930
+              ],
+              [
+                3676,
+                4821
+              ],
+              [
+                4821,
+                59931
+              ],
+              [
+                4821,
+                59932
+              ],
+              [
+                59884,
+                59932
+              ],
+              [
+                3629,
+                59932
+              ],
+              [
+                59885,
+                59932
+              ],
+              [
+                3677,
+                59885
+              ],
+              [
+                59885,
+                59933
+              ],
+              [
+                5418,
+                59933
+              ],
+              [
+                3134,
+                16913
+              ],
+              [
+                3134,
+                16921
+              ],
+              [
+                3134,
+                73176
+              ],
+              [
+                3135,
+                73177
+              ],
+              [
+                4506,
+                4544
+              ],
+              [
+                4544,
+                60761
+              ],
+              [
+                4544,
+                60762
+              ],
+              [
+                4504,
+                4546
+              ],
+              [
+                4546,
+                60759
+              ],
+              [
+                4546,
+                60760
+              ],
+              [
+                3126,
+                4548
+              ],
+              [
+                4507,
+                4548
+              ],
+              [
+                4548,
+                59382
+              ],
+              [
+                4548,
+                60763
+              ],
+              [
+                4503,
+                4555
+              ],
+              [
+                4555,
+                60759
+              ],
+              [
+                5312,
+                5408
+              ],
+              [
+                5317,
+                5408
+              ],
+              [
+                5408,
+                61568
+              ],
+              [
+                5408,
+                61573
+              ],
+              [
+                5408,
+                61574
+              ],
+              [
+                5318,
+                5411
+              ],
+              [
+                5319,
+                5411
+              ],
+              [
+                5411,
+                61574
+              ],
+              [
+                5411,
+                61575
+              ],
+              [
+                5326,
+                5412
+              ],
+              [
+                5327,
+                5412
+              ],
+              [
+                5412,
+                61568
+              ],
+              [
+                5412,
+                61583
+              ],
+              [
+                5306,
+                5418
+              ],
+              [
+                5319,
+                5418
+              ],
+              [
+                5418,
+                61562
+              ],
+              [
+                5325,
+                5453
+              ],
+              [
+                5453,
+                61581
+              ],
+              [
+                16803,
+                16912
+              ],
+              [
+                16803,
+                73173
+              ],
+              [
+                16809,
+                16913
+              ],
+              [
+                16809,
+                73169
+              ],
+              [
+                16811,
+                73173
+              ],
+              [
+                16812,
+                16916
+              ],
+              [
+                16812,
+                73173
+              ],
+              [
+                16813,
+                16916
+              ],
+              [
+                3120,
+                16922
+              ],
+              [
+                5294,
+                17223
+              ],
+              [
+                17223,
+                61550
+              ],
+              [
+                17223,
+                61551
+              ],
+              [
+                5295,
+                17224
+              ],
+              [
+                17224,
+                61540
+              ],
+              [
+                17224,
+                61551
+              ],
+              [
+                5284,
+                17225
+              ],
+              [
+                17225,
+                61540
+              ],
+              [
+                16913,
+                59390
+              ],
+              [
+                16921,
+                59391
+              ],
+              [
+                59391,
+                73177
+              ],
+              [
+                3120,
+                60237
+              ],
+              [
+                3125,
+                60237
+              ],
+              [
+                59381,
+                60237
+              ],
+              [
+                59382,
+                60237
+              ],
+              [
+                4505,
+                60800
+              ],
+              [
+                60760,
+                60800
+              ],
+              [
+                60761,
+                60800
+              ],
+              [
+                60759,
+                60803
+              ],
+              [
+                4507,
+                60805
+              ],
+              [
+                60762,
+                60805
+              ],
+              [
+                4170,
+                60811
+              ],
+              [
+                4503,
+                60811
+              ],
+              [
+                60426,
+                60811
+              ],
+              [
+                61574,
+                61665
+              ],
+              [
+                61568,
+                61669
+              ],
+              [
+                5319,
+                61673
+              ],
+              [
+                5325,
+                61709
+              ],
+              [
+                5326,
+                61709
+              ],
+              [
+                61582,
+                61709
+              ],
+              [
+                5284,
+                61710
+              ],
+              [
+                61581,
+                61710
+              ],
+              [
+                73059,
+                73173
+              ],
+              [
+                16912,
+                73065
+              ],
+              [
+                73065,
+                73169
+              ],
+              [
+                73067,
+                73173
+              ],
+              [
+                16916,
+                73068
+              ],
+              [
+                61551,
+                73479
+              ],
+              [
+                61540,
+                73480
+              ],
+              [
+                59376,
+                73177
+              ],
+              [
+                3120,
+                73177
+              ],
+              [
+                3158,
+                4170
+              ],
+              [
+                17065,
+                17306
+              ],
+              [
+                17065,
+                73562
+              ],
+              [
+                17306,
+                61550
+              ],
+              [
+                61550,
+                73562
+              ],
+              [
+                5534,
+                61549
+              ],
+              [
+                61549,
+                61790
+              ],
+              [
+                17305,
+                61550
+              ],
+              [
+                61550,
+                73561
+              ],
+              [
+                5293,
+                17305
+              ],
+              [
+                17305,
+                61549
+              ],
+              [
+                61549,
+                61791
+              ],
+              [
+                5535,
+                61549
+              ],
+              [
+                5375,
+                5438
+              ],
+              [
+                5375,
+                61694
+              ],
+              [
+                5364,
+                61694
+              ],
+              [
+                5364,
+                5437
+              ],
+              [
+                5438,
+                61631
+              ],
+              [
+                61620,
+                61694
+              ],
+              [
+                3153,
+                4168
+              ],
+              [
+                3153,
+                60423
+              ],
+              [
+                3153,
+                60424
+              ],
+              [
+                3158,
+                60425
+              ],
+              [
+                5373,
+                5439
+              ],
+              [
+                5374,
+                61695
+              ],
+              [
+                5524,
+                61684
+              ],
+              [
+                5428,
+                5535
+              ],
+              [
+                4166,
+                59409
+              ],
+              [
+                59409,
+                60423
+              ],
+              [
+                4169,
+                59414
+              ],
+              [
+                59414,
+                60424
+              ],
+              [
+                59414,
+                60425
+              ],
+              [
+                5439,
+                61629
+              ],
+              [
+                61629,
+                61684
+              ],
+              [
+                5439,
+                61630
+              ],
+              [
+                61630,
+                61695
+              ],
+              [
+                61631,
+                61695
+              ],
+              [
+                5428,
+                61780
+              ],
+              [
+                61684,
+                61780
+              ],
+              [
+                3155,
+                4166
+              ],
+              [
+                3155,
+                60923
+              ],
+              [
+                59411,
+                60915
+              ],
+              [
+                4667,
+                59411
+              ],
+              [
+                3155,
+                4667
+              ],
+              [
+                3163,
+                60915
+              ],
+              [
+                3163,
+                4659
+              ],
+              [
+                4657,
+                4662
+              ],
+              [
+                59419,
+                60913
+              ],
+              [
+                4662,
+                60913
+              ],
+              [
+                4659,
+                59419
+              ]
+            ],
+            "kinds": {
+              "surface_crossing": 200
+            },
+            "degenerate_triangles": 0,
+            "candidate_pairs": 724117,
+            "expected_shared_features": 674646,
+            "witnesses": [
+              {
+                "first_triangle": 23709,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.39831106420966855,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1354773300571562,
+                  -0.03937491731228873,
+                  0.030008994064976202
+                ]
+              },
+              {
+                "first_triangle": 24733,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.28824863948570467,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13529808664058707,
+                  -0.04020222846048062,
+                  0.030563431051661805
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 79965,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.26793235840349766,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1354127162681968,
+                  -0.039610249401016484,
+                  0.03023544399021922
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 79966,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.1047023126112259,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13552739082802268,
+                  -0.03921362110182737,
+                  0.0298246577290656
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 80989,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.4121343874540222,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13535421271871143,
+                  -0.039891706695747244,
+                  0.030411576302252802
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 80990,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.09316319957231511,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1352719989635464,
+                  -0.040376150955164766,
+                  0.03062150633678041
+                ]
+              },
+              {
+                "first_triangle": 24744,
+                "second_triangle": 25913,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.21696454273283333,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.135094274284015,
+                  -0.04121285176544279,
+                  0.030494286372928656
+                ]
+              },
+              {
+                "first_triangle": 24744,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.2966461570908347,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13509008063213623,
+                  -0.04108911605059842,
+                  0.030633169445264233
+                ]
+              },
+              {
+                "first_triangle": 24745,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.05302593513515459,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13514710123081425,
+                  -0.04088518081992079,
+                  0.030673924748806182
+                ]
+              },
+              {
+                "first_triangle": 80990,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.45596722596927086,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13521156192282208,
+                  -0.0406410388192554,
+                  0.030646341509410015
+                ]
+              },
+              {
+                "first_triangle": 81000,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.04260383588923804,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13513461912390573,
+                  -0.04093125200675,
+                  0.030672742531704624
+                ]
+              },
+              {
+                "first_triangle": 79967,
+                "second_triangle": 80981,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.01207286697530027,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13663653819032645,
+                  -0.038711132691171865,
+                  0.0285110755114723
+                ]
+              },
+              {
+                "first_triangle": 24720,
+                "second_triangle": 79967,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.002679853248188581,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13664349360068045,
+                  -0.03871206353767939,
+                  0.028508805031971375
+                ]
+              },
+              {
+                "first_triangle": 80976,
+                "second_triangle": 80987,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.03818865677630539,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13684044999837958,
+                  -0.038687011527291336,
+                  0.02842072129083348
+                ]
+              },
+              {
+                "first_triangle": 24720,
+                "second_triangle": 80987,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.2114964903394323,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13673638514863384,
+                  -0.03869864309787552,
+                  0.02845740311236101
+                ]
+              },
+              {
+                "first_triangle": 23710,
+                "second_triangle": 82158,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.6186436610918511,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13584111747307032,
+                  -0.03891724461345915,
+                  0.029175787679000434
+                ]
+              },
+              {
+                "first_triangle": 24732,
+                "second_triangle": 80976,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.04055900639971313,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13684739882464314,
+                  -0.03869878263910527,
+                  0.02845194846382751
+                ]
+              },
+              {
+                "first_triangle": 24722,
+                "second_triangle": 24732,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 1,
+                "intersection_length_mm": 0.07861422619988614,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13686924070492934,
+                  -0.038696197658109915,
+                  0.02844344911377121
+                ]
+              },
+              {
+                "first_triangle": 23710,
+                "second_triangle": 80981,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.3761992762914808,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13646784192778666,
+                  -0.0387310967133377,
+                  0.028604507103140255
+                ]
+              },
+              {
+                "first_triangle": 23710,
+                "second_triangle": 25901,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.4018810633499845,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1361375911808149,
+                  -0.0387807090577961,
+                  0.028805707125222867
+                ]
+              }
+            ],
+            "complete_mesh_clearance_proven": false,
+            "exclusions": [
+              "volume containment",
+              "positive minimum distance",
+              "other geometry",
+              "continuous time"
+            ]
+          },
+          {
+            "surface_intersection_clear": false,
+            "unexpected_surface_intersections": 212,
+            "pairs": [
+              [
+                23710,
+                25902
+              ],
+              [
+                23710,
+                25903
+              ],
+              [
+                23710,
+                25912
+              ],
+              [
+                24744,
+                25912
+              ],
+              [
+                25912,
+                79965
+              ],
+              [
+                25912,
+                81001
+              ],
+              [
+                24743,
+                25913
+              ],
+              [
+                23710,
+                82158
+              ],
+              [
+                23710,
+                82159
+              ],
+              [
+                24733,
+                82168
+              ],
+              [
+                24734,
+                82168
+              ],
+              [
+                24745,
+                82168
+              ],
+              [
+                79965,
+                82168
+              ],
+              [
+                80989,
+                82168
+              ],
+              [
+                80990,
+                82168
+              ],
+              [
+                81001,
+                82168
+              ],
+              [
+                24743,
+                82169
+              ],
+              [
+                24744,
+                82169
+              ],
+              [
+                81000,
+                82169
+              ],
+              [
+                24743,
+                82170
+              ],
+              [
+                80999,
+                82170
+              ],
+              [
+                24731,
+                80976
+              ],
+              [
+                79967,
+                80976
+              ],
+              [
+                24732,
+                80978
+              ],
+              [
+                24732,
+                80976
+              ],
+              [
+                80978,
+                80988
+              ],
+              [
+                23710,
+                82157
+              ],
+              [
+                23710,
+                25901
+              ],
+              [
+                24724,
+                79966
+              ],
+              [
+                79966,
+                80980
+              ],
+              [
+                24720,
+                24732
+              ],
+              [
+                25901,
+                79966
+              ],
+              [
+                23711,
+                80976
+              ],
+              [
+                80976,
+                80987
+              ],
+              [
+                24725,
+                79966
+              ],
+              [
+                79966,
+                80981
+              ],
+              [
+                23711,
+                24725
+              ],
+              [
+                5067,
+                61511
+              ],
+              [
+                5067,
+                5254
+              ],
+              [
+                61323,
+                61510
+              ],
+              [
+                5254,
+                61323
+              ],
+              [
+                5068,
+                61510
+              ],
+              [
+                61324,
+                61510
+              ],
+              [
+                5253,
+                61324
+              ],
+              [
+                5069,
+                5252
+              ],
+              [
+                5252,
+                61325
+              ],
+              [
+                4823,
+                61325
+              ],
+              [
+                61324,
+                61509
+              ],
+              [
+                5069,
+                61509
+              ],
+              [
+                61325,
+                61508
+              ],
+              [
+                4823,
+                59930
+              ],
+              [
+                3674,
+                4823
+              ],
+              [
+                59930,
+                61079
+              ],
+              [
+                4821,
+                59931
+              ],
+              [
+                4822,
+                59930
+              ],
+              [
+                4822,
+                59931
+              ],
+              [
+                3675,
+                4822
+              ],
+              [
+                3628,
+                59932
+              ],
+              [
+                59931,
+                61078
+              ],
+              [
+                59931,
+                61077
+              ],
+              [
+                59932,
+                61077
+              ],
+              [
+                3676,
+                61077
+              ],
+              [
+                3629,
+                59932
+              ],
+              [
+                59884,
+                59932
+              ],
+              [
+                4507,
+                60805
+              ],
+              [
+                59382,
+                60804
+              ],
+              [
+                4548,
+                59382
+              ],
+              [
+                4507,
+                4548
+              ],
+              [
+                60762,
+                60805
+              ],
+              [
+                4549,
+                60762
+              ],
+              [
+                60762,
+                60800
+              ],
+              [
+                4505,
+                60800
+              ],
+              [
+                60761,
+                60800
+              ],
+              [
+                4504,
+                4544
+              ],
+              [
+                4504,
+                60802
+              ],
+              [
+                4546,
+                60760
+              ],
+              [
+                4504,
+                4546
+              ],
+              [
+                4544,
+                60761
+              ],
+              [
+                3629,
+                3677
+              ],
+              [
+                3677,
+                59885
+              ],
+              [
+                3677,
+                5418
+              ],
+              [
+                5418,
+                59933
+              ],
+              [
+                59933,
+                61674
+              ],
+              [
+                5306,
+                61674
+              ],
+              [
+                5417,
+                61575
+              ],
+              [
+                61575,
+                61674
+              ],
+              [
+                61575,
+                61673
+              ],
+              [
+                5411,
+                61575
+              ],
+              [
+                61574,
+                61667
+              ],
+              [
+                5318,
+                5411
+              ],
+              [
+                5318,
+                61667
+              ],
+              [
+                3125,
+                60237
+              ],
+              [
+                3135,
+                16921
+              ],
+              [
+                3135,
+                73177
+              ],
+              [
+                4503,
+                4546
+              ],
+              [
+                4503,
+                4547
+              ],
+              [
+                5066,
+                5255
+              ],
+              [
+                5255,
+                61322
+              ],
+              [
+                5284,
+                17224
+              ],
+              [
+                5294,
+                17305
+              ],
+              [
+                5295,
+                17223
+              ],
+              [
+                5317,
+                5408
+              ],
+              [
+                5325,
+                61710
+              ],
+              [
+                5326,
+                5453
+              ],
+              [
+                5326,
+                61668
+              ],
+              [
+                5326,
+                61709
+              ],
+              [
+                5327,
+                5412
+              ],
+              [
+                16803,
+                16917
+              ],
+              [
+                16803,
+                73168
+              ],
+              [
+                16809,
+                16913
+              ],
+              [
+                16809,
+                73169
+              ],
+              [
+                16812,
+                16916
+              ],
+              [
+                16812,
+                73172
+              ],
+              [
+                16812,
+                73173
+              ],
+              [
+                5066,
+                16813
+              ],
+              [
+                16813,
+                16845
+              ],
+              [
+                16813,
+                73101
+              ],
+              [
+                16813,
+                73172
+              ],
+              [
+                16921,
+                59376
+              ],
+              [
+                16922,
+                59376
+              ],
+              [
+                59376,
+                60237
+              ],
+              [
+                59376,
+                73178
+              ],
+              [
+                3981,
+                59382
+              ],
+              [
+                59382,
+                60237
+              ],
+              [
+                16913,
+                59390
+              ],
+              [
+                16920,
+                59390
+              ],
+              [
+                59390,
+                73176
+              ],
+              [
+                59390,
+                73177
+              ],
+              [
+                4503,
+                60803
+              ],
+              [
+                61322,
+                61511
+              ],
+              [
+                17224,
+                61540
+              ],
+              [
+                17225,
+                61540
+              ],
+              [
+                61540,
+                61710
+              ],
+              [
+                61540,
+                73481
+              ],
+              [
+                17223,
+                61550
+              ],
+              [
+                17305,
+                61550
+              ],
+              [
+                17306,
+                61550
+              ],
+              [
+                61550,
+                73479
+              ],
+              [
+                61550,
+                73562
+              ],
+              [
+                17223,
+                61551
+              ],
+              [
+                17224,
+                61551
+              ],
+              [
+                61551,
+                73480
+              ],
+              [
+                5408,
+                61568
+              ],
+              [
+                5412,
+                61568
+              ],
+              [
+                5413,
+                61568
+              ],
+              [
+                61568,
+                61664
+              ],
+              [
+                61568,
+                61669
+              ],
+              [
+                5408,
+                61574
+              ],
+              [
+                5409,
+                61574
+              ],
+              [
+                61574,
+                61665
+              ],
+              [
+                5454,
+                61581
+              ],
+              [
+                61581,
+                61709
+              ],
+              [
+                61581,
+                61710
+              ],
+              [
+                5412,
+                61582
+              ],
+              [
+                61582,
+                61668
+              ],
+              [
+                16912,
+                73065
+              ],
+              [
+                73065,
+                73168
+              ],
+              [
+                73065,
+                73169
+              ],
+              [
+                16917,
+                73067
+              ],
+              [
+                73067,
+                73173
+              ],
+              [
+                73068,
+                73172
+              ],
+              [
+                5066,
+                73284
+              ],
+              [
+                60426,
+                60811
+              ],
+              [
+                4555,
+                60426
+              ],
+              [
+                59414,
+                60426
+              ],
+              [
+                4170,
+                60811
+              ],
+              [
+                4169,
+                59414
+              ],
+              [
+                59414,
+                60425
+              ],
+              [
+                3158,
+                60425
+              ],
+              [
+                3158,
+                4168
+              ],
+              [
+                3158,
+                60424
+              ],
+              [
+                4503,
+                60811
+              ],
+              [
+                60759,
+                60811
+              ],
+              [
+                5293,
+                61791
+              ],
+              [
+                61549,
+                61790
+              ],
+              [
+                61549,
+                61791
+              ],
+              [
+                5535,
+                61549
+              ],
+              [
+                61684,
+                61791
+              ],
+              [
+                5524,
+                61684
+              ],
+              [
+                61684,
+                61780
+              ],
+              [
+                5373,
+                5428
+              ],
+              [
+                5428,
+                61780
+              ],
+              [
+                5428,
+                61629
+              ],
+              [
+                5374,
+                61695
+              ],
+              [
+                61629,
+                61695
+              ],
+              [
+                61630,
+                61695
+              ],
+              [
+                5439,
+                61630
+              ],
+              [
+                5375,
+                5439
+              ],
+              [
+                5364,
+                5438
+              ],
+              [
+                5375,
+                61694
+              ],
+              [
+                5364,
+                61694
+              ],
+              [
+                5438,
+                61620
+              ],
+              [
+                61631,
+                61694
+              ],
+              [
+                61620,
+                61693
+              ],
+              [
+                17305,
+                61549
+              ],
+              [
+                3153,
+                4161
+              ],
+              [
+                4161,
+                59409
+              ],
+              [
+                3153,
+                4166
+              ],
+              [
+                4166,
+                59411
+              ],
+              [
+                3155,
+                4667
+              ],
+              [
+                4667,
+                59411
+              ],
+              [
+                3153,
+                60417
+              ],
+              [
+                59411,
+                60422
+              ],
+              [
+                59409,
+                60424
+              ],
+              [
+                3155,
+                60923
+              ],
+              [
+                3163,
+                4659
+              ],
+              [
+                3155,
+                4659
+              ],
+              [
+                4659,
+                59419
+              ],
+              [
+                3163,
+                60915
+              ],
+              [
+                60913,
+                60918
+              ],
+              [
+                3163,
+                4657
+              ],
+              [
+                4657,
+                60918
+              ]
+            ],
+            "kinds": {
+              "surface_crossing": 212
+            },
+            "degenerate_triangles": 0,
+            "candidate_pairs": 723067,
+            "expected_shared_features": 674706,
+            "witnesses": [
+              {
+                "first_triangle": 23710,
+                "second_triangle": 25902,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.3466886030854895,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13586523649670235,
+                  -0.03886802579108274,
+                  0.02905544024702071
+                ]
+              },
+              {
+                "first_triangle": 23710,
+                "second_triangle": 25903,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.05049257246054237,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13556456285515023,
+                  -0.03914939544601927,
+                  0.029692093431338294
+                ]
+              },
+              {
+                "first_triangle": 23710,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.09894633858845993,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1355222195083365,
+                  -0.03921204727895863,
+                  0.029821517297762657
+                ]
+              },
+              {
+                "first_triangle": 24744,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.20047121027827192,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13504960099270352,
+                  -0.041101226106807956,
+                  0.030639113597914318
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 79965,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.8509805108837168,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13538205961056976,
+                  -0.03952457120537734,
+                  0.03014672746232484
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 81001,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.06536879930821565,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13502389898809902,
+                  -0.04105789261504862,
+                  0.030732364681655657
+                ]
+              },
+              {
+                "first_triangle": 24743,
+                "second_triangle": 25913,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.5887735006875027,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13502126471035059,
+                  -0.04139188752148577,
+                  0.030339897196939133
+                ]
+              },
+              {
+                "first_triangle": 23710,
+                "second_triangle": 82158,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.5663086957611934,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13566844168816736,
+                  -0.0390271246142531,
+                  0.029428860023622588
+                ]
+              },
+              {
+                "first_triangle": 23710,
+                "second_triangle": 82159,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.075774612398186,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13554605338977938,
+                  -0.03917530671083923,
+                  0.029746120023229645
+                ]
+              },
+              {
+                "first_triangle": 24733,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.212594909034106,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1352416223039609,
+                  -0.03992446167079169,
+                  0.030487236895345327
+                ]
+              },
+              {
+                "first_triangle": 24734,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.042869074590715504,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1351498789056289,
+                  -0.040483197741144575,
+                  0.03073539332043854
+                ]
+              },
+              {
+                "first_triangle": 24745,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.1946490776380218,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13505755102117464,
+                  -0.04090452783972389,
+                  0.030749190502840876
+                ]
+              },
+              {
+                "first_triangle": 79965,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.017333447226195224,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13525729651331278,
+                  -0.03982344498095939,
+                  0.03043553787022951
+                ]
+              },
+              {
+                "first_triangle": 80989,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.49790052806367247,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1351909002360231,
+                  -0.040241825590288514,
+                  0.030638588270592227
+                ]
+              },
+              {
+                "first_triangle": 80990,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.32007396398707605,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13511274409883212,
+                  -0.04065726763492447,
+                  0.030748656074824236
+                ]
+              },
+              {
+                "first_triangle": 81001,
+                "second_triangle": 82168,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.029799147224852322,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13503106803772724,
+                  -0.04101100842537876,
+                  0.03072909273708126
+                ]
+              },
+              {
+                "first_triangle": 24743,
+                "second_triangle": 82169,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.051353186307246834,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1349143050877351,
+                  -0.04160934114145966,
+                  0.03051894780533403
+                ]
+              },
+              {
+                "first_triangle": 24744,
+                "second_triangle": 82169,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.16979694946864676,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13505031414470417,
+                  -0.041186408430597704,
+                  0.030514865238483218
+                ]
+              },
+              {
+                "first_triangle": 81000,
+                "second_triangle": 82169,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.36188563914110283,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13497083360635925,
+                  -0.041432027375061374,
+                  0.030514423290507485
+                ]
+              },
+              {
+                "first_triangle": 24743,
+                "second_triangle": 82170,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.00844009545360343,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.13513239621222461,
+                  -0.04117210724695798,
+                  0.030186052544004416
+                ]
+              }
+            ],
+            "complete_mesh_clearance_proven": false,
+            "exclusions": [
+              "volume containment",
+              "positive minimum distance",
+              "other geometry",
+              "continuous time"
+            ]
+          }
+        ],
+        "complete_mesh_clearance_proven": false
+      },
+      "instrument": {
+        "R": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 0.5793915578000443,
+          "worst_vertex": 13538,
+          "worst_position": [
+            0.1428314447402954,
+            0.01658928021788597,
+            -0.008117697201669216
+          ],
+          "worst_solid": "key71",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true
+        },
+        "L": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 1.4567080652341247,
+          "worst_vertex": 19273,
+          "worst_position": [
+            0.013513072393834591,
+            0.006489411927759647,
+            0.0014567080652341247
+          ],
+          "worst_solid": "key62",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true
+        }
+      },
+      "assigned_support": {
+        "R": [
+          {
+            "finger": 2,
+            "pitch": 71,
+            "activation": 0.8,
+            "supported": false,
+            "vertex": 25885,
+            "top_gap_mm": 0.5793915578000441,
+            "box": "key71"
+          }
+        ],
+        "L": []
+      },
+      "candidate_exported": false,
+      "full_performance_accepted": false,
+      "seconds": 31.98449757799972
+    },
+    {
+      "context": "baseline_frame108",
+      "frame": 108,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.anim.json",
+      "source_sha256": "cf290e9240b1b0941f2733bb71eac6dffdd3226446baf56d6b6f22c820593256",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_baseline/frame108.npz",
+      "mesh_sha256": "77d084529355ca481f5a8329fad6196063051ecc6ef73095d488cefb9bd1d39f",
+      "trial": "baseline",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512,
+      "mapping_from_identical_linear_topology": true,
+      "lbs_parity_maximum_error_mm": 0.0008783045081239886,
+      "surface_intersection_clear": false,
+      "self_intersections": 456,
+      "degenerate_triangles": 0,
+      "scope_counts": [
+        {
+          "R_self": 237,
+          "L_self": 219
+        },
+        {
+          "R_self": 215,
+          "L_self": 223
+        }
+      ],
+      "region_counts": [
+        {
+          "finger1-2.R \u2194 metacarpal1.R": 190,
+          "finger1-2.R/metacarpal1.R \u2194 metacarpal1.R": 3,
+          "finger1-2.R \u2194 finger1-2.R/metacarpal1.R": 1,
+          "finger4-1.L \u2194 metacarpal3.L": 69,
+          "finger4-1.L \u2194 finger4-1.L": 77,
+          "finger4-1.L \u2194 metacarpal2.L/metacarpal3.L": 6,
+          "finger4-1.L \u2194 metacarpal2.L": 49,
+          "finger3-1.L/finger4-1.L \u2194 finger4-1.L": 8,
+          "finger4-1.L \u2194 finger4-1.L/metacarpal3.L": 4,
+          "finger3-1.L/finger4-1.L/metacarpal2.L \u2194 finger4-1.L": 3,
+          "finger4-1.L \u2194 finger4-1.L/metacarpal2.L": 3,
+          "finger3-1.R \u2194 finger3-2.R": 29,
+          "finger3-1.R/finger3-2.R \u2194 finger3-2.R": 11,
+          "finger3-2.R \u2194 finger3-2.R": 3
+        },
+        {
+          "finger1-2.R \u2194 metacarpal1.R": 168,
+          "finger1-2.R/metacarpal1.R \u2194 metacarpal1.R": 3,
+          "finger3-1.L/finger4-1.L \u2194 finger4-1.L": 14,
+          "finger4-1.L \u2194 finger4-1.L": 70,
+          "finger1-2.R \u2194 finger1-2.R/metacarpal1.R": 1,
+          "finger4-1.L \u2194 metacarpal3.L": 78,
+          "finger4-1.L \u2194 finger4-1.L/metacarpal3.L": 7,
+          "finger4-1.L \u2194 metacarpal2.L/metacarpal3.L": 8,
+          "finger4-1.L \u2194 metacarpal2.L": 42,
+          "finger3-1.L/metacarpal2.L \u2194 finger4-1.L": 2,
+          "finger3-1.L/finger4-1.L/metacarpal2.L \u2194 finger4-1.L": 2,
+          "finger3-1.R \u2194 finger3-2.R": 30,
+          "finger3-1.R/finger3-2.R \u2194 finger3-2.R": 10,
+          "finger3-2.R \u2194 finger3-2.R": 3
+        }
+      ],
+      "mesh_audit": {
+        "surface_intersection_clear": false,
+        "unexpected_surface_intersections": 456,
+        "degenerate_triangles": 0,
+        "triangulations": [
+          {
+            "surface_intersection_clear": false,
+            "unexpected_surface_intersections": 456,
+            "pairs": [
+              [
+                24747,
+                25905
+              ],
+              [
+                25905,
+                80063
+              ],
+              [
+                25905,
+                80995
+              ],
+              [
+                25905,
+                81003
+              ],
+              [
+                24737,
+                25907
+              ],
+              [
+                25907,
+                80993
+              ],
+              [
+                23792,
+                25912
+              ],
+              [
+                23793,
+                25912
+              ],
+              [
+                23800,
+                25912
+              ],
+              [
+                23807,
+                25912
+              ],
+              [
+                25912,
+                80048
+              ],
+              [
+                25912,
+                80049
+              ],
+              [
+                25912,
+                80055
+              ],
+              [
+                25912,
+                80056
+              ],
+              [
+                25912,
+                80063
+              ],
+              [
+                24742,
+                25915
+              ],
+              [
+                25915,
+                80998
+              ],
+              [
+                24739,
+                82161
+              ],
+              [
+                80993,
+                82161
+              ],
+              [
+                80995,
+                82161
+              ],
+              [
+                24737,
+                82163
+              ],
+              [
+                80998,
+                82163
+              ],
+              [
+                80063,
+                82168
+              ],
+              [
+                80055,
+                82159
+              ],
+              [
+                23799,
+                25903
+              ],
+              [
+                25903,
+                80055
+              ],
+              [
+                25903,
+                79860
+              ],
+              [
+                23604,
+                25903
+              ],
+              [
+                25903,
+                79861
+              ],
+              [
+                23605,
+                25903
+              ],
+              [
+                79862,
+                82148
+              ],
+              [
+                23605,
+                82148
+              ],
+              [
+                25892,
+                79862
+              ],
+              [
+                23606,
+                25892
+              ],
+              [
+                23606,
+                82149
+              ],
+              [
+                80018,
+                80969
+              ],
+              [
+                24707,
+                80018
+              ],
+              [
+                23773,
+                80967
+              ],
+              [
+                23773,
+                80968
+              ],
+              [
+                23772,
+                80968
+              ],
+              [
+                24713,
+                80018
+              ],
+              [
+                80028,
+                80968
+              ],
+              [
+                23773,
+                24712
+              ],
+              [
+                23772,
+                24713
+              ],
+              [
+                23762,
+                24707
+              ],
+              [
+                24707,
+                80019
+              ],
+              [
+                23763,
+                24715
+              ],
+              [
+                24715,
+                80019
+              ],
+              [
+                22869,
+                25730
+              ],
+              [
+                22870,
+                25730
+              ],
+              [
+                25730,
+                79125
+              ],
+              [
+                25730,
+                79126
+              ],
+              [
+                22954,
+                25739
+              ],
+              [
+                25739,
+                79210
+              ],
+              [
+                22864,
+                25743
+              ],
+              [
+                25743,
+                79125
+              ],
+              [
+                22903,
+                25753
+              ],
+              [
+                22945,
+                25755
+              ],
+              [
+                23469,
+                25893
+              ],
+              [
+                25893,
+                79724
+              ],
+              [
+                25893,
+                79725
+              ],
+              [
+                23110,
+                26809
+              ],
+              [
+                26809,
+                79366
+              ],
+              [
+                23109,
+                26810
+              ],
+              [
+                26810,
+                79365
+              ],
+              [
+                22903,
+                26811
+              ],
+              [
+                26811,
+                79364
+              ],
+              [
+                23058,
+                26832
+              ],
+              [
+                23070,
+                26832
+              ],
+              [
+                26832,
+                79314
+              ],
+              [
+                26832,
+                79326
+              ],
+              [
+                23250,
+                26834
+              ],
+              [
+                23251,
+                26834
+              ],
+              [
+                26834,
+                79506
+              ],
+              [
+                26834,
+                79507
+              ],
+              [
+                23057,
+                26837
+              ],
+              [
+                26837,
+                79313
+              ],
+              [
+                26837,
+                79320
+              ],
+              [
+                23261,
+                26844
+              ],
+              [
+                23466,
+                26844
+              ],
+              [
+                23467,
+                26844
+              ],
+              [
+                26844,
+                79517
+              ],
+              [
+                26844,
+                79722
+              ],
+              [
+                27216,
+                79828
+              ],
+              [
+                23768,
+                27217
+              ],
+              [
+                27217,
+                79839
+              ],
+              [
+                23572,
+                27218
+              ],
+              [
+                23573,
+                27218
+              ],
+              [
+                27218,
+                79828
+              ],
+              [
+                27218,
+                79829
+              ],
+              [
+                23769,
+                27222
+              ],
+              [
+                27222,
+                80024
+              ],
+              [
+                27222,
+                80025
+              ],
+              [
+                23557,
+                27228
+              ],
+              [
+                23558,
+                27228
+              ],
+              [
+                27228,
+                79814
+              ],
+              [
+                23296,
+                28112
+              ],
+              [
+                23297,
+                28112
+              ],
+              [
+                23304,
+                28112
+              ],
+              [
+                28112,
+                79553
+              ],
+              [
+                28112,
+                79560
+              ],
+              [
+                23344,
+                28115
+              ],
+              [
+                23359,
+                28115
+              ],
+              [
+                28115,
+                79600
+              ],
+              [
+                23110,
+                28117
+              ],
+              [
+                23112,
+                28117
+              ],
+              [
+                23311,
+                28117
+              ],
+              [
+                28117,
+                79367
+              ],
+              [
+                28117,
+                79567
+              ],
+              [
+                23351,
+                28123
+              ],
+              [
+                23352,
+                28123
+              ],
+              [
+                28123,
+                79607
+              ],
+              [
+                28123,
+                79812
+              ],
+              [
+                34303,
+                47250
+              ],
+              [
+                35095,
+                47259
+              ],
+              [
+                45796,
+                47259
+              ],
+              [
+                47465,
+                102053
+              ],
+              [
+                45792,
+                47466
+              ],
+              [
+                47466,
+                102048
+              ],
+              [
+                45794,
+                47467
+              ],
+              [
+                45803,
+                47467
+              ],
+              [
+                47467,
+                102051
+              ],
+              [
+                48180,
+                48434
+              ],
+              [
+                48180,
+                104690
+              ],
+              [
+                48549,
+                52295
+              ],
+              [
+                52295,
+                104732
+              ],
+              [
+                48549,
+                52308
+              ],
+              [
+                52317,
+                104809
+              ],
+              [
+                48545,
+                52318
+              ],
+              [
+                48553,
+                52318
+              ],
+              [
+                52318,
+                104808
+              ],
+              [
+                48545,
+                52319
+              ],
+              [
+                52319,
+                104806
+              ],
+              [
+                48432,
+                52359
+              ],
+              [
+                48432,
+                52360
+              ],
+              [
+                48433,
+                52360
+              ],
+              [
+                52360,
+                104689
+              ],
+              [
+                48438,
+                52361
+              ],
+              [
+                52361,
+                104694
+              ],
+              [
+                52361,
+                104695
+              ],
+              [
+                34324,
+                52362
+              ],
+              [
+                48439,
+                52362
+              ],
+              [
+                52362,
+                104695
+              ],
+              [
+                48151,
+                52375
+              ],
+              [
+                52375,
+                90580
+              ],
+              [
+                48152,
+                52376
+              ],
+              [
+                52376,
+                104407
+              ],
+              [
+                48145,
+                52377
+              ],
+              [
+                52377,
+                104408
+              ],
+              [
+                48146,
+                52378
+              ],
+              [
+                48147,
+                52378
+              ],
+              [
+                52378,
+                104401
+              ],
+              [
+                52378,
+                104403
+              ],
+              [
+                36329,
+                52400
+              ],
+              [
+                52400,
+                92584
+              ],
+              [
+                52403,
+                92586
+              ],
+              [
+                36327,
+                52404
+              ],
+              [
+                52404,
+                92010
+              ],
+              [
+                45735,
+                52409
+              ],
+              [
+                45736,
+                52409
+              ],
+              [
+                52409,
+                101991
+              ],
+              [
+                52409,
+                101992
+              ],
+              [
+                52432,
+                92649
+              ],
+              [
+                36385,
+                52437
+              ],
+              [
+                36390,
+                52437
+              ],
+              [
+                52437,
+                92646
+              ],
+              [
+                36390,
+                52438
+              ],
+              [
+                35753,
+                52445
+              ],
+              [
+                35754,
+                52445
+              ],
+              [
+                52445,
+                92009
+              ],
+              [
+                35752,
+                52446
+              ],
+              [
+                52446,
+                92007
+              ],
+              [
+                36394,
+                52447
+              ],
+              [
+                52447,
+                92649
+              ],
+              [
+                52447,
+                92650
+              ],
+              [
+                35650,
+                52455
+              ],
+              [
+                52455,
+                91906
+              ],
+              [
+                35649,
+                52456
+              ],
+              [
+                52456,
+                91905
+              ],
+              [
+                52456,
+                91910
+              ],
+              [
+                35654,
+                52457
+              ],
+              [
+                52457,
+                101995
+              ],
+              [
+                45731,
+                52458
+              ],
+              [
+                45729,
+                52459
+              ],
+              [
+                45731,
+                52459
+              ],
+              [
+                52459,
+                101985
+              ],
+              [
+                52459,
+                101992
+              ],
+              [
+                34391,
+                52465
+              ],
+              [
+                34389,
+                52469
+              ],
+              [
+                34390,
+                52469
+              ],
+              [
+                52469,
+                90646
+              ],
+              [
+                48158,
+                53695
+              ],
+              [
+                53695,
+                104402
+              ],
+              [
+                34398,
+                53985
+              ],
+              [
+                34399,
+                53985
+              ],
+              [
+                53985,
+                90654
+              ],
+              [
+                53985,
+                90655
+              ],
+              [
+                35113,
+                53987
+              ],
+              [
+                53987,
+                91369
+              ],
+              [
+                34384,
+                53990
+              ],
+              [
+                34389,
+                53990
+              ],
+              [
+                53990,
+                90645
+              ],
+              [
+                35661,
+                53994
+              ],
+              [
+                53994,
+                91370
+              ],
+              [
+                53994,
+                91917
+              ],
+              [
+                80019,
+                80963
+              ],
+              [
+                23763,
+                80971
+              ],
+              [
+                80025,
+                80971
+              ],
+              [
+                79125,
+                81984
+              ],
+              [
+                22870,
+                81987
+              ],
+              [
+                22871,
+                81987
+              ],
+              [
+                79127,
+                81987
+              ],
+              [
+                79210,
+                81987
+              ],
+              [
+                22953,
+                81995
+              ],
+              [
+                22954,
+                81995
+              ],
+              [
+                79209,
+                81995
+              ],
+              [
+                22864,
+                81999
+              ],
+              [
+                22879,
+                81999
+              ],
+              [
+                23064,
+                81999
+              ],
+              [
+                79120,
+                81999
+              ],
+              [
+                79135,
+                81999
+              ],
+              [
+                79320,
+                81999
+              ],
+              [
+                22945,
+                82003
+              ],
+              [
+                79206,
+                82003
+              ],
+              [
+                22903,
+                82009
+              ],
+              [
+                22948,
+                82009
+              ],
+              [
+                22949,
+                82009
+              ],
+              [
+                79205,
+                82009
+              ],
+              [
+                22945,
+                82011
+              ],
+              [
+                79208,
+                82011
+              ],
+              [
+                22953,
+                82012
+              ],
+              [
+                23514,
+                82149
+              ],
+              [
+                23515,
+                82149
+              ],
+              [
+                79725,
+                82149
+              ],
+              [
+                79770,
+                82149
+              ],
+              [
+                79771,
+                82149
+              ],
+              [
+                23109,
+                83065
+              ],
+              [
+                79366,
+                83065
+              ],
+              [
+                23108,
+                83066
+              ],
+              [
+                79364,
+                83066
+              ],
+              [
+                79365,
+                83066
+              ],
+              [
+                22903,
+                83067
+              ],
+              [
+                23251,
+                83088
+              ],
+              [
+                23257,
+                83088
+              ],
+              [
+                79326,
+                83088
+              ],
+              [
+                79513,
+                83088
+              ],
+              [
+                23261,
+                83090
+              ],
+              [
+                23262,
+                83090
+              ],
+              [
+                79506,
+                83090
+              ],
+              [
+                79518,
+                83090
+              ],
+              [
+                23058,
+                83093
+              ],
+              [
+                23059,
+                83093
+              ],
+              [
+                79313,
+                83093
+              ],
+              [
+                79315,
+                83093
+              ],
+              [
+                23467,
+                83100
+              ],
+              [
+                23468,
+                83100
+              ],
+              [
+                79723,
+                83100
+              ],
+              [
+                79724,
+                83100
+              ],
+              [
+                79828,
+                83472
+              ],
+              [
+                23583,
+                83473
+              ],
+              [
+                79828,
+                83473
+              ],
+              [
+                79839,
+                83473
+              ],
+              [
+                23558,
+                83474
+              ],
+              [
+                23573,
+                83474
+              ],
+              [
+                23768,
+                83478
+              ],
+              [
+                80024,
+                83478
+              ],
+              [
+                23557,
+                83484
+              ],
+              [
+                79813,
+                83484
+              ],
+              [
+                23304,
+                84369
+              ],
+              [
+                23359,
+                84369
+              ],
+              [
+                79615,
+                84369
+              ],
+              [
+                23344,
+                84371
+              ],
+              [
+                23345,
+                84371
+              ],
+              [
+                23352,
+                84371
+              ],
+              [
+                79601,
+                84371
+              ],
+              [
+                79608,
+                84371
+              ],
+              [
+                23296,
+                84373
+              ],
+              [
+                23311,
+                84373
+              ],
+              [
+                79552,
+                84373
+              ],
+              [
+                23556,
+                84379
+              ],
+              [
+                79812,
+                84379
+              ],
+              [
+                79813,
+                84379
+              ],
+              [
+                34303,
+                103507
+              ],
+              [
+                35095,
+                103507
+              ],
+              [
+                90548,
+                103507
+              ],
+              [
+                45796,
+                103515
+              ],
+              [
+                102053,
+                103515
+              ],
+              [
+                45792,
+                103721
+              ],
+              [
+                102053,
+                103721
+              ],
+              [
+                45794,
+                103722
+              ],
+              [
+                102048,
+                103722
+              ],
+              [
+                36390,
+                103723
+              ],
+              [
+                45803,
+                103723
+              ],
+              [
+                102059,
+                103723
+              ],
+              [
+                48432,
+                104436
+              ],
+              [
+                48434,
+                104436
+              ],
+              [
+                104436,
+                104688
+              ],
+              [
+                104690,
+                104701
+              ],
+              [
+                48549,
+                108564
+              ],
+              [
+                104806,
+                108564
+              ],
+              [
+                48553,
+                108572
+              ],
+              [
+                104809,
+                108572
+              ],
+              [
+                48553,
+                108574
+              ],
+              [
+                104809,
+                108574
+              ],
+              [
+                48545,
+                108575
+              ],
+              [
+                48432,
+                108615
+              ],
+              [
+                48433,
+                108616
+              ],
+              [
+                104694,
+                108616
+              ],
+              [
+                104695,
+                108617
+              ],
+              [
+                34324,
+                108618
+              ],
+              [
+                90580,
+                108618
+              ],
+              [
+                48151,
+                108631
+              ],
+              [
+                104407,
+                108631
+              ],
+              [
+                48152,
+                108632
+              ],
+              [
+                104408,
+                108632
+              ],
+              [
+                48145,
+                108633
+              ],
+              [
+                104401,
+                108633
+              ],
+              [
+                48146,
+                108634
+              ],
+              [
+                48146,
+                108653
+              ],
+              [
+                36329,
+                108657
+              ],
+              [
+                36330,
+                108657
+              ],
+              [
+                92585,
+                108657
+              ],
+              [
+                92586,
+                108657
+              ],
+              [
+                36327,
+                108661
+              ],
+              [
+                36328,
+                108661
+              ],
+              [
+                92583,
+                108661
+              ],
+              [
+                92584,
+                108661
+              ],
+              [
+                45735,
+                108665
+              ],
+              [
+                92586,
+                108665
+              ],
+              [
+                92649,
+                108688
+              ],
+              [
+                36385,
+                108693
+              ],
+              [
+                36393,
+                108693
+              ],
+              [
+                92648,
+                108693
+              ],
+              [
+                92649,
+                108693
+              ],
+              [
+                36390,
+                108694
+              ],
+              [
+                35754,
+                108701
+              ],
+              [
+                92010,
+                108701
+              ],
+              [
+                35752,
+                108702
+              ],
+              [
+                35753,
+                108702
+              ],
+              [
+                92008,
+                108702
+              ],
+              [
+                35751,
+                108703
+              ],
+              [
+                92007,
+                108703
+              ],
+              [
+                92650,
+                108703
+              ],
+              [
+                35648,
+                108711
+              ],
+              [
+                35650,
+                108711
+              ],
+              [
+                91904,
+                108711
+              ],
+              [
+                91905,
+                108711
+              ],
+              [
+                35654,
+                108712
+              ],
+              [
+                91910,
+                108712
+              ],
+              [
+                45731,
+                108713
+              ],
+              [
+                45739,
+                108713
+              ],
+              [
+                101987,
+                108713
+              ],
+              [
+                101995,
+                108713
+              ],
+              [
+                45731,
+                108714
+              ],
+              [
+                101992,
+                108715
+              ],
+              [
+                34391,
+                108721
+              ],
+              [
+                34390,
+                108726
+              ],
+              [
+                34391,
+                108726
+              ],
+              [
+                90647,
+                108726
+              ],
+              [
+                48146,
+                109940
+              ],
+              [
+                104402,
+                109940
+              ],
+              [
+                35113,
+                110241
+              ],
+              [
+                90654,
+                110241
+              ],
+              [
+                34384,
+                110246
+              ],
+              [
+                34399,
+                110246
+              ],
+              [
+                90640,
+                110246
+              ],
+              [
+                35114,
+                110249
+              ],
+              [
+                91369,
+                110249
+              ],
+              [
+                91370,
+                110249
+              ],
+              [
+                35660,
+                110250
+              ],
+              [
+                35661,
+                110250
+              ],
+              [
+                91906,
+                110250
+              ],
+              [
+                91916,
+                110250
+              ],
+              [
+                34379,
+                52467
+              ],
+              [
+                52467,
+                90634
+              ],
+              [
+                52467,
+                90635
+              ],
+              [
+                34381,
+                52475
+              ],
+              [
+                52475,
+                90636
+              ],
+              [
+                34381,
+                108572
+              ],
+              [
+                90638,
+                108572
+              ],
+              [
+                34378,
+                108721
+              ],
+              [
+                90634,
+                108721
+              ],
+              [
+                34380,
+                108723
+              ],
+              [
+                90635,
+                108723
+              ],
+              [
+                90636,
+                108723
+              ],
+              [
+                34381,
+                108731
+              ],
+              [
+                34303,
+                103504
+              ],
+              [
+                34303,
+                47248
+              ],
+              [
+                34290,
+                47248
+              ],
+              [
+                47248,
+                90544
+              ],
+              [
+                34291,
+                53693
+              ],
+              [
+                34290,
+                103509
+              ],
+              [
+                53693,
+                90553
+              ],
+              [
+                90553,
+                109950
+              ],
+              [
+                53694,
+                90553
+              ],
+              [
+                34297,
+                53694
+              ],
+              [
+                53694,
+                104414
+              ],
+              [
+                104414,
+                109951
+              ],
+              [
+                48158,
+                109951
+              ],
+              [
+                90547,
+                109948
+              ],
+              [
+                47253,
+                90547
+              ],
+              [
+                34291,
+                109948
+              ],
+              [
+                34290,
+                47253
+              ],
+              [
+                48445,
+                104690
+              ],
+              [
+                104724,
+                104732
+              ],
+              [
+                48479,
+                104732
+              ],
+              [
+                48476,
+                104735
+              ],
+              [
+                104722,
+                104735
+              ],
+              [
+                104732,
+                104735
+              ],
+              [
+                22949,
+                25747
+              ],
+              [
+                22953,
+                25756
+              ],
+              [
+                25747,
+                79206
+              ],
+              [
+                25756,
+                79208
+              ],
+              [
+                61303,
+                61431
+              ],
+              [
+                5046,
+                61431
+              ],
+              [
+                5046,
+                5174
+              ],
+              [
+                5174,
+                61302
+              ],
+              [
+                5048,
+                5175
+              ],
+              [
+                5048,
+                61431
+              ],
+              [
+                5041,
+                5174
+              ],
+              [
+                5174,
+                61297
+              ],
+              [
+                5048,
+                61498
+              ],
+              [
+                5048,
+                5242
+              ],
+              [
+                5048,
+                73277
+              ],
+              [
+                73087,
+                73278
+              ],
+              [
+                17010,
+                73074
+              ],
+              [
+                73074,
+                73266
+              ],
+              [
+                73074,
+                73264
+              ],
+              [
+                17022,
+                73074
+              ],
+              [
+                16830,
+                17022
+              ],
+              [
+                17022,
+                73087
+              ],
+              [
+                17021,
+                73087
+              ],
+              [
+                73087,
+                73277
+              ],
+              [
+                61297,
+                61499
+              ],
+              [
+                5244,
+                61297
+              ],
+              [
+                5040,
+                5244
+              ],
+              [
+                5244,
+                61296
+              ],
+              [
+                61296,
+                61500
+              ],
+              [
+                5245,
+                61296
+              ],
+              [
+                61310,
+                61503
+              ],
+              [
+                5054,
+                5246
+              ],
+              [
+                5054,
+                61502
+              ],
+              [
+                5055,
+                5245
+              ],
+              [
+                5246,
+                61310
+              ],
+              [
+                5055,
+                61502
+              ],
+              [
+                61311,
+                61502
+              ],
+              [
+                16828,
+                73264
+              ],
+              [
+                17008,
+                73084
+              ],
+              [
+                73084,
+                73269
+              ],
+              [
+                4584,
+                61310
+              ],
+              [
+                16828,
+                17008
+              ],
+              [
+                4584,
+                59913
+              ],
+              [
+                3658,
+                4584
+              ],
+              [
+                3657,
+                4584
+              ],
+              [
+                3658,
+                60839
+              ],
+              [
+                59914,
+                60839
+              ]
+            ],
+            "kinds": {
+              "surface_crossing": 456
+            },
+            "degenerate_triangles": 0,
+            "candidate_pairs": 727898,
+            "expected_shared_features": 674644,
+            "witnesses": [
+              {
+                "first_triangle": 24747,
+                "second_triangle": 25905,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.19280438489704488,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18601634090646973,
+                  0.01971109091449144,
+                  0.03286714534035111
+                ]
+              },
+              {
+                "first_triangle": 25905,
+                "second_triangle": 80063,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.23553703399824005,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18616170793770065,
+                  0.020582742547724846,
+                  0.032841382915055006
+                ]
+              },
+              {
+                "first_triangle": 25905,
+                "second_triangle": 80995,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.37250592278785044,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18597842574770343,
+                  0.01943209770193363,
+                  0.03284240237747227
+                ]
+              },
+              {
+                "first_triangle": 25905,
+                "second_triangle": 81003,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.6715068135274066,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1860841729453473,
+                  0.02013751147202244,
+                  0.03286711606986096
+                ]
+              },
+              {
+                "first_triangle": 24737,
+                "second_triangle": 25907,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.024219678304373625,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18579544977217227,
+                  0.018445190447338097,
+                  0.032650213659945734
+                ]
+              },
+              {
+                "first_triangle": 25907,
+                "second_triangle": 80993,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.37548742619115427,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18579291235550544,
+                  0.01862156391691233,
+                  0.03268331605257316
+                ]
+              },
+              {
+                "first_triangle": 23792,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.6111262179257668,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18647856355252235,
+                  0.022196477391313394,
+                  0.03244000251227562
+                ]
+              },
+              {
+                "first_triangle": 23793,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.8836246895598382,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18670574504475665,
+                  0.023146934842673595,
+                  0.03207404105459569
+                ]
+              },
+              {
+                "first_triangle": 23800,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.0971166431979411,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18682911997096135,
+                  0.023611632646156316,
+                  0.031875308632574456
+                ]
+              },
+              {
+                "first_triangle": 23807,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.386790333719768,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18630232784063397,
+                  0.021262424870620227,
+                  0.032723932583647385
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 80048,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.4942626389752566,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18637224180372908,
+                  0.02168240486831974,
+                  0.03261128645382806
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 80049,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.29704151846202986,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1865715806323831,
+                  0.022614822523566128,
+                  0.03229015808885237
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 80055,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.24330867304574263,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18687592763520905,
+                  0.023756681556997547,
+                  0.03179991653217594
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 80056,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.029995912628677165,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18681439539834244,
+                  0.023554596016169375,
+                  0.03189902727337121
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 80063,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.014184264689845277,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1862732920461325,
+                  0.021069653538683075,
+                  0.032770718726446296
+                ]
+              },
+              {
+                "first_triangle": 24742,
+                "second_triangle": 25915,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 1,
+                "intersection_length_mm": 1.8064734041136543,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18606413729102056,
+                  0.018853149970094074,
+                  0.03245696201593452
+                ]
+              },
+              {
+                "first_triangle": 25915,
+                "second_triangle": 80998,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.1324407590796515,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18563112791785305,
+                  0.01799698898199603,
+                  0.03254149923788806
+                ]
+              },
+              {
+                "first_triangle": 24739,
+                "second_triangle": 82161,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.1650748187181191,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18582710247844653,
+                  0.018886318240509486,
+                  0.03274695075900725
+                ]
+              },
+              {
+                "first_triangle": 80993,
+                "second_triangle": 82161,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.009960561924227465,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18579779107631023,
+                  0.018811852640793554,
+                  0.032711976451314906
+                ]
+              },
+              {
+                "first_triangle": 80995,
+                "second_triangle": 82161,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.3115721381519775,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18590429607878795,
+                  0.019102220446700957,
+                  0.03280303126060831
+                ]
+              }
+            ],
+            "complete_mesh_clearance_proven": false,
+            "exclusions": [
+              "volume containment",
+              "positive minimum distance",
+              "other geometry",
+              "continuous time"
+            ]
+          },
+          {
+            "surface_intersection_clear": false,
+            "unexpected_surface_intersections": 438,
+            "pairs": [
+              [
+                23605,
+                25892
+              ],
+              [
+                25892,
+                79861
+              ],
+              [
+                25892,
+                79862
+              ],
+              [
+                24737,
+                25905
+              ],
+              [
+                24739,
+                25905
+              ],
+              [
+                24747,
+                25905
+              ],
+              [
+                25905,
+                80063
+              ],
+              [
+                25905,
+                80995
+              ],
+              [
+                25905,
+                81003
+              ],
+              [
+                24742,
+                25907
+              ],
+              [
+                25907,
+                80993
+              ],
+              [
+                23793,
+                25912
+              ],
+              [
+                23799,
+                25912
+              ],
+              [
+                25912,
+                80056
+              ],
+              [
+                23604,
+                82159
+              ],
+              [
+                23799,
+                82159
+              ],
+              [
+                79860,
+                82159
+              ],
+              [
+                79861,
+                82159
+              ],
+              [
+                24737,
+                82163
+              ],
+              [
+                80993,
+                82163
+              ],
+              [
+                23792,
+                82168
+              ],
+              [
+                23793,
+                82168
+              ],
+              [
+                23807,
+                82168
+              ],
+              [
+                80048,
+                82168
+              ],
+              [
+                80049,
+                82168
+              ],
+              [
+                80063,
+                82168
+              ],
+              [
+                23467,
+                26844
+              ],
+              [
+                23468,
+                26844
+              ],
+              [
+                26844,
+                79723
+              ],
+              [
+                26844,
+                79724
+              ],
+              [
+                52316,
+                90637
+              ],
+              [
+                48553,
+                52317
+              ],
+              [
+                52317,
+                104809
+              ],
+              [
+                48545,
+                52318
+              ],
+              [
+                48547,
+                52318
+              ],
+              [
+                52318,
+                104803
+              ],
+              [
+                52318,
+                104809
+              ],
+              [
+                34379,
+                52467
+              ],
+              [
+                34380,
+                52467
+              ],
+              [
+                52467,
+                90635
+              ],
+              [
+                34381,
+                52475
+              ],
+              [
+                52475,
+                90636
+              ],
+              [
+                52475,
+                90637
+              ],
+              [
+                23250,
+                83090
+              ],
+              [
+                23251,
+                83090
+              ],
+              [
+                79507,
+                83090
+              ],
+              [
+                23466,
+                83100
+              ],
+              [
+                23467,
+                83100
+              ],
+              [
+                79517,
+                83100
+              ],
+              [
+                79722,
+                83100
+              ],
+              [
+                48553,
+                108572
+              ],
+              [
+                48554,
+                108572
+              ],
+              [
+                90637,
+                108572
+              ],
+              [
+                104810,
+                108572
+              ],
+              [
+                104809,
+                108573
+              ],
+              [
+                34379,
+                108723
+              ],
+              [
+                90634,
+                108723
+              ],
+              [
+                34380,
+                108731
+              ],
+              [
+                90636,
+                108731
+              ],
+              [
+                48550,
+                108575
+              ],
+              [
+                48476,
+                104724
+              ],
+              [
+                48549,
+                108564
+              ],
+              [
+                48550,
+                52308
+              ],
+              [
+                48468,
+                104732
+              ],
+              [
+                48476,
+                52295
+              ],
+              [
+                104724,
+                104732
+              ],
+              [
+                48478,
+                48479
+              ],
+              [
+                52308,
+                104806
+              ],
+              [
+                48479,
+                104733
+              ],
+              [
+                48477,
+                48479
+              ],
+              [
+                48549,
+                108551
+              ],
+              [
+                48549,
+                52308
+              ],
+              [
+                104805,
+                108551
+              ],
+              [
+                52295,
+                104805
+              ],
+              [
+                104732,
+                104735
+              ],
+              [
+                48477,
+                104735
+              ],
+              [
+                80998,
+                82171
+              ],
+              [
+                24742,
+                82171
+              ],
+              [
+                79862,
+                82149
+              ],
+              [
+                80029,
+                80968
+              ],
+              [
+                23773,
+                80968
+              ],
+              [
+                24711,
+                80029
+              ],
+              [
+                80028,
+                80969
+              ],
+              [
+                80028,
+                80968
+              ],
+              [
+                24712,
+                80028
+              ],
+              [
+                23762,
+                24707
+              ],
+              [
+                24707,
+                80019
+              ],
+              [
+                23763,
+                24715
+              ],
+              [
+                24715,
+                80019
+              ],
+              [
+                24715,
+                80025
+              ],
+              [
+                22869,
+                25728
+              ],
+              [
+                25730,
+                79126
+              ],
+              [
+                22954,
+                25731
+              ],
+              [
+                22953,
+                25739
+              ],
+              [
+                25739,
+                79210
+              ],
+              [
+                22869,
+                25743
+              ],
+              [
+                22879,
+                25743
+              ],
+              [
+                23064,
+                25743
+              ],
+              [
+                25743,
+                79120
+              ],
+              [
+                25743,
+                79135
+              ],
+              [
+                22949,
+                25747
+              ],
+              [
+                22950,
+                25747
+              ],
+              [
+                25747,
+                79201
+              ],
+              [
+                25747,
+                79206
+              ],
+              [
+                22948,
+                25753
+              ],
+              [
+                22949,
+                25753
+              ],
+              [
+                25753,
+                79159
+              ],
+              [
+                25753,
+                79204
+              ],
+              [
+                25753,
+                79205
+              ],
+              [
+                22952,
+                25756
+              ],
+              [
+                22953,
+                25756
+              ],
+              [
+                25756,
+                79208
+              ],
+              [
+                25756,
+                79209
+              ],
+              [
+                23109,
+                26809
+              ],
+              [
+                23110,
+                26809
+              ],
+              [
+                26809,
+                79366
+              ],
+              [
+                22903,
+                26811
+              ],
+              [
+                26811,
+                79159
+              ],
+              [
+                26811,
+                79364
+              ],
+              [
+                23251,
+                26832
+              ],
+              [
+                23257,
+                26832
+              ],
+              [
+                26832,
+                79326
+              ],
+              [
+                26832,
+                79513
+              ],
+              [
+                23250,
+                26834
+              ],
+              [
+                23262,
+                26834
+              ],
+              [
+                26834,
+                79506
+              ],
+              [
+                26834,
+                79517
+              ],
+              [
+                23057,
+                26837
+              ],
+              [
+                23058,
+                26837
+              ],
+              [
+                26837,
+                79314
+              ],
+              [
+                26837,
+                79315
+              ],
+              [
+                23572,
+                27216
+              ],
+              [
+                23572,
+                27218
+              ],
+              [
+                27218,
+                79814
+              ],
+              [
+                27218,
+                79829
+              ],
+              [
+                23768,
+                27222
+              ],
+              [
+                23557,
+                27228
+              ],
+              [
+                27228,
+                79813
+              ],
+              [
+                27228,
+                79814
+              ],
+              [
+                23297,
+                28112
+              ],
+              [
+                28112,
+                79553
+              ],
+              [
+                28112,
+                79560
+              ],
+              [
+                23359,
+                28113
+              ],
+              [
+                28113,
+                79615
+              ],
+              [
+                23345,
+                28115
+              ],
+              [
+                28115,
+                79601
+              ],
+              [
+                28115,
+                79608
+              ],
+              [
+                23296,
+                28117
+              ],
+              [
+                23311,
+                28117
+              ],
+              [
+                28117,
+                79552
+              ],
+              [
+                28117,
+                79567
+              ],
+              [
+                23556,
+                28123
+              ],
+              [
+                28123,
+                79813
+              ],
+              [
+                34303,
+                47248
+              ],
+              [
+                47248,
+                90544
+              ],
+              [
+                47248,
+                90559
+              ],
+              [
+                47249,
+                90559
+              ],
+              [
+                35095,
+                47251
+              ],
+              [
+                34290,
+                47253
+              ],
+              [
+                47253,
+                90546
+              ],
+              [
+                45796,
+                47259
+              ],
+              [
+                47259,
+                102052
+              ],
+              [
+                47259,
+                102053
+              ],
+              [
+                45797,
+                47465
+              ],
+              [
+                47465,
+                102048
+              ],
+              [
+                47465,
+                102053
+              ],
+              [
+                45794,
+                47467
+              ],
+              [
+                45795,
+                47467
+              ],
+              [
+                45803,
+                47467
+              ],
+              [
+                47467,
+                92646
+              ],
+              [
+                47467,
+                102051
+              ],
+              [
+                47467,
+                102059
+              ],
+              [
+                48545,
+                52319
+              ],
+              [
+                52319,
+                104801
+              ],
+              [
+                48432,
+                52360
+              ],
+              [
+                48145,
+                52377
+              ],
+              [
+                48145,
+                52378
+              ],
+              [
+                48146,
+                52378
+              ],
+              [
+                52378,
+                104403
+              ],
+              [
+                48146,
+                52397
+              ],
+              [
+                52397,
+                104402
+              ],
+              [
+                36328,
+                52400
+              ],
+              [
+                52400,
+                92585
+              ],
+              [
+                36329,
+                52401
+              ],
+              [
+                52401,
+                92586
+              ],
+              [
+                36330,
+                52403
+              ],
+              [
+                52403,
+                92586
+              ],
+              [
+                35754,
+                52404
+              ],
+              [
+                52404,
+                92583
+              ],
+              [
+                36327,
+                52405
+              ],
+              [
+                52405,
+                92584
+              ],
+              [
+                45735,
+                52409
+              ],
+              [
+                52409,
+                101991
+              ],
+              [
+                52409,
+                101992
+              ],
+              [
+                36385,
+                52437
+              ],
+              [
+                36387,
+                52437
+              ],
+              [
+                36390,
+                52437
+              ],
+              [
+                52437,
+                92641
+              ],
+              [
+                52437,
+                92643
+              ],
+              [
+                52437,
+                92646
+              ],
+              [
+                52437,
+                92649
+              ],
+              [
+                35753,
+                52445
+              ],
+              [
+                52445,
+                92009
+              ],
+              [
+                52445,
+                92010
+              ],
+              [
+                35752,
+                52446
+              ],
+              [
+                52446,
+                92008
+              ],
+              [
+                52446,
+                92009
+              ],
+              [
+                36393,
+                52447
+              ],
+              [
+                36394,
+                52447
+              ],
+              [
+                52447,
+                92007
+              ],
+              [
+                52447,
+                92649
+              ],
+              [
+                52447,
+                92650
+              ],
+              [
+                35648,
+                52455
+              ],
+              [
+                52455,
+                91905
+              ],
+              [
+                52455,
+                91906
+              ],
+              [
+                52456,
+                91910
+              ],
+              [
+                45731,
+                52457
+              ],
+              [
+                45729,
+                52459
+              ],
+              [
+                45731,
+                52459
+              ],
+              [
+                52459,
+                101987
+              ],
+              [
+                52459,
+                101992
+              ],
+              [
+                34378,
+                52465
+              ],
+              [
+                52465,
+                90634
+              ],
+              [
+                34390,
+                52469
+              ],
+              [
+                52469,
+                90646
+              ],
+              [
+                52470,
+                90647
+              ],
+              [
+                53684,
+                104402
+              ],
+              [
+                34291,
+                53692
+              ],
+              [
+                53692,
+                90547
+              ],
+              [
+                34291,
+                53693
+              ],
+              [
+                53693,
+                90553
+              ],
+              [
+                34297,
+                53694
+              ],
+              [
+                48158,
+                53695
+              ],
+              [
+                53695,
+                104414
+              ],
+              [
+                34399,
+                53985
+              ],
+              [
+                35113,
+                53985
+              ],
+              [
+                53985,
+                90654
+              ],
+              [
+                35113,
+                53987
+              ],
+              [
+                34399,
+                53990
+              ],
+              [
+                53990,
+                90640
+              ],
+              [
+                53993,
+                91370
+              ],
+              [
+                35650,
+                53994
+              ],
+              [
+                53994,
+                91916
+              ],
+              [
+                23762,
+                80969
+              ],
+              [
+                80019,
+                80971
+              ],
+              [
+                22869,
+                81984
+              ],
+              [
+                22869,
+                81986
+              ],
+              [
+                79126,
+                81986
+              ],
+              [
+                22870,
+                81987
+              ],
+              [
+                22954,
+                81987
+              ],
+              [
+                79126,
+                81987
+              ],
+              [
+                79127,
+                81987
+              ],
+              [
+                22954,
+                81995
+              ],
+              [
+                79210,
+                81995
+              ],
+              [
+                23064,
+                81999
+              ],
+              [
+                22949,
+                82009
+              ],
+              [
+                22945,
+                82011
+              ],
+              [
+                79201,
+                82011
+              ],
+              [
+                79208,
+                82011
+              ],
+              [
+                23469,
+                82149
+              ],
+              [
+                23514,
+                82149
+              ],
+              [
+                23515,
+                82149
+              ],
+              [
+                79724,
+                82149
+              ],
+              [
+                79725,
+                82149
+              ],
+              [
+                79770,
+                82149
+              ],
+              [
+                23108,
+                83066
+              ],
+              [
+                23109,
+                83066
+              ],
+              [
+                79364,
+                83066
+              ],
+              [
+                79365,
+                83066
+              ],
+              [
+                23070,
+                83088
+              ],
+              [
+                79314,
+                83088
+              ],
+              [
+                79326,
+                83088
+              ],
+              [
+                23057,
+                83093
+              ],
+              [
+                23064,
+                83093
+              ],
+              [
+                79320,
+                83093
+              ],
+              [
+                23572,
+                83473
+              ],
+              [
+                23768,
+                83473
+              ],
+              [
+                79839,
+                83473
+              ],
+              [
+                23572,
+                83474
+              ],
+              [
+                23768,
+                83478
+              ],
+              [
+                80025,
+                83478
+              ],
+              [
+                79814,
+                83484
+              ],
+              [
+                23296,
+                84368
+              ],
+              [
+                79553,
+                84368
+              ],
+              [
+                23304,
+                84369
+              ],
+              [
+                79560,
+                84369
+              ],
+              [
+                79615,
+                84369
+              ],
+              [
+                23344,
+                84371
+              ],
+              [
+                23359,
+                84371
+              ],
+              [
+                79600,
+                84371
+              ],
+              [
+                79601,
+                84371
+              ],
+              [
+                23110,
+                84373
+              ],
+              [
+                23111,
+                84373
+              ],
+              [
+                23112,
+                84373
+              ],
+              [
+                79367,
+                84373
+              ],
+              [
+                79368,
+                84373
+              ],
+              [
+                79567,
+                84373
+              ],
+              [
+                23351,
+                84379
+              ],
+              [
+                23556,
+                84379
+              ],
+              [
+                79608,
+                84379
+              ],
+              [
+                79812,
+                84379
+              ],
+              [
+                34288,
+                103504
+              ],
+              [
+                90544,
+                103504
+              ],
+              [
+                90546,
+                103504
+              ],
+              [
+                90559,
+                103505
+              ],
+              [
+                34292,
+                103507
+              ],
+              [
+                35095,
+                103507
+              ],
+              [
+                90548,
+                103507
+              ],
+              [
+                90559,
+                103507
+              ],
+              [
+                34290,
+                103509
+              ],
+              [
+                90547,
+                103509
+              ],
+              [
+                35095,
+                103515
+              ],
+              [
+                91351,
+                103515
+              ],
+              [
+                102052,
+                103515
+              ],
+              [
+                45792,
+                103722
+              ],
+              [
+                45794,
+                103722
+              ],
+              [
+                102048,
+                103722
+              ],
+              [
+                102050,
+                103722
+              ],
+              [
+                48545,
+                108574
+              ],
+              [
+                104801,
+                108575
+              ],
+              [
+                48432,
+                108616
+              ],
+              [
+                48145,
+                108633
+              ],
+              [
+                48145,
+                108634
+              ],
+              [
+                104402,
+                108653
+              ],
+              [
+                36328,
+                108656
+              ],
+              [
+                92584,
+                108656
+              ],
+              [
+                36329,
+                108657
+              ],
+              [
+                92585,
+                108657
+              ],
+              [
+                92586,
+                108659
+              ],
+              [
+                35754,
+                108660
+              ],
+              [
+                92010,
+                108660
+              ],
+              [
+                36327,
+                108661
+              ],
+              [
+                92583,
+                108661
+              ],
+              [
+                36330,
+                108665
+              ],
+              [
+                101991,
+                108665
+              ],
+              [
+                92649,
+                108688
+              ],
+              [
+                92646,
+                108694
+              ],
+              [
+                92009,
+                108701
+              ],
+              [
+                35751,
+                108702
+              ],
+              [
+                92007,
+                108702
+              ],
+              [
+                92008,
+                108702
+              ],
+              [
+                35650,
+                108711
+              ],
+              [
+                91906,
+                108711
+              ],
+              [
+                35654,
+                108712
+              ],
+              [
+                91905,
+                108712
+              ],
+              [
+                91910,
+                108712
+              ],
+              [
+                45731,
+                108713
+              ],
+              [
+                45739,
+                108713
+              ],
+              [
+                91910,
+                108713
+              ],
+              [
+                101995,
+                108713
+              ],
+              [
+                45731,
+                108714
+              ],
+              [
+                34378,
+                108721
+              ],
+              [
+                34391,
+                108721
+              ],
+              [
+                90647,
+                108721
+              ],
+              [
+                34389,
+                108725
+              ],
+              [
+                90646,
+                108725
+              ],
+              [
+                34390,
+                108726
+              ],
+              [
+                90647,
+                108726
+              ],
+              [
+                104402,
+                109940
+              ],
+              [
+                34291,
+                109948
+              ],
+              [
+                34297,
+                109949
+              ],
+              [
+                90553,
+                109949
+              ],
+              [
+                34297,
+                109950
+              ],
+              [
+                104414,
+                109950
+              ],
+              [
+                48158,
+                109951
+              ],
+              [
+                104402,
+                109951
+              ],
+              [
+                34399,
+                110241
+              ],
+              [
+                35113,
+                110243
+              ],
+              [
+                34389,
+                110246
+              ],
+              [
+                90640,
+                110246
+              ],
+              [
+                35113,
+                110249
+              ],
+              [
+                91370,
+                110249
+              ],
+              [
+                35115,
+                110250
+              ],
+              [
+                35660,
+                110250
+              ],
+              [
+                91370,
+                110250
+              ],
+              [
+                91916,
+                110250
+              ],
+              [
+                48438,
+                52360
+              ],
+              [
+                52360,
+                104689
+              ],
+              [
+                48438,
+                52361
+              ],
+              [
+                52361,
+                104695
+              ],
+              [
+                52362,
+                90580
+              ],
+              [
+                48151,
+                52375
+              ],
+              [
+                52376,
+                104408
+              ],
+              [
+                48438,
+                108617
+              ],
+              [
+                90580,
+                108618
+              ],
+              [
+                104695,
+                108618
+              ],
+              [
+                48151,
+                108631
+              ],
+              [
+                90580,
+                108631
+              ],
+              [
+                48151,
+                108632
+              ],
+              [
+                104408,
+                108632
+              ],
+              [
+                104408,
+                108633
+              ],
+              [
+                104436,
+                104690
+              ],
+              [
+                48445,
+                104690
+              ],
+              [
+                48432,
+                104436
+              ],
+              [
+                48432,
+                52359
+              ],
+              [
+                5046,
+                5174
+              ],
+              [
+                5243,
+                61297
+              ],
+              [
+                5174,
+                61297
+              ],
+              [
+                61297,
+                61430
+              ],
+              [
+                61297,
+                61499
+              ],
+              [
+                5244,
+                61297
+              ],
+              [
+                5040,
+                5244
+              ],
+              [
+                5046,
+                61431
+              ],
+              [
+                5047,
+                61431
+              ],
+              [
+                61303,
+                61431
+              ],
+              [
+                61304,
+                61431
+              ],
+              [
+                5242,
+                61304
+              ],
+              [
+                5048,
+                5242
+              ],
+              [
+                5244,
+                61296
+              ],
+              [
+                73087,
+                73277
+              ],
+              [
+                5048,
+                73277
+              ],
+              [
+                61296,
+                61500
+              ],
+              [
+                5245,
+                61296
+              ],
+              [
+                61296,
+                61501
+              ],
+              [
+                16828,
+                17013
+              ],
+              [
+                16828,
+                73264
+              ],
+              [
+                16818,
+                17008
+              ],
+              [
+                17008,
+                73084
+              ],
+              [
+                17008,
+                73074
+              ],
+              [
+                73084,
+                73264
+              ],
+              [
+                73074,
+                73266
+              ],
+              [
+                17022,
+                73074
+              ],
+              [
+                16830,
+                17022
+              ],
+              [
+                16831,
+                17022
+              ],
+              [
+                17022,
+                73086
+              ],
+              [
+                16831,
+                73277
+              ],
+              [
+                5247,
+                61310
+              ],
+              [
+                5055,
+                5246
+              ],
+              [
+                5055,
+                61502
+              ],
+              [
+                5055,
+                61501
+              ],
+              [
+                61310,
+                61502
+              ],
+              [
+                61310,
+                61503
+              ],
+              [
+                4584,
+                61310
+              ],
+              [
+                3657,
+                4584
+              ],
+              [
+                4583,
+                59914
+              ],
+              [
+                3657,
+                60840
+              ],
+              [
+                59914,
+                60839
+              ],
+              [
+                59914,
+                60840
+              ]
+            ],
+            "kinds": {
+              "surface_crossing": 438
+            },
+            "degenerate_triangles": 0,
+            "candidate_pairs": 727231,
+            "expected_shared_features": 674704,
+            "witnesses": [
+              {
+                "first_triangle": 23605,
+                "second_triangle": 25892,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.21796245304298342,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18748599494127918,
+                  0.026289729676295125,
+                  0.030458425796868763
+                ]
+              },
+              {
+                "first_triangle": 25892,
+                "second_triangle": 79861,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.05095315778959808,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18746455247479188,
+                  0.026168316628353616,
+                  0.030512066699633862
+                ]
+              },
+              {
+                "first_triangle": 25892,
+                "second_triangle": 79862,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.17430604218999493,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18751366893795324,
+                  0.026469651557488778,
+                  0.03038579536097977
+                ]
+              },
+              {
+                "first_triangle": 24737,
+                "second_triangle": 25905,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.0025251172489595313,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18579785502425522,
+                  0.01881437196674897,
+                  0.03271116003725632
+                ]
+              },
+              {
+                "first_triangle": 24739,
+                "second_triangle": 25905,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.11389377020422765,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18591669120919752,
+                  0.019484392911472442,
+                  0.032802972020732096
+                ]
+              },
+              {
+                "first_triangle": 24747,
+                "second_triangle": 25905,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.23055005921899113,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18609695319400804,
+                  0.0203402207047312,
+                  0.032841634916797834
+                ]
+              },
+              {
+                "first_triangle": 25905,
+                "second_triangle": 80063,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.24569681044593009,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18615177148464335,
+                  0.020569872040731272,
+                  0.03283420869775783
+                ]
+              },
+              {
+                "first_triangle": 25905,
+                "second_triangle": 80995,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.6356301833971881,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1858567715413121,
+                  0.019124796981433663,
+                  0.03274304226648336
+                ]
+              },
+              {
+                "first_triangle": 25905,
+                "second_triangle": 81003,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.7119694458833691,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18599620660326743,
+                  0.01988040061972387,
+                  0.03283161712164702
+                ]
+              },
+              {
+                "first_triangle": 24742,
+                "second_triangle": 25907,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.43324536619347664,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18571817583440314,
+                  0.01837346970989096,
+                  0.03250853363970965
+                ]
+              },
+              {
+                "first_triangle": 25907,
+                "second_triangle": 80993,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.18053013945978913,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18562851460835988,
+                  0.018272048012479454,
+                  0.032567609088421365
+                ]
+              },
+              {
+                "first_triangle": 23793,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.0215147441501434,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18677780941538707,
+                  0.023514335467064357,
+                  0.03189673610612164
+                ]
+              },
+              {
+                "first_triangle": 23799,
+                "second_triangle": 25912,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.20773406093401825,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1868724202154222,
+                  0.023768772952744446,
+                  0.03178829731037472
+                ]
+              },
+              {
+                "first_triangle": 25912,
+                "second_triangle": 80056,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.17862116321006077,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.1868068838882776,
+                  0.023604277152714362,
+                  0.03186394890997728
+                ]
+              },
+              {
+                "first_triangle": 23604,
+                "second_triangle": 82159,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.637478672161338,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18726738918311037,
+                  0.02522815035703422,
+                  0.03095734174144684
+                ]
+              },
+              {
+                "first_triangle": 23799,
+                "second_triangle": 82159,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.8473266104581338,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18700804251817196,
+                  0.0242073484850817,
+                  0.03153064723950816
+                ]
+              },
+              {
+                "first_triangle": 79860,
+                "second_triangle": 82159,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.45708369165412316,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18715334319294535,
+                  0.024756660345556476,
+                  0.03121064467403593
+                ]
+              },
+              {
+                "first_triangle": 79861,
+                "second_triangle": 82159,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.7150311207214393,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18739641850239852,
+                  0.025824939157035428,
+                  0.03066740815563653
+                ]
+              },
+              {
+                "first_triangle": 24737,
+                "second_triangle": 82163,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.10405068309642226,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18578216251742996,
+                  0.018786208852428092,
+                  0.03266956758629891
+                ]
+              },
+              {
+                "first_triangle": 80993,
+                "second_triangle": 82163,
+                "kind": "surface_crossing",
+                "unexpected": true,
+                "shared_vertices": 0,
+                "intersection_length_mm": 0.42109693551450195,
+                "intersection_area_mm2": 0.0,
+                "witness": [
+                  0.18569958285576077,
+                  0.01855927990866373,
+                  0.032606287020856106
+                ]
+              }
+            ],
+            "complete_mesh_clearance_proven": false,
+            "exclusions": [
+              "volume containment",
+              "positive minimum distance",
+              "other geometry",
+              "continuous time"
+            ]
+          }
+        ],
+        "complete_mesh_clearance_proven": false
+      },
+      "instrument": {
+        "R": {
+          "penetrating_vertices": 433,
+          "maximum_penetration_mm": 5.000208353996255,
+          "minimum_clearance_mm": -5.000208353996255,
+          "worst_vertex": 12571,
+          "worst_position": [
+            0.20159979164600372,
+            0.09573755413293839,
+            0.0067193047143518925
+          ],
+          "worst_solid": "key75",
+          "vertex_contacts": {
+            "key75": {
+              "vertices": 433,
+              "maximum_penetration_mm": 5.000208353996255
+            }
+          },
+          "triangle_contacts": {
+            "key75": 1927
+          },
+          "triangle_intersections": 1927,
+          "instrument_clear": false
+        },
+        "L": {
+          "penetrating_vertices": 0,
+          "maximum_penetration_mm": 0.0,
+          "minimum_clearance_mm": 2.7844912838190794,
+          "worst_vertex": 19273,
+          "worst_position": [
+            -0.05753868818283081,
+            0.01086549274623394,
+            0.0027844912838190794
+          ],
+          "worst_solid": "key57",
+          "vertex_contacts": {},
+          "triangle_contacts": {},
+          "triangle_intersections": 0,
+          "instrument_clear": true
+        }
+      },
+      "assigned_support": {
+        "R": [
+          {
+            "finger": 1,
+            "pitch": 73,
+            "activation": 1.0,
+            "supported": false,
+            "vertex": 776,
+            "top_gap_mm": 0.9271709392896146,
+            "box": "key73"
+          },
+          {
+            "finger": 2,
+            "pitch": 76,
+            "activation": 0.9959717057428671,
+            "supported": false,
+            "vertex": 6215,
+            "top_gap_mm": 1.934422180056572,
+            "box": "key76_stem"
+          }
+        ],
+        "L": [
+          {
+            "finger": 3,
+            "pitch": 56,
+            "activation": 0.717330654139683,
+            "supported": false,
+            "vertex": null,
+            "top_gap_mm": null,
+            "box": null
+          },
+          {
+            "finger": 4,
+            "pitch": 52,
+            "activation": 0.8,
+            "supported": false,
+            "vertex": null,
+            "top_gap_mm": null,
+            "box": null
+          },
+          {
+            "finger": 5,
+            "pitch": 45,
+            "activation": 1.0,
+            "supported": false,
+            "vertex": null,
+            "top_gap_mm": null,
+            "box": null
+          }
+        ]
+      },
+      "candidate_exported": false,
+      "full_performance_accepted": false,
+      "seconds": 63.66265418601688
+    }
+  ],
+  "full_performance_accepted": false,
+  "candidate_exported": false,
+  "scope": "All actual same/interhand quad surfaces, both diagonals, at one frozen instant; instrument/assigned distal support on production poses. Bind control is an asset-only test.",
+  "exclusions": [
+    "positive distance",
+    "volume containment",
+    "body/costume",
+    "full music/trajectory",
+    "forces/action",
+    "continuous time",
+    "naturalness"
+  ],
+  "source_unchanged_during_run": true,
+  "status": "complete"
+}

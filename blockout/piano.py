@@ -797,6 +797,10 @@ def hand_track(fing, hand, times, rest_x):
     hx = np.array([_place([(n.pitch, f) for n, f in s], any(is_black(n.pitch) for n, _ in s), hand) for s in fing])
     nb = np.array([any(is_black(n.pitch) for n, _ in s) for s in fing])
     t_end = np.array([min(n.end for n, _ in s) for s in fing])   # the slice's first release frees the hand
+    if WRIST_CARRY:
+        # All prior slices can still own a key. A short note's release must not
+        # free the wrist while another finger is holding its original note.
+        t_end = np.maximum.accumulate([max(n.end for n, _ in s) for s in fing])
     x = np.empty(len(times))
     for j, t in enumerate(times):
         i = np.searchsorted(t_on, t, side="right") - 1
@@ -805,11 +809,19 @@ def hand_track(fing, hand, times, rest_x):
             x[j] = rest_x + (hx[0] - rest_x) * u
             continue
         x[j] = hx[i]
+        if WRIST_CARRY:
+            held = [(n.pitch, f) for s in fing[:i + 1] for n, f in s if n.start <= t < n.end]
+            if held:
+                x[j] = _place(held, any(is_black(p) for p, _ in held), hand)
+                continue
         if i + 1 < len(t_on):  # once its notes let go, the hand drifts toward where it plays next (it doesn't wait,
             gap = t_on[i + 1] - t_on[i]          # or go home): legato leaves only the short glide before the onset
             t1 = t_on[i + 1] - 0.025
             g0 = max(t_end[i], t_on[i] + 0.05)
             dur = max(min(0.12, 0.7 * gap), t1 - g0)
+            if WRIST_CARRY:
+                t1 = max(t1, g0 + .001)
+                dur = t1 - g0
             x[j] = hx[i] + (hx[i + 1] - hx[i]) * _smooth((t - (t1 - dur)) / dur)
     idx = np.clip(np.searchsorted(t_on, times + 0.06, side="right") - 1, 0, len(fing) - 1)
     return x, nb[idx]
@@ -1258,6 +1270,10 @@ def _ik(m, target, seg, fwd_hint, tip_pitch=None):
 SPRING_HAND = (2.6, 0.72, 1.3)
 SPRING_TIP = (10.0, 0.80, 0.4)
 SPRING_FREE = (4.5, 0.45, 0.6)     # free fingers: soft and under-damped, the hand's subconscious ragdoll
+FREE_CONTROL = False              # matched experimental controller; enable with PIANO_OVR
+WRIST_CARRY = False               # isolated reach / held-note planning ablation
+SPRING_CONTROLLED_FREE = (7.0, 1.0, 0.0)
+FREE_COMFORT_GAIN = (1., 16., 16., 16., 16.)  # engineering gains, not force estimates
 EXT_UP, EXT_FWD = 0.010, 0.008    # m: how far an idle finger lifts and lengthens
 EXT_OUT = (-0.006, -0.003, 0.0, 0.002, 0.005)   # m: and fans away from the middle finger (right hand; mirrored)
 # ---- two hands close, overlapping, crossing (from footage study; notes in the commit message). Two cases:
@@ -1589,15 +1605,20 @@ def _learned_wrist(H, name, ts):
         return None
     hs_ = __import__("blockout.rig.skeleton", fromlist=["hand_scale"]).hand_scale()
     k = hs_ / (17.7 / 24.3) if hs_ != 1.0 else 24.3 / 17.7   # model offsets are for a 17.7 cm hand
-    on, P = [], []
-    for sl in H["fing"]:
+    on, P, release = [], [], []
+    for group, sl in enumerate(H["fing"]):
         v = []
-        for n, f in sl:
+        active = sl
+        if WRIST_CARRY:
+            active = [(n, f) for earlier in H["fing"][:group + 1] for n, f in earlier
+                      if n.start <= sl[0][0].start < n.end]
+        for n, f in active:
             key = f"{name}{f}.{'black' if is_black(n.pitch) else 'white'}"
             o = M["offset"].get(key) or M["offset"].get(f"{name}{f}.white")
             v.append(np.array([key_x(n.pitch), 0.0, 0.0]) + np.array(o["median"]) * np.array([k, k, 1.0]))  # offsets
             # scale with the hand (x and depth), so the knuckles land where a pianist's do whatever the hand's size
         on.append(sl[0][0].start); P.append(np.mean(v, 0))
+        release.append(max(n.end for n, _ in active))
     on, P = np.array(on), np.array(P)
     tau = np.array(M["travel"]["small"]["tau"])
     cs, cl = np.array(M["travel"]["small"]["median"]), np.array(M["travel"]["large"]["median"])
@@ -1610,6 +1631,11 @@ def _learned_wrist(H, name, ts):
             out[i] = P[-1]; continue
         t0, t1 = on[g], on[g + 1]
         t0 = max(t0, t1 - 1.0)
+        if WRIST_CARRY:
+            t0 = max(t0, min(release[g], t1))
+            if t0 >= t1:
+                out[i] = P[g]
+                continue
         u = float(np.clip((t - t0) / max(t1 - t0, 1e-6), 0, 1))
         d = P[g + 1] - P[g]
         c = cl if np.linalg.norm(d[:2]) > 0.04 else cs
@@ -1701,6 +1727,12 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
                     v = dR @ (tg[f] - pp) + ref_pos
                     tg[f, :2] = v[:2]
         targets = {**frame_targets, name: tg}
+        if FREE_CONTROL:
+            from .rig.composure import quiet_pad_targets
+            quiet = H["WF"][j] if "WF" in H else np.ones(5)
+            tg = quiet_pad_targets(rig, ref_rot, ref_pos, tg, pressing, quiet,
+                lambda x, y, f: surface_under(x, y, TIP_R[f], est_depth))
+            targets = {**frame_targets, name: tg}
         # a key is narrow across the keyboard and long along it: aim pressing pads hardest in x
         w = [np.array(PRESS_AXES_BLACK if is_black(H["act"][j][f][0]) else PRESS_AXES) * RIG_W["press"] if pressing[f]
              else RIG_W["free"] * (THUMB_REST if f == 0 else 1.0) for f in range(5)]
@@ -1713,6 +1745,8 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
             free_w = [RIG_W["free"] * (THUMB_REST if f == 0 else 1.0) for f in range(5)]
             w = [free_w[f] + active[f] * (w[f] - free_w[f]) if pressing[f] else w[f] for f in range(5)]
         W["activation"] = active
+        if FREE_CONTROL:
+            W["comfort_free"] = FREE_COMFORT_GAIN
         W["dt"] = H.get("dt", 1.0 / 24)
         W["max_joint_speed"] = JOINT_SPEED_MAX
         W["motion_last"] = prev.get(name)
@@ -1797,6 +1831,17 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
             if P is not None:
                 REF[name] = [(r[0], p_) for r, p_ in zip(REF[name], P)]
         first_prior = WRIST_MODEL_PRIOR
+    if WRIST_CARRY:
+        from .rig.composure import solo_wrist_reference
+        for name, H in hands.items():
+            for i, j in enumerate(range(j0, N)):
+                assigned = [None if a is None else a[0] for a in H["act"][j]]
+                occupied = [p for p in assigned if p is not None]
+                other_held = bool(len(occupied) == 1 and any(
+                    a <= times[j] < b and p != occupied[0] for a, b, p in H["score_notes"]))
+                rotation, position = REF[name][i]
+                REF[name][i] = (rotation, solo_wrist_reference(_rig(name), rotation, position,
+                    T[j][0][name], assigned, H["activation"][j], other_held))
     PW = {}
     ns = max(1, int(round(WRIST_STRIKE_T * fps)))
     for name, H in hands.items():
@@ -2054,9 +2099,12 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         for n, o in zip(ns, [m for m in (rh if name == "R" else lh)]):
             n.touch, n.lift = getattr(o, "touch", 0.3), getattr(o, "lift", 1.0)
         fing = fingering(slices(ns, hand=name), name) if ns else []
-        ev = release_far(fing, finger_events(fing), name)
+        ev = finger_events(fing)
+        if not WRIST_CARRY:
+            ev = release_far(fing, ev, name)
         sl_end = np.array([max(n.end for n, _ in s) for s in fing]) if fing else np.zeros(0)
         H = {"fing": fing, "ev": ev, "ev_on": {f: np.array([e[0] for e in ev[f]]) for f in ev},
+             "score_notes": [(n.start, n.end, n.pitch) for n in (rh if name == "R" else lh)],
              "on": np.array([s[0][0].start for s in fing]) if fing else np.zeros(0),
              "end": np.maximum.accumulate(sl_end) if len(sl_end) else sl_end,
              "vel": np.array([max(n.velocity for n, _ in s) for s in fing]) if fing else np.zeros(0),
@@ -2138,8 +2186,10 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                             tip[:2] += w * (goal[:2] - tip[:2])
                     idle = (1.0 - w) * (0.0 if f == 0 else 1.0)  # off duty, a finger eases out and up, very softly;
                     # the thumb doesn't: an idle thumb rests low along the key edge
-                    tip = tip.copy() + _yaw(np.array([sgn * EXT_OUT[f], EXT_FWD, 0.0]), psi0) * idle
-                    tip[2] = surface_under(tip[0], tip[1], TIP_R[f], {}) + TIP_R[f] + hover * (0.4 if f == 0 else 1.0) + EXT_UP * idle
+                    tip = tip.copy()
+                    if not FREE_CONTROL:
+                        tip += _yaw(np.array([sgn * EXT_OUT[f], EXT_FWD, 0.0]), psi0) * idle
+                    tip[2] = surface_under(tip[0], tip[1], TIP_R[f], {}) + TIP_R[f] + hover * (0.4 if f == 0 else 1.0) + (0. if FREE_CONTROL else EXT_UP * idle)
                     uw, ow = float(CL["under"][j]), float(CL["over"][j])
                     idle_t = 1.0 - w                          # (the thumb's own off-duty share; `idle` is 0 for it)
                     if f == 0:                                # an idle thumb lies in along the hand, low and parallel
@@ -2220,9 +2270,10 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         H["Yf"] = dynamics.filter_track(H["YAW"], fps, *SPRING_ROLL) + dynamics.drift(times, 0.015, seed * 10 + 9 + k)
         H["WZf"] = dynamics.filter_track(H.get("WZ", np.zeros(N)), fps, *SPRING_HAND)
         firm = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_TIP).reshape(N, 5, 3)
-        soft = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_FREE).reshape(N, 5, 3)
+        soft = dynamics.filter_track(H["TIP"].reshape(N, 15), fps,
+            *(SPRING_CONTROLLED_FREE if FREE_CONTROL else SPRING_FREE)).reshape(N, 5, 3)
         wf = np.clip(dynamics.filter_track(H["FREE"], fps, 6.0, 1.0, 1.0), 0, 1)[:, :, None]
-        H["Tf"] = wf * soft + (1 - wf) * firm          # a finger off duty goes limp: it trails, floats and settles
+        H["Tf"] = wf * soft + (1 - wf) * firm
         H["WF"] = wf[:, :, 0]                          # (the eased off-duty share, per finger)
     TORSO = _torso_drive(hands, body, N, fps)
     HEAD = np.array([performer.head_angles(t, beats, downbeats, float(energy[j]), sched) for j, t in enumerate(th)])
@@ -2361,6 +2412,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         json.dump([d for H in hands.values() for d in H.get("dbg", [])], open(os.environ["REACH_DBG"], "w"))
     pens = np.concatenate([H.get("pen", [0.0]) for H in hands.values()])
     return {"fps": fps, "start": start, "speed": speed, "centre_x": cx, "keyboard": keyboard(),
+            "control_experiment": {"free_control": bool(FREE_CONTROL), "wrist_carry": bool(WRIST_CARRY),
+                "scope": "kinematic preferences; actual-mesh trajectory acceptance required"},
+            "scheduled_note_events": {name: {str(f): H["ev"][f] for f in range(5)} for name, H in hands.items()},
             "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,
             **({"hand_scale": float(_rig("R").sk.scale), "pose_precision": "full solver precision"} if HAND_MODEL == "mpfb" else {}),
             "qa": {"finger_frames": int(len(pens)), "penetrating_over_1mm": int((pens > 0.001).sum()),

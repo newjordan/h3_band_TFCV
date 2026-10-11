@@ -5,6 +5,7 @@ import shutil
 from mesh_progress_site import apply_latest
 from deformation_progress_site import apply_deformation
 from performance_preview_site import apply_performance_preview
+from composure_site import apply_composure
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = Path('/home/frosty40/h3/results/band_site/web')
@@ -135,6 +136,10 @@ section['items'] = [
 apply_latest(section, mesh)
 apply_deformation(section, deformation)
 apply_performance_preview(section, preview)
+composure_path = ROOT / 'lab/realism_results/composure_20261011.json'
+composure = json.loads(composure_path.read_text()) if composure_path.exists() else None
+if composure is not None and composure['status'] == 'complete':
+    apply_composure(section, composure)
 manifest['sections'] = [section] + [s for s in manifest['sections'] if s['id'] != section['id']]
 manifest['updated'] = '2026-10-11 one-minute grayscale piano performance with audio, frozen deformation study and connected key-top pilot; complete realism remains unfinished'
 manifest['status'].insert(0, f"<b>Rig research:</b> {deformation['unit_tests']['passed']} tests pass. "
@@ -143,8 +148,21 @@ manifest['status'].insert(0, f"<b>Rig research:</b> {deformation['unit_tests']['
     'A new one-minute piano performance with audio, every matched outcome and fixed-camera diagnostics appear below; no complete performance is accepted.')
 # Keep one current research status when the publishing command is rerun.
 manifest['status'] = [manifest['status'][0]] + [s for s in manifest['status'][1:] if not s.startswith('<b>Rig research:</b>')]
+if composure is not None and composure['status'] == 'complete':
+    manifest['updated'] = '2026-10-11 curled-finger / wrist-carry performance comparison; complete realism remains unfinished'
+    manifest['status'][0] = (f"<b>Rig research:</b> {composure['unit_tests']['passed']} tests pass. "
+        'Fresh grayscale controller comparison and original-score hold coverage are published. '
+        'Free-finger curl and isolated wrist carry remain experimental; skin and musical failures are retained. '
+        'The one-minute performance and drummer diagnostics remain available below.')
 media = WEB / 'media'
 media.mkdir(exist_ok=True)
+if composure is not None and composure['status'] == 'complete':
+    for source, destination in (
+            (ART / 'composure_comparison.mp4', 'rig_realism_composure_comparison.mp4'),
+            (ART / 'composure_metrics.png', 'rig_realism_composure_metrics.png'),
+            (composure_path, 'rig_realism_composure_results.json'),
+            (ROOT / 'lab/realism_results/composure_review_result.json', 'rig_realism_composure_review.json')):
+        shutil.copy2(source, media / destination)
 for source, destination in (
         (ART / 'performance_60s.mp4', 'rig_realism_piano_60s.mp4'),
         (ROOT / 'lab/realism_results/performance_preview_20261011.json', 'rig_realism_performance_preview_results.json'),

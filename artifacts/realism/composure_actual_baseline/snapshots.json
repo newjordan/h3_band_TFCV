@@ -1,0 +1,43 @@
+{
+  "status": "complete",
+  "hand_scale": 0.7284,
+  "candidate_exported": false,
+  "records": [
+    {
+      "context": "baseline_frame48",
+      "frame": 48,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.anim.json",
+      "source_sha256": "cf290e9240b1b0941f2733bb71eac6dffdd3226446baf56d6b6f22c820593256",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_baseline/frame48.npz",
+      "mesh_sha256": "edd839b9c154eff5b7259e05ceca8a53afdaf66b5fd5cbca8bfbdde74ae1f900",
+      "trial": "baseline",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    },
+    {
+      "context": "baseline_frame108",
+      "frame": 108,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.anim.json",
+      "source_sha256": "cf290e9240b1b0941f2733bb71eac6dffdd3226446baf56d6b6f22c820593256",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_baseline/frame108.npz",
+      "mesh_sha256": "77d084529355ca481f5a8329fad6196063051ecc6ef73095d488cefb9bd1d39f",
+      "trial": "baseline",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    }
+  ],
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/composure_baseline.anim.json": "cf290e9240b1b0941f2733bb71eac6dffdd3226446baf56d6b6f22c820593256",
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/composure_snapshot.py": "6a5b0ad6c47e3485181f18533e1f06725f2173bcb099fcb256d2c2f373cf5ea1"
+  },
+  "scope": "Actual unchanged production skin, same two matched times in each trial; no trajectory acceptance",
+  "source_unchanged_during_run": true
+}

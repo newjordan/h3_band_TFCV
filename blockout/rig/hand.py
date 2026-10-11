@@ -116,6 +116,14 @@ class HandRig:
         value = float(np.clip(value, 0.0, 1.0))
         return value * value * (3.0 - 2.0 * value)
 
+    @staticmethod
+    def _comfort_gain(f, active, W):
+        free = np.broadcast_to(np.asarray(W.get("comfort_free", 1.), float), (5,))[f]
+        pressed = float(W.get("comfort_press", 1.))
+        if not np.isfinite(free) or free < 0 or not np.isfinite(pressed) or pressed < 0:
+            raise ValueError("Comfort gains must be finite and nonnegative")
+        return math.sqrt((1. - active) * free + active * pressed)
+
     def _motion_bounds(self, x, W):
         lo, hi = self.lo.copy(), self.hi.copy()
         last = W.get("motion_last")
@@ -284,7 +292,7 @@ class HandRig:
         cw = np.ones(len(q))                                  # a pressing finger may leave its relaxed pose to reach
         for f, (a, b) in enumerate(zip(self.sl[:-1], self.sl[1:])):
             active = self._activation(f, targets[f], weights[f], W)
-            cw[a:b] = math.sqrt(1.0 + active * (W.get("comfort_press", 1.0) - 1.0))
+            cw[a:b] = self._comfort_gain(f, active, W)
         scale = self.sigma if W.get("comfort_sigma") else self.rng      # human-spread scaling: experimental, off
         q_rest = self.q_rest
         if W.get("rest_override"):
@@ -385,7 +393,7 @@ class HandRig:
         active = self._activation(f, target, weight, W)
         if target is not None:
             r.append(np.asarray(weight, float) * (ch.effector(P, Rs) - target))
-        cw = math.sqrt(1.0 + active * (W.get("comfort_press", 1.0) - 1.0))
+        cw = self._comfort_gain(f, active, W)
         scale = (self.sigma if W.get("comfort_sigma") else self.rng)[a:b]
         rest = W.get("rest_override", {}).get(f, self.q_rest[a:b])
         if f in W.get("rest_override", {}):

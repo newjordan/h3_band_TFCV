@@ -1,0 +1,43 @@
+{
+  "status": "complete",
+  "hand_scale": 0.7284,
+  "candidate_exported": false,
+  "records": [
+    {
+      "context": "both_frame48",
+      "frame": 48,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_both.anim.json",
+      "source_sha256": "7b5b862237d2a28cc26327b4bc87a21b8e424a3d403d9da8681e66c1f4036cf8",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_both/frame48.npz",
+      "mesh_sha256": "bb39b4f27fbc03a1b3591127396c39d2429f4058d66c9a922a9416ddab355c37",
+      "trial": "both",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    },
+    {
+      "context": "both_frame108",
+      "frame": 108,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_both.anim.json",
+      "source_sha256": "7b5b862237d2a28cc26327b4bc87a21b8e424a3d403d9da8681e66c1f4036cf8",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_both/frame108.npz",
+      "mesh_sha256": "d19743ba6b26d4e937d4522f473a2ec8dc0d574ab33a701cf3eb8fdf2efd2aba",
+      "trial": "both",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    }
+  ],
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/composure_both.anim.json": "7b5b862237d2a28cc26327b4bc87a21b8e424a3d403d9da8681e66c1f4036cf8",
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/composure_snapshot.py": "6a5b0ad6c47e3485181f18533e1f06725f2173bcb099fcb256d2c2f373cf5ea1"
+  },
+  "scope": "Actual unchanged production skin, same two matched times in each trial; no trajectory acceptance",
+  "source_unchanged_during_run": true
+}

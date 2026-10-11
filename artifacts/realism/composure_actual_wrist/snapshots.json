@@ -1,0 +1,43 @@
+{
+  "status": "complete",
+  "hand_scale": 0.7284,
+  "candidate_exported": false,
+  "records": [
+    {
+      "context": "wrist_frame48",
+      "frame": 48,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_wrist.anim.json",
+      "source_sha256": "ee056e50f04eee80d2f2d86a10e9a8d038f54a8f9b5ad3009ea4fd8b05320226",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_wrist/frame48.npz",
+      "mesh_sha256": "65d0041ff59a11028d4f98d9f8c6cabcfc219e8d308bd5da23e128f73c299d91",
+      "trial": "wrist",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    },
+    {
+      "context": "wrist_frame108",
+      "frame": 108,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_wrist.anim.json",
+      "source_sha256": "ee056e50f04eee80d2f2d86a10e9a8d038f54a8f9b5ad3009ea4fd8b05320226",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/composure_actual_wrist/frame108.npz",
+      "mesh_sha256": "df29aef95a4257ac804b9b1785675d83891856f762de2e822ec6b9d2a62e771e",
+      "trial": "wrist",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    }
+  ],
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/composure_wrist.anim.json": "ee056e50f04eee80d2f2d86a10e9a8d038f54a8f9b5ad3009ea4fd8b05320226",
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/composure_snapshot.py": "6a5b0ad6c47e3485181f18533e1f06725f2173bcb099fcb256d2c2f373cf5ea1"
+  },
+  "scope": "Actual unchanged production skin, same two matched times in each trial; no trajectory acceptance",
+  "source_unchanged_during_run": true
+}

@@ -1,5 +1,68 @@
 # Piano-hand lab notebook
 
+## 2026-10-11: wrist-carried curl and isolated reach, all four outcomes retained
+
+**Hypothesis.** Unused digits should stay gently curled and controlled near
+the keys; a solo stretch should be carried by the wrist before lateral finger
+bending. The old controller deliberately lifted, lengthened and fanned idle
+digits on an under-damped spring, and considered the first chord release to
+free the hand. Implemented two independent opt-in factors in the actual
+controller: FK rest targets with critically damped preparation and phase-faded
+free posture gain; isolated lateral wrist alignment with all-slice held-note
+tracking and removal of reach-based early release. Original score, dimensions,
+joint bounds, arm lengths and 12 rad/s joint speed cap retained.
+
+**Experiment.** Four complete-controller runs on the same performed Knights
+Suite 247–253-second passage, 24 Hz, hand scale 0.7284, unchanged E36 budgets.
+Identical input/code fingerprints verified after all runs. Every original
+note is retained in a separate ledger; existing fingering/event truncations
+are exposed rather than counted against the modified schedule.
+
+| Controller | Onsets (key ≥50% within 250 ms) | Original held-key sample coverage | Shortened/missing scheduled holds | R unused-middle rest deviation RMS |
+|---|---:|---:|---:|---:|
+| Baseline |32/38|42.52%|28|63.00°|
+| Free control |33/38|40.13%|28|8.17°|
+| Wrist carry |28/38|48.73%|20|15.58°|
+| Both |29/38|50.00%|20|8.04°|
+
+The unused-middle comparison uses the same 98 R/109 L inactive frames in all
+four runs. L deviation is 9.70→5.49° for baseline→both. On identical strongly
+active isolated-note frames (18 R, 8 L), mean horizontal pad excursion from
+the relaxed pad at the achieved wrist falls 17.28→4.20 mm R and 12.21→8.65 mm L.
+These are limited kinematic measurements, not muscle/force validation.
+No joint-bound or speed-cap violations; maximum arm-length error is floating
+point noise (1.11e-13 mm). The velocity cap is an engineering bound and does
+not by itself establish natural movement. Pad control-point spacing is also
+reported separately from actual skin clearance.
+
+**Independent surface result.** Eight actual Blender level 2 snapshots,
+unchanged LBS weights/deformation, verified CPU/topology parity, both quad
+diagonals at identical frames 48/108. Self-crossing pairs: baseline 212/456,
+free 68/477, wrist 135/568, both 69/526. Both introduces L instrument penetration
+3.427 mm at frame 48 and retains R 4.110 mm/L 1.283 mm at 108. None accepted.
+Improved free posture can coexist with worse playing-pose folds and note
+onset regression. Complete trajectory/body/costume, positive clearance,
+containment and continuous collision checks remain open.
+
+**Conclusion.** The user's composure correction has a measurable effect on
+achieved digits and isolated reach. It does not yet produce acceptable
+playing. Keep both switches off by default; next work must couple held-note
+support and wrist planning with the actual-surface constraints. Do not
+promote the better curl as a complete rig fix.
+
+141 tests pass (38.923 s). Native research graph completed all five roles,
+episode 39148ff9245c48bc6f6163abb5db398e44caa098622ecb837c933f05ff1f4db8,
+methodology-only PASS. Retained sandbox DNS failure and successful approved
+rerun. Full results: `lab/realism_results/composure_20261011.json`; protocol:
+`lab/COMPOSURE_PROTOCOL.md`. Fresh six-second grayscale side-by-side render,
+1536×432 at 12 fps, audio matched to identical performed notes, 72 frames,
+complete decode validated, SHA256
+deb8b3f95b5ee37ed2d43669dd4f3018c70bc9e60c2f6a039f416f0c9c2f4ac6.
+Three visual checkpoints per controller reviewed. Existing band site now
+contains this comparison, all outcomes, the older 60-second performance and
+the unchanged drummer diagnostics. Busy drummer stress patterns remain 0/12
+within their proxy scope; no new drummer fix is claimed in this experiment.
+
 **Question.** Can a rigged pianist's hand, driven only by a score (MIDI), play every note of a real piano suite
 (Clair de Lune -> Rachmaninoff Op. 3/2 bars 35-61 -> Chopin Nocturne in C# minor, complete; 350 s, ~1,900 notes)
 with every key going down under the finger that plays it (100% key sync), while moving like a pianist: straight-ish
