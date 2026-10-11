@@ -499,3 +499,31 @@ E37 trade measured: tremor does NOT come back with the middle mask — jitter 1.
 level (1.76 / 0.67), while keysync drops 0.4 pt (96.98 -> 96.56; Debussy 100 -> 93.9). So E36 (hard mask) stays
 best: its only cost, tremor x1.9 vs E29, is identical in E37. Anatomy_out is the same 11-12/min for both —
 the tremor is not what causes the 248-252 s glitch either.
+
+### Rendered-skin contact research (2026-10-11): poses improve, motion fails
+
+**Hypothesis:** finger-tube and vertex-only checks miss the rendered skin and
+triangle crossings. Keep anatomy and engineering speed bounds fixed, and
+compare clipped-point witnesses with whole-triangle constraints on the same
+three adjacent frames at hand scale 1.
+
+**Result:** accepted hand poses improve from 4/6 to 6/6; independent Blender
+surface/topology parity passes within 0.0012 mm. However, 18/21 interpolated
+observations at 240 Hz collide, up to 5.5905 mm. The original saved overlap,
+Debussy and wide-chord probes have actual-skin instrument intersections on
+77/86, 86/86 and 80/86 frames, respectively. These are different geometry
+metrics from the older key-sync/tube checks and are not directly comparable.
+92 unit tests pass. Drummer tip-radius and antipodal-rotation regressions are
+covered, but its complete rendered body/grip trajectory is not validated.
+
+**Conclusion:** the diagnostic pose solver cannot yet produce an approved
+performance. Key 45 starts returning while its scored note is still held;
+requiring its actual sustained skin support exposes a rejected numerical
+failure. Free fingers also look too straight and the posture looks strained.
+Coupled contact/key/wrist planning, full self/interhand/body clearance,
+continuous collision checking and human form review remain necessary.
+The native research graph reviewed the experiment protocol, not the rig:
+its proposed 258-input paired ablation has not yet run. Full CDL/KS musical
+validation and the calibrated 0.728 hand scale have not been rerun for this
+skin solver. Details and source/result fingerprints: `REALISM_20261011.md`
+and `realism_results/skin_contact_motion_20261011.json`.

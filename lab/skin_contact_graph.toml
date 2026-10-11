@@ -1,0 +1,45 @@
+name = "skin-contact-feasibility"
+description = "Bounded source research, counterevidence and constraints for rendered piano contact restoration."
+deadline_secs = 900
+
+[[node]]
+id = "evidence"
+persona = "librarian"
+tools = "none"
+pool = "research"
+pool_max_inflight = 2
+prompt = """Review the provided primary-source reading notes without tool calls. Return at most 180 words on whether the proposed feasibility stage is justified, with primary attribution and explicit scope. This is an excerpt-based review, not a new full-paper verification. Do not broaden the topic.
+Task: {task}"""
+
+[[node]]
+id = "counterevidence"
+persona = "librarian"
+tools = "none"
+pool = "research"
+pool_max_inflight = 2
+prompt = """Review the provided primary-source reading notes without tool calls. Return at most 180 words identifying the strongest reason the experiment might fail or be misinterpreted, with primary attribution and excerpt-based scope. No general literature survey.
+Task: {task}"""
+
+[[node]]
+id = "constraints"
+persona = "librarian"
+tools = "none"
+pool = "research"
+pool_max_inflight = 2
+prompt = """Return at most 180 words defining acceptance/rejection and remaining unknowns for this exact experiment from the provided primary-source notes. No tool calls, broader research or unrelated files. Label this an excerpt-based review.
+Task: {task}"""
+
+[[node]]
+id = "synthesize"
+depends_on = ["evidence", "counterevidence", "constraints"]
+prompt = """Recommend one concrete next experiment in at most 300 words, using only the upstream evidence. Separate measured facts, engineering hypotheses and guarantees. Include clear acceptance/rejection, limitations and a primary link. Do not claim the implementation has passed or that a static pose proves a continuous performance.
+Task: {task}"""
+
+[[node]]
+id = "verify"
+persona = "reviewer"
+depends_on = ["synthesize"]
+gate = { verdict = true, retry = "synthesize", credit_to = "synthesize", max_retries = 1 }
+prompt = """Audit correctness, attribution, feasibility versus collision-free trajectory scope, and acceptance/rejection clarity. Reject unsupported guarantees, changing hand size/anatomy, hiding missed notes or declaring success from optimizer status. A transparent failure report alone does not constitute a passing research decision. Keep feedback at most 200 words and include the gate verdict.
+Task: {task}
+Candidate: {output:synthesize}"""

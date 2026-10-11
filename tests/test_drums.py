@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from blockout.drums import DEFAULT_KIT, Drum, Drummer, Rig, demo_events, segment_distance, solve_arm
+from blockout.drums import DEFAULT_KIT, Drum, Drummer, Rig, demo_events, segment_distance, solve_arm, stick_clearance
 
 
 class DrummerTests(unittest.TestCase):
@@ -131,6 +131,52 @@ class DrummerTests(unittest.TestCase):
         self.assertAlmostEqual(segment_distance([0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]), 1)
         self.assertAlmostEqual(segment_distance([0, 0, 0], [1, 0, 0], [.5, -1, 0], [.5, 1, 0]), 0)
         self.assertAlmostEqual(segment_distance([0, 0, 0], [0, 0, 0], [1, 0, 0], [1, 1, 0]), 1)
+
+    def test_tip_collision_cannot_pass_a_shaft_only_clearance_check(self):
+        kit = (Drum("a", (-.1, .18, .1), .16), Drum("b", (-.155, .18, .1), .16))
+        model = Drummer([dict(time=.5, drum="a", hand="L"),
+                         dict(time=.5, drum="b", hand="R")], kit)
+        report = model.audit([.5])
+        self.assertAlmostEqual(report["min_stick_gap_mm"], -3., places=9)
+        self.assertFalse(report["passed"])
+        self.assertIn("stick_collision", report["violations"])
+
+    def test_tip_to_opposite_shaft_uses_both_correct_radii(self):
+        first = dict(butt=np.array([0., 0., 0.]), tip=np.array([1., 0., 0.]))
+        second = dict(butt=np.array([.5, .014, 0.]), tip=np.array([1.5, .014, 0.]))
+        # Shafts clear by 2 mm; the first tip enters the second shaft by 1 mm.
+        self.assertAlmostEqual(stick_clearance(first, second, Rig()), -.001, places=12)
+        self.assertAlmostEqual(stick_clearance(second, first, Rig()), -.001, places=12)
+
+    def test_wider_tip_is_checked_at_an_unplayed_drum_edge(self):
+        drum = Drum("snare", (0., .18, .1), .16)
+        events = [dict(time=.5, drum="snare", hand="R")]
+        pose = Drummer(events, (drum,)).pose("R", .5)
+        lateral = np.cross(pose["tip"]-pose["butt"], [0., 0., 1.])
+        lateral /= np.linalg.norm(lateral)
+        # The tip is 8 mm outside the disk: its 9 mm sphere overlaps, whereas
+        # the 6 mm shaft cannot. No unplayed rim may be excluded by shaft size.
+        blocker = Drum("rim", tuple(pose["tip"]+.038*lateral), .03)
+        report = Drummer(events, (drum, blocker)).audit([.5])
+        self.assertIn("drum_penetration", report["violations"])
+
+    def test_drum_directly_below_shoulder_has_a_finite_contact_pose(self):
+        drum = Drum("under", (.145, -.2, .1), .16)
+        model = Drummer([dict(time=.5, drum="under", hand="R")], (drum,))
+        p = model.pose("R", .5)
+        self.assertTrue(np.all(np.isfinite(p["fingers"])))
+        self.assertAlmostEqual(np.dot(p["tip"]-drum.center, drum.normal), model.rig.tip_radius, places=12)
+
+    def test_opposite_strike_directions_have_a_continuous_midpoint(self):
+        kit = (Drum("front", (.145, -.1, .1), .16), Drum("back", (.145, -.3, .1), .16))
+        model = Drummer([dict(time=.3, drum="front", hand="R"),
+                         dict(time=.8, drum="back", hand="R")], kit)
+        poses = [model.pose("R", t) for t in (.55-1e-6, .55, .55+1e-6)]
+        fingers = np.array([p["fingers"] for p in poses])
+        self.assertTrue(np.all(np.isfinite(fingers)))
+        self.assertLess(np.max(np.linalg.norm(np.diff(fingers, axis=0), axis=-1)), .0001)
+        for p in poses:
+            self.assertAlmostEqual(np.linalg.norm(p["tip"]-p["butt"]), model.rig.stick_length, places=12)
 
     def test_invalid_geometry_is_rejected(self):
         for normal in ((0, 0), (0, 0, 0), (0, 0, -1), (float("nan"), 0, 1)):

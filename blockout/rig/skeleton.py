@@ -69,7 +69,7 @@ class Skeleton:
     """One hand. Bone rest data in world space; per joint the local axes of its DOFs and the sign that makes
     positive flexion curl toward the palm."""
 
-    def __init__(self, side, path=SKELETON_JSON):
+    def __init__(self, side, path=SKELETON_JSON, scale=None):
         self.side = side
         B = json.load(open(path))["hands"][side]
         self.names = [n for n in self._order(B) if n not in ("lowerarm01", "lowerarm02")]
@@ -79,7 +79,10 @@ class Skeleton:
         self.L = {n: B[n]["length"] for n in B}
         self.radii = {n: B[n]["radii"] for n in B}
         self.section = {n: B[n].get("section") for n in B}     # [[half-width, +z extent, -z extent] x (u .1 .5 .9)]
-        self.scale = hand_scale()                   # the hand (not the forearm) scaled about the wrist to a pianist's
+        self.scale = hand_scale() if scale is None else float(scale)
+        if not np.isfinite(self.scale) or self.scale <= 0:
+            raise ValueError('Hand scale must be finite and positive')
+        # The hand (not the forearm) scales about the wrist to a pianist's size.
         if self.scale != 1.0:
             hw = self.h0["wrist"].copy()
             for n in self.names:

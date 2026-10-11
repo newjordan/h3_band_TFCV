@@ -140,6 +140,36 @@ def segment_distance(a, b, c, d):
     return float(min(candidates))
 
 
+def stick_clearance(first, second, rig):
+    """Signed clearance of the two shaft capsules and their wider tip spheres."""
+    a, b = first["butt"], first["tip"]
+    c, d = second["butt"], second["tip"]
+    return min(segment_distance(a, b, c, d)-2*rig.stick_radius,
+               float(np.linalg.norm(b-d))-2*rig.tip_radius,
+               segment_distance(b, b, c, d)-rig.tip_radius-rig.stick_radius,
+               segment_distance(d, d, a, b)-rig.tip_radius-rig.stick_radius)
+
+
+def _plane_tangent(direction, normal):
+    tangent = direction-normal*np.dot(direction, normal)
+    if np.linalg.norm(tangent) < 1e-8:
+        # Upward drum normals guarantee a nonzero projection of world forward.
+        forward = np.array([0., 1., 0.])
+        tangent = forward-normal*np.dot(forward, normal)
+    return unit(tangent)
+
+
+def _blend_tangent(first, second, normal, u):
+    # A linear blend vanishes when consecutive strike tangents oppose each
+    # other. Rotate in the current drum plane, choosing a deterministic arc
+    # for exactly opposite directions.
+    first, second = (_plane_tangent(t, normal) for t in (first, second))
+    sine = float(np.dot(normal, np.cross(first, second)))
+    cosine = float(np.clip(np.dot(first, second), -1., 1.))
+    angle = math.pi if cosine < 0 and abs(sine) < 1e-10 else math.atan2(sine, cosine)
+    return first*math.cos(u*angle)+np.cross(normal, first)*math.sin(u*angle)
+
+
 class Drummer:
     def __init__(self, events, kit=DEFAULT_KIT, rig=Rig()):
         self.kit = {d.name: d for d in kit}
@@ -179,7 +209,7 @@ class Drummer:
         across = unit(np.cross(np.array([0., 1., 0.]), normal))
         contact = np.array(drum.center) + across * (-.035 if side == "L" else .035)
         approach = contact - SHOULDERS[side]
-        tangent = unit(approach-normal*np.dot(approach, normal))
+        tangent = _plane_tangent(approach, normal)
         direction = tangent*math.cos(self.rig.strike_pitch)-normal*math.sin(self.rig.strike_pitch)
         tip = contact + normal*self.rig.tip_radius
         return tip-direction*self.rig.grip_to_tip, normal, tangent
@@ -232,8 +262,7 @@ class Drummer:
             g1, n1, d1 = self._anchor(after, side)
             grip = g0+(g1-g0)*u
             normal = unit(n0+(n1-n0)*u)
-            tangent = d0+(d1-d0)*u
-            tangent = unit(tangent-normal*np.dot(tangent, normal))
+            tangent = _blend_tangent(d0, d1, normal, u)
             lift = self._lift(t_eval, before, after)
             near = min(abs(t-e["time"]) for e in events)
             if near < 1e-8:
@@ -300,8 +329,8 @@ class Drummer:
                             field = f"max_{joint}_speed_m_s"
                             stats[field] = max(stats[field], float(np.linalg.norm(p[joint]-old[joint])/dt))
             previous = t, poses
-            stats["min_stick_gap_mm"] = min(stats["min_stick_gap_mm"], 1000*(segment_distance(
-                poses[0]["butt"], poses[0]["tip"], poses[1]["butt"], poses[1]["tip"])-2*rig.stick_radius))
+            stats["min_stick_gap_mm"] = min(stats["min_stick_gap_mm"],
+                                            1000*stick_clearance(*poses, rig))
             for p in poses:
                 stats["max_reach_error_mm"] = max(stats["max_reach_error_mm"], 1000*p["reach_error"])
                 stats["elbow_min_deg"] = min(stats["elbow_min_deg"], p["elbow_flex_deg"])
@@ -332,9 +361,9 @@ class Drummer:
                     relative = samples-np.asarray(drum.center)
                     heights = relative@np.asarray(drum.normal)
                     radial = np.linalg.norm(relative-heights[:, None]*np.asarray(drum.normal), axis=1)
-                    mask = radial <= drum.radius+rig.stick_radius
                     radii = np.full(65, rig.stick_radius)
                     radii[-1] = rig.tip_radius
+                    mask = radial <= drum.radius+radii
                     if np.any(mask):
                         stats["max_surface_penetration_mm"] = max(stats["max_surface_penetration_mm"],
                             1000*float(np.max(radii[mask]-heights[mask])))

@@ -1,0 +1,1235 @@
+{
+  "schema": 1,
+  "scope": "Frozen E36 piano probes: three matched 2-second main windows plus separate crossing diagnostics; not full-suite certification.",
+  "candidate_commit": "e5b071dc47b5b0ca5c377acd5cd29776ca4b9e3b",
+  "audit_sha256": "c42e03b2065c396b258148290e0d7170b27bfd9b2f002610cca01a777802c9d1",
+  "environment": {
+    "python": "/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python",
+    "fps": 24,
+    "hand_scale": 1.0,
+    "blas_threads": 1,
+    "warmup_s": 1.0,
+    "tail_s": 0.6,
+    "scored_duration_s": 2.0,
+    "performed_seed": 0,
+    "overrides": {
+      "PRESS_AXES": [
+        20,
+        1,
+        20
+      ],
+      "PRESS_AXES_BLACK": [
+        20,
+        20,
+        20
+      ],
+      "REPAIR_ITERS": 2,
+      "PRESS_OVERSHOOT": 0.003,
+      "REACH_SPLIT": true
+    }
+  },
+  "metric_assumptions": {
+    "contact_tolerance_mm": 2.0,
+    "collision_tolerance_mm": 3.0,
+    "footprint_numerical_tolerance_mm": 0.01,
+    "legacy_white_key_gap_per_side_mm": 0.6,
+    "expected_arm_lengths_m": [
+      0.29,
+      0.313309195652654
+    ],
+    "collision_geometry": "mean-radius bone capsule approximation, not exact mesh collision; excludes same-hand proximal/proximal webbing",
+    "hold_scope": "score MIDI duration fidelity, including failures caused by planned early release; controller_phase separately measures explicit assigned firm phases",
+    "interhand_clearance_upper_bound_mm": 40
+  },
+  "sources": {
+    "baseline": {
+      "source_root": "/home/frosty40/h3b_wrist",
+      "source_sha256": {
+        "blockout/piano.py": "e047e51034a8bccd404619cc42032a6af42e94f9dbdb364a246ea74dcc597161",
+        "blockout/rig/hand.py": "ea617bdad54c9076cd587887b0c1db9af3b4bee7337b16ca7d12bdd7ac6b3035",
+        "blockout/rig/skeleton.py": "e12ccd084c1d7427b1ea110e0bf7ebf3f071a9c1cd114c0a300f9c44bb7a0f02",
+        "blockout/rig/ik.py": "8687da4e9a4100bf8e16b80ed4a2c2fc3cb311da9e8becb6e1a2e826fc859765",
+        "blockout/performer.py": "705c55c214cd2833ded8450cf47d2ce6d6cce344cee80c8a2cc1a4e7e64a84e3"
+      },
+      "original_manifest_git_revision": "7a33f52c9fb70ed382693a05446a651e26fef736",
+      "revision_note": "Snapshot directories live inside the worktree; original manifest git revision is context only. File hashes identify the solver actually run."
+    },
+    "v1": {
+      "source_root": "/home/frosty40/h3/rig_realism/artifacts/realism/candidate_source_v1",
+      "source_sha256": {
+        "blockout/piano.py": "0deeeb310745ce91d1dffff53fcaf579be6ef8593ef8a3c4665370819417e284",
+        "blockout/rig/hand.py": "7276df270a04ebbc55d46f14449efa47133fb77bd5a5f3d4c09cbce6c01ca2e6",
+        "blockout/rig/skeleton.py": "e12ccd084c1d7427b1ea110e0bf7ebf3f071a9c1cd114c0a300f9c44bb7a0f02",
+        "blockout/rig/ik.py": "66601ab94208afe660650249c8f3a4b1dc63fec0d477a5bf58e52830d3dd5132",
+        "blockout/performer.py": "705c55c214cd2833ded8450cf47d2ce6d6cce344cee80c8a2cc1a4e7e64a84e3",
+        "blockout/contact.py": "d1e9d71a085f378d5d3d809f26cb64749c376bbb4b36f6c35666b29e0f6e9c00"
+      },
+      "original_manifest_git_revision": "8ec6cb3aab2d7400ff8f5711dd94b159ef8233f4",
+      "revision_note": "Snapshot directories live inside the worktree; original manifest git revision is context only. File hashes identify the solver actually run."
+    },
+    "v3": {
+      "source_root": "/home/frosty40/h3/rig_realism/artifacts/realism/candidate_source_v3",
+      "source_sha256": {
+        "blockout/piano.py": "b6c469a8df3a6e7d74d2929314ed7686fb94f3fb01a5765823e43dbd5464176b",
+        "blockout/rig/hand.py": "7276df270a04ebbc55d46f14449efa47133fb77bd5a5f3d4c09cbce6c01ca2e6",
+        "blockout/rig/skeleton.py": "e12ccd084c1d7427b1ea110e0bf7ebf3f071a9c1cd114c0a300f9c44bb7a0f02",
+        "blockout/rig/ik.py": "66601ab94208afe660650249c8f3a4b1dc63fec0d477a5bf58e52830d3dd5132",
+        "blockout/performer.py": "8c1a81465228552a8de54267967579ee7b82e7f79297f251ad78b501b93d7d5c",
+        "blockout/contact.py": "8a21b18e142119654523ac8b0121fbe88f91d5d7d5e0731e2762b325edbe6689"
+      },
+      "original_manifest_git_revision": "8ec6cb3aab2d7400ff8f5711dd94b159ef8233f4",
+      "revision_note": "Snapshot directories live inside the worktree; original manifest git revision is context only. File hashes identify the solver actually run."
+    },
+    "v4": {
+      "source_root": "/home/frosty40/h3/rig_realism/artifacts/realism/candidate_source_v4",
+      "source_sha256": {
+        "blockout/piano.py": "d799922c1e8100a94545a7cfdf2ae45035213a67c6fa51f4dedff6ffd901a78b",
+        "blockout/rig/hand.py": "7276df270a04ebbc55d46f14449efa47133fb77bd5a5f3d4c09cbce6c01ca2e6",
+        "blockout/rig/skeleton.py": "e12ccd084c1d7427b1ea110e0bf7ebf3f071a9c1cd114c0a300f9c44bb7a0f02",
+        "blockout/rig/ik.py": "66601ab94208afe660650249c8f3a4b1dc63fec0d477a5bf58e52830d3dd5132",
+        "blockout/performer.py": "1f6a9d7b286ead83e8f6d2fd44832df186fe59715781fdd4b028df55f5f14aa6",
+        "blockout/contact.py": "8a21b18e142119654523ac8b0121fbe88f91d5d7d5e0731e2762b325edbe6689"
+      },
+      "original_manifest_git_revision": "e5b071dc47b5b0ca5c377acd5cd29776ca4b9e3b",
+      "revision_note": "Snapshot directories live inside the worktree; original manifest git revision is context only. File hashes identify the solver actually run."
+    },
+    "v2": {
+      "source_root": "/home/frosty40/h3/rig_realism/artifacts/realism/candidate_source_v2",
+      "source_sha256": {
+        "blockout/piano.py": "06a0f4956f8db02c203cafd0735d743a7b99b782e235e13c6e2eb75a6f109fb8",
+        "blockout/rig/hand.py": "7276df270a04ebbc55d46f14449efa47133fb77bd5a5f3d4c09cbce6c01ca2e6",
+        "blockout/rig/skeleton.py": "e12ccd084c1d7427b1ea110e0bf7ebf3f071a9c1cd114c0a300f9c44bb7a0f02",
+        "blockout/rig/ik.py": "66601ab94208afe660650249c8f3a4b1dc63fec0d477a5bf58e52830d3dd5132",
+        "blockout/performer.py": "1e2b91822c6c38dffb92d2450662883b2d10d8cbfa7b5f9e4a34f43e68a825ab",
+        "blockout/contact.py": "8a21b18e142119654523ac8b0121fbe88f91d5d7d5e0731e2762b325edbe6689"
+      },
+      "original_manifest_git_revision": "8ec6cb3aab2d7400ff8f5711dd94b159ef8233f4",
+      "revision_note": "Snapshot directories live inside the worktree; original manifest git revision is context only. File hashes identify the solver actually run."
+    }
+  },
+  "runs": [
+    {
+      "version": "baseline",
+      "window": "debussy",
+      "start": 49.9,
+      "duration": 2.0,
+      "animation_interval": [
+        48.9,
+        52.4417
+      ],
+      "notes": 6,
+      "onset_key_down": 6,
+      "onset_physical_contact": 1,
+      "hold_note_frames": 84,
+      "hold_contact_frames": 7,
+      "hold_penetrating_frames": 77,
+      "hold_off_key_frames": 0,
+      "hold_floating_frames": 0,
+      "self_overlap_hand_frames": 63,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 12.24960046114366,
+      "interhand_overlap_frames": 4,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 6.62990819524094,
+      "worst_interhand_pair": {
+        "gap_mm": -6.62990819524094,
+        "time": 50.65,
+        "parts": [
+          "R:finger2:segment3",
+          "L:finger2:segment3"
+        ]
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 0.2217391304347826,
+      "pad_jerk_p95_m_s3": 147.3089536796968,
+      "elbow_step_max_mm": 10.058852356639933,
+      "fk_vs_exported_chain_max_mm": 0.008726408687460016,
+      "arm_length_error_all_clip_max_mm": 1.6653345369377348e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": null,
+      "controller_firm_assigned_frames": null,
+      "controller_firm_penetrating_frames": null,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 326.0542269690195,
+      "original_source_unchanged_during_run": null,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/e36_fresh_debussy.anim.json",
+      "animation_sha256": "228c5e6d056bd4884f015eadfeed6ea86b56488beacf5644bd34e0fd717a8d5e",
+      "audit": "artifacts/realism/e36_fresh_debussy_audit.qa.json"
+    },
+    {
+      "version": "baseline",
+      "window": "wide_chord",
+      "start": 119.9,
+      "duration": 2.0,
+      "animation_interval": [
+        118.9,
+        122.44170000000001
+      ],
+      "notes": 36,
+      "onset_key_down": 29,
+      "onset_physical_contact": 19,
+      "hold_note_frames": 456,
+      "hold_contact_frames": 37,
+      "hold_penetrating_frames": 171,
+      "hold_off_key_frames": 242,
+      "hold_floating_frames": 5,
+      "self_overlap_hand_frames": 30,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 21.566404149482427,
+      "interhand_overlap_frames": 0,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 0.0,
+      "worst_interhand_pair": {
+        "gap_mm": 0.0
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 37,
+      "joint_reversal_rate_per_joint_s": 1.9956521739130435,
+      "pad_jerk_p95_m_s3": 909.1850687659025,
+      "elbow_step_max_mm": 44.99645575014698,
+      "fk_vs_exported_chain_max_mm": 0.00821789270579735,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": null,
+      "controller_firm_assigned_frames": null,
+      "controller_firm_penetrating_frames": null,
+      "release_failed_after_250ms": 1,
+      "solve_wall_s": 408.7307088879752,
+      "original_source_unchanged_during_run": null,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/e36_fresh_wide_chord.anim.json",
+      "animation_sha256": "07a824413e2d1dcd14a541dedacf1fd5f05ee88cb266e6c1bd9ca4e258e239a5",
+      "audit": "artifacts/realism/e36_fresh_wide_chord_audit.qa.json"
+    },
+    {
+      "version": "baseline",
+      "window": "overlap",
+      "start": 248.0,
+      "duration": 2.0,
+      "animation_interval": [
+        247.0,
+        250.5417
+      ],
+      "notes": 11,
+      "onset_key_down": 11,
+      "onset_physical_contact": 2,
+      "hold_note_frames": 164,
+      "hold_contact_frames": 4,
+      "hold_penetrating_frames": 102,
+      "hold_off_key_frames": 58,
+      "hold_floating_frames": 0,
+      "self_overlap_hand_frames": 30,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 7.632608388049942,
+      "interhand_overlap_frames": 0,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 0.0,
+      "worst_interhand_pair": {
+        "gap_mm": 0.0
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 0.41739130434782606,
+      "pad_jerk_p95_m_s3": 260.3024108522133,
+      "elbow_step_max_mm": 17.909574976737527,
+      "fk_vs_exported_chain_max_mm": 0.008417392054632355,
+      "arm_length_error_all_clip_max_mm": 1.6653345369377348e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": null,
+      "controller_firm_assigned_frames": null,
+      "controller_firm_penetrating_frames": null,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 283.64544651203323,
+      "original_source_unchanged_during_run": true,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/e36_fresh_overlap.anim.json",
+      "animation_sha256": "e1fd86c26b3a3e5e6a90d146a7d36f0fc28bab69735a8474d74d82d73b9f04ea",
+      "audit": "artifacts/realism/e36_fresh_overlap_audit.qa.json"
+    },
+    {
+      "version": "baseline",
+      "window": "true_crossing_context_probe",
+      "start": 288.0,
+      "duration": 2.0,
+      "animation_interval": [
+        287.0,
+        290.5417
+      ],
+      "notes": 10,
+      "onset_key_down": 10,
+      "onset_physical_contact": 3,
+      "hold_note_frames": 130,
+      "hold_contact_frames": 15,
+      "hold_penetrating_frames": 30,
+      "hold_off_key_frames": 84,
+      "hold_floating_frames": 1,
+      "self_overlap_hand_frames": 20,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 11.349574747743405,
+      "interhand_overlap_frames": 1,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 5.098313976447125,
+      "worst_interhand_pair": {
+        "gap_mm": -5.098313976447125,
+        "time": 288.0833,
+        "parts": [
+          "R:finger1:segment3",
+          "L:finger1:segment2"
+        ]
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 13,
+      "joint_reversal_rate_per_joint_s": 0.6391304347826087,
+      "pad_jerk_p95_m_s3": 519.418709951932,
+      "elbow_step_max_mm": 28.260556526452675,
+      "fk_vs_exported_chain_max_mm": 0.008883107228558899,
+      "arm_length_error_all_clip_max_mm": 1.6653345369377348e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": null,
+      "controller_firm_assigned_frames": null,
+      "controller_firm_penetrating_frames": null,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 302.429958210967,
+      "original_source_unchanged_during_run": null,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/e36_fresh_true_crossing.anim.json",
+      "animation_sha256": "46e6ef23421d21edf1a35599ecf14c3d00a45c6db3c043bd69a82c2412bd2efd",
+      "audit": "artifacts/realism/e36_fresh_true_crossing_audit.qa.json"
+    },
+    {
+      "version": "baseline",
+      "window": "elbow_crossing",
+      "start": 289.9,
+      "duration": 2.0,
+      "animation_interval": [
+        288.9,
+        292.44169999999997
+      ],
+      "notes": 10,
+      "onset_key_down": 8,
+      "onset_physical_contact": 3,
+      "hold_note_frames": 106,
+      "hold_contact_frames": 4,
+      "hold_penetrating_frames": 43,
+      "hold_off_key_frames": 59,
+      "hold_floating_frames": 0,
+      "self_overlap_hand_frames": 36,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 19.80794578213797,
+      "interhand_overlap_frames": 0,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 0.2302628668328921,
+      "worst_interhand_pair": {
+        "gap_mm": -0.2302628668328921,
+        "time": 290.06669999999997,
+        "parts": [
+          "R:finger2:segment2",
+          "L:palm"
+        ]
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 13,
+      "joint_reversal_rate_per_joint_s": 1.0434782608695652,
+      "pad_jerk_p95_m_s3": 656.0043240747732,
+      "elbow_step_max_mm": 78.6101290913613,
+      "fk_vs_exported_chain_max_mm": 0.0084058979923897,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": null,
+      "controller_firm_assigned_frames": null,
+      "controller_firm_penetrating_frames": null,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 344.62098697497277,
+      "original_source_unchanged_during_run": null,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/e36_fresh_elbow_crossing.anim.json",
+      "animation_sha256": "13ffff4b956231d02e10ad2a2582c859b1aecc7dbd0333fcafc12b39261ae601",
+      "audit": "artifacts/realism/e36_fresh_elbow_crossing_audit.qa.json"
+    },
+    {
+      "version": "v1",
+      "window": "debussy",
+      "start": 49.9,
+      "duration": 2.0,
+      "animation_interval": [
+        48.9,
+        52.4417
+      ],
+      "notes": 6,
+      "onset_key_down": 6,
+      "onset_physical_contact": 6,
+      "hold_note_frames": 84,
+      "hold_contact_frames": 66,
+      "hold_penetrating_frames": 0,
+      "hold_off_key_frames": 8,
+      "hold_floating_frames": 3,
+      "self_overlap_hand_frames": 16,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 6.856077159963982,
+      "interhand_overlap_frames": 44,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 23.79584824155566,
+      "worst_interhand_pair": {
+        "gap_mm": -23.79584824155566,
+        "time": 51.6917,
+        "parts": [
+          "R:forearm",
+          "L:finger1:segment3"
+        ]
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 0.691304347826087,
+      "pad_jerk_p95_m_s3": 253.53605292485787,
+      "elbow_step_max_mm": 31.944105701881345,
+      "fk_vs_exported_chain_max_mm": 0.008284691454808344,
+      "arm_length_error_all_clip_max_mm": 41.17846471749975,
+      "arm_length_violations_all_clip_over_0_1mm": 1,
+      "controller_firm_contact_frames": 142,
+      "controller_firm_assigned_frames": 190,
+      "controller_firm_penetrating_frames": 4,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 533.6533831720008,
+      "original_source_unchanged_during_run": null,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v1_debussy.anim.json",
+      "animation_sha256": "6e986ae7a830ba1e4c95f916dc0e7715193be135a15b24d0ab7cc26d65925507",
+      "audit": "artifacts/realism/candidate_v1_debussy_audit.qa.json"
+    },
+    {
+      "version": "v1",
+      "window": "wide_chord",
+      "start": 119.9,
+      "duration": 2.0,
+      "animation_interval": [
+        118.9,
+        122.44170000000001
+      ],
+      "notes": 36,
+      "onset_key_down": 26,
+      "onset_physical_contact": 25,
+      "hold_note_frames": 456,
+      "hold_contact_frames": 167,
+      "hold_penetrating_frames": 10,
+      "hold_off_key_frames": 270,
+      "hold_floating_frames": 8,
+      "self_overlap_hand_frames": 1,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 3.0025422807499513,
+      "interhand_overlap_frames": 0,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 0.0,
+      "worst_interhand_pair": {
+        "gap_mm": 0.0
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 2.139130434782609,
+      "pad_jerk_p95_m_s3": 953.5416347517909,
+      "elbow_step_max_mm": 43.31112931436996,
+      "fk_vs_exported_chain_max_mm": 0.008748747204111366,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 204,
+      "controller_firm_assigned_frames": 331,
+      "controller_firm_penetrating_frames": 9,
+      "release_failed_after_250ms": 1,
+      "solve_wall_s": 507.3599170569796,
+      "original_source_unchanged_during_run": null,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v1_wide_chord.anim.json",
+      "animation_sha256": "1afcde39f624b8d63a2a34d48e14c79820346837a04d1c34c16c46e1cf03ddf5",
+      "audit": "artifacts/realism/candidate_v1_wide_chord_audit.qa.json"
+    },
+    {
+      "version": "v1",
+      "window": "overlap",
+      "start": 248.0,
+      "duration": 2.0,
+      "animation_interval": [
+        247.0,
+        250.5417
+      ],
+      "notes": 11,
+      "onset_key_down": 9,
+      "onset_physical_contact": 9,
+      "hold_note_frames": 164,
+      "hold_contact_frames": 64,
+      "hold_penetrating_frames": 2,
+      "hold_off_key_frames": 95,
+      "hold_floating_frames": 2,
+      "self_overlap_hand_frames": 2,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 6.222374233579993,
+      "interhand_overlap_frames": 0,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 0.0,
+      "worst_interhand_pair": {
+        "gap_mm": 0.0
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 0.4434782608695652,
+      "pad_jerk_p95_m_s3": 286.2003409872451,
+      "elbow_step_max_mm": 25.89763824543067,
+      "fk_vs_exported_chain_max_mm": 0.008449846387238773,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 63,
+      "controller_firm_assigned_frames": 125,
+      "controller_firm_penetrating_frames": 0,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 400.25018096802523,
+      "original_source_unchanged_during_run": null,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v1_crossing.anim.json",
+      "animation_sha256": "a747d3e86fd56eb76462f289ea6e92e39616b132c01f7e0a9c6d403f5a6036e4",
+      "audit": "artifacts/realism/candidate_v1_overlap_audit.qa.json"
+    },
+    {
+      "version": "v3",
+      "window": "debussy",
+      "start": 49.9,
+      "duration": 2.0,
+      "animation_interval": [
+        48.9,
+        52.4417
+      ],
+      "notes": 6,
+      "onset_key_down": 6,
+      "onset_physical_contact": 6,
+      "hold_note_frames": 84,
+      "hold_contact_frames": 65,
+      "hold_penetrating_frames": 11,
+      "hold_off_key_frames": 8,
+      "hold_floating_frames": 0,
+      "self_overlap_hand_frames": 24,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 7.066606106031909,
+      "interhand_overlap_frames": 37,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 16.48612024995184,
+      "worst_interhand_pair": {
+        "gap_mm": -16.48612024995184,
+        "time": 50.5667,
+        "parts": [
+          "R:palm",
+          "L:finger1:segment2"
+        ]
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 0.9391304347826087,
+      "pad_jerk_p95_m_s3": 296.6810837118514,
+      "elbow_step_max_mm": 16.451384865138593,
+      "fk_vs_exported_chain_max_mm": 0.00855536597627601,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 125,
+      "controller_firm_assigned_frames": 190,
+      "controller_firm_penetrating_frames": 8,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 403.8135531099979,
+      "original_source_unchanged_during_run": true,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v3_debussy.anim.json",
+      "animation_sha256": "6d999a3ffb56fbf0907234346a3796624b26b8a42116fc499148e22a34cd376a",
+      "audit": "artifacts/realism/candidate_v3_debussy_audit.qa.json"
+    },
+    {
+      "version": "v3",
+      "window": "wide_chord",
+      "start": 119.9,
+      "duration": 2.0,
+      "animation_interval": [
+        118.9,
+        122.44170000000001
+      ],
+      "notes": 36,
+      "onset_key_down": 27,
+      "onset_physical_contact": 26,
+      "hold_note_frames": 456,
+      "hold_contact_frames": 151,
+      "hold_penetrating_frames": 10,
+      "hold_off_key_frames": 286,
+      "hold_floating_frames": 7,
+      "self_overlap_hand_frames": 1,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 3.7899486502014166,
+      "interhand_overlap_frames": 0,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 0.0,
+      "worst_interhand_pair": {
+        "gap_mm": 0.0
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 2.5565217391304347,
+      "pad_jerk_p95_m_s3": 946.9619949912704,
+      "elbow_step_max_mm": 35.251596632086034,
+      "fk_vs_exported_chain_max_mm": 0.00840649077998206,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 180,
+      "controller_firm_assigned_frames": 331,
+      "controller_firm_penetrating_frames": 11,
+      "release_failed_after_250ms": 1,
+      "solve_wall_s": 667.7899199940148,
+      "original_source_unchanged_during_run": true,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v3_wide_chord.anim.json",
+      "animation_sha256": "b643fadfa16200b4a9cf983978e4918cf0fb85ba6c530e03b62a5cd4bdef89a2",
+      "audit": "artifacts/realism/candidate_v3_wide_chord_audit.qa.json"
+    },
+    {
+      "version": "v3",
+      "window": "overlap",
+      "start": 248.0,
+      "duration": 2.0,
+      "animation_interval": [
+        247.0,
+        250.5417
+      ],
+      "notes": 11,
+      "onset_key_down": 8,
+      "onset_physical_contact": 8,
+      "hold_note_frames": 164,
+      "hold_contact_frames": 67,
+      "hold_penetrating_frames": 0,
+      "hold_off_key_frames": 92,
+      "hold_floating_frames": 2,
+      "self_overlap_hand_frames": 0,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 1.4731428867371352,
+      "interhand_overlap_frames": 0,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 0.0,
+      "worst_interhand_pair": {
+        "gap_mm": 0.0
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 0.6130434782608696,
+      "pad_jerk_p95_m_s3": 317.97113569254856,
+      "elbow_step_max_mm": 25.08555337077277,
+      "fk_vs_exported_chain_max_mm": 0.008646632298272273,
+      "arm_length_error_all_clip_max_mm": 1.6653345369377348e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 64,
+      "controller_firm_assigned_frames": 125,
+      "controller_firm_penetrating_frames": 0,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 500.3773681310122,
+      "original_source_unchanged_during_run": true,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v3_overlap.anim.json",
+      "animation_sha256": "3cbf653c8dbd5064548cb2ad09b12140a2b21dbd2ff774c918ac8765b788e8fa",
+      "audit": "artifacts/realism/candidate_v3_overlap_audit.qa.json"
+    },
+    {
+      "version": "v4",
+      "window": "debussy",
+      "start": 49.9,
+      "duration": 2.0,
+      "animation_interval": [
+        48.9,
+        52.4417
+      ],
+      "notes": 6,
+      "onset_key_down": 6,
+      "onset_physical_contact": 6,
+      "hold_note_frames": 84,
+      "hold_contact_frames": 72,
+      "hold_penetrating_frames": 2,
+      "hold_off_key_frames": 10,
+      "hold_floating_frames": 0,
+      "self_overlap_hand_frames": 12,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 4.748826484685435,
+      "interhand_overlap_frames": 34,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 11.682753907917126,
+      "worst_interhand_pair": {
+        "gap_mm": -11.682753907917126,
+        "time": 50.9833,
+        "parts": [
+          "R:finger2:segment3",
+          "L:finger2:segment3"
+        ]
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 0.4434782608695652,
+      "pad_jerk_p95_m_s3": 238.4290452982172,
+      "elbow_step_max_mm": 12.299920084542697,
+      "fk_vs_exported_chain_max_mm": 0.008406783742272687,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 157,
+      "controller_firm_assigned_frames": 190,
+      "controller_firm_penetrating_frames": 6,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 457.289366092009,
+      "original_source_unchanged_during_run": true,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v4_debussy.anim.json",
+      "animation_sha256": "19bba73706372887a47001c5bff59fc6d97d91fa0e0fcc9c6b62537282ffe221",
+      "audit": "artifacts/realism/candidate_v4_debussy_audit.qa.json"
+    },
+    {
+      "version": "v4",
+      "window": "wide_chord",
+      "start": 119.9,
+      "duration": 2.0,
+      "animation_interval": [
+        118.9,
+        122.44170000000001
+      ],
+      "notes": 36,
+      "onset_key_down": 25,
+      "onset_physical_contact": 24,
+      "hold_note_frames": 456,
+      "hold_contact_frames": 136,
+      "hold_penetrating_frames": 12,
+      "hold_off_key_frames": 299,
+      "hold_floating_frames": 8,
+      "self_overlap_hand_frames": 0,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 2.849235791837034,
+      "interhand_overlap_frames": 0,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 0.0,
+      "worst_interhand_pair": {
+        "gap_mm": 0.0
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 2.1130434782608694,
+      "pad_jerk_p95_m_s3": 970.1014362023781,
+      "elbow_step_max_mm": 23.343931391518158,
+      "fk_vs_exported_chain_max_mm": 0.008558698319455329,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 174,
+      "controller_firm_assigned_frames": 331,
+      "controller_firm_penetrating_frames": 12,
+      "release_failed_after_250ms": 1,
+      "solve_wall_s": 696.2676968000014,
+      "original_source_unchanged_during_run": true,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v4_wide_chord.anim.json",
+      "animation_sha256": "75dac755ab8a71ce34168dcad9a10023b591e2a9bd498313c5215d43e5ac785e",
+      "audit": "artifacts/realism/candidate_v4_wide_chord_audit.qa.json"
+    },
+    {
+      "version": "v4",
+      "window": "overlap",
+      "start": 248.0,
+      "duration": 2.0,
+      "animation_interval": [
+        247.0,
+        250.5417
+      ],
+      "notes": 11,
+      "onset_key_down": 9,
+      "onset_physical_contact": 9,
+      "hold_note_frames": 164,
+      "hold_contact_frames": 64,
+      "hold_penetrating_frames": 0,
+      "hold_off_key_frames": 98,
+      "hold_floating_frames": 0,
+      "self_overlap_hand_frames": 0,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 1.67150225324297,
+      "interhand_overlap_frames": 0,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 0.0,
+      "worst_interhand_pair": {
+        "gap_mm": 0.0
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 0.3521739130434783,
+      "pad_jerk_p95_m_s3": 283.329567900702,
+      "elbow_step_max_mm": 14.137268050830164,
+      "fk_vs_exported_chain_max_mm": 0.008710117219574792,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 64,
+      "controller_firm_assigned_frames": 125,
+      "controller_firm_penetrating_frames": 0,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 513.022322482022,
+      "original_source_unchanged_during_run": true,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v4_overlap.anim.json",
+      "animation_sha256": "b648765ad2c171c79b23437830519c2b82bb44bfd84ee93d38a177887db12e6f",
+      "audit": "artifacts/realism/candidate_v4_overlap_audit.qa.json"
+    },
+    {
+      "version": "v2",
+      "window": "debussy",
+      "start": 49.9,
+      "duration": 2.0,
+      "animation_interval": [
+        48.9,
+        52.4417
+      ],
+      "notes": 6,
+      "onset_key_down": 6,
+      "onset_physical_contact": 6,
+      "hold_note_frames": 84,
+      "hold_contact_frames": 55,
+      "hold_penetrating_frames": 16,
+      "hold_off_key_frames": 7,
+      "hold_floating_frames": 1,
+      "self_overlap_hand_frames": 27,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 6.928818304046975,
+      "interhand_overlap_frames": 43,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 16.49802542187323,
+      "worst_interhand_pair": {
+        "gap_mm": -16.49802542187323,
+        "time": 51.4833,
+        "parts": [
+          "R:finger2:segment1",
+          "L:finger2:segment2"
+        ]
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 1.0043478260869565,
+      "pad_jerk_p95_m_s3": 306.8754661663796,
+      "elbow_step_max_mm": 23.476061437751625,
+      "fk_vs_exported_chain_max_mm": 0.008214201795727176,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 109,
+      "controller_firm_assigned_frames": 190,
+      "controller_firm_penetrating_frames": 19,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 365.0352323030238,
+      "original_source_unchanged_during_run": true,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v2_debussy.anim.json",
+      "animation_sha256": "ec10e1a3513bb72a0aeb7471bb822737c80f606955f360f234796eaaa5e4c9cf",
+      "audit": "artifacts/realism/candidate_v2_debussy_audit.qa.json"
+    },
+    {
+      "version": "v2",
+      "window": "elbow_crossing",
+      "start": 289.9,
+      "duration": 2.0,
+      "animation_interval": [
+        288.9,
+        292.44169999999997
+      ],
+      "notes": 10,
+      "onset_key_down": 8,
+      "onset_physical_contact": 7,
+      "hold_note_frames": 106,
+      "hold_contact_frames": 19,
+      "hold_penetrating_frames": 3,
+      "hold_off_key_frames": 84,
+      "hold_floating_frames": 0,
+      "self_overlap_hand_frames": 1,
+      "self_hand_frames": 96,
+      "self_worst_overlap_mm": 3.830682965308467,
+      "interhand_overlap_frames": 6,
+      "interhand_frames": 48,
+      "interhand_worst_overlap_mm": 7.088672850024405,
+      "worst_interhand_pair": {
+        "gap_mm": -7.088672850024405,
+        "time": 290.31669999999997,
+        "parts": [
+          "R:finger2:segment2",
+          "L:finger1:segment3"
+        ]
+      },
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "joint_reversal_rate_per_joint_s": 0.5478260869565217,
+      "pad_jerk_p95_m_s3": 393.7594317054486,
+      "elbow_step_max_mm": 40.39883261968711,
+      "fk_vs_exported_chain_max_mm": 0.008500075461417865,
+      "arm_length_error_all_clip_max_mm": 1.1102230246251565e-13,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "controller_firm_contact_frames": 27,
+      "controller_firm_assigned_frames": 73,
+      "controller_firm_penetrating_frames": 3,
+      "release_failed_after_250ms": 0,
+      "solve_wall_s": 354.7965895070229,
+      "original_source_unchanged_during_run": true,
+      "original_recorded_hashes_match_reaudit": true,
+      "animation": "artifacts/realism/candidate_v2_elbow_crossing.anim.json",
+      "animation_sha256": "b219c6c09cb52a0fd13a7683b52bf6ac3488395915f63d629d3805fc4fe2c9ef",
+      "audit": "artifacts/realism/candidate_v2_elbow_crossing_audit.qa.json"
+    }
+  ],
+  "matched_final_comparisons": {
+    "debussy": {
+      "start": 49.9,
+      "duration": 2.0,
+      "notes": 6,
+      "equal_animation_context": true,
+      "hold_frames": [
+        84,
+        84
+      ],
+      "metrics": {
+        "onset_key_down_pct": {
+          "baseline": 100.0,
+          "candidate": 100.0,
+          "delta": 0.0
+        },
+        "onset_physical_contact_pct": {
+          "baseline": 16.666666666666668,
+          "candidate": 100.0,
+          "delta": 83.33333333333333
+        },
+        "hold_contact_pct": {
+          "baseline": 8.333333333333334,
+          "candidate": 85.71428571428571,
+          "delta": 77.38095238095238
+        },
+        "hold_penetration_pct": {
+          "baseline": 91.66666666666667,
+          "candidate": 2.380952380952381,
+          "delta": -89.28571428571429
+        },
+        "self_overlap_handframe_pct": {
+          "baseline": 65.625,
+          "candidate": 12.5,
+          "delta": -53.125
+        },
+        "interhand_overlap_frame_pct": {
+          "baseline": 8.333333333333334,
+          "candidate": 70.83333333333333,
+          "delta": 62.49999999999999
+        },
+        "self_max_overlap_mm": {
+          "baseline": 12.24960046114366,
+          "candidate": 4.748826484685435,
+          "delta": -7.500773976458224
+        },
+        "interhand_max_overlap_mm": {
+          "baseline": 6.62990819524094,
+          "candidate": 11.682753907917126,
+          "delta": 5.052845712676186
+        },
+        "joint_bound_violations": {
+          "baseline": 0,
+          "candidate": 0,
+          "delta": 0
+        },
+        "joint_speed_steps_above_12rad_s": {
+          "baseline": 0,
+          "candidate": 0,
+          "delta": 0
+        },
+        "joint_speed_max_deg_s": {
+          "baseline": 380.96884377920424,
+          "candidate": 686.9997543535259,
+          "delta": 306.03091057432164
+        },
+        "joint_reversal_rate": {
+          "baseline": 0.2217391304347826,
+          "candidate": 0.4434782608695652,
+          "delta": 0.2217391304347826
+        },
+        "pad_jerk_p95_m_s3": {
+          "baseline": 147.3089536796968,
+          "candidate": 238.4290452982172,
+          "delta": 91.1200916185204
+        },
+        "elbow_step_max_mm": {
+          "baseline": 10.058852356639933,
+          "candidate": 12.299920084542697,
+          "delta": 2.241067727902763
+        },
+        "release_failed_after_250ms": {
+          "baseline": 0,
+          "candidate": 0,
+          "delta": 0
+        }
+      },
+      "interpretation": "Positive deltas improve only contact rates; positive errors, overlap, speed and jitter are worse. Capsule overlaps are proxies. Score holds include planned early releases; clip-end holds/releases may be censored."
+    },
+    "wide_chord": {
+      "start": 119.9,
+      "duration": 2.0,
+      "notes": 36,
+      "equal_animation_context": true,
+      "hold_frames": [
+        456,
+        456
+      ],
+      "metrics": {
+        "onset_key_down_pct": {
+          "baseline": 80.55555555555556,
+          "candidate": 69.44444444444444,
+          "delta": -11.111111111111114
+        },
+        "onset_physical_contact_pct": {
+          "baseline": 52.77777777777778,
+          "candidate": 66.66666666666667,
+          "delta": 13.888888888888893
+        },
+        "hold_contact_pct": {
+          "baseline": 8.114035087719298,
+          "candidate": 29.82456140350877,
+          "delta": 21.710526315789473
+        },
+        "hold_penetration_pct": {
+          "baseline": 37.5,
+          "candidate": 2.6315789473684212,
+          "delta": -34.868421052631575
+        },
+        "self_overlap_handframe_pct": {
+          "baseline": 31.25,
+          "candidate": 0.0,
+          "delta": -31.25
+        },
+        "interhand_overlap_frame_pct": {
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "delta": 0.0
+        },
+        "self_max_overlap_mm": {
+          "baseline": 21.566404149482427,
+          "candidate": 2.849235791837034,
+          "delta": -18.71716835764539
+        },
+        "interhand_max_overlap_mm": {
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "delta": 0.0
+        },
+        "joint_bound_violations": {
+          "baseline": 0,
+          "candidate": 0,
+          "delta": 0
+        },
+        "joint_speed_steps_above_12rad_s": {
+          "baseline": 37,
+          "candidate": 0,
+          "delta": -37
+        },
+        "joint_speed_max_deg_s": {
+          "baseline": 2158.3471282521045,
+          "candidate": 688.6511960708945,
+          "delta": -1469.69593218121
+        },
+        "joint_reversal_rate": {
+          "baseline": 1.9956521739130435,
+          "candidate": 2.1130434782608694,
+          "delta": 0.11739130434782585
+        },
+        "pad_jerk_p95_m_s3": {
+          "baseline": 909.1850687659025,
+          "candidate": 970.1014362023781,
+          "delta": 60.916367436475525
+        },
+        "elbow_step_max_mm": {
+          "baseline": 44.99645575014698,
+          "candidate": 23.343931391518158,
+          "delta": -21.65252435862882
+        },
+        "release_failed_after_250ms": {
+          "baseline": 1,
+          "candidate": 1,
+          "delta": 0
+        }
+      },
+      "interpretation": "Positive deltas improve only contact rates; positive errors, overlap, speed and jitter are worse. Capsule overlaps are proxies. Score holds include planned early releases; clip-end holds/releases may be censored."
+    },
+    "overlap": {
+      "start": 248.0,
+      "duration": 2.0,
+      "notes": 11,
+      "equal_animation_context": true,
+      "hold_frames": [
+        164,
+        164
+      ],
+      "metrics": {
+        "onset_key_down_pct": {
+          "baseline": 100.0,
+          "candidate": 81.81818181818181,
+          "delta": -18.181818181818187
+        },
+        "onset_physical_contact_pct": {
+          "baseline": 18.181818181818183,
+          "candidate": 81.81818181818181,
+          "delta": 63.636363636363626
+        },
+        "hold_contact_pct": {
+          "baseline": 2.4390243902439024,
+          "candidate": 39.02439024390244,
+          "delta": 36.58536585365854
+        },
+        "hold_penetration_pct": {
+          "baseline": 62.19512195121951,
+          "candidate": 0.0,
+          "delta": -62.19512195121951
+        },
+        "self_overlap_handframe_pct": {
+          "baseline": 31.25,
+          "candidate": 0.0,
+          "delta": -31.25
+        },
+        "interhand_overlap_frame_pct": {
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "delta": 0.0
+        },
+        "self_max_overlap_mm": {
+          "baseline": 7.632608388049942,
+          "candidate": 1.67150225324297,
+          "delta": -5.961106134806972
+        },
+        "interhand_max_overlap_mm": {
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "delta": 0.0
+        },
+        "joint_bound_violations": {
+          "baseline": 0,
+          "candidate": 0,
+          "delta": 0
+        },
+        "joint_speed_steps_above_12rad_s": {
+          "baseline": 0,
+          "candidate": 0,
+          "delta": 0
+        },
+        "joint_speed_max_deg_s": {
+          "baseline": 539.3497671479581,
+          "candidate": 686.999754353643,
+          "delta": 147.64998720568485
+        },
+        "joint_reversal_rate": {
+          "baseline": 0.41739130434782606,
+          "candidate": 0.3521739130434783,
+          "delta": -0.06521739130434778
+        },
+        "pad_jerk_p95_m_s3": {
+          "baseline": 260.3024108522133,
+          "candidate": 283.329567900702,
+          "delta": 23.027157048488675
+        },
+        "elbow_step_max_mm": {
+          "baseline": 17.909574976737527,
+          "candidate": 14.137268050830164,
+          "delta": -3.7723069259073636
+        },
+        "release_failed_after_250ms": {
+          "baseline": 0,
+          "candidate": 0,
+          "delta": 0
+        }
+      },
+      "interpretation": "Positive deltas improve only contact rates; positive errors, overlap, speed and jitter are worse. Capsule overlaps are proxies. Score holds include planned early releases; clip-end holds/releases may be censored."
+    }
+  },
+  "aggregate_main_windows": {
+    "baseline": {
+      "notes": 53,
+      "onset_key_down": 46,
+      "onset_physical_contact": 22,
+      "hold_note_frames": 704,
+      "hold_contact_frames": 48,
+      "hold_penetrating_frames": 350,
+      "self_overlap_hand_frames": 123,
+      "self_hand_frames": 288,
+      "interhand_overlap_frames": 4,
+      "interhand_frames": 144,
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 37,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "onset_physical_contact_pct": 41.509433962264154,
+      "hold_contact_pct": 6.818181818181818
+    },
+    "v1": {
+      "notes": 53,
+      "onset_key_down": 41,
+      "onset_physical_contact": 40,
+      "hold_note_frames": 704,
+      "hold_contact_frames": 297,
+      "hold_penetrating_frames": 12,
+      "self_overlap_hand_frames": 19,
+      "self_hand_frames": 288,
+      "interhand_overlap_frames": 44,
+      "interhand_frames": 144,
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "arm_length_violations_all_clip_over_0_1mm": 1,
+      "onset_physical_contact_pct": 75.47169811320755,
+      "hold_contact_pct": 42.1875
+    },
+    "v3": {
+      "notes": 53,
+      "onset_key_down": 41,
+      "onset_physical_contact": 40,
+      "hold_note_frames": 704,
+      "hold_contact_frames": 283,
+      "hold_penetrating_frames": 21,
+      "self_overlap_hand_frames": 25,
+      "self_hand_frames": 288,
+      "interhand_overlap_frames": 37,
+      "interhand_frames": 144,
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "onset_physical_contact_pct": 75.47169811320755,
+      "hold_contact_pct": 40.19886363636363
+    },
+    "v4": {
+      "notes": 53,
+      "onset_key_down": 40,
+      "onset_physical_contact": 39,
+      "hold_note_frames": 704,
+      "hold_contact_frames": 272,
+      "hold_penetrating_frames": 14,
+      "self_overlap_hand_frames": 12,
+      "self_hand_frames": 288,
+      "interhand_overlap_frames": 34,
+      "interhand_frames": 144,
+      "joint_limit_violations": 0,
+      "joint_speed_steps_above_12rad_s": 0,
+      "arm_length_violations_all_clip_over_0_1mm": 0,
+      "onset_physical_contact_pct": 73.58490566037736,
+      "hold_contact_pct": 38.63636363636363
+    }
+  },
+  "limitations": [
+    "Collision values are mean-radius capsule proxies, not skin-mesh intersections. Same-hand proximal/proximal webbing is excluded.",
+    "Score-hold coverage includes planned early release and finger reuse; explicit controller firm phases are scored separately when metadata exists.",
+    "Onset contact requires the assigned pad on the exposed physical key top within 2 mm, with key depth at least 0.5; key-onset alone can overstate playing accuracy.",
+    "All score notes remain in the onset denominator. Holds/releases at clip end or near restrikes are censored and reported in full QA artifacts.",
+    "Only 53 note onsets and 704 held note-frames are sampled in the three matched main windows. No whole-piece accuracy claim follows.",
+    "The short fresh crossing probes choose different hand roles from the long historical clip; they do not reproduce its severe arm crossover. The historical replay evidence is separate.",
+    "The 248-second window is an ordinary overlapping-hands regression, not the historical video glitch at performed 287.9-291.9 seconds.",
+    "Final v4 Debussy still has 34/48 interhand capsule-overlap frames above 3 mm, worse than baseline 4/48; exact skin mesh checks must decide severity.",
+    "Wide-chord final onset/hold contact trades off against v3 (24 vs 26 onsets, 136 vs 151 held frames), while final separation and temporal reversal metrics improve.",
+    "Joint-speed violation threshold is 12.02 rad/s to allow exported time/angle rounding. Reversal rate is a motion proxy, not a perceptual realism score.",
+    "Older baseline/v1 run manifests captured only three solver hashes; their recorded subset still matches frozen source. Newer manifests also verify six files unchanged through the run.",
+    "Parallel solve wall times are workload dependent and should not be treated as controlled performance benchmarks."
+  ],
+  "reproduce": {
+    "cwd": "/home/frosty40/h3/rig_realism",
+    "baseline_template": "/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python lab/realism_probe.py --source-root /home/frosty40/h3b_wrist --start START --dur 2 --out artifacts/realism/recheck_baseline_LABEL",
+    "candidate_template": "/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python lab/realism_probe.py --source-root . --start START --dur 2 --out artifacts/realism/recheck_candidate_LABEL",
+    "audit_template": "/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python lab/realism_probe.py --source-root SOURCE_ROOT --cached ANIMATION --start START --dur 2 --out AUDIT_PREFIX",
+    "compare_template": "/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python lab/realism_compare.py BASELINE_AUDIT.qa.json CANDIDATE_AUDIT.qa.json --out COMPARISON.json",
+    "main_starts": {
+      "debussy": 49.9,
+      "wide_chord": 119.9,
+      "overlap": 248.0
+    }
+  },
+  "candidate_solver_files_match_worktree": true
+}

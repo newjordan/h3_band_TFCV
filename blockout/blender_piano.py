@@ -79,20 +79,22 @@ def box(name, x0, x1, y0, y1, z0, z1, m, origin=None):
 
 
 # ------------------------------------------------------------------ piano
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from blockout.piano_geometry import piano_boxes
+
 keys = {}
 xs = [k["x"] for k in anim["keyboard"]]
 X0, X1 = min(xs) - 0.02, max(xs) + 0.02
-for k in anim["keyboard"]:
-    x, w = k["x"], k["w"]
-    gap = 0.0006
-    if k["black"]:
-        ob = box(f"key{k['pitch']}", x - w / 2, x + w / 2, k["y0"], 0.150, 0.0, k["top"], M_BLACK,
-                 origin=(x, 0.150, 0.0))
-    else:
-        ob = box(f"key{k['pitch']}", x - w / 2 + gap, x + w / 2 - gap, 0.0, 0.150, -0.018, 0.0, M_WHITE,
-                 origin=(x, 0.150, 0.0))
-    keys[str(k["pitch"])] = ob
-    ob["length"] = 0.150 - k["y0"]
+VIEW = opts.get("--view", "pov")
+materials = dict(white=M_WHITE, black=M_BLACK, case=M_CASE, floor=M_FLOOR)
+for spec in piano_boxes(anim["keyboard"], music_desk=VIEW == "pov"):
+    lo, hi = spec.lower, spec.upper
+    ob = box(spec.name, lo[0], hi[0], lo[1], hi[1], lo[2], hi[2],
+             materials[spec.material], origin=spec.origin)
+    if spec.pitch is None:
+        continue
+    keys[str(spec.pitch)] = ob
+    ob["length"] = spec.length
     if MARK == "sides":
         base = ob.data.materials[0]
         ob.data.materials.append(base)
@@ -103,17 +105,7 @@ for k in anim["keyboard"]:
         ob.material_slots[1].material = base
         ob["base"] = base.name
 
-box("keybed", X0 - 0.04, X1 + 0.04, -0.02, 0.30, -0.10, -0.019, M_CASE)
-box("front_rail", X0 - 0.04, X1 + 0.04, -0.03, -0.004, -0.10, -0.012, M_CASE)
-box("cheek_l", X0 - 0.06, X0 - 0.005, -0.03, 0.30, -0.10, 0.045, M_CASE)
-box("cheek_r", X1 + 0.005, X1 + 0.06, -0.03, 0.30, -0.10, 0.045, M_CASE)
-box("fallboard", X0 - 0.005, X1 + 0.005, 0.153, 0.20, -0.02, 0.055, M_CASE)
-box("lid_body", X0 - 0.06, X1 + 0.06, 0.20, 0.32, -0.10, 0.07, M_CASE)
-VIEW = opts.get("--view", "pov")
 HC_HAND, HC_ANGLE, HC_DIST = opts.get("--hand", "R"), opts.get("--angle", "front3q"), float(opts.get("--dist", 0.34))
-if VIEW == "pov":
-    box("music_desk", X0 + 0.45, X1 - 0.45, 0.22, 0.25, 0.07, 0.30, M_CASE)
-box("floor", X0 - 3, X1 + 3, -3, 4, -0.80, -0.79, M_FLOOR)
 
 # ------------------------------------------------------------------ hands
 FINGER_HUE = [(1.0, 0.15, 0.10), (1.0, 0.60, 0.05), (0.15, 0.90, 0.20), (0.05, 0.75, 1.0), (0.35, 0.25, 1.0)]
@@ -271,6 +263,21 @@ def load_mpfb():
     mesh, arm = dst.objects
     for o in (mesh, arm):
         COL.objects.link(o)
+    # A source weight typo made one right finger vertex follow the left hand.
+    # Use the same correction as the geometry evaluator and asset exporter.
+    import numpy as np
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from blockout.skin import clean_hand_weights
+    names = [g.name for g in mesh.vertex_groups]
+    weights = np.zeros((len(mesh.data.vertices), len(names)))
+    for vertex in mesh.data.vertices:
+        for group in vertex.groups:
+            weights[vertex.index, group.group] = group.weight
+    _clean, repairs = clean_hand_weights(weights, names)
+    for repair in repairs:
+        mesh.vertex_groups[repair['from']].remove([repair['vertex']])
+        target = mesh.vertex_groups[repair['to']]
+        target.add([repair['vertex']], float(_clean[repair['vertex'], target.index]), 'REPLACE')
     mesh.data.materials.clear()
     mesh.data.materials.append(M_SKIN)
     for p in mesh.data.polygons:
