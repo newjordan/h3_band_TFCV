@@ -642,6 +642,8 @@ MESHQA = opts.get("--meshqa")      # OUT.json: no render; count skinned-mesh sel
 if MESHQA:
     import numpy as np
     from mathutils.bvhtree import BVHTree
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from blockout.mesh_contact import box_signed_depth
     me0 = MPFB_MESH.data
     MPFB_MESH.modifiers["smooth"].show_viewport = False
     me0.calc_loop_triangles()
@@ -661,33 +663,31 @@ if MESHQA:
     TSET = [set(t) for t in TRIS]
     NV = len(me0.vertices)
 
-    KB = np.array([(k["x"] - k["w"] / 2, k["x"] + k["w"] / 2, k["y0"], 0.150, k["top"] - (0.012 if k["black"] else 0.018),
-                    k["top"], k["pitch"]) for k in anim["keyboard"]])
+    KEY_BOXES = []
+    for key in anim["keyboard"]:
+        ob = keys[str(key["pitch"])]
+        corners = np.array([list(v.co) for v in ob.data.vertices])
+        KEY_BOXES.append((key["pitch"], ob, corners.min(0), corners.max(0)))
     LAST_CO = {}
     PARTS_HIT = {}
 
     def key_penetration(co, keys):
-        """Skinned-mesh vertices inside a key box (keys tilted down by their depth): count > 1 mm and max depth."""
-        depth = np.zeros(len(KB))
-        for i, k in enumerate(KB):
-            depth[i] = float(keys.get(str(int(k[6])), 0.0))
+        """Vertices inside actual rendered boxes, including gaps and rotated bottoms.
+
+        Depth is the shortest distance to an escape face, not vertical depth
+        alone. Counts remain vertex/key pairs on the unsubdivided hand mesh.
+        """
+        world = co @ np.array(MPFB_MESH.matrix_world)[:3, :3].T + np.array(MPFB_MESH.matrix_world)[:3, 3]
         worst, n = 0.0, 0
-        x, y, z = co[:, 0], co[:, 1], co[:, 2]
-        near = (z < 0.013) & (y > -0.01) & (y < 0.155)
-        for i, (x0, x1, y0, y1, zb, zt, _p) in enumerate(KB):
-            m = near & (x > x0) & (x < x1) & (y > y0) & (y < y1)
-            if not m.any():
-                continue
-            top = zt - depth[i] * 0.010 * (0.150 - y[m]) / (0.150 - y0)     # pivot at the back
-            d = np.minimum(top - z[m], z[m] - zb)
-            idx = np.nonzero(m)[0][d > 0.001]
+        for pitch, ob, lower, upper in KEY_BOXES:
+            d = box_signed_depth(world, np.array(ob.matrix_world), lower, upper)
+            idx = np.flatnonzero(d > 0.001)
             for vi in idx:
                 PARTS_HIT[VPART[vi]] = PARTS_HIT.get(VPART[vi], 0) + 1
             if os.environ.get("KEYPEN_DUMP") and len(idx):
-                dd = d[d > 0.001]
-                print("KP key", int(_p), "depth", round(float(depth[i]), 2), "n", len(idx), "max mm", round(float(dd.max()) * 1000, 1),
-                      "parts", sorted({VPART[v] for v in idx}), "y", round(float(y[idx].min()), 3), round(float(y[idx].max()), 3),
-                      "z", round(float(z[idx].min()), 4), "x", round(float(x[idx].min()), 3), round(float(x[idx].max()), 3), "key x", round(x0, 3), round(x1, 3))
+                print("KP key", pitch, "depth", round(float(keys.get(str(pitch), 0.0)), 2), "n", len(idx),
+                      "max mm", round(float(d[idx].max()) * 1000, 1), "parts", sorted({VPART[v] for v in idx}),
+                      "xyz min", np.round(world[idx].min(0), 4).tolist(), "xyz max", np.round(world[idx].max(0), 4).tolist())
             d = d[d > 0]
             if len(d):
                 worst = max(worst, float(d.max())); n += int((d > 0.001).sum())
@@ -710,7 +710,10 @@ if MESHQA:
         pb.matrix_basis = Matrix()
     bpy.context.view_layer.update()
     REST_PAIRS = intersections()
-    MQ = {"rest_pairs": len(REST_PAIRS), "frames": {}}
+    MQ = {"rest_pairs": len(REST_PAIRS), "frames": {},
+          "key_metric": "nearest_face_depth_in_exact_rendered_key_boxes_mm",
+          "mesh_topology": "base_mesh_without_render_subdivision",
+          "triangle_part_label": "dominant_bone_of_first_vertex; mixed webbing triangles may span fingers"}
 
 for i in FRAME_IDS:
     fr = frames[i]

@@ -144,6 +144,37 @@ $P -m blockout.sampler work/cdl_notes.json work/cdl.wav --sfz models/.../Salaman
 
 Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brahms Op. 118 No. 2 are Public Domain; Rachmaninoff Op. 3 No. 2 is CC BY-SA 4.0. `knights_suite.mid` (built by `suite.py`) contains an original theme plus excerpts of the Rachmaninoff (CC BY-SA 4.0) and the Brahms.
 
+### Drummer contact blockout
+
+`blockout.drums` is a new CPU kinematic foundation with rigid sticks, bounded
+two-link arms, retained and separated finger-grip proxies, accent-sensitive
+strike/rebound motion, and firm-on-contact/soft-on-release grip activation.
+It checks exact event times as well as a 240 Hz trajectory sample against every
+drum surface, stick/finger clearance, reach, arm lengths, elbow bounds and speeds.
+Failed preflight exits 2 and preserves diagnostic JSON with named violations and
+missed events. Impossible hand schedules raise an error.
+
+Exact-time contact alone does not establish a playable sequence. The seed-103
+stress audit reached all 144 hits across 12 dense random kit patterns, but
+rejected all 12 for speed or collision violations; the normal 10-hit demo and a
+50 ms alternating snare roll passed. Consumers must require `qa.passed` before
+using an animation as a valid performance.
+
+```sh
+python -m blockout.drums --demo --out /tmp/drums.json
+python -m blockout.drum_preview /tmp/drums.json --out /tmp/drums.png
+python -m blockout.drum_preview /tmp/drums.json --out /tmp/drums.mp4
+python -m unittest discover -s tests -p test_drums.py -v
+```
+
+Use `--events hits.json` for a JSON list of
+`{"time": 0.5, "drum": "snare", "hand": "R", "velocity": 0.8}`; hand may be
+`L`, `R` or `auto`, and velocity is 0–1. Optional kit/rig settings and the output
+schema are documented in [blockout/DRUMS.md](blockout/DRUMS.md). This is not yet
+an anatomical MPFB drummer or a force simulation. Pedals, shell/rim/torso
+collisions, full joint limits, audio-onset extraction and anatomical retargeting
+remain future work. Preview rendering uses a fixed Matplotlib camera, without H3.
+
 ## Hackathon tasks
 
 - [ ] **Per-zone audio binding.** Bind each stem to its zone inside one run: multiple audio segments plus an attention bias, so stem A's tokens reach only zone A's video tokens.

@@ -93,6 +93,121 @@ class HandRig:
                         self.sigma[a + i] = iqr(pf[f"{meas}.{names[ci - 1]}"])
         except (OSError, KeyError):
             pass
+        # Skin tubes, not fingertip-only distances: crossed proximal/middle
+        # phalanges also collide. Thumb bone 0 is its metacarpal/palm web and is
+        # intentionally excluded from finger-to-finger separation.
+        self._skin_ids = [(f, i) for f in range(5) for i in range(1 if f == 0 else 0, 3)]
+        self._skin_fingers = np.array([f for f, _ in self._skin_ids])
+        self._skin_pairs = np.array([(a, b) for a in range(len(self._skin_ids))
+                                    for b in range(a + 1, len(self._skin_ids))
+                                    if self._skin_ids[a][0] != self._skin_ids[b][0]])
+        self._skin_start = np.array([0.3 if i == 0 else 0.1 for f, i in self._skin_ids])
+        self._skin_end = np.full(len(self._skin_ids), 0.9)
+        self._skin_length = np.array([self.chains[f].L[i] for f, i in self._skin_ids])
+        self._skin_sections = np.array([self.chains[f].sect[i] for f, i in self._skin_ids])
+
+    @staticmethod
+    def _activation(f, target, weight, W):
+        """Continuous contact stiffness; axis weights alone do not identify an attack."""
+        if target is None:
+            return 0.0
+        value = W.get("activation")
+        value = float(np.max(weight)) if value is None else float(value[f])
+        value = float(np.clip(value, 0.0, 1.0))
+        return value * value * (3.0 - 2.0 * value)
+
+    def _motion_bounds(self, x, W):
+        lo, hi = self.lo.copy(), self.hi.copy()
+        last = W.get("motion_last")
+        dt = W.get("dt")
+        if last is not None and dt is not None:
+            if not np.isfinite(dt) or dt <= 0:
+                raise ValueError("hand motion dt must be finite and positive")
+            speed = np.asarray(W.get("max_joint_speed", math.radians(720.0)), float)
+            if not np.all(np.isfinite(speed)) or np.any(speed <= 0):
+                raise ValueError("max_joint_speed must be finite and positive")
+            previous = np.asarray(last, float)
+            if previous.shape != x.shape or not np.all(np.isfinite(previous)):
+                raise ValueError("motion_last must be a finite physical hand pose")
+            previous = np.clip(previous[6:], self.lo, self.hi)
+            lo = np.maximum(lo, previous - speed * dt)
+            hi = np.minimum(hi, previous + speed * dt)
+        return lo, hi
+
+    @staticmethod
+    def _contact_weights(W, weights):
+        """Maintain separation priority when an instrument strengthens its pad targets."""
+        W = W.copy()
+        strength = max(1.0, max(float(np.max(w)) for w in weights)) if W.get("self_priority", True) else 1.0
+        W["_self_collision_weight"] = W.get("self_collision", 100.0) * strength ** 2
+        return W
+
+    def _skin_geometry(self, pts, rots):
+        heads = np.array([pts[f][i] for f, i in self._skin_ids])
+        frames = np.array([rots[f][i] for f, i in self._skin_ids])
+        # Offset the centreline to the centre of the asymmetric skin section.
+        sections = self._skin_sections[:, 1]
+        centres = heads + frames[:, :, 2] * ((sections[:, 1] - sections[:, 2]) * 0.5)[:, None]
+        start = centres + frames[:, :, 1] * (self._skin_length * self._skin_start)[:, None]
+        end = centres + frames[:, :, 1] * (self._skin_length * self._skin_end)[:, None]
+        return start, end, frames
+
+    def _skin_clearances(self, geometry, f=None):
+        """Signed separation of the closest skin tubes (metres; negative overlaps).
+
+        Each pair uses its closest segment points and the ellipse support in the
+        separating direction. This preserves the measured widths and pad depths
+        instead of inventing a bigger hand or a universal fingertip radius.
+        """
+        starts, ends, frames = geometry
+        pairs = self._skin_pairs
+        if f is not None:
+            pairs = pairs[np.any(self._skin_fingers[pairs] == f, axis=1)]
+        ia, ib = pairs.T
+        p, q = starts[ia], starts[ib]
+        u, v, w = ends[ia] - p, ends[ib] - q, p - q
+        dot = lambda a, b: np.einsum("ij,ij->i", a, b)
+        aa, bb, cc, dd, ee = dot(u, u), dot(u, v), dot(v, v), dot(u, w), dot(v, w)
+        den = aa * cc - bb * bb
+        safe = den > 1e-16
+        s = np.divide(bb * ee - cc * dd, den, out=np.zeros_like(den), where=safe)
+        t = np.divide(aa * ee - bb * dd, den, out=np.zeros_like(den), where=safe)
+        # Closest interior pair, or one of the four endpoint-to-segment pairs.
+        ss = np.stack([s, np.zeros_like(s), np.ones_like(s),
+                       np.clip(-dd / aa, 0, 1), np.clip((bb - dd) / aa, 0, 1)], 1)
+        tt = np.stack([t, np.clip(ee / cc, 0, 1), np.clip((ee + bb) / cc, 0, 1),
+                       np.zeros_like(t), np.ones_like(t)], 1)
+        delta = w[:, None, :] + ss[:, :, None] * u[:, None, :] - tt[:, :, None] * v[:, None, :]
+        dist2 = np.einsum("ijk,ijk->ij", delta, delta)
+        dist2[:, 0] = np.where(safe & (s >= 0) & (s <= 1) & (t >= 0) & (t <= 1), dist2[:, 0], np.inf)
+        best = dist2.argmin(1); rows = np.arange(len(pairs))
+        delta = delta[rows, best]
+        distance = np.sqrt(np.maximum(dist2[rows, best], 0))
+        normal = delta / np.maximum(distance[:, None], 1e-12)
+        # Coincident axes still have a finite overlap and a separating direction.
+        normal = np.where((distance < 1e-10)[:, None], frames[ia, :, 0], normal)
+        def radius(ids, fraction):
+            us = self._skin_start[ids] + fraction * (self._skin_end[ids] - self._skin_start[ids])
+            k = (us > 0.5).astype(int)
+            blend = np.clip((us - (0.1 + 0.4 * k)) / 0.4, 0, 1)
+            sec = self._skin_sections[ids, k] * (1 - blend[:, None]) + self._skin_sections[ids, k + 1] * blend[:, None]
+            nx = dot(normal, frames[ids, :, 0]); nz = dot(normal, frames[ids, :, 2])
+            ny = dot(normal, frames[ids, :, 1])
+            return np.sqrt((sec[:, 0] * nx) ** 2 + ((sec[:, 1] + sec[:, 2]) * 0.5 * nz) ** 2
+                           + (0.002 * self.sk.scale * ny) ** 2)
+        return distance - radius(ia, ss[rows, best]) - radius(ib, tt[rows, best])
+
+    def finger_clearances(self, x, ref_rot):
+        """Audit all different-finger skin pairs using the solver's contact model."""
+        _, _, pts = self.points(x, ref_rot)
+        return self._skin_clearances(self._skin_geometry(pts, self._rots))
+
+    def _separation_residual(self, geometry, W, f=None):
+        # Soft tissue can compress slightly, but finger bones cannot pass through
+        # each other. Keeping residual length fixed is essential to finite differences.
+        clearance = self._skin_clearances(geometry, f)
+        margin = W.get("self_gap", 0.0005) - W.get("self_compliance", 0.001)
+        return math.sqrt(W.get("_self_collision_weight", W.get("self_collision", 100.0))) * np.maximum(0.0, margin - clearance)
 
     def anatomical_abduction(self, root_rot, root_pos, pts, f):
         """Finger f's (2-5) abduction in degrees as anatomy measures it: the proximal phalanx against its
@@ -168,8 +283,8 @@ class HandRig:
                 r.append(np.asarray(weights[f], float) * (eff[f] - targets[f]))   # scalar or per-axis weights
         cw = np.ones(len(q))                                  # a pressing finger may leave its relaxed pose to reach
         for f, (a, b) in enumerate(zip(self.sl[:-1], self.sl[1:])):
-            if targets[f] is not None and float(np.max(weights[f])) >= 0.99:
-                cw[a:b] = math.sqrt(W.get("comfort_press", 1.0))
+            active = self._activation(f, targets[f], weights[f], W)
+            cw[a:b] = math.sqrt(1.0 + active * (W.get("comfort_press", 1.0) - 1.0))
         scale = self.sigma if W.get("comfort_sigma") else self.rng      # human-spread scaling: experimental, off
         q_rest = self.q_rest
         if W.get("rest_override"):
@@ -200,14 +315,23 @@ class HandRig:
                 r.append(math.sqrt(W["env"]) * np.asarray(pen, float))
             else:
                 r.append([math.sqrt(W["env"] * max(pen, 0.0))])
+        if W.get("self_collision", 100.0) > 0:
+            r.append(self._separation_residual(self._skin_geometry(pts, rots), W))
         return np.concatenate([np.ravel(v) for v in r]), (root_rot, root_pos, pts, eff)
 
     def solve(self, ref_rot, ref_pos, targets, weights, prev=None, env=None, forearm=None, iters=12, W=None,
               last=None, fix_root=False):
         """targets: 5 world points or None; weights: 5 floats. prev: x from the previous frame (warm start).
         fix_root: the wrist is given (prev[:6]) and only the finger joints move -- the hand hangs off its wrist.
+        W: activation (five 0..1 values) blends press comfort continuously; dt,
+        motion_last and max_joint_speed (rad/s) impose physical velocity bounds.
+        last remains a soft regularization reference, which may be a smoothed pose.
+        self_collision=0 disables skin separation for comparison; self_gap and
+        self_compliance are metres. self_priority keeps collision priority when
+        instrument target weights increase.
         Returns x, (root_rot, root_pos, points per finger), misses per finger (m, None if no target)."""
         W = {**dict(comfort=4e-5, couple=5e-5, root_pos=0.5, root_rot=2e-4, wrist=1e-3, env=1.0), **(W or {})}
+        W = self._contact_weights(W, weights)
         iters = int(W.pop("iters", iters))
         ref_rot = np.asarray(ref_rot, float); ref_pos = np.asarray(ref_pos, float)
         targets = [None if t is None else np.asarray(t, float) for t in targets]
@@ -218,7 +342,8 @@ class HandRig:
                 x[3:6] *= 0.5
         else:
             x = np.concatenate([ref_pos, np.zeros(3), self.q_rest])
-        lo = np.concatenate([np.full(6, -np.inf), self.lo]); hi = np.concatenate([np.full(6, np.inf), self.hi])
+        joint_lo, joint_hi = self._motion_bounds(x, W)
+        lo = np.concatenate([np.full(6, -np.inf), joint_lo]); hi = np.concatenate([np.full(6, np.inf), joint_hi])
         x = np.clip(x, lo, hi)
         args = (ref_rot, ref_pos, targets, weights, env, forearm, W, None if last is None else np.asarray(last, float))
         r, pose = self.residuals(x, *args)
@@ -249,7 +374,7 @@ class HandRig:
         misses = [None if targets[f] is None else float(np.linalg.norm(pose[3][f] - targets[f])) for f in range(5)]
         return x, pose, misses
 
-    def finger_residuals(self, f, qf, x, ref_rot, target, weight, env, W, x_last):
+    def finger_residuals(self, f, qf, x, ref_rot, target, weight, env, W, x_last, neighbors=None):
         """Finger f alone, its base fixed by the root in x: pad target, comfort, coupling, smoothness, collisions."""
         a, b = self.sl[f], self.sl[f + 1]
         ch = self.chains[f]
@@ -257,10 +382,10 @@ class HandRig:
         bR, bH = self.bases(root_rot, x[:3])[f]
         P, Rs = ch.fk(bR, bH, qf)
         r = []
-        pressing = target is not None and float(np.max(weight)) >= 0.99
+        active = self._activation(f, target, weight, W)
         if target is not None:
             r.append(np.asarray(weight, float) * (ch.effector(P, Rs) - target))
-        cw = math.sqrt(W.get("comfort_press", 1.0)) if pressing else 1.0
+        cw = math.sqrt(1.0 + active * (W.get("comfort_press", 1.0) - 1.0))
         scale = (self.sigma if W.get("comfort_sigma") else self.rng)[a:b]
         rest = W.get("rest_override", {}).get(f, self.q_rest[a:b])
         if f in W.get("rest_override", {}):
@@ -275,18 +400,40 @@ class HandRig:
             smp[f] = ch.samples(P, Rs)
             pen = env(smp, root_rot, x[:3])
             r.append(math.sqrt(W["env"]) * np.asarray(pen, float) if np.ndim(pen) else [math.sqrt(W["env"] * max(pen, 0.0))])
+        if W.get("self_collision", 100.0) > 0:
+            if neighbors is None:
+                _, _, all_pts = self.points(x, ref_rot)
+                neighbors = self._skin_geometry(all_pts, self._rots)
+            geometry = [part.copy() for part in neighbors]
+            ids = np.flatnonzero(self._skin_fingers == f)
+            for j in ids:
+                _, i = self._skin_ids[j]
+                frame = Rs[i]
+                sec = self._skin_sections[j, 1]
+                centre = P[i] + frame[:, 2] * (sec[1] - sec[2]) * 0.5
+                geometry[0][j] = centre + frame[:, 1] * self._skin_length[j] * self._skin_start[j]
+                geometry[1][j] = centre + frame[:, 1] * self._skin_length[j] * self._skin_end[j]
+                geometry[2][j] = frame
+            r.append(self._separation_residual(geometry, W, f))
         return np.concatenate([np.ravel(v) for v in r])
 
     def solve_fingers(self, ref_rot, x0, targets, weights, env=None, W=None, last=None, iters=20):
         """The root is set (x0[:6]): each finger is its own small solve (one finger's trouble can't freeze the
         others), from the previous pose and, if that stalls, from the relaxed pose too; the better one wins."""
         W = {**dict(comfort=4e-5, couple=5e-5, env=1.0), **(W or {})}
+        W = self._contact_weights(W, weights)
         x = np.array(x0, float)
+        joint_lo, joint_hi = self._motion_bounds(x, W)
+        x[6:] = np.clip(x[6:], joint_lo, joint_hi)
         last = None if last is None else np.asarray(last, float)
         for f in range(5):
             a, b = self.sl[f], self.sl[f + 1]
-            lo, hi = self.lo[a:b], self.hi[a:b]
-            args = (x, ref_rot, targets[f], weights[f], env, W, last)
+            lo, hi = joint_lo[a:b], joint_hi[a:b]
+            neighbors = None
+            if W.get("self_collision", 100.0) > 0:
+                _, _, pts = self.points(x, ref_rot)
+                neighbors = self._skin_geometry(pts, self._rots)
+            args = (x, ref_rot, targets[f], weights[f], env, W, last, neighbors)
             best = None
             for seed in (x[6 + a:6 + b], self.q_rest[a:b]):
                 q = np.clip(np.array(seed, float), lo, hi)

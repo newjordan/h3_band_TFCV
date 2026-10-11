@@ -37,7 +37,7 @@ class Chain:
         self.rel = [sk.R0[sk.parent[b]].T @ sk.R0[b] for b in self.bones]
         self.off = [sk.R0[sk.parent[b]].T @ (sk.h0[b] - sk.h0[sk.parent[b]]) for b in self.bones]
         self.L = [sk.L[b] for b in self.bones]
-        self.radii = [[r if r else 0.008 for r in sk.radii[b]] for b in self.bones]
+        self.radii = [[r if r else 0.008 * sk.scale for r in sk.radii[b]] for b in self.bones]
         # skin cross-sections: the bone runs near the back of the finger, the pad sticks out on the palm side
         up = sk.rest_frame[2]
         self.palm_sign = [1.0 if sk.R0[b][:, 2] @ -up > 0 else -1.0 for b in self.bones]
@@ -168,4 +168,7 @@ class Chain:
             if best is None or c < best[0]:
                 best = (c, q, pts)
         c, q, pts = best
-        return q, pts, float(np.linalg.norm(pts[-1] - target))
+        # The target belongs to the skin pad, not the bone tip. Reporting a bone-tip
+        # miss here made a successful contact appear several millimetres wrong.
+        P, R = self.fk(base_rot, base_head, q)
+        return q, pts, float(np.linalg.norm(self.effector(P, R) - target))

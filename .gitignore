@@ -18,4 +18,5 @@ ComfyUI/
 !examples/*.json
 .venv*/
 __pycache__/
+artifacts/
 *.log
