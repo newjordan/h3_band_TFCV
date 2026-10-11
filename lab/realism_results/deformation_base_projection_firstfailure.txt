@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/frosty40/h3/rig_realism/lab/skin_deformation_audit.py", line 150, in <module>
+    main()
+  File "/home/frosty40/h3/rig_realism/lab/skin_deformation_audit.py", line 89, in main
+    assert len(expected) == len(vertices) and np.array_equal(np.sort(mapping), np.arange(len(expected)))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

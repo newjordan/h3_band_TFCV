@@ -602,7 +602,10 @@ else:
     sh.background_type = "WORLD"
     scn.display.shadow_shift = 0.05
     scn.display.light_direction = (-0.35, -0.45, 0.82)
-    scn.display.render_aa = "16"
+    scn.display.render_aa = opts.get('--aa', '16')
+    if opts.get('--quality') == 'draft':
+        sh.show_shadows, sh.show_cavity = False, False
+        scn.display.render_aa = 'FXAA'
 
 PASS = opts.get("--pass")           # depth: an inverse-depth control image (near = white) for H3 Fun ControlNet
                                     # mask: the hands (and forearms) white, everything else black, flat (for metrics)

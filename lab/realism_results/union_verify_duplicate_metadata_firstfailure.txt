@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/frosty40/h3/rig_realism/lab/skin_deformation_audit.py", line 150, in <module>
+    main()
+  File "/home/frosty40/h3/rig_realism/lab/skin_deformation_audit.py", line 131, in main
+    result = dict(**record, mapping_from_identical_linear_topology=True, lbs_parity_maximum_error_mm=mapping_error,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: dict() got multiple values for keyword argument 'candidate_exported'

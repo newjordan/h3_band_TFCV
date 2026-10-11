@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 import shutil
 from mesh_progress_site import apply_latest
+from deformation_progress_site import apply_deformation
+from performance_preview_site import apply_performance_preview
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = Path('/home/frosty40/h3/results/band_site/web')
@@ -14,7 +16,9 @@ latest_poses = json.loads((ART / 'restore_exposed_holds_window.json').read_text(
 progress = json.loads((ROOT / 'lab/realism_results/mechanical_path_20261011.json').read_text())
 human = json.loads((ROOT / 'lab/realism_results/human_contact_pilot_20261011.json').read_text())
 mesh = json.loads((ROOT / 'lab/realism_results/mesh_waypoint_20261011.json').read_text())
-test_count = mesh['unit_tests']['passed']
+deformation = json.loads((ROOT / 'lab/realism_results/deformation_and_union_20261011.json').read_text())
+preview = json.loads((ROOT / 'lab/realism_results/performance_preview_20261011.json').read_text())
+test_count = progress['test_count']
 coupled = progress['completed']['coupled']
 if len(latest_poses['records']) != 6 or not all(r['accepted'] for r in latest_poses['records']):
     raise RuntimeError('Publishing text requires the recorded six accepted contact poses')
@@ -129,16 +133,26 @@ section['items'] = [
               '<a href="media/rig_realism_drummer_crosshand_results.json">All frozen stress outcomes</a>.'),
 ] + section['items']
 apply_latest(section, mesh)
+apply_deformation(section, deformation)
+apply_performance_preview(section, preview)
 manifest['sections'] = [section] + [s for s in manifest['sections'] if s['id'] != section['id']]
-manifest['updated'] = '2026-10-11 actual skin rejection gates, all four static depth treatments and fixed-camera diagnostic videos; full realism remains incomplete'
-manifest['status'].insert(0, f'<b>Rig research:</b> {test_count} tests pass. New actual skin checks reject '
-    'earlier locally accepted piano poses. Soft contact-depth guidance gets closer to key clearance, '
-    'but all four new static treatments fail. Fresh piano and drummer videos below; complete realism remains unfinished.')
+manifest['updated'] = '2026-10-11 one-minute grayscale piano performance with audio, frozen deformation study and connected key-top pilot; complete realism remains unfinished'
+manifest['status'].insert(0, f"<b>Rig research:</b> {deformation['unit_tests']['passed']} tests pass. "
+    'Identical-bone quaternion deformation leaves playing poses rejected. Uncurling removes self folds '
+    'but clips the keys. Connected physical key-top contact is now an opt-in planning mode. '
+    'A new one-minute piano performance with audio, every matched outcome and fixed-camera diagnostics appear below; no complete performance is accepted.')
 # Keep one current research status when the publishing command is rerun.
 manifest['status'] = [manifest['status'][0]] + [s for s in manifest['status'][1:] if not s.startswith('<b>Rig research:</b>')]
 media = WEB / 'media'
 media.mkdir(exist_ok=True)
 for source, destination in (
+        (ART / 'performance_60s.mp4', 'rig_realism_piano_60s.mp4'),
+        (ROOT / 'lab/realism_results/performance_preview_20261011.json', 'rig_realism_performance_preview_results.json'),
+        (ART / 'deformation_and_union.png', 'rig_realism_deformation_and_union.png'),
+        (ART / 'fold_verify_20261011/R_sample0.png', 'rig_realism_ring_uncurled.png'),
+        (ART / 'fold_verify_20261011/R_sample5.png', 'rig_realism_ring_overcurled.png'),
+        (ROOT / 'lab/realism_results/deformation_and_union_20261011.json', 'rig_realism_deformation_and_union_results.json'),
+        (ROOT / 'lab/realism_results/deformation_review_result.json', 'rig_realism_deformation_review.json'),
         (ART / 'video_measured_piano.mp4', 'rig_realism_measured_piano_diagnostic.mp4'),
         (ART / 'drums/crosshand_demo_fixed.mp4', 'rig_realism_drummer_fixed.mp4'),
         (ART / 'mesh_waypoint_experiment.png', 'rig_realism_mesh_waypoint_experiment.png'),

@@ -7,6 +7,48 @@ does not excuse another part of the finger passing through the instrument.
 import numpy as np
 
 
+class KeyTop:
+    """Finite connected key-top union; internal head/stem seams are not edges.
+
+    Signed distance is in the moving key's top plane, with positive values
+    inside the physical outline. This does not establish exposed support or
+    skin/instrument clearance; those remain independent requirements.
+    """
+    def __init__(self, scene, pitch):
+        from .key_shapes import key_outline
+        ids = [i for i, spec in enumerate(scene.specs) if spec.pitch == int(pitch)]
+        if not 1 <= len(ids) <= 2:
+            raise ValueError('A finite single-head or connected head/stem key is required')
+        first = ids[0]
+        self.origin, self.rotation = scene.origins[first], scene.rotations[first]
+        self.lower, self.upper = scene.lower[ids, :2], scene.upper[ids, :2]
+        if (not np.allclose(scene.origins[ids], self.origin, atol=1e-12, rtol=0.)
+                or not np.allclose(scene.rotations[ids], self.rotation, atol=1e-12, rtol=0.)
+                or not np.allclose(scene.upper[ids, 2], scene.upper[first, 2], atol=1e-12, rtol=0.)):
+            raise ValueError('Key components must share one moving top plane')
+        if len(ids) == 2:
+            head, stem = (scene.specs[i] for i in ids)
+            if (abs(head.upper[1] - stem.lower[1]) > 1e-12
+                    or stem.lower[0] < head.lower[0] or stem.upper[0] > head.upper[0]):
+                raise ValueError('Unsupported disconnected key components')
+        polygon = key_outline([scene.specs[i] for i in ids]) - self.origin[:2]
+        self.starts, self.edges = polygon, np.roll(polygon, -1, axis=0) - polygon
+        self.squared_length = np.einsum('ij,ij->i', self.edges, self.edges)
+        if np.any(self.squared_length <= 0):
+            raise ValueError('Physical key boundary must have nonzero edges')
+
+    def margin(self, point):
+        point = np.asarray(point, float)
+        if point.shape != (3,) or not np.isfinite(point).all():
+            raise ValueError('A finite world point is required')
+        local = ((point - self.origin) @ self.rotation)[:2]
+        inside = bool(np.any(np.all((local >= self.lower) & (local <= self.upper), axis=1)))
+        delta = local - self.starts
+        fraction = np.clip(np.einsum('ij,ij->i', delta, self.edges) / self.squared_length, 0., 1.)
+        distance = float(np.linalg.norm(delta - fraction[:, None] * self.edges, axis=1).min())
+        return distance if inside else -distance
+
+
 def key_support(vertices, distal_indices, pitch, scene, contact_gap=.0001, tolerance=1e-5):
     """Find actual distal skin near the exposed, moving top of an assigned key.
 

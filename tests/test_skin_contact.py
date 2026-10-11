@@ -82,6 +82,8 @@ class RejectedPoseTests(unittest.TestCase):
         self.assertFalse(report['accepted'])
         self.assertFalse(report['candidate_exported'])
         self.assertGreater(report['configuration_bounds_violation'], .009)
+        self.assertEqual(report['numerical_iterate']['solver_coordinates'][6], bad[6])
+        self.assertIn('Unvalidated diagnostic state', report['numerical_iterate']['scope'])
         self.assertEqual(output, hand)
 
     def test_nonfinite_descent_cannot_poison_a_bounded_initialization(self):

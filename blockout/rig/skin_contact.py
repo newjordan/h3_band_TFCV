@@ -15,7 +15,7 @@ from .hand import rotvec
 from .contact_placement import calibrated_target, surface_target, REFERENCE
 from ..performer import UPPER_ARM, FOREARM
 from ..piano_geometry import triangle_box_witness, triangle_box_margin
-from ..skin_contacts import key_support
+from ..skin_contacts import key_support, KeyTop
 from ..mesh_self import self_intersections, quad_self_intersections
 from ..triangle_contact import triangle_separation
 
@@ -56,6 +56,7 @@ class SkinAnchor:
     box: int
     placement: dict = None
     tangential_tolerance: float = .002
+    key_components: str = 'fixed'
 
 
 def musical_anchors(skin, operator, vertices, hand, scene, keys, minimum_activation=.7,
@@ -72,7 +73,7 @@ def musical_anchors(skin, operator, vertices, hand, scene, keys, minimum_activat
     from ..contact import on_key
     if mode not in ('support', 'nearest_pad'):
         raise ValueError('Unknown contact-anchor selection mode')
-    if placement not in ('source', 'calibrated', 'calibrated_soft'):
+    if placement not in ('source', 'calibrated', 'calibrated_soft', 'calibrated_soft_union'):
         raise ValueError('Unknown contact-placement prior')
     active_pitches = set(active_pitches) | set(required_pitches) | {
         int(p) for p, a in zip(hand['assigned_keys'], hand['activation'])
@@ -106,13 +107,14 @@ def musical_anchors(skin, operator, vertices, hand, scene, keys, minimum_activat
                 chosen = candidates[np.argmin(local[candidates, 2])]
                 vertex, target_local = influenced[chosen], local[chosen].copy()
         metadata = None
-        if placement in ('calibrated', 'calibrated_soft'):
+        if placement in ('calibrated', 'calibrated_soft', 'calibrated_soft_union'):
             box, target, metadata = calibrated_target(f, pitch, scene, keys, active_pitches, reference)
         else:
             source_point = target_local @ scene.rotations[box].T + scene.origins[box]
             box, target = surface_target(source_point, pitch, scene)
         anchors.append(SkinAnchor(f, int(pitch), int(vertex), target, box, metadata,
-                                  None if placement == 'calibrated_soft' else .002))
+                                  None if placement in ('calibrated_soft', 'calibrated_soft_union') else .002,
+                                  'union' if placement == 'calibrated_soft_union' else 'fixed'))
     return anchors
 
 
@@ -169,6 +171,9 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
     targets = np.array(hand['pads'])
     activity = np.clip(np.array(hand['activation']), .05, 1.)
     anchor_operator = operator[[anchor.vertex for anchor in anchors]]
+    if any(a.key_components not in ('fixed', 'union') for a in anchors):
+        raise ValueError('Unknown finite contact surface policy')
+    key_tops = {a.pitch: KeyTop(scene, a.pitch) for a in anchors if a.key_components == 'union'}
     anchored_fingers = {anchor.finger - 1 for anchor in anchors} if anchor_objective else set()
     cache = {}
 
@@ -277,8 +282,11 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                         result.append((anchor.tangential_tolerance - np.abs(local[:2] - target_local[:2])) * 1000.)
                     # Tangential placement tolerance is not permission to move
                     # off the finite top. Keep the actual skin point inside it.
-                    result.append((local[:2] - scene.lower[anchor.box, :2] - gap) * 1000.)
-                    result.append((scene.upper[anchor.box, :2] - local[:2] - gap) * 1000.)
+                    if anchor.key_components == 'union':
+                        result.append([1000. * (key_tops[anchor.pitch].margin(point) - gap)])
+                    else:
+                        result.append((local[:2] - scene.lower[anchor.box, :2] - gap) * 1000.)
+                        result.append((scene.upper[anchor.box, :2] - local[:2] - gap) * 1000.)
                     top_gap = local[2] - scene.upper[anchor.box, 2]
                     # The contact must sit above the assigned top. A signed
                     # distance from the union of solids alone would also allow
@@ -385,6 +393,7 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
             contact_depth_mm=float(point[1] * 1000.), requested_depth_mm=float(anchor.target[1] * 1000.),
             placement_prior=anchor.placement,
             tangential_placement_hard=anchor.tangential_tolerance is not None,
+            finite_key_components=anchor.key_components,
             exposed_top_support=bool(key_support(all_vertices, [anchor.vertex], anchor.pitch, scene)['supported'])))
     reach_error = max(abs(np.linalg.norm(elbow - shoulder) - UPPER_ARM),
                       abs(np.linalg.norm(root_pos - elbow) - FOREARM))
@@ -430,4 +439,9 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
     # A rejected numerical iterate is evidence, never a replacement hand pose.
     # Preserve the source even if SLSQP diverged far into a solid.
     report['candidate_exported'] = bool(accepted)
+    report['numerical_iterate'] = dict(
+        solver_coordinates=z.tolist(), translation_units='mm offset from source root',
+        rotation_units='rad rotation vector relative to source root', joint_units='rad',
+        side=rig.side, hand_scale=skin.sk.scale,
+        scope='Unvalidated diagnostic state for independent reconstruction; not a pose or animation candidate')
     return report, corrected if accepted else copy.deepcopy(hand)

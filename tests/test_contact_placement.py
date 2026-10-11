@@ -62,3 +62,9 @@ class ContactPlacementTests(unittest.TestCase):
         self.assertIsNone(soft.tangential_tolerance)
         self.assertEqual(soft.placement['depth_iqr_mm'], [54., 93.])
         self.assertEqual(self.scene.specs[hard.box].name, self.scene.specs[soft.box].name)
+        union = musical_anchors(skin, sparse.eye(1, format='csr'), target[None], hand, self.scene, self.keys,
+                                placement='calibrated_soft_union', active_pitches=[61])[0]
+        self.assertEqual(union.key_components, 'union')
+        self.assertIsNone(union.tangential_tolerance)
+        np.testing.assert_array_equal(union.target, soft.target)
+        self.assertEqual(union.placement, soft.placement)

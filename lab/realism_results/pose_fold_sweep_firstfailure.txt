@@ -1,0 +1,11 @@
+{"side": "R", "sample": 0, "changes": {"finger4-2.flex": 0.3782670386139594}, "self_crossing_pairs": 0, "seconds": 17.92051425797399, "instrument_depth_mm": 6.327181709995858, "supported": 4}
+{"side": "R", "sample": 1, "changes": {"finger4-2.flex": 0.6}, "self_crossing_pairs": 0, "seconds": 34.947378879005555, "instrument_depth_mm": 6.94168565375003, "supported": 4}
+{"side": "R", "sample": 2, "changes": {"finger4-2.flex": 0.8}, "self_crossing_pairs": 0, "seconds": 51.99511135899229, "instrument_depth_mm": 5.818981779651983, "supported": 4}
+{"side": "R", "sample": 3, "changes": {"finger4-2.flex": 1.0}, "self_crossing_pairs": 76, "seconds": 69.02614477701718, "instrument_depth_mm": 7.453999904998069, "supported": 4}
+{"side": "R", "sample": 4, "changes": {"finger4-2.flex": 1.2}, "self_crossing_pairs": 95, "seconds": 85.99808444798691, "instrument_depth_mm": 6.615172529445202, "supported": 4}
+{"side": "R", "sample": 5, "changes": {"finger4-2.flex": 1.470575678837943}, "self_crossing_pairs": 126, "seconds": 102.99619561398868, "instrument_depth_mm": 0.0, "supported": 4}
+Traceback (most recent call last):
+  File "/home/frosty40/h3/rig_realism/lab/pose_fold_sweep.py", line 65, in <module>
+    assert np.all(q >= rig.lo) and np.all(q <= rig.hi)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
