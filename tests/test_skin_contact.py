@@ -84,6 +84,54 @@ class RejectedPoseTests(unittest.TestCase):
         self.assertGreater(report['configuration_bounds_violation'], .009)
         self.assertEqual(output, hand)
 
+    def test_nonfinite_descent_cannot_poison_a_bounded_initialization(self):
+        from tests.test_rig_motion import fixture
+        from blockout.rig.hand import HandRig
+        from blockout.skin import Skin
+        from blockout.subdivision import catmull_clark
+        rig, skin = HandRig('R'), Skin('R')
+        rotation, _ = rig.sk.rest_root()
+        frame = fixture(rig, [.15, -.1, .5], rotation, rig.q_rest, 0.)
+        hand = frame['hands']['R']
+        surface = catmull_clark(len(skin.vertices), skin.faces, 1, limit=True)
+        scene = PianoScene([dict(pitch=60, x=0., w=.0235, y0=0., l=.15, top=0., black=False)])
+        fake = SimpleNamespace(x=np.full(26, np.nan), success=False, message='nonfinite descent', nit=1)
+        with patch('blockout.rig.skin_contact.minimize', return_value=fake):
+            report, output = restore_pose(rig, skin, surface, hand, scene,
+                frame['body']['shoulders']['R'], None, None, 1. / 24., passes=1,
+                allow_wrist=False, feasibility_iterations=2)
+        self.assertTrue(np.isfinite(report['final_penetration_mm']))
+        self.assertEqual(report['configuration_bounds_violation'], 0.)
+        self.assertEqual(report['history'][0]['candidate_source'], 'bounded feasibility seed')
+        if report['accepted']:
+            q = np.array([output['angles'].get(bone, {}).get(dof, 0.)
+                          for chain in rig.chains for bone, dof, *_ in chain.dofs])
+            self.assertTrue(np.all(q >= rig.lo) and np.all(q <= rig.hi))
+        else:
+            self.assertEqual(output, hand)
+
+    def test_feasible_optimized_pose_is_kept_when_positive_slack_decreases(self):
+        from tests.test_rig_motion import fixture
+        from blockout.rig.hand import HandRig
+        from blockout.skin import Skin
+        from blockout.subdivision import catmull_clark
+        rig, skin = HandRig('R'), Skin('R')
+        rotation, _ = rig.sk.rest_root()
+        frame = fixture(rig, [.15, -.1, .5], rotation, rig.q_rest, 0.)
+        hand = frame['hands']['R']
+        surface = catmull_clark(len(skin.vertices), skin.faces, 1, limit=True)
+        scene = PianoScene([dict(pitch=60, x=0., w=.0235, y0=0., l=.15, top=0., black=False)])
+        candidate = np.r_[4., np.zeros(5), rig.q_rest]
+        fake = SimpleNamespace(x=candidate, success=True, message='feasible optimized step', nit=1)
+        with patch('blockout.rig.skin_contact.minimize', return_value=fake), \
+             patch.object(rig, 'finger_clearances', side_effect=lambda x, r: np.array([.01 - 2. * (x[0] - .15)])):
+            report, output = restore_pose(rig, skin, surface, hand, scene,
+                frame['body']['shoulders']['R'], None, None, 1. / 24., passes=1,
+                feasibility_iterations=2)
+        self.assertTrue(report['accepted'])
+        self.assertEqual(report['history'][0]['candidate_source'], 'SLSQP')
+        self.assertAlmostEqual(output['wrist'][0], .154)
+
 
 if __name__ == '__main__':
     unittest.main()

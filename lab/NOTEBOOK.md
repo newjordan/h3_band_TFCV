@@ -527,3 +527,28 @@ its proposed 258-input paired ablation has not yet run. Full CDL/KS musical
 validation and the calibrated 0.728 hand scale have not been rerun for this
 skin solver. Details and source/result fingerprints: `REALISM_20261011.md`
 and `realism_results/skin_contact_motion_20261011.json`.
+
+### Held skin contact (2026-10-11): finite contact improves support; motion still fails
+
+**Hypothesis:** bounded feasibility initialization improves restoration, and a
+contact must remain on the finite exposed top, not merely near its height.
+In the controlled frozen L25 pair, only the initialization budget changes;
+input/source/score hashes match. The first seeded attempt failed and is retained.
+
+**Result:** the corrected conditioned pair accepts the bounded-start candidate
+and rejects the original-start candidate (5.714 mm penetration). Independent
+support checks reveal that the earlier six-pose window allowed contact points
+to slide off key fronts. The new finite-top gate accepts six poses and all 14
+requested anchors; all exported instants independently retain required holds.
+Between those instants, 18/21 observations still collide (3.3281 mm maximum),
+and 10/74 required held-note observations lack support (earlier loose window:
+43/74). The six-pose comparisons include conditioning/retention changes and do
+not isolate footprint constraints alone. Blender parity passes within
+0.001238 mm. 97 tests pass.
+
+**Conclusion:** contact validity is stronger, but the performance remains
+unacceptable. The right hand looks overcurled near the key fronts and the left
+free fingers remain too straight. Bounded joint/wrist speeds do not ensure a
+clear path or stable held notes. Replan contact placement and connected motion
+using the human calibration; complete geometry/CCD and full CDL/KS are pending.
+See `REALISM_20261011.md` and `realism_results/held_contact_20261011.json`.

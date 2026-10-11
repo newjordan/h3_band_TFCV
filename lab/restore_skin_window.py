@@ -5,6 +5,7 @@ until independent full geometry, musical fidelity and time-motion checks pass.
 """
 import argparse
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -21,6 +22,7 @@ parser.add_argument('--sides', default='LR')
 parser.add_argument('--scale', type=float, required=True)
 parser.add_argument('--sweeps', type=int, default=2)
 parser.add_argument('--passes', type=int, default=5)
+parser.add_argument('--feasibility-iterations', type=int, default=0, help='bounded trust-region initialization budget; 0 keeps the baseline')
 parser.add_argument('--score-holds', action='store_true', help='require actual skin support for assigned sustained score notes')
 args = parser.parse_args()
 os.environ['HAND_SCALE'] = str(args.scale)
@@ -69,6 +71,15 @@ for index in range(start, stop):
             required_pitches=required_by_frame.get(index, ()))
 report = dict(source=str(args.animation.resolve()), hand_scale=args.scale, window=[start, stop],
               sweeps=args.sweeps, trajectory_validated=False, score_holds=args.score_holds, records=[])
+report['feasibility_iterations'] = args.feasibility_iterations
+report['source_sha256'] = hashlib.sha256(args.animation.read_bytes()).hexdigest()
+report['code_sha256'] = {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest()
+                        for path in ('blockout/rig/skin_contact.py', 'blockout/rig/motion.py',
+                                     'blockout/piano_geometry.py', 'blockout/skin.py',
+                                     'blockout/subdivision.py', 'lab/restore_skin_window.py')}
+if args.score_holds:
+    report['score_sha256'] = {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest()
+                            for path in ('examples/piano/knights_suite.mid', 'examples/piano/knights_suite.feeling.json')}
 args.output.parent.mkdir(parents=True, exist_ok=True)
 for sweep in range(args.sweeps):
     indices = range(start, stop) if sweep % 2 == 0 else range(stop - 1, start - 1, -1)
@@ -81,6 +92,7 @@ for sweep in range(args.sweeps):
             result, corrected = restore_pose(rig, skins[side], surfaces[side], frame['hands'][side], scene,
                 frame['body']['shoulders'][side], pose_vector(rig, previous), pose_vector(rig, following),
                 1. / source['fps'], anchors=anchors[index, side], passes=args.passes,
+                feasibility_iterations=args.feasibility_iterations,
                 previous_hand=previous, following_hand=following)
             result.update(sweep=sweep, frame=index, side=side, seconds=time.monotonic() - begun,
                           requested_anchors=[dict(finger=a.finger, pitch=a.pitch, vertex=a.vertex)

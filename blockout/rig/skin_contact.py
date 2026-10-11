@@ -9,11 +9,12 @@ from dataclasses import dataclass
 
 import numpy as np
 from scipy import sparse
-from scipy.optimize import minimize
+from scipy.optimize import least_squares, minimize
 
 from .hand import rotvec
 from ..performer import UPPER_ARM, FOREARM
 from ..piano_geometry import triangle_box_witness, triangle_box_margin
+from ..skin_contacts import key_support
 
 
 def pose_vector(rig, hand):
@@ -105,7 +106,7 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                  anchors=(), allow_wrist=True, max_joint_speed=12., max_wrist_speed=.8,
                  wrist_range=.035, iterations=140, passes=4, gap=1e-5,
                  previous_hand=None, following_hand=None, max_root_speed=4., max_elbow_speed=4.,
-                 triangle_mode='sat'):
+                 triangle_mode='sat', feasibility_iterations=0):
     operator, faces = surface
     triangles = np.concatenate([faces[:, [0, 1, 2]], faces[:, [0, 2, 3]],
                                 faces[:, [1, 2, 3]], faces[:, [1, 3, 0]]])
@@ -122,6 +123,7 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                 (max_joint_speed, max_wrist_speed, wrist_range, max_root_speed, max_elbow_speed))
             or not isinstance(iterations, int) or iterations < 1
             or not isinstance(passes, int) or passes < 1
+            or not isinstance(feasibility_iterations, int) or feasibility_iterations < 0
             or not np.isfinite(gap) or gap < 0):
         raise ValueError('Motion bounds and solver budgets must be finite and positive')
     for neighbor in (previous, following):
@@ -205,8 +207,11 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                 from .motion import rotation_angle, bend_plane_angle
                 for neighbor in (previous_hand, following_hand):
                     if neighbor is not None:
-                        result.append([max_root_speed * dt - rotation_angle(root_rotation, neighbor['root']['rot']),
-                                       max_elbow_speed * dt - bend_plane_angle(shoulder, root, current_elbow, neighbor['elbow'])])
+                        # Convert angular slacks to a comparable numerical
+                        # length scale (50 mm/rad). This changes conditioning,
+                        # never the zero crossing of either hard speed bound.
+                        result.append([50. * (max_root_speed * dt - rotation_angle(root_rotation, neighbor['root']['rot'])),
+                                       50. * (max_elbow_speed * dt - bend_plane_angle(shoulder, root, current_elbow, neighbor['elbow']))])
             if anchors:
                 contacts = anchor_operator @ base
                 for anchor, point in zip(anchors, contacts):
@@ -215,14 +220,55 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                     # Keep placement within 2 mm and the actual skin supported
                     # at the solid top, outside by at most 0.1 mm.
                     result.append((.002 - np.abs(local[:2] - target_local[:2])) * 1000.)
-                    result.append([1000. * (.0001 - (local[2] - scene.upper[anchor.box, 2]))])
+                    # Tangential placement tolerance is not permission to move
+                    # off the finite top. Keep the actual skin point inside it.
+                    result.append((local[:2] - scene.lower[anchor.box, :2] - gap) * 1000.)
+                    result.append((scene.upper[anchor.box, :2] - local[:2] - gap) * 1000.)
+                    top_gap = local[2] - scene.upper[anchor.box, 2]
+                    # The contact must sit above the assigned top. A signed
+                    # distance from the union of solids alone would also allow
+                    # an anchor below the underside of a key.
+                    result.append([1000. * (top_gap - gap), 1000. * (.0001 - top_gap)])
             result.append(rig.finger_clearances(x, reference_rot) * 1000.)
             return np.concatenate([np.ravel(r) for r in result])
 
+        seed_result = None
+        seed_minimum = float(constraints(z).min())
+        if feasibility_iterations and seed_minimum < -1e-3:
+            # A constrained descent from an intersecting source can make a
+            # large, infeasible first step. First reduce violated constraints
+            # inside the identical hard bounds with a trust-region solve.
+            # This is initialization, never an alternative acceptance gate.
+            lower, upper = np.array(bounds).T
+            free = np.flatnonzero(upper > lower)
+            seed_base = np.clip(z, lower, upper)
+            def expand(value):
+                candidate = seed_base.copy()
+                candidate[free] = value
+                return candidate
+            if len(free):
+                seed_result = least_squares(lambda value: np.minimum(constraints(expand(value)), 0.),
+                    seed_base[free], bounds=(lower[free], upper[free]),
+                    x_scale=np.r_[np.full(3, 12.), np.full(3, .2), np.full(len(initial) - 6, .3)][free],
+                    max_nfev=feasibility_iterations, ftol=1e-9, xtol=1e-9, gtol=1e-9)
+                seed = expand(np.clip(seed_result.x, lower[free], upper[free]))
+                if np.isfinite(seed).all() and constraints(seed).min() > seed_minimum:
+                    z = seed
+        seed = z.copy()
+        seed_minimum = float(constraints(seed).min())
         last_result = minimize(objective, z, method='SLSQP', bounds=bounds,
                                constraints=[dict(type='ineq', fun=constraints)],
                                options=dict(maxiter=iterations, ftol=1e-7, eps=1e-6))
         z = last_result.x
+        candidate_source = 'SLSQP'
+        lower, upper = np.array(bounds).T
+        if feasibility_iterations and (not np.isfinite(z).all() or np.any(z < lower - 1e-9)
+                                      or np.any(z > upper + 1e-9)
+                                      or constraints(z).min() < min(seed_minimum, -1e-3) - 1e-6):
+            # Retain the better bounded initialization when the next numerical
+            # step loses feasibility. The full surface gate still runs below.
+            z = seed
+            candidate_source = 'bounded feasibility seed'
         base = evaluate(z)[-1]
         vertices = operator @ base
         distances, _ = scene.closest(vertices, boxes)
@@ -247,6 +293,9 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                             message=str(last_result.message), iterations=int(last_result.nit),
                             active_vertices=len(ids), triangle_witnesses_added=added,
                             triangle_constraint_mode=triangle_mode, active_triangle_constraints=len(triangle_pairs),
+                            feasibility_seed_evaluations=int(seed_result.nfev) if seed_result is not None else 0,
+                            feasibility_seed_constraint_minimum=seed_minimum,
+                            candidate_source=candidate_source,
                             minimum_clearance_mm=float(distances.min() * 1000.),
                             constraint_minimum_mm=float(constraints(z).min()),
                             triangle_intersections=sum(len(t) for _, t in contacts)))
@@ -270,13 +319,15 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
         target = (anchor.target - scene.origins[anchor.box]) @ scene.rotations[anchor.box]
         anchor_result.append(dict(finger=anchor.finger, pitch=anchor.pitch,
             top_gap_mm=float((local[2] - scene.upper[anchor.box, 2]) * 1000.),
-            placement_error_mm=float(np.max(np.abs(local[:2] - target[:2])) * 1000.)))
+            placement_error_mm=float(np.max(np.abs(local[:2] - target[:2])) * 1000.),
+            exposed_top_support=bool(key_support(all_vertices, [anchor.vertex], anchor.pitch, scene)['supported'])))
     reach_error = max(abs(np.linalg.norm(elbow - shoulder) - UPPER_ARM),
                       abs(np.linalg.norm(root_pos - elbow) - FOREARM))
     lower, upper = np.array(bounds).T
     bounds_violation = float(max(0., (lower - z).max(), (z - upper).max()))
     accepted = (distances.min() >= -1e-5 and not contacts and constraints(z).min() >= -1e-3
-                and speed <= max_joint_speed + 1e-6 and reach_error < 1e-6 and bounds_violation < 1e-9)
+                and speed <= max_joint_speed + 1e-6 and reach_error < 1e-6 and bounds_violation < 1e-9
+                and all(a['exposed_top_support'] for a in anchor_result))
     report = dict(accepted=bool(accepted), scope='one pose; instrument skin, proxy self spacing, two-sided joint/wrist speed, fixed shoulders',
                   trajectory_validated=False, optimizer_success=bool(last_result.success),
                   initial_penetration_mm=float(max(0., -initial_distance.min()) * 1000.),
@@ -285,6 +336,7 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                   wrist_displacement_mm=((root_pos - initial[:3]) * 1000.).tolist(),
                   maximum_joint_speed_rad_s=speed, arm_length_error_mm=reach_error * 1000.,
                   configuration_bounds_violation=bounds_violation,
+                  feasibility_iterations=feasibility_iterations,
                   proxy_self_clearance_mm=float(rig.finger_clearances(x, reference_rot).min() * 1000.),
                   anchors=anchor_result, history=history)
     report['orientation_temporal_bounds_available'] = previous_hand is not None or following_hand is not None

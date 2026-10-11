@@ -23,6 +23,7 @@ parser.add_argument('--sides', default='RL')
 parser.add_argument('--fixed-wrist', action='store_true')
 parser.add_argument('--iterations', type=int, default=140)
 parser.add_argument('--passes', type=int, default=4)
+parser.add_argument('--feasibility-iterations', type=int, default=0)
 parser.add_argument('--scale', type=float, required=True)
 parser.add_argument('--anchor-mode', choices=('support', 'nearest_pad'), default='support')
 args = parser.parse_args()
@@ -41,6 +42,7 @@ anim = copy.deepcopy(source)
 keys = {key['pitch']: key for key in source['keyboard']}
 report = dict(source=str(args.animation.resolve()), fixed_wrist=args.fixed_wrist,
               warning=__doc__, hand_scale=args.scale, anchor_mode=args.anchor_mode, records=[])
+report['feasibility_iterations'] = args.feasibility_iterations
 for side in args.sides:
     rig, skin = HandRig(side), Skin(side, scale=args.scale)
     surface = catmull_clark(len(skin.vertices), skin.faces, 2, limit=True)
@@ -54,7 +56,8 @@ for side in args.sides:
         result, corrected = restore_pose(rig, skin, surface, hand, scene, frame['body']['shoulders'][side],
             pose_vector(rig, source['frames'][index - 1]['hands'][side]),
             pose_vector(rig, source['frames'][index + 1]['hands'][side]), 1. / source['fps'], anchors=anchors,
-            allow_wrist=not args.fixed_wrist, iterations=args.iterations, passes=args.passes)
+            allow_wrist=not args.fixed_wrist, iterations=args.iterations, passes=args.passes,
+            feasibility_iterations=args.feasibility_iterations)
         result.update(frame=index, side=side, seconds=time.monotonic() - start,
                       requested_anchors=[dict(finger=a.finger, pitch=a.pitch, vertex=a.vertex) for a in anchors])
         report['records'].append(result)
