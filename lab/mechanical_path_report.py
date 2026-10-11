@@ -20,7 +20,7 @@ parity = read('skin_parity_notched_probe')
 shape_motion = read('skin_motion_notched_probe')
 assert not coupled['accepted'] and not coupled['candidate_exported']
 assert parity['passed'] and notched['clear']
-test_log = (ART / 'tests_path_geometry_drums.log').read_text()
+test_log = (ART / 'tests_human_contact_scale.log').read_text()
 test_count = int(re.search(r'Ran (\d+) tests', test_log)[1])
 assert test_log.rstrip().endswith('OK')
 drums = json.loads((OUT / 'drummer_crosshand_20261011.json').read_text())
@@ -32,11 +32,17 @@ for name in ('path_notched_frozen', 'path_notched_movable'):
         live[name] = dict(status='completed' if 'accepted' in data else 'running',
             accepted=data.get('accepted'), candidate_exported=data.get('candidate_exported', False),
             attempted_local_solves=len(data['records']), control_poses_frozen=data['control_poses_frozen'],
-            solver_budget=data['solver_budget'], report_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+            solver_budget=data['solver_budget'], affected_nodes=data.get('affected_nodes'),
+            maximum_penetration_mm=data.get('maximum_penetration_mm'),
+            unsupported_held_observations=data.get('unsupported_held_observations'),
+            report_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+assert len(live) == 2 and all(d['status'] == 'completed' for d in live.values())
+assert all(not d['accepted'] and not d['candidate_exported'] for d in live.values())
 figure, axes = plt.subplots(2, 2, figsize=(12, 8), layout='constrained')
 for label, frames, color in (
     ('Exported-pose interpolation', raw['records'], '#c86a3a'),
-    ('Coupled frozen knots (rejected)', coupled['final_observations'], '#2b849f')):
+    ('Coupled frozen knots (rejected)', coupled['final_observations'], '#2b849f'),
+    ('Matched movable interior (rejected)', read('path_notched_movable')['final_observations'], '#668f64')):
     axes[0, 0].plot(range(len(frames)), [max(h['maximum_penetration_mm'] for h in f['hands'].values()) for f in frames],
                     '.-', color=color, label=label)
     axes[0, 1].plot(range(len(frames)), [len(f.get('held_score', f).get('unsupported_pitches', [])) for f in frames],
@@ -59,6 +65,8 @@ axes[1, 1].text(0., .95,
     'Coupled path: 18 → 4 clipped observations.\n'
     'Four held-pitch observations still unsupported.\n'
     'No partly failed animation exported.\n\n'
+    'Matched notched frozen/movable: both rejected.\n'
+    'Both retain four clipped nodes/four held misses.\n\n'
     'Key-shape change alone leaves hand failures intact.\n'
     f"Blender parity: {max(r['maximum_error_mm'] for r in parity['records']):.4f} mm.\n\n"
     'Drummer: 10 demo / 16 roll hits pass proxy gates.\n'
@@ -82,7 +90,8 @@ report = dict(schema='rig-mechanical-path-progress/v1', test_count=test_count,
     hand_scale=dict(stress=1., measured_opt_in=.7284, current_default=1.,
                     note='Measured 17.7 cm size is deliberately disabled by default in the existing planner; never silently resize frozen inputs.'),
     conclusion='Mechanical prototype passes tested configurations and rendered parity. Sampled hand motion still fails, '
-               'and the reviewed replanning comparison remains pending until both jobs have terminal results.',
+               'and both completed matched notched frozen/movable paths retain the same four clipped nodes and four held misses. '
+               'Moving only the interior source pose is insufficient in this tested local solve.',
     exclusions=['complete repertoire', 'actual mesh self/interhand/body/costume', 'CCD', 'force dynamics', 'human naturalness', 'full drummer renderer'])
 (OUT / 'mechanical_path_20261011.json').write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps(dict(test_count=test_count, matched_path_comparison=live, completed_path_accepted=coupled['accepted']), indent=2))

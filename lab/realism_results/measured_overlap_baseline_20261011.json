@@ -1,0 +1,326 @@
+{
+  "schema": 1,
+  "start": 248.0,
+  "duration": 2.0,
+  "frames": 48,
+  "fps": 24.0,
+  "animation_interval": [
+    247.0,
+    250.5417
+  ],
+  "assumptions": {
+    "contact_tolerance_mm": 2.0,
+    "collision_tolerance_mm": 3.0,
+    "footprint_numerical_tolerance_mm": 0.01,
+    "legacy_white_key_gap_per_side_mm": 0.6,
+    "expected_arm_lengths_m": [
+      0.29,
+      0.313309195652654
+    ],
+    "collision_geometry": "mean-radius bone capsule approximation, not exact mesh collision; excludes same-hand proximal/proximal webbing",
+    "hold_scope": "score MIDI duration fidelity, including failures caused by planned early release; controller_phase separately measures explicit assigned firm phases",
+    "interhand_clearance_upper_bound_mm": 40
+  },
+  "notes": {
+    "count": 11,
+    "assigned": 11,
+    "onset_key_down": 9,
+    "onset_physical_contact": 9,
+    "hold_note_frames": 164,
+    "hold_contact_frames": 70,
+    "hold_contact_fraction": 0.4268292682926829,
+    "hold_key_down_fraction": 0.4268292682926829,
+    "hold_off_key_frames": 88,
+    "hold_penetrating_frames": 0,
+    "hold_floating_frames": 0,
+    "hold_censored_clip_end": 3,
+    "hold_lateral_speed_mm_s": {
+      "samples": 60,
+      "min": 0.2398081534772566,
+      "median": 10.796082638934681,
+      "p95": 177.6109202254545,
+      "max": 245.7757246417479
+    },
+    "release_latency_ms": {
+      "samples": 6,
+      "min": 0.5559421292957722,
+      "median": 57.76238598915029,
+      "p95": 90.95661160584712,
+      "max": 93.62048847964388
+    },
+    "release_failed_after_250ms": 0,
+    "release_censored_clip_end": 0,
+    "release_censored_restrike": 5
+  },
+  "contact": {
+    "depressed_key_frames": 98,
+    "unsupported_depressed_key_frames": 0,
+    "key_depth_bound_violations": 0,
+    "pad_surface_signed_gap_mm": {
+      "samples": 99,
+      "min": -0.064666666666666,
+      "median": 0.0006484210526309236,
+      "p95": 0.005759326315788596,
+      "max": 11.381366666666667
+    }
+  },
+  "controller_phase": {
+    "available": true,
+    "firm_assigned_finger_frames": 125,
+    "definition": "assigned key, activation >= 0.79, within a matching score note; includes .8 hold gain, excludes pre-onset approach",
+    "firm_contact_frames": 82,
+    "firm_contact_fraction": 0.656,
+    "firm_penetrating_frames": 0,
+    "firm_off_key_frames": 38,
+    "activation_bound_violations": 0,
+    "activation_change_per_s": {
+      "samples": 470,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 9.500645925565841,
+      "max": 12.676258992808298
+    }
+  },
+  "separation": {
+    "self_hand_frames": {
+      "observations": 96,
+      "overlap_over_3mm": 4,
+      "min_clearance_mm": -5.076108781239913,
+      "p05_clearance_mm": -1.3603918297986395
+    },
+    "interhand_frames": {
+      "observations": 48,
+      "overlap_over_3mm": 0,
+      "min_clearance_mm": 40.0,
+      "p05_clearance_mm": 40.0
+    },
+    "pad_pair_distance_mm": {
+      "samples": 960,
+      "min": 11.270598919312137,
+      "median": 72.7901558095655,
+      "p95": 125.4576289343229,
+      "max": 144.52362367447057
+    },
+    "worst_self": {
+      "gap_mm": -5.076108781239913,
+      "time": 249.75,
+      "side": "L",
+      "finger_segments": [
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          3
+        ]
+      ]
+    },
+    "worst_inter": {
+      "gap_mm": 0.0
+    }
+  },
+  "bounds": {
+    "joint_dof_frames": 1920,
+    "unchecked_joint_dof_frames": 0,
+    "joint_limit_violations": 0,
+    "worst_excess_deg": 0.0002377546316463889,
+    "violations_by_joint": {},
+    "bone_length_deviation_mm": {
+      "samples": 1440,
+      "min": 2.940793379646589e-06,
+      "median": 0.00274528979126408,
+      "p95": 0.00766249856190091,
+      "max": 0.01245479624568599
+    },
+    "fk_vs_exported_chain_mm": {
+      "samples": 1920,
+      "min": 0.00046499547279543285,
+      "median": 0.00493420163050417,
+      "p95": 0.006891301638210898,
+      "max": 0.00860956649304818
+    },
+    "arm_length_deviation_mm": {
+      "samples": 192,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 5.551115123125783e-14,
+      "max": 1.1102230246251565e-13
+    },
+    "arm_length_error_mm": {
+      "samples": 192,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 5.551115123125783e-14,
+      "max": 1.1102230246251565e-13
+    },
+    "arm_length_error_all_clip_mm": {
+      "samples": 344,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 5.551115123125783e-14,
+      "max": 1.1102230246251565e-13
+    },
+    "arm_length_violations_all_clip_over_0_1mm": 0
+  },
+  "motion": {
+    "pad_speed_m_s": {
+      "samples": 470,
+      "min": 0.00023980815347725658,
+      "median": 0.09272571800731047,
+      "p95": 0.36786166169529083,
+      "max": 0.975673330407956
+    },
+    "pad_acceleration_m_s2": {
+      "samples": 460,
+      "min": 0.012893176456730411,
+      "median": 1.4165560264375006,
+      "p95": 6.409358754423537,
+      "max": 24.00982354900892
+    },
+    "wrist_speed_m_s": {
+      "samples": 94,
+      "min": 0.0033487386196095195,
+      "median": 0.05193145396512511,
+      "p95": 0.24955051903581424,
+      "max": 0.27885620422858054
+    },
+    "elbow_speed_m_s": {
+      "samples": 94,
+      "min": 0.0008976137177561552,
+      "median": 0.08648295683938015,
+      "p95": 0.17216928892863187,
+      "max": 0.2651350642062787
+    },
+    "elbow_step_mm": {
+      "samples": 94,
+      "min": 0.03734073065867108,
+      "median": 3.606339300201429,
+      "p95": 7.177457073227884,
+      "max": 11.056132177399604
+    },
+    "forearm_hand_angle_deg": {
+      "samples": 96,
+      "min": 0.06345805629108003,
+      "median": 6.442556619225975,
+      "p95": 13.9093538864864,
+      "max": 17.575887306201334
+    },
+    "pad_jerk_m_s3": {
+      "samples": 450,
+      "min": 0.33702130436370903,
+      "median": 26.83532355057924,
+      "p95": 208.33865654307866,
+      "max": 931.9909549081898
+    },
+    "joint_speed_deg_s": {
+      "samples": 1880,
+      "min": 0.0,
+      "median": 12.181364394379365,
+      "p95": 183.35611243846108,
+      "max": 688.651196070424
+    },
+    "joint_steps_above_12rad_s": 0,
+    "joint_reversals_over_2deg": 32,
+    "reversal_rate_per_joint_s": 0.41739130434782606
+  },
+  "problem_notes": [
+    {
+      "onset": 248.02299962150644,
+      "pitch": 73,
+      "assigned": true,
+      "key_down_onset": true,
+      "physical_onset": true,
+      "hold_frames": 9,
+      "hold_contact_fraction": 0.7777777777777778
+    },
+    {
+      "onset": 248.360062489177,
+      "pitch": 52,
+      "assigned": true,
+      "key_down_onset": true,
+      "physical_onset": true,
+      "hold_frames": 20,
+      "hold_contact_fraction": 0.1
+    },
+    {
+      "onset": 248.79773751367196,
+      "pitch": 62,
+      "assigned": true,
+      "key_down_onset": false,
+      "physical_onset": false,
+      "hold_frames": 24,
+      "hold_contact_fraction": 0.0
+    },
+    {
+      "onset": 249.26158481575703,
+      "pitch": 56,
+      "assigned": true,
+      "key_down_onset": true,
+      "physical_onset": true,
+      "hold_frames": 12,
+      "hold_contact_fraction": 0.08333333333333333
+    },
+    {
+      "onset": 249.32975860080992,
+      "pitch": 52,
+      "assigned": true,
+      "key_down_onset": true,
+      "physical_onset": true,
+      "hold_frames": 11,
+      "hold_contact_fraction": 0.5454545454545454
+    },
+    {
+      "onset": 249.69111182911314,
+      "pitch": 45,
+      "assigned": true,
+      "key_down_onset": true,
+      "physical_onset": true,
+      "hold_frames": 19,
+      "hold_contact_fraction": 0.05263157894736842
+    },
+    {
+      "onset": 249.86620997860405,
+      "pitch": 76,
+      "assigned": true,
+      "key_down_onset": false,
+      "physical_onset": false,
+      "hold_frames": 15,
+      "hold_contact_fraction": 0.0
+    }
+  ],
+  "provenance": {
+    "source_root": "/home/frosty40/h3/rig_realism",
+    "cached": null,
+    "overrides": {
+      "PRESS_AXES": [
+        20,
+        1,
+        20
+      ],
+      "PRESS_AXES_BLACK": [
+        20,
+        20,
+        20
+      ],
+      "REPAIR_ITERS": 2,
+      "PRESS_OVERSHOOT": 0.003,
+      "REACH_SPLIT": true
+    },
+    "hand_scale": 0.7284,
+    "warmup_s": 1.0,
+    "load_or_solve_s": 429.02230557397706,
+    "audit_s": 0.17826656601391733,
+    "source_sha256": {
+      "blockout/piano.py": "d799922c1e8100a94545a7cfdf2ae45035213a67c6fa51f4dedff6ffd901a78b",
+      "blockout/rig/hand.py": "7276df270a04ebbc55d46f14449efa47133fb77bd5a5f3d4c09cbce6c01ca2e6",
+      "blockout/rig/skeleton.py": "cefd3f45852b18e89703813ee362dec0f2a84a9ba0fd610d1ac68b479be3921d",
+      "blockout/rig/ik.py": "66601ab94208afe660650249c8f3a4b1dc63fec0d477a5bf58e52830d3dd5132",
+      "blockout/performer.py": "1f6a9d7b286ead83e8f6d2fd44832df186fe59715781fdd4b028df55f5f14aa6",
+      "blockout/contact.py": "8a21b18e142119654523ac8b0121fbe88f91d5d7d5e0731e2762b325edbe6689"
+    },
+    "source_unchanged_during_run": true,
+    "audit_sha256": "c42e03b2065c396b258148290e0d7170b27bfd9b2f002610cca01a777802c9d1",
+    "git_revision": "b3870c931ba15972fa82ac001556ad0de63f9f11"
+  }
+}

@@ -32,6 +32,12 @@ if opts.get("--pass") == "chrome":     # target-material plate: Cycles, chrome h
 MARK = opts.get("--mark", "none")
 HANDS = opts.get("--hands", "mpfb")   # mpfb: the rigged MPFB2 hand; skin: Skin-modifier tubes; capsule: mannequin
 anim = json.load(open(anim_path))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from blockout.rig.pose_io import animation_hand_scale
+from blockout.rig.skeleton import hand_scale
+if HANDS == 'mpfb':
+    os.environ['HAND_SCALE'] = str(animation_hand_scale(anim, requested=os.environ.get('HAND_SCALE'),
+                                                     legacy_default=hand_scale()))
 frames = anim["frames"]
 _fr = opts.get("--frames", f"0:{len(frames)}")
 if "," in _fr or ":" not in _fr:                                   # an explicit list, e.g. one frame per shot for a contact sheet

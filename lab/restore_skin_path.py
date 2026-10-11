@@ -55,6 +55,8 @@ from lab.skin_audit import hand_audit, quad_triangles
 from lab.piano_interference_audit import interference
 
 source = json.loads(args.animation.read_text())
+from blockout.rig.pose_io import animation_hand_scale
+args.scale = animation_hand_scale(source, requested=args.scale)
 start, stop = map(int, args.frames.split(':'))
 if not 0 <= start < stop - 1 < len(source['frames']):
     raise ValueError('The path needs at least two source frames')

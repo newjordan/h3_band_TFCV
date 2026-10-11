@@ -1923,7 +1923,7 @@ def _pass_b(hands, times, j0, N, start, energy, HEAD, body, T, roots, REF, QP, T
     key_geometry = {k["pitch"]: k for k in keyboard()}
     for j in range(j0, N):                              # pass B: the fingers, from the set wrist
         t = times[j]
-        fr = {"t": round(float(t - start), 4), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}
+        fr = {"t": float(t - start), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}
         targets, est_depth = T[j]
         refs = {n: REF[n][j - j0] for n in hands}
         arm_pose = body.pose(*HEAD[j], {n: refs[n][1] for n in hands},
@@ -1959,18 +1959,13 @@ def _pass_b(hands, times, j0, N, start, energy, HEAD, body, T, roots, REF, QP, T
                 pen = _penetration(pts[f], FINGER_R[f], keydepth, skip_tip=pressing[f])
                 H.setdefault("pen", []).append(pen)
                 H.setdefault("pen_info", []).append((pen, f, pressing[f], 0.0, j, name))
-            fr["hands"][name] = {"wrist": [round(float(c), 5) for c in rp],
-                                 "activation": np.round(H["activation"][j], 4).tolist(),
-                                 "assigned_keys": [None if a is None else int(a[0]) for a in H["act"][j]],
-                                 "fingers": [[[round(float(c), 5) for c in q] for q in P] for P in pts],
-                                 "pads": [[round(float(c), 5) for c in q] for q in pads],
-                                 **({"targets": np.round(targets[name], 5).tolist(),
+            from .rig.pose_io import serialize_hand
+            fr["hands"][name] = serialize_hand(_rig(name), x, rr, rp, pts, pads, H["activation"][j],
+                [None if a is None else int(a[0]) for a in H["act"][j]], ref_pos)
+            fr["hands"][name].update({"targets": np.round(targets[name], 5).tolist(),
                                      "plan0": np.round(_plan_root(hands[name], name, j)[1], 5).tolist(),
                                      "xh": round(float(hands[name]["xh"][j]), 5), "C": np.round(hands[name]["C"][j], 5).tolist(),
-                                     "Cf": np.round(hands[name]["Cf"][j], 5).tolist()} if os.environ.get("RIG_DBG") else {}),
-                                 "root": {"rot": np.round(rr, 6).tolist(), "pos": [round(float(c), 6) for c in rp],
-                                          "plan": [round(float(c), 6) for c in ref_pos]},
-                                 "angles": {b: {k: round(v, 5) for k, v in d.items()} for b, d in _rig(name).angles(x).items()}}
+                                     "Cf": np.round(hands[name]["Cf"][j], 5).tolist()} if os.environ.get("RIG_DBG") else {})
         pitch, yaw, roll_h, lean = HEAD[j]
         fr["body"] = body.pose(pitch, yaw, roll_h, lean, {h: fr["hands"][h]["wrist"] for h in fr["hands"]},
                                {h: _hand_fwd(h, solved[h][1]) for h in fr["hands"]}, torso=TORSO[j],
@@ -1978,7 +1973,7 @@ def _pass_b(hands, times, j0, N, start, energy, HEAD, body, T, roots, REF, QP, T
         previous_elbows = fr["body"]["elbows"]
         for h in fr["hands"]:
             fr["hands"][h]["elbow"] = fr["body"]["elbows"][h]
-        fr["keys"] = {str(p): round(d, 3) for p, d in keydepth.items()}
+        fr["keys"] = {str(p): float(d) for p, d in keydepth.items()}
         fr["press"] = press
         frames.append(fr)
     return frames
@@ -2243,7 +2238,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         frames = _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO)
     for j in (range(j0, N) if HAND_MODEL != "mpfb" else ()):
         t = times[j]
-        fr = {"t": round(float(t - start), 4), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}
+        fr = {"t": float(t - start), "keys": {}, "hands": {}, "energy": round(float(energy[j]), 3)}
         keydepth = {}
         tips, press = {}, {}
         for name, H in hands.items():                       # pressing fingers move their keys
@@ -2367,6 +2362,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     pens = np.concatenate([H.get("pen", [0.0]) for H in hands.values()])
     return {"fps": fps, "start": start, "speed": speed, "centre_x": cx, "keyboard": keyboard(),
             "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,
+            **({"hand_scale": float(_rig("R").sk.scale), "pose_precision": "full solver precision"} if HAND_MODEL == "mpfb" else {}),
             "qa": {"finger_frames": int(len(pens)), "penetrating_over_1mm": int((pens > 0.001).sum()),
                    "max_penetration_mm": round(float(pens.max()) * 1000, 2),
                    "detail": _pen_detail([i for H in hands.values() for i in H.get("pen_info", [])]),

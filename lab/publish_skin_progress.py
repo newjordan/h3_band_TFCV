@@ -11,6 +11,7 @@ manifest = json.loads(manifest_path.read_text())
 latest_motion = json.loads((ART / 'skin_motion_exposed_holds_window.json').read_text())
 latest_poses = json.loads((ART / 'restore_exposed_holds_window.json').read_text())
 progress = json.loads((ROOT / 'lab/realism_results/mechanical_path_20261011.json').read_text())
+human = json.loads((ROOT / 'lab/realism_results/human_contact_pilot_20261011.json').read_text())
 test_count = progress['test_count']
 coupled = progress['completed']['coupled']
 if len(latest_poses['records']) != 6 or not all(r['accepted'] for r in latest_poses['records']):
@@ -66,6 +67,30 @@ section = dict(id='rig-realism', title='Rig realism: rendered skin and motion (i
                   '<a href="media/rig_realism_contact_motion.json">Recorded results and source hashes</a>. '
                   '<a href="https://ipc-sim.github.io/file/IPC-paper-350ppi.pdf">Primary IPC paper</a>.')])
 section['items'] = [
+    dict(kind='image', src='media/rig_realism_human_contact_pilot.png', wide=True,
+         title='Latest measured-size pilot: posture improves locally; deeper contact still fails',
+         note=f'{test_count} tests pass. Fresh generation uses hand scale 0.7284. The complete saved '
+              '86-frame probe intersects the instrument in 63 frames (maximum 5.909 mm); within the '
+              '49-frame main interval, 36 intersect. The matched four-treatment R-frame-24 pilot keeps '
+              'the same anatomy, actual skin, held notes, neighboring poses, speed/spacing gates and solver budgets. '
+              'Contact-only and posture-guided corrections pass their one-pose gates and retain four actual '
+              'skin anchors. Guidance reduces the soft reference deviation from 7.24 to 3.74. '
+              'Both calibrated-depth treatments fail, including 2.170 mm penetration and four unsupported '
+              'anchors, and no rejected pose is exported. Broader wrist/contact planning is still needed. '
+              '<a href="media/rig_realism_human_contact_results.json">All four outcomes, hashes and baseline intervals</a>.'),
+    dict(kind='image', src='media/rig_realism_measured_contact_only.png',
+         title='Measured-size contact correction: fixed camera baseline',
+         note='One accepted right-hand pose at frame 24. Several contacts sit near the key fronts and the '
+              'hand remains overcurled. The other hand and the connected path are unvalidated.'),
+    dict(kind='image', src='media/rig_realism_measured_form_guidance.png',
+         title='Same camera, added soft posture guidance: naturalness remains unresolved',
+         note='The four held contacts and hard local gates remain satisfied, with 0.466 mm minimum proxy '
+              'finger clearance. Actual landmark angles guide fingers 2–5 using pooled free/pressing '
+              'reference bands. These are soft statistics, not muscle activation or a human acceptance test. '
+              'The hand still looks overcurled. Both hands, topology and key solids agree with Blender '
+              'within 0.01 mm in the independent measured-size parity check. '
+              'New exports preserve solver precision and explicit hand size; conflicting size overrides are rejected. '
+              '<a href="https://arxiv.org/html/2410.05791v1">FürElise primary paper</a>.'),
     dict(kind='image', src='media/rig_realism_mechanical_path_experiment.png', wide=True,
          title='Latest: fewer sampled collisions; piano motion remains rejected',
          note=f'{test_count} tests pass. Coupled neighboring solves reduce instrument-intersecting observations '
@@ -73,7 +98,7 @@ section['items'] = [
               'Required held-pitch observations without support decrease from ten to four. '
               'This exploratory treatment also changes assigned held-key commands, so it does not isolate one cause. '
               'The full candidate is rejected and no failed path is exported. '
-              '<a href="media/rig_realism_mechanical_path_results.json">Completed evidence and pending experiment snapshot</a>.'),
+              '<a href="media/rig_realism_mechanical_path_results.json">Completed evidence and matched trajectory results</a>.'),
     dict(kind='note', title='The piano solids also needed correction',
          note='The original rectangular keys intersect black keys by up to 6.25 mm and the keybed by 8.953 mm '
               'in the tested positions. An opt-in notched-key/bed prototype passes key/key and key/case checks '
@@ -84,10 +109,11 @@ section['items'] = [
     dict(kind='note', title='Reviewed experiment and hand-size accounting',
          note='The native AngelX five-node trajectory graph completed and approved the experiment method, '
               'using supplied primary reading notes. Its approval is not a rig pass. A matched frozen-pose '
-              'versus movable-interior-pose comparison is running with the same geometry and per-node budgets; '
-              'the extra movable pose adds solves, which must remain in the accounting. '
+              'versus movable-interior-pose comparison has completed: both paths are rejected, retaining '
+              'four clipped nodes and four unsupported held-pitch observations. Their per-node budgets '
+              'match; the frozen path uses 72 local solves and the movable path 76. '
               'Measured hand scale 0.7284 (17.7 cm) is opt-in: the existing planner defaults to scale 1. '
-              'Fresh generation at the measured size remains required. '
+              'The separate fresh measured-size baseline and posture pilot above preserve that size. '
               '<a href="media/rig_realism_trajectory_review.json">Completed native graph review and receipt identity</a>.'),
     dict(kind='image', src='media/rig_realism_drummer_stroke_control.png', wide=True,
          title='Drummer: stronger accents, softer notes, retained grip',
@@ -101,7 +127,7 @@ section['items'] = [
               '<a href="media/rig_realism_drummer_crosshand_results.json">All frozen stress outcomes</a>.'),
 ] + section['items']
 manifest['sections'] = [section] + [s for s in manifest['sections'] if s['id'] != section['id']]
-manifest['updated'] = '2026-10-11 mechanical/path and drummer-grip research; full realism remains incomplete'
+manifest['updated'] = '2026-10-11 measured-size posture/contact pilot and completed trajectory comparison; full realism remains incomplete'
 manifest['status'].insert(0, f'<b>Rig research:</b> {test_count} tests pass. Coupled sampled motion reduces clipping '
     'from 18 to four observations, but the whole path is rejected. Mechanical key clearances and drummer '
     'cross-hand grip checks are added. Latest evidence below; '
@@ -111,6 +137,10 @@ manifest['status'] = [manifest['status'][0]] + [s for s in manifest['status'][1:
 media = WEB / 'media'
 media.mkdir(exist_ok=True)
 for source, destination in (
+        (ART / 'human_contact_pilot.png', 'rig_realism_human_contact_pilot.png'),
+        (ART / 'human_pilot_source_fixed/f_00024.png', 'rig_realism_measured_contact_only.png'),
+        (ART / 'human_pilot_form_fixed/f_00024.png', 'rig_realism_measured_form_guidance.png'),
+        (ROOT / 'lab/realism_results/human_contact_pilot_20261011.json', 'rig_realism_human_contact_results.json'),
         (ART / 'skin_contact_experiment.png', 'rig_realism_contact_experiment.png'),
         (ART / 'sat_window_front/f_00024.png', 'rig_realism_contact_pose.png'),
         (ROOT / 'lab/realism_results/skin_contact_motion_20261011.json', 'rig_realism_contact_motion.json'),

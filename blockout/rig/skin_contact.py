@@ -12,6 +12,7 @@ from scipy import sparse
 from scipy.optimize import least_squares, minimize
 
 from .hand import rotvec
+from .contact_placement import calibrated_target, surface_target, REFERENCE
 from ..performer import UPPER_ARM, FOREARM
 from ..piano_geometry import triangle_box_witness, triangle_box_margin
 from ..skin_contacts import key_support
@@ -51,10 +52,12 @@ class SkinAnchor:
     vertex: int
     target: np.ndarray
     box: int
+    placement: dict = None
 
 
 def musical_anchors(skin, operator, vertices, hand, scene, keys, minimum_activation=.7,
-                    mode='support', required_pitches=()):
+                    mode='support', required_pitches=(), placement='source', reference=REFERENCE,
+                    active_pitches=()):
     """Use actual distal skin for supported notes already on their assigned key.
 
     Existing pad locations identify the key and a small distal contact region.
@@ -66,16 +69,21 @@ def musical_anchors(skin, operator, vertices, hand, scene, keys, minimum_activat
     from ..contact import on_key
     if mode not in ('support', 'nearest_pad'):
         raise ValueError('Unknown contact-anchor selection mode')
+    if placement not in ('source', 'calibrated'):
+        raise ValueError('Unknown contact-placement prior')
+    active_pitches = set(active_pitches) | set(required_pitches) | {
+        int(p) for p, a in zip(hand['assigned_keys'], hand['activation'])
+        if p is not None and a >= minimum_activation}
     anchors = []
     for f, (pitch, pad, active) in enumerate(zip(hand['assigned_keys'], hand['pads'], hand['activation']), 1):
         required = pitch is not None and int(pitch) in required_pitches
         if pitch is None or (not required and (active < minimum_activation or not on_key(pitch, pad, keys))):
             continue
-        box = next(i for i, spec in enumerate(scene.specs) if spec.pitch == pitch)
+        point = np.asarray(pad, float)
+        box, _ = surface_target(point, pitch, scene)
         # A distal vertex, not a web/palm point accidentally nearby in world space.
         column = skin.bone_index[f'finger{f}-3']
         influenced = np.flatnonzero(np.asarray(operator @ skin.weights[:, column]) > .2)
-        point = np.asarray(pad, float)
         local = (vertices[influenced] - scene.origins[box]) @ scene.rotations[box]
         pad_local = (point - scene.origins[box]) @ scene.rotations[box]
         vertex = influenced[np.argmin(np.linalg.norm(vertices[influenced] - point, axis=1))]
@@ -94,11 +102,13 @@ def musical_anchors(skin, operator, vertices, hand, scene, keys, minimum_activat
             if len(candidates):
                 chosen = candidates[np.argmin(local[candidates, 2])]
                 vertex, target_local = influenced[chosen], local[chosen].copy()
-        target_local[2] = scene.upper[box, 2]
-        target_local[:2] = np.clip(target_local[:2], scene.lower[box, :2] + .001,
-                                  scene.upper[box, :2] - .001)
-        target = target_local @ scene.rotations[box].T + scene.origins[box]
-        anchors.append(SkinAnchor(f, int(pitch), int(vertex), target, box))
+        metadata = None
+        if placement == 'calibrated':
+            box, target, metadata = calibrated_target(f, pitch, scene, keys, active_pitches, reference)
+        else:
+            source_point = target_local @ scene.rotations[box].T + scene.origins[box]
+            box, target = surface_target(source_point, pitch, scene)
+        anchors.append(SkinAnchor(f, int(pitch), int(vertex), target, box, metadata))
     return anchors
 
 
@@ -106,7 +116,8 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                  anchors=(), allow_wrist=True, max_joint_speed=12., max_wrist_speed=.8,
                  wrist_range=.035, iterations=140, passes=4, gap=1e-5,
                  previous_hand=None, following_hand=None, max_root_speed=4., max_elbow_speed=4.,
-                 triangle_mode='sat', feasibility_iterations=0):
+                 triangle_mode='sat', feasibility_iterations=0, human_prior=None, human_weight=0.,
+                 anchor_objective=False):
     operator, faces = surface
     triangles = np.concatenate([faces[:, [0, 1, 2]], faces[:, [0, 2, 3]],
                                 faces[:, [1, 2, 3]], faces[:, [1, 3, 0]]])
@@ -119,6 +130,8 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
         raise ValueError('The solver and rendered skin must use the same hand and scale')
     if triangle_mode not in ('sat', 'witness'):
         raise ValueError('Unknown triangle constraint mode')
+    if not np.isfinite(human_weight) or human_weight < 0 or (human_weight and human_prior is None):
+        raise ValueError('A finite nonnegative human weight requires its reference prior')
     if (not all(np.isfinite(v) and v > 0 for v in
                 (max_joint_speed, max_wrist_speed, wrist_range, max_root_speed, max_elbow_speed))
             or not isinstance(iterations, int) or iterations < 1
@@ -145,6 +158,8 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
     z = np.r_[np.zeros(6), np.clip(initial[6:], joint_lo, joint_hi)]
     targets = np.array(hand['pads'])
     activity = np.clip(np.array(hand['activation']), .05, 1.)
+    anchor_operator = operator[[anchor.vertex for anchor in anchors]]
+    anchored_fingers = {anchor.finger - 1 for anchor in anchors} if anchor_objective else set()
     cache = {}
 
     def evaluate(value):
@@ -156,24 +171,32 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
         elbow = continuous_elbow(shoulder, root_pos, reference_elbow)
         base = skin.pose(root_rot, root_pos, rig.angles(x), elbow)
         result = (x, root_rot, root_pos, pads, elbow, base)
-        cache.update(z=value.copy(), pose=result)
+        landmarks = np.asarray([root_pos] + [p for chain in points for p in chain], float)
+        cache.update(z=value.copy(), pose=result, landmarks=landmarks)
         return result
 
     def objective(value):
-        x, _, _, pads, _, _ = evaluate(value)
+        x, _, _, pads, _, base = evaluate(value)
         pad_error = (pads - targets) * 1000. / 4.
-        return (float(np.sum(pad_error ** 2 * activity[:, None] ** 2))
+        if anchored_fingers:
+            pad_error[list(anchored_fingers)] = 0.
+        contact_cost = 0.
+        if anchor_objective and anchors:
+            contact_error = (anchor_operator @ base - np.asarray([a.target for a in anchors])) * 1000. / 4.
+            contact_cost = float(np.sum(contact_error ** 2))
+        form_cost = human_prior.evaluate(cache['landmarks'], rig.side, hand['activation'])['cost'] if human_weight else 0.
+        return (float(np.sum(pad_error ** 2 * activity[:, None] ** 2)) + contact_cost + human_weight * form_cost
                 + float(np.sum((value[:3] / 12.) ** 2))
                 + float(np.sum((value[3:6] / .2) ** 2))
                 + .15 * float(np.sum(((x[6:] - initial[6:]) / .3) ** 2)))
 
     all_initial = operator @ evaluate(z)[-1]
+    initial_form = human_prior.evaluate(cache['landmarks'], rig.side, hand['activation']) if human_prior is not None else None
     initial_distance, _ = scene.closest(all_initial)
     boxes = scene.candidates(all_initial, padding=wrist_range + .02)
     active = set(np.flatnonzero(initial_distance < .002).tolist())
     active.update(anchor.vertex for anchor in anchors)
     witnesses, history, triangle_pairs = [], [], set()
-    anchor_operator = operator[[anchor.vertex for anchor in anchors]]
     last_result = None
     for outer in range(passes):
         ids = np.array(sorted(active), int)
@@ -320,6 +343,8 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
         anchor_result.append(dict(finger=anchor.finger, pitch=anchor.pitch,
             top_gap_mm=float((local[2] - scene.upper[anchor.box, 2]) * 1000.),
             placement_error_mm=float(np.max(np.abs(local[:2] - target[:2])) * 1000.),
+            contact_depth_mm=float(point[1] * 1000.), requested_depth_mm=float(anchor.target[1] * 1000.),
+            placement_prior=anchor.placement,
             exposed_top_support=bool(key_support(all_vertices, [anchor.vertex], anchor.pitch, scene)['supported'])))
     reach_error = max(abs(np.linalg.norm(elbow - shoulder) - UPPER_ARM),
                       abs(np.linalg.norm(root_pos - elbow) - FOREARM))
@@ -339,6 +364,12 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                   feasibility_iterations=feasibility_iterations,
                   proxy_self_clearance_mm=float(rig.finger_clearances(x, reference_rot).min() * 1000.),
                   anchors=anchor_result, history=history)
+    report['contact_objective'] = 'actual anchor skin for held fingers; source pads for free fingers' if anchor_objective else 'source approximate pads'
+    if human_prior is not None:
+        evaluate(z)
+        report['human_form'] = dict(weight=human_weight, before=initial_form,
+            numerical_iterate=human_prior.evaluate(cache['landmarks'], rig.side, hand['activation']),
+            acceptance_scope='soft guidance only; no human naturalness pass')
     report['orientation_temporal_bounds_available'] = previous_hand is not None or following_hand is not None
     if report['orientation_temporal_bounds_available']:
         from .motion import rotation_angle, bend_plane_angle

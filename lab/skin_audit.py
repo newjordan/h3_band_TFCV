@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT))
 from blockout.skin import Skin
 from blockout.subdivision import catmull_clark
 from blockout.piano_geometry import scene_from_animation
+from blockout.rig.pose_io import animation_hand_scale
 
 
 def quad_triangles(faces):
@@ -61,6 +62,7 @@ def main():
     parser.add_argument('--levels', type=int, default=2)
     args = parser.parse_args()
     anim = json.loads(args.animation.read_text())
+    args.scale = animation_hand_scale(anim, requested=args.scale)
     ids = list(range(len(anim['frames']))) if args.frames == 'all' else [int(i) for i in args.frames.split(',')]
     skins = {side: Skin(side, scale=args.scale) for side in ('L', 'R')}
     surfaces = {side: catmull_clark(len(skin.vertices), skin.faces, args.levels, limit=True)

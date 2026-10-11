@@ -38,6 +38,8 @@ from blockout.subdivision import catmull_clark
 from blockout.piano_geometry import scene_from_animation
 
 source = json.loads(args.animation.read_text())
+from blockout.rig.pose_io import animation_hand_scale
+args.scale = animation_hand_scale(source, requested=args.scale)
 anim = copy.deepcopy(source)
 keys = {key['pitch']: key for key in source['keyboard']}
 report = dict(source=str(args.animation.resolve()), fixed_wrist=args.fixed_wrist,

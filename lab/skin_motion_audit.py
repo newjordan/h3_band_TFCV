@@ -38,6 +38,8 @@ from blockout.piano_geometry import scene_from_animation
 from lab.skin_audit import hand_audit, quad_triangles
 
 anim = json.loads(args.animation.read_text())
+from blockout.rig.pose_io import animation_hand_scale
+args.scale = animation_hand_scale(anim, requested=args.scale)
 score_notes = None
 if args.score_midi:
     from blockout import midi, feeling

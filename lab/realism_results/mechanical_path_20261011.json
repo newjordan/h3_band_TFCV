@@ -1,6 +1,6 @@
 {
   "schema": "rig-mechanical-path-progress/v1",
-  "test_count": 105,
+  "test_count": 114,
   "hypothesis": "Coupled neighboring contact solves improve sampled feasibility; physical piano solids must also be nonintersecting.",
   "ablation": "Mechanical shape is compared on identical key configurations. Shape-only hand motion is unchanged. The exploratory path also changes assigned held-key commands and shared neighboring poses, so it does not isolate one cause.",
   "completed": {
@@ -11330,30 +11330,36 @@
   },
   "matched_path_comparison": {
     "path_notched_frozen": {
-      "status": "running",
-      "accepted": null,
+      "status": "completed",
+      "accepted": false,
       "candidate_exported": false,
-      "attempted_local_solves": 26,
+      "attempted_local_solves": 72,
       "control_poses_frozen": true,
       "solver_budget": {
         "iterations": 100,
         "passes": 4,
         "feasibility_iterations": 80
       },
-      "report_sha256": "b16c6ca53452a3e72c33513bf88483b82f421b8db6aaf8b342081c611ad26b39"
+      "affected_nodes": 4,
+      "maximum_penetration_mm": 1.2639417540910718,
+      "unsupported_held_observations": 4,
+      "report_sha256": "8138ad5a12b418843050793f32d9a3dbd8a9de5530c4da6e5116f64151c8bb83"
     },
     "path_notched_movable": {
-      "status": "running",
-      "accepted": null,
+      "status": "completed",
+      "accepted": false,
       "candidate_exported": false,
-      "attempted_local_solves": 27,
+      "attempted_local_solves": 76,
       "control_poses_frozen": false,
       "solver_budget": {
         "iterations": 100,
         "passes": 4,
         "feasibility_iterations": 80
       },
-      "report_sha256": "23ce0de16966ea1719345a533e0756a8d74675baca6c905fb5ca13f541c1bee3"
+      "affected_nodes": 4,
+      "maximum_penetration_mm": 1.2639417540910718,
+      "unsupported_held_observations": 4,
+      "report_sha256": "f825be694afaedf16cca2f86b4f93e822903e5162163b6fe18000172b030a84d"
     }
   },
   "drummer_summary": {
@@ -11441,7 +11447,7 @@
     "current_default": 1.0,
     "note": "Measured 17.7 cm size is deliberately disabled by default in the existing planner; never silently resize frozen inputs."
   },
-  "conclusion": "Mechanical prototype passes tested configurations and rendered parity. Sampled hand motion still fails, and the reviewed replanning comparison remains pending until both jobs have terminal results.",
+  "conclusion": "Mechanical prototype passes tested configurations and rendered parity. Sampled hand motion still fails, and both completed matched notched frozen/movable paths retain the same four clipped nodes and four held misses. Moving only the interior source pose is insufficient in this tested local solve.",
   "exclusions": [
     "complete repertoire",
     "actual mesh self/interhand/body/costume",

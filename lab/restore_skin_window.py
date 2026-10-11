@@ -35,6 +35,8 @@ from blockout.subdivision import catmull_clark
 from blockout.piano_geometry import scene_from_animation
 
 source = json.loads(args.animation.read_text())
+from blockout.rig.pose_io import animation_hand_scale
+args.scale = animation_hand_scale(source, requested=args.scale)
 anim = copy.deepcopy(source)
 start, stop = map(int, args.frames.split(':'))
 if not 0 < start < stop < len(source['frames']):
