@@ -552,3 +552,43 @@ free fingers remain too straight. Bounded joint/wrist speeds do not ensure a
 clear path or stable held notes. Replan contact placement and connected motion
 using the human calibration; complete geometry/CCD and full CDL/KS are pending.
 See `REALISM_20261011.md` and `realism_results/held_contact_20261011.json`.
+# 2026-10-11: mechanical/path and drummer-grip research checkpoint
+
+Hypothesis: coupled neighboring contact solves improve sampled feasibility;
+frozen original poses may still prevent a valid path. Separately, moving piano
+solids and cross-hand drummer grip capsules need full accounting.
+
+Exploratory path: 18/21 colliding observations become four, worst depth
+1.263942 mm; four required held-pitch observations remain unsupported. 64/72
+local corrections pass, but the complete path is rejected with no exported
+candidate. Assigned held-key commands and neighboring poses both change in
+this treatment, so no single-factor causal claim follows.
+
+Mechanical ablation: identical key configurations show up to 6.25 mm key/key
+and 8.952609 mm key/keybed interference in the old rectangular model. An opt-in
+notched-key/bed prototype passes these sampled checks and 63 varied stroke
+configurations, with Blender parity within 0.001237 mm. It retains the old
+short hinge; calibrated action/forces are still open. Shape-only hand motion
+is unchanged: 18/21 collisions and 10/74 unsupported held observations.
+
+Drummer: complete cross-hand finger/stick proxy checks retain 10/10 demo and
+16/16 roll acceptance. All twelve stress patterns remain rejected, including
+eight with newly recorded interhand finger collisions and seven with fingers
+against the opposite stick. Retained grip has 6 mm minimum within-hand spacing.
+These remain kinematic proxies; full renderer/body/cloth/shell/feet/force and
+continuous-time checks are pending.
+
+Native graph `skin-contact-trajectory` completed all five nodes and approved
+the proposed experiment method (episode `276a908d…`, complete receipt in
+`lab/realism_results/skin_trajectory_review_episode.json`). A matched frozen
+versus movable-interior-pose experiment is currently running. Additional
+movable-node solves are accounted for; no result is asserted before completion.
+Numeric solver checkpoints are unvalidated and cannot be exported as passing
+animations. The path gate now includes support, spacing, rigid arms, root
+consistency, key travel, mechanical interference and all engineering rates.
+
+Measured scale 0.7284 is opt-in; the existing planner intentionally defaults
+to scale 1. Earlier references to a calibrated production default were
+incorrect. Fresh measured-size generation remains required. Visual right-hand
+form still fails. 105 tests pass in 8.612 s. Code checkpoint `9a95cec`; complete
+detail in `lab/REALISM_20261011.md` and the existing band site. Goal active.
