@@ -48,3 +48,17 @@ class ContactPlacementTests(unittest.TestCase):
         self.assertEqual(anchor.vertex, 0)
         self.assertAlmostEqual(anchor.target[1], target[1], places=4)
         self.assertTrue(key_support(anchor.target[None], [0], 60, self.scene)['supported'])
+
+    def test_pooled_depth_band_is_soft_while_the_selected_surface_remains_finite(self):
+        _, target, _ = calibrated_target(4, 60, self.scene, self.keys, [61])
+        skin = SimpleNamespace(bone_index={'finger4-3': 0}, weights=np.ones((1, 1)))
+        hand = dict(assigned_keys=[None, None, None, 60, None],
+                    activation=[0., 0., 0., .8, 0.], pads=[target.tolist()] * 5)
+        hard = musical_anchors(skin, sparse.eye(1, format='csr'), target[None], hand, self.scene, self.keys,
+                               placement='calibrated', active_pitches=[61])[0]
+        soft = musical_anchors(skin, sparse.eye(1, format='csr'), target[None], hand, self.scene, self.keys,
+                               placement='calibrated_soft', active_pitches=[61])[0]
+        self.assertEqual(hard.tangential_tolerance, .002)
+        self.assertIsNone(soft.tangential_tolerance)
+        self.assertEqual(soft.placement['depth_iqr_mm'], [54., 93.])
+        self.assertEqual(self.scene.specs[hard.box].name, self.scene.specs[soft.box].name)

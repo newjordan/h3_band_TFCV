@@ -52,6 +52,7 @@ from blockout.performer import UPPER_ARM, FOREARM
 from blockout.rig.path_validation import sampled_path_violations
 from blockout.rig.path_checkpoint import save_checkpoint, load_checkpoint
 from lab.skin_audit import hand_audit, quad_triangles
+from blockout.mesh_self import quad_self_intersections
 from lab.piano_interference_audit import interference
 
 source = json.loads(args.animation.read_text())
@@ -97,6 +98,9 @@ report = dict(source=str(args.animation.resolve()), source_sha256=hashlib.sha256
                  ('blockout/rig/skin_contact.py', 'blockout/rig/motion.py', 'blockout/rig/path_validation.py',
                   'blockout/rig/path_checkpoint.py', 'blockout/skin.py', 'blockout/subdivision.py',
                   'blockout/skin_contacts.py', 'blockout/piano_geometry.py', 'blockout/key_shapes.py',
+                  'blockout/mesh_self.py', 'blockout/triangle_contact.py',
+                  'blockout/rig/contact_placement.py', 'blockout/rig/pianist_reference.json',
+                  'blockout/rig/human_form.py', 'blockout/human_score.py', 'blockout/rig/pose_io.py',
                   'blockout/hand_model/skin_bind.npz', 'lab/skin_audit.py',
                   'blockout/rig/hand.py', 'blockout/rig/skeleton.py', 'blockout/rig/comfort.json',
                   'blockout/rig/furelise_cal.json', 'blockout/performer.py',
@@ -109,11 +113,14 @@ report = dict(source=str(args.animation.resolve()), source_sha256=hashlib.sha256
     solve_sides=args.sides,
     audit_configuration=dict(top_gap_mm=.1, geometry_tolerance_mm=.01, required_key_depth=.5,
                              score_settling_seconds=.080, arm_length_tolerance_mm=.001,
-                             proxy_spacing_tolerance_mm=.001),
+                             proxy_spacing_tolerance_mm=.001,
+                             mesh_surface_intersection_tolerance_mm=.0001,
+                             mesh_quad_triangulations=2,
+                             surface_checks_required=['same-hand', 'interhand']),
     solver_budget=dict(iterations=args.iterations, passes=args.passes, feasibility_iterations=args.feasibility_iterations),
     continuous_time_proven=False, candidate_exported=False,
-    scope='rendered hand/instrument, held score support, anatomical and engineering speed bounds; sampled nodes only',
-    exclusions=['exact self/interhand/body/costume', 'onset/accidental-note completeness', 'force dynamics', 'human form acceptance', 'CCD'],
+    scope='rendered hand/instrument and same/interhand surface intersections, held score support, anatomical and engineering speed bounds; sampled nodes only',
+    exclusions=['positive mesh distance and volume containment', 'body/costume', 'onset/accidental-note completeness', 'force dynamics', 'human form acceptance', 'CCD'],
     records=[])
 args.output.parent.mkdir(parents=True, exist_ok=True)
 identity = {key: report[key] for key in ('source_sha256', 'code_sha256', 'frame_window', 'hand_scale',
@@ -131,10 +138,11 @@ def persist():
 def audit():
     observations = []
     for index, frame in enumerate(frames):
-        support, hands = {}, {}
+        support, hands, posed_vertices = {}, {}, {}
         for side, skin in skins.items():
             hand = frame['hands'][side]
             vertices = surfaces[side][0] @ skin.from_frame(hand)
+            posed_vertices[side] = vertices
             result = hand_audit(vertices, triangles[side], scenes[index])
             vector = pose_vector(rigs[side], hand)
             result['proxy_self_clearance_mm'] = float(rigs[side].finger_clearances(vector, np.asarray(hand['root']['rot'])).min() * 1000.)
@@ -157,6 +165,36 @@ def audit():
                     wrist_angular_speed_rad_s=rotation_angle(hand['root']['rot'], previous['root']['rot']) / dt,
                     elbow_plane_speed_rad_s=bend_plane_angle(frame['body']['shoulders'][side], hand['wrist'], hand['elbow'], previous['elbow']) / dt)
             hands[side] = result
+        if all(h['instrument_clear'] for h in hands.values()):
+            # Reject an already-intersecting node immediately. Nodes that
+            # could otherwise pass receive the complete two-triangulation
+            # self/interhand surface audit before any path can be exported.
+            combined, faces, owners, offset = [], [], [], 0
+            for side in posed_vertices:
+                combined.append(posed_vertices[side])
+                faces.append(surfaces[side][1] + offset)
+                owners.extend([side] * len(surfaces[side][1]))
+                offset += len(posed_vertices[side])
+            merged_faces = np.concatenate(faces)
+            mesh = quad_self_intersections(np.concatenate(combined), merged_faces)
+            owners = np.asarray(owners)
+            for side, result in hands.items():
+                own, cross = [], []
+                for triangulation in mesh['triangulations']:
+                    pairs = np.asarray(triangulation['pairs'], int).reshape(-1, 2)
+                    pair_owners = owners[pairs % len(owners)]
+                    own.append(int(np.count_nonzero(np.all(pair_owners == side, axis=1))))
+                    cross.append(int(np.count_nonzero(pair_owners[:, 0] != pair_owners[:, 1])))
+                result['mesh_self_surface_intersections'] = max(own)
+                result['mesh_interhand_surface_intersections'] = max(cross)
+                result['mesh_degenerate_triangles'] = mesh['degenerate_triangles']
+                result['mesh_self_surface_clear'] = max(own) == 0 and mesh['degenerate_triangles'] == 0
+                result['mesh_interhand_surface_clear'] = max(cross) == 0 and mesh['degenerate_triangles'] == 0
+                result['mesh_surface_checked'] = True
+        else:
+            for result in hands.values():
+                result.update(mesh_self_surface_clear=None, mesh_interhand_surface_clear=None,
+                              mesh_surface_checked=False, mesh_skip_reason='node already fails instrument clearance')
         unsupported = sorted(p for p in required[index] if not any(c['supported'] and c['key_depth'] >= .5 for c in support.get(p, [])))
         depths = np.asarray(list(frame['keys'].values()), float)
         travel = float(max(0., -depths.min(), depths.max() - 1.)) if np.isfinite(depths).all() else float('inf')

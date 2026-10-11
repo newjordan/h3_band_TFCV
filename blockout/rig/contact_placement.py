@@ -72,6 +72,7 @@ def calibrated_target(finger, pitch, scene, keys, active_pitches=(), reference=R
     displacement, box, target = min(candidates, key=lambda value: value[0])
     metadata = dict(kind=kind, fallback=fallback, samples=statistics['tip_y']['n'],
                     desired_depth_mm=depth * 1000., achieved_depth_mm=float(target[1] * 1000.),
+                    depth_iqr_mm=[float(statistics['tip_y'][p]) * 1000. for p in ('p25', 'p75')],
                     finite_surface_adjustment_mm=displacement * 1000., component=scene.specs[box].name,
                     reference_scope='pooled MANO fingertip depth mapped to actual skin, not subject/per-key force data')
     return box, target, metadata

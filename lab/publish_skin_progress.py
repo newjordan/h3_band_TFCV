@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import shutil
+from mesh_progress_site import apply_latest
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = Path('/home/frosty40/h3/results/band_site/web')
@@ -12,7 +13,8 @@ latest_motion = json.loads((ART / 'skin_motion_exposed_holds_window.json').read_
 latest_poses = json.loads((ART / 'restore_exposed_holds_window.json').read_text())
 progress = json.loads((ROOT / 'lab/realism_results/mechanical_path_20261011.json').read_text())
 human = json.loads((ROOT / 'lab/realism_results/human_contact_pilot_20261011.json').read_text())
-test_count = progress['test_count']
+mesh = json.loads((ROOT / 'lab/realism_results/mesh_waypoint_20261011.json').read_text())
+test_count = mesh['unit_tests']['passed']
 coupled = progress['completed']['coupled']
 if len(latest_poses['records']) != 6 or not all(r['accepted'] for r in latest_poses['records']):
     raise RuntimeError('Publishing text requires the recorded six accepted contact poses')
@@ -126,17 +128,22 @@ section['items'] = [
               'feet/pedals, force dynamics and continuous time remain unverified. '
               '<a href="media/rig_realism_drummer_crosshand_results.json">All frozen stress outcomes</a>.'),
 ] + section['items']
+apply_latest(section, mesh)
 manifest['sections'] = [section] + [s for s in manifest['sections'] if s['id'] != section['id']]
-manifest['updated'] = '2026-10-11 measured-size posture/contact pilot and completed trajectory comparison; full realism remains incomplete'
-manifest['status'].insert(0, f'<b>Rig research:</b> {test_count} tests pass. Coupled sampled motion reduces clipping '
-    'from 18 to four observations, but the whole path is rejected. Mechanical key clearances and drummer '
-    'cross-hand grip checks are added. Latest evidence below; '
-    'older experiment and GPU notes retain their original dated context.')
+manifest['updated'] = '2026-10-11 actual skin rejection gates, all four static depth treatments and fixed-camera diagnostic videos; full realism remains incomplete'
+manifest['status'].insert(0, f'<b>Rig research:</b> {test_count} tests pass. New actual skin checks reject '
+    'earlier locally accepted piano poses. Soft contact-depth guidance gets closer to key clearance, '
+    'but all four new static treatments fail. Fresh piano and drummer videos below; complete realism remains unfinished.')
 # Keep one current research status when the publishing command is rerun.
 manifest['status'] = [manifest['status'][0]] + [s for s in manifest['status'][1:] if not s.startswith('<b>Rig research:</b>')]
 media = WEB / 'media'
 media.mkdir(exist_ok=True)
 for source, destination in (
+        (ART / 'video_measured_piano.mp4', 'rig_realism_measured_piano_diagnostic.mp4'),
+        (ART / 'drums/crosshand_demo_fixed.mp4', 'rig_realism_drummer_fixed.mp4'),
+        (ART / 'mesh_waypoint_experiment.png', 'rig_realism_mesh_waypoint_experiment.png'),
+        (ROOT / 'lab/realism_results/mesh_waypoint_20261011.json', 'rig_realism_mesh_waypoint_results.json'),
+        (ROOT / 'lab/realism_results/form_mesh_review_result.json', 'rig_realism_form_mesh_review.json'),
         (ART / 'human_contact_pilot.png', 'rig_realism_human_contact_pilot.png'),
         (ART / 'human_pilot_source_fixed/f_00024.png', 'rig_realism_measured_contact_only.png'),
         (ART / 'human_pilot_form_fixed/f_00024.png', 'rig_realism_measured_form_guidance.png'),

@@ -7,6 +7,7 @@ from blockout.rig.path_validation import MOTION_LIMITS, sampled_path_violations
 class SampledPathGateTests(unittest.TestCase):
     def setUp(self):
         hand = dict(instrument_clear=True, proxy_self_clearance_mm=.2,
+                    mesh_self_surface_clear=True, mesh_interhand_surface_clear=True,
                     joint_bounds_excess_rad=0., arm_length_error_mm=0., wrist_root_error_mm=0.)
         self.observations = [dict(node=0, hands={'R': copy.deepcopy(hand)}, unsupported_pitches=[],
                                   key_travel_excess=0., mechanical_contacts=[]),
@@ -37,3 +38,11 @@ class SampledPathGateTests(unittest.TestCase):
         del self.observations[1]['hands']['R']['motion']
         self.assertTrue(sampled_path_violations(self.observations))
         self.assertTrue(sampled_path_violations([]))
+
+    def test_missing_or_failed_actual_mesh_checks_cannot_be_replaced_by_proxy_spacing(self):
+        for name in ('mesh_self_surface_clear', 'mesh_interhand_surface_clear'):
+            frames = copy.deepcopy(self.observations)
+            frames[1]['hands']['R'][name] = False
+            self.assertTrue(sampled_path_violations(frames))
+            del frames[1]['hands']['R'][name]
+            self.assertTrue(sampled_path_violations(frames))

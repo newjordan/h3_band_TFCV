@@ -16,6 +16,8 @@ from .contact_placement import calibrated_target, surface_target, REFERENCE
 from ..performer import UPPER_ARM, FOREARM
 from ..piano_geometry import triangle_box_witness, triangle_box_margin
 from ..skin_contacts import key_support
+from ..mesh_self import self_intersections, quad_self_intersections
+from ..triangle_contact import triangle_separation
 
 
 def pose_vector(rig, hand):
@@ -53,6 +55,7 @@ class SkinAnchor:
     target: np.ndarray
     box: int
     placement: dict = None
+    tangential_tolerance: float = .002
 
 
 def musical_anchors(skin, operator, vertices, hand, scene, keys, minimum_activation=.7,
@@ -69,7 +72,7 @@ def musical_anchors(skin, operator, vertices, hand, scene, keys, minimum_activat
     from ..contact import on_key
     if mode not in ('support', 'nearest_pad'):
         raise ValueError('Unknown contact-anchor selection mode')
-    if placement not in ('source', 'calibrated'):
+    if placement not in ('source', 'calibrated', 'calibrated_soft'):
         raise ValueError('Unknown contact-placement prior')
     active_pitches = set(active_pitches) | set(required_pitches) | {
         int(p) for p, a in zip(hand['assigned_keys'], hand['activation'])
@@ -103,12 +106,13 @@ def musical_anchors(skin, operator, vertices, hand, scene, keys, minimum_activat
                 chosen = candidates[np.argmin(local[candidates, 2])]
                 vertex, target_local = influenced[chosen], local[chosen].copy()
         metadata = None
-        if placement == 'calibrated':
+        if placement in ('calibrated', 'calibrated_soft'):
             box, target, metadata = calibrated_target(f, pitch, scene, keys, active_pitches, reference)
         else:
             source_point = target_local @ scene.rotations[box].T + scene.origins[box]
             box, target = surface_target(source_point, pitch, scene)
-        anchors.append(SkinAnchor(f, int(pitch), int(vertex), target, box, metadata))
+        anchors.append(SkinAnchor(f, int(pitch), int(vertex), target, box, metadata,
+                                  None if placement == 'calibrated_soft' else .002))
     return anchors
 
 
@@ -117,7 +121,7 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                  wrist_range=.035, iterations=140, passes=4, gap=1e-5,
                  previous_hand=None, following_hand=None, max_root_speed=4., max_elbow_speed=4.,
                  triangle_mode='sat', feasibility_iterations=0, human_prior=None, human_weight=0.,
-                 anchor_objective=False):
+                 anchor_objective=False, initial_seed=None, mesh_self_constraints=True):
     operator, faces = surface
     triangles = np.concatenate([faces[:, [0, 1, 2]], faces[:, [0, 2, 3]],
                                 faces[:, [1, 2, 3]], faces[:, [1, 3, 0]]])
@@ -156,6 +160,12 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
         bounds = [(0., 0.)] * 6
     bounds += list(zip(joint_lo, joint_hi))
     z = np.r_[np.zeros(6), np.clip(initial[6:], joint_lo, joint_hi)]
+    if initial_seed is not None:
+        initial_seed = np.asarray(initial_seed, float)
+        if initial_seed.shape != z.shape or not np.isfinite(initial_seed).all():
+            raise ValueError('Initialization must be a finite vector in solver coordinates')
+        seed_lower, seed_upper = np.array(bounds).T
+        z = np.clip(initial_seed, seed_lower, seed_upper)
     targets = np.array(hand['pads'])
     activity = np.clip(np.array(hand['activation']), .05, 1.)
     anchor_operator = operator[[anchor.vertex for anchor in anchors]]
@@ -182,8 +192,18 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
             pad_error[list(anchored_fingers)] = 0.
         contact_cost = 0.
         if anchor_objective and anchors:
-            contact_error = (anchor_operator @ base - np.asarray([a.target for a in anchors])) * 1000. / 4.
-            contact_cost = float(np.sum(contact_error ** 2))
+            for anchor, point in zip(anchors, anchor_operator @ base):
+                if anchor.tangential_tolerance is not None:
+                    contact_cost += float(np.sum(((point - anchor.target) * 1000. / 4.) ** 2))
+                else:
+                    local = (point - scene.origins[anchor.box]) @ scene.rotations[anchor.box]
+                    target = (anchor.target - scene.origins[anchor.box]) @ scene.rotations[anchor.box]
+                    lower, upper = np.asarray(anchor.placement['depth_iqr_mm']) / 1000.
+                    sigma = max(.008, (upper - lower) / 1.349)
+                    excess = float(point[1] - np.clip(point[1], lower, upper)) / sigma
+                    contact_cost += ((local[0] - target[0]) / .004) ** 2 + ((local[2] - target[2]) / .004) ** 2
+                    contact_cost += 2. * (np.sqrt(1. + excess ** 2) - 1.)
+                    contact_cost += .05 * ((point[1] - anchor.target[1]) / sigma) ** 2
         form_cost = human_prior.evaluate(cache['landmarks'], rig.side, hand['activation'])['cost'] if human_weight else 0.
         return (float(np.sum(pad_error ** 2 * activity[:, None] ** 2)) + contact_cost + human_weight * form_cost
                 + float(np.sum((value[:3] / 12.) ** 2))
@@ -197,6 +217,12 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
     active = set(np.flatnonzero(initial_distance < .002).tolist())
     active.update(anchor.vertex for anchor in anchors)
     witnesses, history, triangle_pairs = [], [], set()
+    skin_triangles = np.concatenate([faces[:, [0, 1, 2]], faces[:, [0, 2, 3]]])
+    skin_pairs = set()
+    if mesh_self_constraints:
+        initial_mesh = self_intersections(all_initial, skin_triangles)
+        skin_pairs.update(tuple(p) for p in initial_mesh['pairs']
+                          if not set(skin_triangles[p[0]]) & set(skin_triangles[p[1]]))
     last_result = None
     for outer in range(passes):
         ids = np.array(sorted(active), int)
@@ -208,6 +234,8 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
             active_triangles.setdefault(box, []).append(ti)
         triangle_stencils = {box: operator[triangles[ids].ravel()]
                              for box, ids in active_triangles.items()}
+        skin_pair_indices = np.asarray(sorted(skin_pairs), int).reshape(-1, 2)
+        skin_stencil = operator[skin_triangles[skin_pair_indices].ravel()] if len(skin_pair_indices) else None
 
         def constraints(value):
             x, root_rotation, root, _, current_elbow, base = evaluate(value)
@@ -218,6 +246,9 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                 triangle = (stencil @ base).reshape(-1, 3, 3)
                 local = (triangle - scene.origins[box]) @ scene.rotations[box]
                 result.append((triangle_box_margin(local, scene.lower[box], scene.upper[box]) - gap) * 1000.)
+            if skin_stencil is not None:
+                paired = (skin_stencil @ base).reshape(-1, 2, 3, 3)
+                result.append((triangle_separation(paired[:, 0], paired[:, 1]) - gap) * 1000.)
             reach = np.linalg.norm(root - shoulder)
             result.append(np.array([reach - abs(UPPER_ARM - FOREARM) - 1e-5,
                                     UPPER_ARM + FOREARM - 1e-5 - reach]) * 1000.)
@@ -242,7 +273,8 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                     target_local = (anchor.target - scene.origins[anchor.box]) @ scene.rotations[anchor.box]
                     # Keep placement within 2 mm and the actual skin supported
                     # at the solid top, outside by at most 0.1 mm.
-                    result.append((.002 - np.abs(local[:2] - target_local[:2])) * 1000.)
+                    if anchor.tangential_tolerance is not None:
+                        result.append((anchor.tangential_tolerance - np.abs(local[:2] - target_local[:2])) * 1000.)
                     # Tangential placement tolerance is not permission to move
                     # off the finite top. Keep the actual skin point inside it.
                     result.append((local[:2] - scene.lower[anchor.box, :2] - gap) * 1000.)
@@ -294,6 +326,10 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
             candidate_source = 'bounded feasibility seed'
         base = evaluate(z)[-1]
         vertices = operator @ base
+        mesh_result = self_intersections(vertices, skin_triangles) if mesh_self_constraints else None
+        if mesh_result is not None:
+            skin_pairs.update(tuple(p) for p in mesh_result['pairs']
+                              if not set(skin_triangles[p[0]]) & set(skin_triangles[p[1]]))
         distances, _ = scene.closest(vertices, boxes)
         contacts = scene.triangle_contacts(vertices, triangles)
         active.update(np.flatnonzero(distances < .002).tolist())
@@ -322,7 +358,10 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                             minimum_clearance_mm=float(distances.min() * 1000.),
                             constraint_minimum_mm=float(constraints(z).min()),
                             triangle_intersections=sum(len(t) for _, t in contacts)))
-        if distances.min() >= -1e-5 and not contacts and constraints(z).min() >= -1e-3:
+        history[-1]['skin_self_intersections'] = mesh_result['unexpected_surface_intersections'] if mesh_result else None
+        history[-1]['active_skin_pair_constraints'] = len(skin_pairs)
+        if (distances.min() >= -1e-5 and not contacts and constraints(z).min() >= -1e-3
+                and (mesh_result is None or mesh_result['surface_intersection_clear'])):
             break
     x, root_rot, root_pos, pads, elbow, base = evaluate(z)
     all_vertices = operator @ base
@@ -345,6 +384,7 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
             placement_error_mm=float(np.max(np.abs(local[:2] - target[:2])) * 1000.),
             contact_depth_mm=float(point[1] * 1000.), requested_depth_mm=float(anchor.target[1] * 1000.),
             placement_prior=anchor.placement,
+            tangential_placement_hard=anchor.tangential_tolerance is not None,
             exposed_top_support=bool(key_support(all_vertices, [anchor.vertex], anchor.pitch, scene)['supported'])))
     reach_error = max(abs(np.linalg.norm(elbow - shoulder) - UPPER_ARM),
                       abs(np.linalg.norm(root_pos - elbow) - FOREARM))
@@ -353,7 +393,7 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
     accepted = (distances.min() >= -1e-5 and not contacts and constraints(z).min() >= -1e-3
                 and speed <= max_joint_speed + 1e-6 and reach_error < 1e-6 and bounds_violation < 1e-9
                 and all(a['exposed_top_support'] for a in anchor_result))
-    report = dict(accepted=bool(accepted), scope='one pose; instrument skin, proxy self spacing, two-sided joint/wrist speed, fixed shoulders',
+    report = dict(accepted=bool(accepted), scope='one hand pose; instrument skin and same-hand surface intersections, proxy finger spacing, two-sided joint/wrist speed when neighbors supplied, fixed shoulders; no interhand/body/continuous-time proof',
                   trajectory_validated=False, optimizer_success=bool(last_result.success),
                   initial_penetration_mm=float(max(0., -initial_distance.min()) * 1000.),
                   final_penetration_mm=float(max(0., -distances.min()) * 1000.),
@@ -362,8 +402,16 @@ def restore_pose(rig, skin, surface, hand, scene, shoulder, previous, following,
                   maximum_joint_speed_rad_s=speed, arm_length_error_mm=reach_error * 1000.,
                   configuration_bounds_violation=bounds_violation,
                   feasibility_iterations=feasibility_iterations,
+                  initialization='bounded supplied seed' if initial_seed is not None else 'bounded source pose',
                   proxy_self_clearance_mm=float(rig.finger_clearances(x, reference_rot).min() * 1000.),
                   anchors=anchor_result, history=history)
+    final_self = quad_self_intersections(all_vertices, faces)
+    # Acceptance always requires the full self surface gate. Disabling active
+    # constraints is an ablation of optimization, not permission to skip QA.
+    report['mesh_self'] = final_self
+    report['mesh_self_constraints_enabled'] = mesh_self_constraints
+    accepted = bool(accepted and final_self['surface_intersection_clear'])
+    report['accepted'] = accepted
     report['contact_objective'] = 'actual anchor skin for held fingers; source pads for free fingers' if anchor_objective else 'source approximate pads'
     if human_prior is not None:
         evaluate(z)

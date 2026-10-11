@@ -118,6 +118,14 @@ class RejectedPoseTests(unittest.TestCase):
         rig, skin = HandRig('R'), Skin('R')
         rotation, _ = rig.sk.rest_root()
         frame = fixture(rig, [.15, -.1, .5], rotation, rig.q_rest, 0.)
+        # The old fixture pointed the hand backward against its forearm,
+        # folding the wrist skin. Use a geometrically clear arm/hand posture
+        # for this test of retaining an otherwise feasible optimized step.
+        from blockout.skin import rotation_between
+        forward = rotation @ rig.sk.R0['wrist'].T @ rig.M_rest[1]
+        rotation = rotation_between(forward, np.asarray(frame['hands']['R']['wrist'])
+                                    - frame['hands']['R']['elbow']) @ rotation
+        frame = fixture(rig, [.15, -.1, .5], rotation, rig.q_rest, 0.)
         hand = frame['hands']['R']
         surface = catmull_clark(len(skin.vertices), skin.faces, 1, limit=True)
         scene = PianoScene([dict(pitch=60, x=0., w=.0235, y0=0., l=.15, top=0., black=False)])
@@ -131,6 +139,32 @@ class RejectedPoseTests(unittest.TestCase):
         self.assertTrue(report['accepted'])
         self.assertEqual(report['history'][0]['candidate_source'], 'SLSQP')
         self.assertAlmostEqual(output['wrist'][0], .154)
+
+    def test_proxy_spacing_and_optimizer_success_cannot_hide_folded_wrist_skin(self):
+        from tests.test_rig_motion import fixture
+        from blockout.rig.hand import HandRig
+        from blockout.skin import Skin
+        from blockout.subdivision import catmull_clark
+        rig, skin = HandRig('R'), Skin('R')
+        rotation, _ = rig.sk.rest_root()
+        frame = fixture(rig, [.15, -.1, .5], rotation, rig.q_rest, 0.)
+        hand = frame['hands']['R']
+        surface = catmull_clark(len(skin.vertices), skin.faces, 1, limit=True)
+        scene = PianoScene([dict(pitch=60, x=0., w=.0235, y0=0., l=.15, top=0., black=False)])
+        candidate = np.r_[np.zeros(6), rig.q_rest]
+        fake = SimpleNamespace(x=candidate, success=True, message='proxy-feasible', nit=1)
+        with patch('blockout.rig.skin_contact.minimize', return_value=fake), \
+             patch.object(rig, 'finger_clearances', return_value=np.array([.01])):
+            report, output = restore_pose(rig, skin, surface, hand, scene,
+                frame['body']['shoulders']['R'], None, None, 1./24., passes=1,
+                mesh_self_constraints=False)
+        self.assertFalse(report['accepted'])
+        self.assertEqual(report['final_penetration_mm'], 0.)
+        self.assertEqual(report['configuration_bounds_violation'], 0.)
+        self.assertGreater(report['proxy_self_clearance_mm'], 0.)
+        self.assertFalse(report['mesh_self']['surface_intersection_clear'])
+        self.assertFalse(report['candidate_exported'])
+        self.assertEqual(output, hand)
 
 
 if __name__ == '__main__':

@@ -28,6 +28,10 @@ def sampled_path_violations(observations):
             reasons = []
             if not hand.get('instrument_clear', False):
                 reasons.append('instrument skin')
+            if hand.get('mesh_self_surface_clear') is not True:
+                reasons.append('mesh self surface')
+            if hand.get('mesh_interhand_surface_clear') is not True:
+                reasons.append('mesh interhand surface')
             for name, low, high in (
                     ('proxy_self_clearance_mm', -1e-3, math.inf),
                     ('joint_bounds_excess_rad', 0., 1e-9),
