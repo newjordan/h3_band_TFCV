@@ -469,3 +469,17 @@ Debussy **100.0**, Rach 96.5, Chopin 97.1; misses 58: sideways 41, shallow 11, s
 shake 1.76 mm (1.55), wrist dev 11.3 deg. **Conclusion:** the hard mask and the E29 stack add up (E22 95.3, E29 95.5
 -> 97.0): the stack fixes misses the mask leaves and vice versa. The price is finger tremor (x1.9); E37 (middle mask
 [8,1,8]) measures how much of the gain survives at lower tremor. The 100% target is now 58 notes away.
+
+### Glitch at 248-252 s (v18/v19 cut): investigation 2026-10-10 evening — NOT _close_roles
+Frame read of the v19 cut confirms the visual: L hand swings off the front of the keys fully splayed (~250.4 s),
+arms crossed at the forearms, and open-ended tube segments with gaps on the forearms (sleeve/cuff artifacts).
+But in the performed timeline at 247-253 s: gap (xhR-xhL) never below +0.20 m, `near` = 0 everywhere,
+zero role swaps. **_close_roles is exonerated for this window** — the hands never layer, so its output is inert.
+Measured in-window (E36 w_249.9): keysync 53/56, no misses at 248-252; but anatomy_out = 286 — the glitch is an
+anatomy/pose violation, invisible to the key-sync metric. Arm IK is exact (upper 0.290, fore 0.313 m to 1e-16),
+so the tube gaps are not IK overstretch; suspects: (a) `Seg.set` orientation flip when a segment vector passes
+near vertical/degenerate in `edit` view, (b) `pose_mpfb` lowerarm chain aim — mpfb forearm ends short by design
+(`wr - 0.05` swallow), so a wrist yaw that exposes the cut edge shows the sleeve. L-hand xh jumps -0.154 -> -0.024
+(130 mm, hand_track slice boundary) with pad span to 195 mm — check slice assignment/split for L hand there.
+Next: dump `frames[j]["hands"][*]["root"]["rot"]` for j in 250-252 s (rot discontinuity = flip), and check Seg.set
+for a normals/roll flip; also re-check with `--hands capsule` to separate rig from renderer.
