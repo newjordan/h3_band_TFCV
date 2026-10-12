@@ -1,0 +1,43 @@
+{
+  "site": "https://toymaker.tail2d8af4.ts.net/band/",
+  "site_http_status": 200,
+  "site_sha256": "8af0cc85d6feea5afe5056fe76965d5adcdee0737b550908df323e27874744a3",
+  "records": [
+    {
+      "resource": "comparison",
+      "url": "https://toymaker.tail2d8af4.ts.net/band/media/rig_realism_orientation_comparison.mp4",
+      "http_status": 200,
+      "local_sha256": "48640c808f2fdeab2c8e6636f2d27f38856f145330452b5e851dd11b5df7e6af",
+      "published_sha256": "48640c808f2fdeab2c8e6636f2d27f38856f145330452b5e851dd11b5df7e6af",
+      "identical": true
+    },
+    {
+      "resource": "traces",
+      "url": "https://toymaker.tail2d8af4.ts.net/band/media/rig_realism_orientation_traces.png",
+      "http_status": 200,
+      "local_sha256": "f1074bce3c40bd54986e4eb86dbade1760f7e36d54b6cff2cd5f2c4e8649a502",
+      "published_sha256": "f1074bce3c40bd54986e4eb86dbade1760f7e36d54b6cff2cd5f2c4e8649a502",
+      "identical": true
+    },
+    {
+      "resource": "results",
+      "url": "https://toymaker.tail2d8af4.ts.net/band/media/rig_realism_orientation_results.json",
+      "http_status": 200,
+      "local_sha256": "f74ed2a51a0bb8b09385abe680f52831ca38c5e33871fc26fbedb1894db15b5c",
+      "published_sha256": "f74ed2a51a0bb8b09385abe680f52831ca38c5e33871fc26fbedb1894db15b5c",
+      "identical": true
+    },
+    {
+      "resource": "full_suite",
+      "url": "https://toymaker.tail2d8af4.ts.net/band/media/rig_realism_full_suite_progress.mp4",
+      "http_status": 200,
+      "local_sha256": "b7c0f3d8714faa56c0e402a36be7452d9838d496b486e0cfb41915a153a300e4",
+      "published_sha256": "b7c0f3d8714faa56c0e402a36be7452d9838d496b486e0cfb41915a153a300e4",
+      "identical": true
+    }
+  ],
+  "full_suite_first": true,
+  "unit_tests": 165,
+  "default_adoption": false,
+  "full_performance_accepted": false
+}

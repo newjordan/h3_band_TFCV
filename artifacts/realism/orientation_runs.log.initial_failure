@@ -1,0 +1,15 @@
+{"started": "legacy", "pid": 10}
+{"started": "so3", "pid": 11}
+{"started": "forearm", "pid": 12}
+{"started": "combined", "pid": 13}
+{"treatment": "legacy", "exit_code": -15, "output_exists": false, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_legacy.anim.json", "sha256": null}
+{"treatment": "so3", "exit_code": 1, "output_exists": false, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_so3.anim.json", "sha256": null}
+{"treatment": "forearm", "exit_code": 1, "output_exists": false, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_forearm.anim.json", "sha256": null}
+{"treatment": "combined", "exit_code": 1, "output_exists": false, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_combined.anim.json", "sha256": null}
+Traceback (most recent call last):
+  File "/home/frosty40/h3/rig_realism/lab/run_orientation.py", line 39, in <module>
+    main()
+  File "/home/frosty40/h3/rig_realism/lab/run_orientation.py", line 35, in main
+    assert unchanged and report['status']=='complete'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -8,6 +8,7 @@ from performance_preview_site import apply_performance_preview
 from composure_site import apply_composure
 from hand_order_site import apply_hand_order
 from continuous_plan_site import apply_continuous_plan, apply_full_suite
+from orientation_site import apply_orientation
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = Path('/home/frosty40/h3/results/band_site/web')
@@ -150,6 +151,10 @@ continuous_plan_path = ROOT / 'lab/realism_results/continuous_plan_20261011.json
 continuous_plan = json.loads(continuous_plan_path.read_text()) if continuous_plan_path.exists() else None
 if continuous_plan is not None and continuous_plan['status'] == 'complete':
     apply_continuous_plan(section, continuous_plan)
+orientation_path = ROOT / 'lab/realism_results/orientation_20261011.json'
+orientation = json.loads(orientation_path.read_text()) if orientation_path.exists() else None
+if orientation is not None and orientation['status'] == 'complete':
+    apply_orientation(section, orientation)
 full_suite_path = ROOT / 'lab/realism_results/full_suite_progress_20261011.json'
 full_suite = json.loads(full_suite_path.read_text()) if full_suite_path.exists() else None
 if full_suite is not None and full_suite['status'] == 'complete':
@@ -170,6 +175,11 @@ if composure is not None and composure['status'] == 'complete':
         'The one-minute performance and drummer diagnostics remain available below.')
 media = WEB / 'media'
 media.mkdir(exist_ok=True)
+if orientation is not None and orientation['status'] == 'complete':
+    for source, destination in ((ART/'orientation_comparison.mp4','rig_realism_orientation_comparison.mp4'),
+                                (ART/'orientation_traces.png','rig_realism_orientation_traces.png'),
+                                (orientation_path,'rig_realism_orientation_results.json')):
+        shutil.copy2(source, media/destination)
 if continuous_plan is not None and continuous_plan['status'] == 'complete':
     for source, destination in ((ART/'continuous_plan_comparison.mp4','rig_realism_continuous_plan_comparison.mp4'),
                                 (continuous_plan_path,'rig_realism_continuous_plan_results.json')):
@@ -232,5 +242,10 @@ if continuous_plan is not None and continuous_plan['status'] == 'complete':
         'All controller treatments, physical warmup and actual-skin failures are published; full realism remains unfinished.')
 if full_suite is not None and full_suite['status'] == 'complete':
     manifest['updated'] = '2026-10-11 entire 6:34 Knights Suite preview with original audio and updated wrist-order minute; full realism remains unfinished'
+if orientation is not None and orientation['status'] == 'complete':
+    manifest['updated'] = '2026-10-11 full-suite progress preview and matched wrist-orientation experiment; full realism remains unfinished'
+    manifest['status'][0] = (f"<b>Rig research:</b> {orientation['unit_tests']['passed']} tests pass. "
+        'The full 6:34 preview and four matched wrist-orientation treatments are available below. '
+        'Original music, sampled skin failures and physical warmup remain in the evidence; full realism is unfinished.')
 manifest_path.write_text(json.dumps(manifest, indent=1) + '\n')
 print('Updated existing band-site manifest and research media')

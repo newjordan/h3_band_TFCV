@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/home/frosty40/h3/rig_realism/lab/orientation_trial.py", line 91, in <module>
+    main()
+  File "/home/frosty40/h3/rig_realism/lab/orientation_trial.py", line 59, in main
+    animation = piano.solve_plan(plan)
+                ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frosty40/h3/rig_realism/blockout/piano.py", line 2494, in solve_plan
+    frames = _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frosty40/h3/rig_realism/blockout/piano.py", line 1911, in _pass3_rig
+    solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=WRIST_PRIOR if k else first_prior)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frosty40/h3/rig_realism/blockout/piano.py", line 1825, in _solve_frame
+    x, (rr, rp, pts, pads), miss = rig.solve(ref_rot, ref_pos, list(targets[name]), w, prev=x_init,
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frosty40/h3/rig_realism/blockout/rig/hand.py", line 368, in solve
+    r, pose = self.residuals(x, *args)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frosty40/h3/rig_realism/blockout/rig/hand.py", line 318, in residuals
+    flex, dev = forearm_angles(fa, ha, Rh @ self.M_rest[1], hu)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frosty40/h3/rig_realism/blockout/rig/orientation.py", line 57, in forearm_angles
+    raise ValueError('Hand directions must be an orthonormal basis')
+ValueError: Hand directions must be an orthonormal basis

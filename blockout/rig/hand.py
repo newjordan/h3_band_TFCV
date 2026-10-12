@@ -313,8 +313,12 @@ class HandRig:
             fa = root_pos - np.asarray(el, float); fa /= np.linalg.norm(fa)
             Rh = root_rot @ self.sk.R0["wrist"].T
             hu, ha = Rh @ self.M_rest[2], Rh @ self.M_rest[0]
-            flex = math.asin(float(np.clip(fa @ hu, -1, 1)))        # + wrist flexed (hand below the forearm line)
-            dev = math.asin(float(np.clip(fa @ ha, -1, 1)))         # radial/ulnar deviation
+            if W.get('signed_wrist_angles', False):
+                from .orientation import forearm_angles
+                flex, dev = forearm_angles(fa, ha, Rh @ self.M_rest[1], hu)
+            else:
+                flex = math.asin(float(np.clip(fa @ hu, -1, 1)))
+                dev = math.asin(float(np.clip(fa @ ha, -1, 1)))
             r.append([math.sqrt(W["wrist"]) * max(0.0, abs(flex) - band[0]),
                       math.sqrt(W["wrist"]) * max(0.0, abs(dev) - band[1])])
         if env is not None:

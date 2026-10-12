@@ -1,0 +1,184 @@
+{
+  "status": "complete",
+  "records": {
+    "legacy": {
+      "direction_chart": {
+        "L": {
+          "minimum_flexion_chart_denominator": 0.9586500960110901,
+          "exported_pose_chart_singular": false
+        },
+        "R": {
+          "minimum_flexion_chart_denominator": 0.9801574262888086,
+          "exported_pose_chart_singular": false
+        }
+      },
+      "fit_calls": 0,
+      "optimizer_reported_nfev": 0,
+      "all_fits_report_converged": true,
+      "receipts": []
+    },
+    "so3": {
+      "direction_chart": {
+        "L": {
+          "minimum_flexion_chart_denominator": 0.9715693744889531,
+          "exported_pose_chart_singular": false
+        },
+        "R": {
+          "minimum_flexion_chart_denominator": 0.9916737675151307,
+          "exported_pose_chart_singular": false
+        }
+      },
+      "fit_calls": 4,
+      "optimizer_reported_nfev": 30,
+      "all_fits_report_converged": true,
+      "receipts": [
+        {
+          "pass_index": 0,
+          "changed": true,
+          "optimizer_success": true,
+          "evaluations": 8,
+          "initial_cost": 99.54500225227036,
+          "final_cost": 1.3330345501290886,
+          "numerical_iterate_kept": true,
+          "hard_motion_bounds": false,
+          "fixed_reference_stretch_retained": true,
+          "source_orthogonality_maximum_error": 1.2877655597431925e-06,
+          "scope": "absolute rotations and discrete spatial increments; no anatomical/geometry/force guarantee"
+        },
+        {
+          "pass_index": 1,
+          "changed": true,
+          "optimizer_success": true,
+          "evaluations": 8,
+          "initial_cost": 79.70607853364325,
+          "final_cost": 0.9262734426971776,
+          "numerical_iterate_kept": true,
+          "hard_motion_bounds": false,
+          "fixed_reference_stretch_retained": true,
+          "source_orthogonality_maximum_error": 1.34213413471862e-06,
+          "scope": "absolute rotations and discrete spatial increments; no anatomical/geometry/force guarantee"
+        },
+        {
+          "pass_index": 0,
+          "changed": true,
+          "optimizer_success": true,
+          "evaluations": 7,
+          "initial_cost": 122.74415289248407,
+          "final_cost": 5.024651937869435,
+          "numerical_iterate_kept": true,
+          "hard_motion_bounds": false,
+          "fixed_reference_stretch_retained": true,
+          "source_orthogonality_maximum_error": 1.357810582858221e-06,
+          "scope": "absolute rotations and discrete spatial increments; no anatomical/geometry/force guarantee"
+        },
+        {
+          "pass_index": 1,
+          "changed": true,
+          "optimizer_success": true,
+          "evaluations": 7,
+          "initial_cost": 164.79397006175344,
+          "final_cost": 3.7081046804537623,
+          "numerical_iterate_kept": true,
+          "hard_motion_bounds": false,
+          "fixed_reference_stretch_retained": true,
+          "source_orthogonality_maximum_error": 1.3228989170777083e-06,
+          "scope": "absolute rotations and discrete spatial increments; no anatomical/geometry/force guarantee"
+        }
+      ]
+    },
+    "forearm": {
+      "direction_chart": {
+        "L": {
+          "minimum_flexion_chart_denominator": 0.9259904698827502,
+          "exported_pose_chart_singular": false
+        },
+        "R": {
+          "minimum_flexion_chart_denominator": 0.984150514976926,
+          "exported_pose_chart_singular": false
+        }
+      },
+      "fit_calls": 0,
+      "optimizer_reported_nfev": 0,
+      "all_fits_report_converged": true,
+      "receipts": []
+    },
+    "combined": {
+      "direction_chart": {
+        "L": {
+          "minimum_flexion_chart_denominator": 0.9710877498333867,
+          "exported_pose_chart_singular": false
+        },
+        "R": {
+          "minimum_flexion_chart_denominator": 0.9945143916144744,
+          "exported_pose_chart_singular": false
+        }
+      },
+      "fit_calls": 4,
+      "optimizer_reported_nfev": 31,
+      "all_fits_report_converged": true,
+      "receipts": [
+        {
+          "pass_index": 0,
+          "changed": true,
+          "optimizer_success": true,
+          "evaluations": 9,
+          "initial_cost": 269.78238909230294,
+          "final_cost": 2.6248125275992136,
+          "numerical_iterate_kept": true,
+          "hard_motion_bounds": false,
+          "fixed_reference_stretch_retained": true,
+          "source_orthogonality_maximum_error": 1.377810031177873e-06,
+          "scope": "absolute rotations and discrete spatial increments; no anatomical/geometry/force guarantee"
+        },
+        {
+          "pass_index": 1,
+          "changed": true,
+          "optimizer_success": true,
+          "evaluations": 8,
+          "initial_cost": 64.85308588053852,
+          "final_cost": 1.2429871257816227,
+          "numerical_iterate_kept": true,
+          "hard_motion_bounds": false,
+          "fixed_reference_stretch_retained": true,
+          "source_orthogonality_maximum_error": 1.383397604026726e-06,
+          "scope": "absolute rotations and discrete spatial increments; no anatomical/geometry/force guarantee"
+        },
+        {
+          "pass_index": 0,
+          "changed": true,
+          "optimizer_success": true,
+          "evaluations": 7,
+          "initial_cost": 183.95608034709372,
+          "final_cost": 7.187443427444755,
+          "numerical_iterate_kept": true,
+          "hard_motion_bounds": false,
+          "fixed_reference_stretch_retained": true,
+          "source_orthogonality_maximum_error": 1.3340330378142085e-06,
+          "scope": "absolute rotations and discrete spatial increments; no anatomical/geometry/force guarantee"
+        },
+        {
+          "pass_index": 1,
+          "changed": true,
+          "optimizer_success": true,
+          "evaluations": 7,
+          "initial_cost": 72.43637773110581,
+          "final_cost": 2.673542851337949,
+          "numerical_iterate_kept": true,
+          "hard_motion_bounds": false,
+          "fixed_reference_stretch_retained": true,
+          "source_orthogonality_maximum_error": 1.374169131596048e-06,
+          "scope": "absolute rotations and discrete spatial increments; no anatomical/geometry/force guarantee"
+        }
+      ]
+    }
+  },
+  "known_pending_math_domain": "Exactly pure lateral direction has undefined flexion atan2(0,0); current function returns convention zero plus 90-degree deviation. No sampled exported pose enters this domain, but explicit domain handling/test is pending. Direction alone omits axial twist.",
+  "computation_scope": "Optimizer nfev is the reported solver count, not a count of all numerical-Jacobian residual probes. Additional offline work disclosed; no compute-matched efficiency claim.",
+  "pending_controls": [
+    "transport-only versus filter-only",
+    "compute-matched comparison if efficiency is claimed",
+    "full actual warmup/surface trajectory",
+    "hard wrist speeds/angle/chart domains"
+  ],
+  "full_performance_accepted": false
+}

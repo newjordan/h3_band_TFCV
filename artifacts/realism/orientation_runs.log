@@ -1,0 +1,8 @@
+{"started": "legacy", "pid": 10}
+{"started": "so3", "pid": 11}
+{"started": "forearm", "pid": 12}
+{"started": "combined", "pid": 13}
+{"treatment": "legacy", "exit_code": 0, "output_exists": true, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_legacy.anim.json", "sha256": "e1b47ce0f9d25d8aa73caf0048a6de579c79b77eb9d6d345bdc426aa584dd116"}
+{"treatment": "so3", "exit_code": 0, "output_exists": true, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_so3.anim.json", "sha256": "af86e955a908caedf4222267fce0277a1d5fc048605765658417655155106935"}
+{"treatment": "forearm", "exit_code": 0, "output_exists": true, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_forearm.anim.json", "sha256": "7fa5f9ebabe97a2d776b99ecb384b2f3238dce65d41edb462a9882851952cb2d"}
+{"treatment": "combined", "exit_code": 0, "output_exists": true, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_combined.anim.json", "sha256": "0d510d0fc97b3cccfd3289e232d7bfef0f7ab44849e71de0fabe5a794d56fa0f"}

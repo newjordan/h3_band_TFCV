@@ -1,0 +1,13 @@
+{
+  "status": "complete",
+  "source_unchanged_during_run": true,
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_legacy.anim.json": "e1b47ce0f9d25d8aa73caf0048a6de579c79b77eb9d6d345bdc426aa584dd116",
+    "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_so3.anim.json": "af86e955a908caedf4222267fce0277a1d5fc048605765658417655155106935",
+    "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_forearm.anim.json": "7fa5f9ebabe97a2d776b99ecb384b2f3238dce65d41edb462a9882851952cb2d",
+    "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_combined.anim.json": "0d510d0fc97b3cccfd3289e232d7bfef0f7ab44849e71de0fabe5a794d56fa0f"
+  },
+  "figure": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_traces.png",
+  "sha256": "f1074bce3c40bd54986e4eb86dbade1760f7e36d54b6cff2cd5f2c4e8649a502",
+  "full_performance_accepted": false
+}

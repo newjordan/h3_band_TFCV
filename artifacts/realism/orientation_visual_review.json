@@ -1,0 +1,27 @@
+{
+  "reviewed": true,
+  "frames": [
+    0,
+    23,
+    24,
+    47
+  ],
+  "visual_sha256": {
+    "artifacts/realism/orientation_visual_1.png": "25c47f135a619e8cd7ecd6dc22a197ef16419a2064a57b9e46c1429bea2f06f5",
+    "artifacts/realism/orientation_visual_2.png": "3b5cbbe88d952657c7584c2c508f11e7b5c39715488537148ed8edb7faa2d9a2",
+    "artifacts/realism/orientation_visual_3.png": "9963bc02e0effbfe57c17f3341290c320eee4bf76a3b64d5f84b24cd5410e132",
+    "artifacts/realism/orientation_visual_4.png": "502c47b9815e921de79826a6ccba62d818fbb1e1258b3ea62d86bad892b6f0cb"
+  },
+  "video_sha256": "48640c808f2fdeab2c8e6636f2d27f38856f145330452b5e851dd11b5df7e6af",
+  "labels_legible": true,
+  "matched_camera_and_tempo": true,
+  "whole_body_hidden": true,
+  "notes": [
+    "All four treatments retain visibly raised, flared or clawed free digits; wrist smoothing alone does not give composed hands.",
+    "Frame24 shows similar close hand placement in all four cells. Projected overlap cannot establish actual mesh separation.",
+    "The title strips are legible. Exposed upper-arm ends follow the hidden-body diagnostic view and are not complete-body geometry.",
+    "No naturalness acceptance from four stills; full motion is encoded and geometry is independently audited."
+  ],
+  "naturalness_accepted": false,
+  "full_performance_accepted": false
+}

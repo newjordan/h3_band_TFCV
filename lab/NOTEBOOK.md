@@ -1,5 +1,93 @@
 # Piano-hand lab notebook
 
+## 2026-10-11: absolute wrist history, physical initialization and score semantics
+
+**Authoritative continuation.** The preceding turn verified the published
+whole-suite preview and pushed checkpoint `9efb221`; it did not establish
+realism. Continue from the actual worktree and retain the full piano/drummer,
+music, body/costume, force/action and continuous geometry objective.
+
+**Implemented experimental factors.** Record actual wrist rotations as
+chronological history and transport them into each changing solver reference.
+Keep same-frame reconciliation seeds separate. Fit absolute rotations using
+geodesic data error and differences of spatial angular increments; replace
+the forearm asin alias with a forward/backward-aware direction chart. Both
+flags remain off. The SO(3) factor bundles transport and filtering, so no
+primitive attribution is claimed. There is no new hard wrist speed limit.
+
+Strict initial checks exposed the exported rest matrix's fixed ~1e-6 stretch.
+Three variants terminated; only the unmatched legacy worker was cancelled.
+All failures, initial source/protocol hashes and passing tests are preserved.
+Explicit polar representation now retains the original right stretch in FK/
+skin matrices, validates a shared metric and rejects larger/variable affine
+deformation. Eight new tests pass; all 165 tests pass in 39.477 seconds.
+
+**Frozen four-treatment result.** Same original 2,046-note ledger, full-score
+plan, 48 physical prelude +96 visible poses, performed 282.9–286.9 s, 24 Hz,
+size1, seed0, maximum E36 budgets, unchanged notched solids/production LBS.
+Free-control/wrist-carry off. The legacy visible/prelude frames reproduce the
+previous warm source exactly; every current controller input hash still matches.
+
+| Treatment | Onsets /20 | Original-gate coverage | Max proper wrist rad/s R / L | Runtime seconds |
+|---|---:|---:|---:|---:|
+| Legacy |15|19.2453%|4.883 / 7.381|800.5|
+| Absolute history + SO(3) |16|19.2453%|3.284 / 2.912|801.1|
+| Forearm direction |16|19.2453%|5.302 / 5.509|817.3|
+| Both |15|18.8679%|4.585 / 3.186|829.2|
+
+All internal joint samples retain the12rad/s bound and anatomy; arms remain
+exact and roots/MCP centres ordered. No backward-facing samples occur in any
+144-pose history, so synthetic reversal tests do not explain these folds.
+Visible angular-acceleration RMS R/L falls14.969/31.728→6.549/15.526 with
+the bundled SO(3) treatment. Inactive-middle composure does not improve in
+the common observation set; visibly raised/flared/clawed digits persist.
+
+**Twelve independent actual skins.** Production Blender level2, CPU parity,
+both quad diagonals, actual instrument/self/interhand and assigned-distal
+support: first physical warmup pose and matched visible47/48 for every cell.
+No sampled interhand crossings. L depths at playing instants: legacy
+2.967/4.388mm, SO(3)1.882/.761mm, forearm1.200/2.283mm, both.643/0mm.
+Combined L self pairs fall449/435→17/19 at47, but first-pose L penetration
+worsens1.419→5.928mm; R also penetrates1.123mm and has160/171 self pairs.
+SO(3) adds1.872mm R initial clipping and loses the strongly active L-thumb58
+finite support at47. Every treatment starts infeasible and retains folds.
+All new cells fail musical/actual-surface nonregression. None adopted.
+
+**Math/work limits.** Exact lateral-direction flexion chart handling remains
+pending; no exported pose enters it (minimum denominator.926). Axial twist,
+principal-log tie domains, full warmup/skin trajectories and nonlinear CCD
+remain unresolved. Fit receipt nfev counts exclude uninstrumented numerical
+Jacobian probes; no equal-computation efficiency claim. Four offline fits
+report30 total nfev for SO(3),31 for combined; all report convergence.
+
+**Source interpretation changes the next action.** Raw and performed MIDI
+reach22 distinct simultaneous pitches; performed gates exceed ten for42.398s.
+There are no CC64 or other controller events. Repository README identifies
+Chopin as an audio transcription with no pedal data. These offsets are not
+verified physical key-release times. Preserve the entire gate ledger/audio
+and every attack while recovering/authored physical key actions and damper
+sustain separately. Do not silently shorten notes or score only surviving
+assignments. Original theme pitch20 still lacks a key. Full detail is in
+`SCORE_SEMANTICS_FINDING.md` and the raw/performed transition evidence.
+
+**Native research and review media.** The first five-role graph failed after
+review rejection and synthesis-retry deadline905s (3/5 done), episode
+`afe71322a6a338fb50a2bee5d803e084156ffe16988bfe82fb505b8c647b63eb`.
+Retain it and the sandbox DNS failure. A standalone synthesis/reviewer
+recovery completed2/2 (four traces including retry),894s, episode
+`76be11a8e88d06e059fbb0acb5db4801fb72c130ab4ae80bc972ca3a02454bfa`.
+Only completion metadata is exposed; the final CLI answer independently
+reviews the supplied brief. It is not an exposed reviewer approval, 5/5
+original success or empirical approval. Fresh grayscale4s 2×2 comparison,
+1024×576/12Hz, original audio,
+SHA256`48640c808f2fdeab2c8e6636f2d27f38856f145330452b5e851dd11b5df7e6af`;
+four fixed-view witnesses and standalone six-second internal traces reviewed.
+The whole6:34 preview remains mixed archived/current-minute motion. Drummer
+stress, body/costume, original physical music, forces and all geometry remain
+unfinished. Next priority: feasible initialization and actual contact/skin
+coupled with a verified key-action/damper interpretation, then whole-piece
+continuous solving and conservative full-scene validation.
+
 ## 2026-10-11: coherent score, physical prelude and whole-suite review
 
 **Actual controller change.** Add compile/preparation/solve APIs. Complete-score

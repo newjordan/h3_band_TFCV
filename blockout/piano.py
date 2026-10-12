@@ -1551,6 +1551,9 @@ WRIST_HOLD_W = 0.6          # a held note pulls the wrist path less: between str
 WRIST_STRIKE_T = 0.12       # s: a strike lasts this long from the finger taking its key
 WRIST_LAMBDA_Z = 0.25       # the vertical path is this much less smoothed (an arm drop is quick)
 WRIST_PASSES = 2            # wrist path refinements: solve the whole hand around the path, smooth, repeat
+WRIST_SO3_HISTORY = False   # experimental: absolute history and manifold rotation smoothing
+WRIST_SIGNED_ANGLES = False # experimental: forward/backward-aware forearm penalty
+WRIST_SO3_EVALUATIONS = 30  # maximum offline manifold fit evaluations per wrist/pass
 WRIST_PRIOR = 0.3           # root_pos weight around the refined path (the first pass uses RIG_W's, around the plan)
 EASE_ITERS = 2              # ragdoll ease passes (0: off)
 EASE_PRIOR = 2.0            # how firmly the wrist's spring holds it to its path during the ease solve (root_pos weight)
@@ -1750,6 +1753,11 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
     for name, H in order + (order if len(order) == 2 else []):
         rig = _rig(name)
         ref_rot, ref_pos = refs[name] if refs else _plan_root(H, name, j)
+        previous = prev.get(name)
+        if WRIST_SO3_HISTORY and previous is not None:
+            from .rig.orientation import relative_pose, split_reference_rotations
+            metric = split_reference_rotations(rig.sk.R0['wrist'])[1] if hasattr(rig, 'sk') else None
+            previous = relative_pose(previous, ref_rot, metric)
         pressing = [H["act"][j][f] is not None for f in range(5)]
         tg = frame_targets[name].copy()
         if refs and FREE_FOLLOW:                        # free fingers float where the hand is, not where it was
@@ -1771,7 +1779,9 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
              else RIG_W["free"] * (THUMB_REST if f == 0 else 1.0) for f in range(5)]
         if boost:                                       # repair pass: a finger that missed its key here pulls harder
             w = [w[f] * boost.get((name, j, f), 1.0) if pressing[f] else w[f] for f in range(5)]
-        x_init = solved[name][0] if name in solved else (warm.get(name) if warm is not None else prev.get(name))
+        # Same-frame reconciliation starts already use this reference. Only
+        # the chronological predecessor needs transport from absolute history.
+        x_init = solved[name][0] if name in solved else (warm.get(name) if warm is not None else previous)
         W = {k: v for k, v in RIG_W.items() if k not in ("press", "free")}
         active = H["activation"][j] if CONTROL_PHASES and "activation" in H else np.array(pressing, float)
         if CONTROL_PHASES:
@@ -1782,7 +1792,8 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
             W["comfort_free"] = FREE_COMFORT_GAIN
         W["dt"] = H.get("dt", 1.0 / 24)
         W["max_joint_speed"] = JOINT_SPEED_MAX
-        W["motion_last"] = prev.get(name)
+        W["motion_last"] = previous
+        W['signed_wrist_angles'] = WRIST_SIGNED_ANGLES
         if name in root_limits:
             W['root_bounds'] = root_limits[name]
         tk = float(H["WF"][j][0]) if "WF" in H else 0.0
@@ -1806,20 +1817,28 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
                        [None if a is None else a[0] for a in H["act"][j]], elbow)
         if roots is not None and FINGER_SPLIT:          # the wrist is set: five independent finger solves
             x = rig.solve_fingers(ref_rot, x_init, list(targets[name]), w, env=env, W=W,
-                                  last=prev.get(name) if qprior is None else qprior[name],
+                                  last=previous if qprior is None else qprior[name],
                                   iters=FINGER_ITERS)
             rr, rp, pts = rig.points(x, ref_rot)
             pads = rig.effectors(pts, rig._rots)
             miss = [None if targets[name][f] is None else float(np.linalg.norm(pads[f] - targets[name][f])) for f in range(5)]
         else:
             x, (rr, rp, pts, pads), miss = rig.solve(ref_rot, ref_pos, list(targets[name]), w, prev=x_init,
-                                               last=prev.get(name), env=env,
+                                               last=previous, env=env,
                                                forearm=None if forearms is None else forearms[name],
                                                W=W, fix_root=roots is not None)
         rig.points(x, ref_rot)                          # rotations of the accepted pose (not a trial step)
         solved[name] = (x, rr, rp, pts, pressing, pads, ref_pos, miss)
         blobs[name] = _hand_blobs([ch.samples(P, Rs) for ch, P, Rs in zip(rig.chains, pts, rig._rots)], rr, rp, rig, elbow)
     return solved
+
+
+def _remember_pose(solved, name):
+    if WRIST_SO3_HISTORY:
+        from .rig.orientation import absolute_pose, split_reference_rotations
+        metric = split_reference_rotations(_rig(name).sk.R0['wrist'])[1]
+        return absolute_pose(solved[0], solved[1], metric)
+    return solved[0]
 
 
 REACH_COMFORT = 0.80        # share of the arm's length a hand reaches before the torso helps (arms stretch first)
@@ -1893,14 +1912,21 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
                                                 _hand_fwd(name, *refs[name]), torso=TORSO_BOX[j]), WRIST_BAND) for name in hands}
             solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=WRIST_PRIOR if k else first_prior)
             for name in hands:
-                prev[name] = solved[name][0]
+                prev[name] = _remember_pose(solved[name], name)
                 XA[name].append(solved[name][0][:6])
         for name in hands:                              # the smoothed path becomes the new reference (offset 0)
             X_ = np.array(XA[name])
             lam = _leap_lambda(X_[:, :3], fps, WRIST_LAMBDA)       # an arm leaps fast: the smoothing lets it
             S_ = _whittaker(X_, PW[name], lam)
             S_[:, 2:3] = _whittaker(X_[:, 2:3], PW[name], lam * WRIST_LAMBDA_Z)
-            REF[name] = [(rotvec(S_[i, 3:6]) @ REF[name][i][0], S_[i, :3]) for i in range(len(S_))]
+            if WRIST_SO3_HISTORY:
+                from .rig.orientation import smooth_rotations
+                actual = np.array([rotvec(X_[i, 3:6]) @ REF[name][i][0] for i in range(len(X_))])
+                rotations, receipt = smooth_rotations(actual, PW[name], lam, WRIST_SO3_EVALUATIONS)
+                hands[name].setdefault('orientation_smoothing', []).append(dict(pass_index=k, **receipt))
+                REF[name] = [(rotations[i], S_[i, :3]) for i in range(len(S_))]
+            else:
+                REF[name] = [(rotvec(S_[i, 3:6]) @ REF[name][i][0], S_[i, :3]) for i in range(len(S_))]
     roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
 
     for _e in range(EASE_ITERS):                        # ragdoll ease: the wrist hangs on a firm spring off its
@@ -1913,7 +1939,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
             solved = _solve_frame(hands, j, *T[j], prev, forearms=forearms, refs=refs, prior=EASE_PRIOR)
             for name in hands:
                 x = solved[name][0]
-                prev[name] = x
+                prev[name] = _remember_pose(solved[name], name)
                 if any(solved[name][4]):
                     WE[name][j - j0] = 1.0
                     DV[name][j - j0] = np.clip(x[:3] - refs[name][1], -EASE_MAX, EASE_MAX)
@@ -1944,7 +1970,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
             solved = _solve_frame(hands, j, *T[j], prev, roots={n: roots[n][j - j0] for n in hands},
                                   refs={n: REF[n][j - j0] for n in hands})
             for name in hands:
-                prev[name] = solved[name][0]
+                prev[name] = _remember_pose(solved[name], name)
                 XB[name].append(solved[name][0])
         QP = {}
         for name, H in hands.items():                   # each finger's path is pinned where it is on its key, so only
@@ -2036,7 +2062,7 @@ def _pass_b(hands, times, j0, N, start, energy, HEAD, body, T, roots, REF, QP, T
             keydepth, press = _solved_key_depth(hands, j, solved, key_geometry)
         for name, H in hands.items():
             x, rr, rp, pts, pressing, pads, ref_pos, miss = solved[name]
-            prev[name] = x
+            prev[name] = _remember_pose(solved[name], name)
             for f, a in enumerate(H["act"][j]):
                 if a is not None:
                     H.setdefault("tip_miss", []).append((float(miss[f]), f))
@@ -2610,7 +2636,14 @@ def solve_plan(plan):
                 "anatomy": _anat_detail(warmup_frames)},
             "control_experiment": {"free_control": bool(FREE_CONTROL), "wrist_carry": bool(WRIST_CARRY),
                 "no_hand_cross": bool(NO_HAND_CROSS),
+                "wrist_so3_history": bool(WRIST_SO3_HISTORY),
+                "wrist_signed_angles": bool(WRIST_SIGNED_ANGLES),
                 "scope": "kinematic preferences; actual-mesh trajectory acceptance required"},
+            "orientation_experiment": {"absolute_history": bool(WRIST_SO3_HISTORY),
+                "forward_backward_aware_penalty": bool(WRIST_SIGNED_ANGLES),
+                "smoothing": {n: H.get('orientation_smoothing', []) for n, H in hands.items()},
+                "hard_wrist_motion_bounds": False,
+                "scope": "reference transport and sampled rotation fit; no anatomical/contact guarantee"},
             "hand_order": {"enabled": bool(NO_HAND_CROSS), "ownership": ownership, "audit": order_audit},
             "scheduled_note_events": {name: {str(f): H["ev"][f] for f in range(5)} for name, H in hands.items()},
             "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,

@@ -1,0 +1,52 @@
+{
+  "status": "recovered",
+  "cause": "Strict proper-rotation validation exposed fixed exported rest-frame numerical stretch",
+  "first_batch_terminal": true,
+  "source_unchanged_in_initial_batch": true,
+  "outcomes": [
+    {
+      "treatment": "legacy",
+      "exit_code": -15,
+      "output_exists": false,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_legacy.anim.json",
+      "sha256": null
+    },
+    {
+      "treatment": "so3",
+      "exit_code": 1,
+      "output_exists": false,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_so3.anim.json",
+      "sha256": null
+    },
+    {
+      "treatment": "forearm",
+      "exit_code": 1,
+      "output_exists": false,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_forearm.anim.json",
+      "sha256": null
+    },
+    {
+      "treatment": "combined",
+      "exit_code": 1,
+      "output_exists": false,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_combined.anim.json",
+      "sha256": null
+    }
+  ],
+  "legacy_termination": "Only this unmatched live trial was deliberately stopped after three proven terminal initialization errors; not a timeout",
+  "geometry_preserved": "Polar chart keeps original fixed right stretch; no production skin/weights/scale/bones changed",
+  "file_sha256": {
+    "artifacts/realism/orientation_initial_protocol.md": "0ed54717318311e9dfb8e5163dbc03bce5829ae8f391e9315b88c022d7051f46",
+    "artifacts/realism/orientation_initial_failure.code.py": "3c0fe93d394941d645e6c210140fac28568cbd5e4373281eb14550a8c5038e4d",
+    "artifacts/realism/orientation_initial_failure.patch": "0d82b7124da146d75e3855e282a751b1e2d4908a40d39c462088cc8c375afec7",
+    "artifacts/realism/orientation_runs.initial_failure.json": "15a5bfa601d8b6690573ecc9c63d5ebeff169ab4abc33b91ba3937d903925ef3",
+    "artifacts/realism/orientation_tests.initial_failure.log": "906fab3873c4df6034bcbb2d6913778179418907a74eabf2ed4dfa52463b94aa",
+    "artifacts/realism/orientation_legacy.log.initial_failure": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/realism/orientation_so3.log.initial_failure": "d7ded2f84a57b1a43662e9e317b8e307374cef9104bef8ab7605539c1e47548f",
+    "artifacts/realism/orientation_forearm.log.initial_failure": "f509c33004bc7b0c120e364a165a6a9c62937de65ba57438c391fb272580dc7d",
+    "artifacts/realism/orientation_combined.log.initial_failure": "f509c33004bc7b0c120e364a165a6a9c62937de65ba57438c391fb272580dc7d",
+    "artifacts/realism/orientation_runs.log.initial_failure": "5bdfc492ec583400863d09e12ee693dd77e9ee23689ab74e314cde058dcfaff3"
+  },
+  "new_test_count": 165,
+  "full_performance_accepted": false
+}

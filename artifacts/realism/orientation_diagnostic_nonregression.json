@@ -1,0 +1,197 @@
+{
+  "legacy": {
+    "gates": {
+      "angular_roughness_reduced_both_hands": false,
+      "original_onsets_not_worse": true,
+      "original_gate_coverage_not_worse": true,
+      "sampled_internal_joint_bounds_retained": true,
+      "actual_skin_and_active_support_not_worse": true
+    },
+    "passed": false,
+    "geometric_regressions": [],
+    "scope": "local diagnostic nonregression; baseline itself fails geometry and physical music, no rig acceptance",
+    "comparison_depth_tolerance_mm": 0.002
+  },
+  "so3": {
+    "gates": {
+      "angular_roughness_reduced_both_hands": true,
+      "original_onsets_not_worse": true,
+      "original_gate_coverage_not_worse": true,
+      "sampled_internal_joint_bounds_retained": true,
+      "actual_skin_and_active_support_not_worse": false
+    },
+    "passed": false,
+    "geometric_regressions": [
+      {
+        "frame": 0,
+        "hand": "R",
+        "kind": "instrument depth",
+        "baseline_mm": 0.0,
+        "treatment_mm": 1.871622180938698
+      },
+      {
+        "frame": 0,
+        "diagonal": 0,
+        "kind": "R_self",
+        "baseline_pairs": 0,
+        "treatment_pairs": 161
+      },
+      {
+        "frame": 0,
+        "diagonal": 1,
+        "kind": "R_self",
+        "baseline_pairs": 0,
+        "treatment_pairs": 170
+      },
+      {
+        "frame": 95,
+        "hand": "L",
+        "kind": "lost strongly active finite assigned support",
+        "finger": 1,
+        "pitch": 58
+      },
+      {
+        "frame": 96,
+        "diagonal": 1,
+        "kind": "L_self",
+        "baseline_pairs": 324,
+        "treatment_pairs": 354
+      }
+    ],
+    "scope": "local diagnostic nonregression; baseline itself fails geometry and physical music, no rig acceptance",
+    "comparison_depth_tolerance_mm": 0.002
+  },
+  "forearm": {
+    "gates": {
+      "angular_roughness_reduced_both_hands": false,
+      "original_onsets_not_worse": true,
+      "original_gate_coverage_not_worse": true,
+      "sampled_internal_joint_bounds_retained": true,
+      "actual_skin_and_active_support_not_worse": false
+    },
+    "passed": false,
+    "geometric_regressions": [
+      {
+        "frame": 0,
+        "hand": "L",
+        "kind": "instrument depth",
+        "baseline_mm": 1.418825721740763,
+        "treatment_mm": 7.017785217612982
+      },
+      {
+        "frame": 0,
+        "diagonal": 0,
+        "kind": "L_self",
+        "baseline_pairs": 51,
+        "treatment_pairs": 224
+      },
+      {
+        "frame": 0,
+        "diagonal": 1,
+        "kind": "L_self",
+        "baseline_pairs": 58,
+        "treatment_pairs": 232
+      },
+      {
+        "frame": 95,
+        "hand": "L",
+        "kind": "lost strongly active finite assigned support",
+        "finger": 1,
+        "pitch": 58
+      },
+      {
+        "frame": 95,
+        "diagonal": 0,
+        "kind": "L_self",
+        "baseline_pairs": 449,
+        "treatment_pairs": 536
+      },
+      {
+        "frame": 95,
+        "diagonal": 0,
+        "kind": "R_self",
+        "baseline_pairs": 36,
+        "treatment_pairs": 42
+      },
+      {
+        "frame": 95,
+        "diagonal": 1,
+        "kind": "R_self",
+        "baseline_pairs": 46,
+        "treatment_pairs": 53
+      },
+      {
+        "frame": 95,
+        "diagonal": 1,
+        "kind": "L_self",
+        "baseline_pairs": 435,
+        "treatment_pairs": 516
+      },
+      {
+        "frame": 96,
+        "diagonal": 0,
+        "kind": "R_self",
+        "baseline_pairs": 34,
+        "treatment_pairs": 40
+      }
+    ],
+    "scope": "local diagnostic nonregression; baseline itself fails geometry and physical music, no rig acceptance",
+    "comparison_depth_tolerance_mm": 0.002
+  },
+  "combined": {
+    "gates": {
+      "angular_roughness_reduced_both_hands": true,
+      "original_onsets_not_worse": true,
+      "original_gate_coverage_not_worse": false,
+      "sampled_internal_joint_bounds_retained": true,
+      "actual_skin_and_active_support_not_worse": false
+    },
+    "passed": false,
+    "geometric_regressions": [
+      {
+        "frame": 0,
+        "hand": "R",
+        "kind": "instrument depth",
+        "baseline_mm": 0.0,
+        "treatment_mm": 1.1234795808791886
+      },
+      {
+        "frame": 0,
+        "hand": "L",
+        "kind": "instrument depth",
+        "baseline_mm": 1.418825721740763,
+        "treatment_mm": 5.927595114707953
+      },
+      {
+        "frame": 0,
+        "diagonal": 0,
+        "kind": "R_self",
+        "baseline_pairs": 0,
+        "treatment_pairs": 160
+      },
+      {
+        "frame": 0,
+        "diagonal": 1,
+        "kind": "R_self",
+        "baseline_pairs": 0,
+        "treatment_pairs": 171
+      },
+      {
+        "frame": 95,
+        "diagonal": 0,
+        "kind": "R_self",
+        "baseline_pairs": 36,
+        "treatment_pairs": 38
+      },
+      {
+        "frame": 96,
+        "diagonal": 0,
+        "kind": "R_self",
+        "baseline_pairs": 34,
+        "treatment_pairs": 36
+      }
+    ],
+    "scope": "local diagnostic nonregression; baseline itself fails geometry and physical music, no rig acceptance",
+    "comparison_depth_tolerance_mm": 0.002
+  }
+}

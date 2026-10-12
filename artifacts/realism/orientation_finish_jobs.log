@@ -1,0 +1,161 @@
+{
+  "legacy": {
+    "onsets": 15,
+    "held": 0.19245283018867926,
+    "angular_speed": 7.381328242849104,
+    "direction": {
+      "R": {
+        "samples": 96,
+        "proper_rotation_maximum_speed_rad_s": 4.883243723391459,
+        "forward_forearm_angle_mean_deg": 5.630291568493093,
+        "forward_forearm_angle_p95_deg": 15.14529550678071,
+        "forward_forearm_angle_maximum_deg": 17.320906667026104,
+        "backwards_samples": 0,
+        "absolute_direction_flexion_maximum_deg": 17.08853279423474,
+        "absolute_direction_deviation_maximum_deg": 11.432925798592816,
+        "rotation_orthogonality_maximum_error": 1.2906677653301557e-06,
+        "spatial_angular_acceleration_rms_rad_s2": 14.969204542697959,
+        "spatial_angular_acceleration_maximum_rad_s2": 68.92468958699199
+      },
+      "L": {
+        "samples": 96,
+        "proper_rotation_maximum_speed_rad_s": 7.381395208382546,
+        "forward_forearm_angle_mean_deg": 7.810592577116006,
+        "forward_forearm_angle_p95_deg": 13.565582866890168,
+        "forward_forearm_angle_maximum_deg": 16.805525314588902,
+        "backwards_samples": 0,
+        "absolute_direction_flexion_maximum_deg": 12.343856193920315,
+        "absolute_direction_deviation_maximum_deg": 13.300587341358147,
+        "rotation_orthogonality_maximum_error": 1.3299314360892822e-06,
+        "spatial_angular_acceleration_rms_rad_s2": 31.72844581345248,
+        "spatial_angular_acceleration_maximum_rad_s2": 102.93444939541693
+      }
+    }
+  },
+  "so3": {
+    "onsets": 16,
+    "held": 0.19245283018867926,
+    "angular_speed": 3.284335680156136,
+    "direction": {
+      "R": {
+        "samples": 96,
+        "proper_rotation_maximum_speed_rad_s": 3.2844885998043263,
+        "forward_forearm_angle_mean_deg": 5.967998553064568,
+        "forward_forearm_angle_p95_deg": 15.53533097998582,
+        "forward_forearm_angle_maximum_deg": 19.913919347339768,
+        "backwards_samples": 0,
+        "absolute_direction_flexion_maximum_deg": 19.90981953185745,
+        "absolute_direction_deviation_maximum_deg": 7.398840995349033,
+        "rotation_orthogonality_maximum_error": 1.3113049552870848e-06,
+        "spatial_angular_acceleration_rms_rad_s2": 6.548937774429404,
+        "spatial_angular_acceleration_maximum_rad_s2": 24.873819414894093
+      },
+      "L": {
+        "samples": 96,
+        "proper_rotation_maximum_speed_rad_s": 2.9115900070828915,
+        "forward_forearm_angle_mean_deg": 6.1382766927274774,
+        "forward_forearm_angle_p95_deg": 12.204519165888497,
+        "forward_forearm_angle_maximum_deg": 14.101061758677405,
+        "backwards_samples": 0,
+        "absolute_direction_flexion_maximum_deg": 8.741294278106741,
+        "absolute_direction_deviation_maximum_deg": 13.695099182620298,
+        "rotation_orthogonality_maximum_error": 1.3080864040837525e-06,
+        "spatial_angular_acceleration_rms_rad_s2": 15.526424145012742,
+        "spatial_angular_acceleration_maximum_rad_s2": 40.385869315412485
+      }
+    }
+  },
+  "forearm": {
+    "onsets": 16,
+    "held": 0.19245283018867926,
+    "angular_speed": 5.508892511479627,
+    "direction": {
+      "R": {
+        "samples": 96,
+        "proper_rotation_maximum_speed_rad_s": 5.3023919766986705,
+        "forward_forearm_angle_mean_deg": 5.86917891199108,
+        "forward_forearm_angle_p95_deg": 16.48771718455413,
+        "forward_forearm_angle_maximum_deg": 18.285185824074816,
+        "backwards_samples": 0,
+        "absolute_direction_flexion_maximum_deg": 17.96835222989686,
+        "absolute_direction_deviation_maximum_deg": 10.214579531390767,
+        "rotation_orthogonality_maximum_error": 1.2864603118334372e-06,
+        "spatial_angular_acceleration_rms_rad_s2": 16.70614177343742,
+        "spatial_angular_acceleration_maximum_rad_s2": 71.82019939256098
+      },
+      "L": {
+        "samples": 96,
+        "proper_rotation_maximum_speed_rad_s": 5.508982683532156,
+        "forward_forearm_angle_mean_deg": 8.738611190914181,
+        "forward_forearm_angle_p95_deg": 15.282307768280003,
+        "forward_forearm_angle_maximum_deg": 15.966279013800591,
+        "backwards_samples": 0,
+        "absolute_direction_flexion_maximum_deg": 12.461272715604618,
+        "absolute_direction_deviation_maximum_deg": 15.025077972011317,
+        "rotation_orthogonality_maximum_error": 1.3487741676865284e-06,
+        "spatial_angular_acceleration_rms_rad_s2": 27.141617442582127,
+        "spatial_angular_acceleration_maximum_rad_s2": 68.20038118781015
+      }
+    }
+  },
+  "combined": {
+    "onsets": 15,
+    "held": 0.18867924528301888,
+    "angular_speed": 4.585179035541858,
+    "direction": {
+      "R": {
+        "samples": 96,
+        "proper_rotation_maximum_speed_rad_s": 4.585288194129063,
+        "forward_forearm_angle_mean_deg": 5.330697650843792,
+        "forward_forearm_angle_p95_deg": 13.812883548902951,
+        "forward_forearm_angle_maximum_deg": 19.308402169535693,
+        "backwards_samples": 0,
+        "absolute_direction_flexion_maximum_deg": 19.307989241107478,
+        "absolute_direction_deviation_maximum_deg": 4.014678671013679,
+        "rotation_orthogonality_maximum_error": 1.380757471913796e-06,
+        "spatial_angular_acceleration_rms_rad_s2": 9.905652764452569,
+        "spatial_angular_acceleration_maximum_rad_s2": 32.286181345506314
+      },
+      "L": {
+        "samples": 96,
+        "proper_rotation_maximum_speed_rad_s": 3.1863506182841808,
+        "forward_forearm_angle_mean_deg": 7.625185437961058,
+        "forward_forearm_angle_p95_deg": 13.58148566900183,
+        "forward_forearm_angle_maximum_deg": 14.99582194190672,
+        "backwards_samples": 0,
+        "absolute_direction_flexion_maximum_deg": 12.692817427583538,
+        "absolute_direction_deviation_maximum_deg": 13.811172098254364,
+        "rotation_orthogonality_maximum_error": 1.3846968600628173e-06,
+        "spatial_angular_acceleration_rms_rad_s2": 14.93495805829181,
+        "spatial_angular_acceleration_maximum_rad_s2": 50.18516650490556
+      }
+    }
+  }
+}
+[aist#4:0/pcm_s16le @ 0xaebb5ca7fef0] Guessed Channel Layout: stereo
+{
+  "status": "encoded",
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/orientation_render.py": "4f8158267136df2e67b2b3cc53a89732e2211824078b563155697f5eefb773f4"
+  },
+  "source_unchanged_during_run": true,
+  "video": "/home/frosty40/h3/rig_realism/artifacts/realism/orientation_comparison.mp4",
+  "video_sha256": "48640c808f2fdeab2c8e6636f2d27f38856f145330452b5e851dd11b5df7e6af",
+  "frames": 48,
+  "fps": 12,
+  "duration_seconds": 4.0,
+  "resolution": [
+    1024,
+    576
+  ],
+  "start": 282.9,
+  "gpu_used": false,
+  "full_performance_accepted": false
+}
+{"actual_skin_complete": "legacy", "snapshots": 3, "initial_surface_checked": true, "full_warmup_skin_accepted": false}
+{"actual_skin_complete": "so3", "snapshots": 3, "initial_surface_checked": true, "full_warmup_skin_accepted": false}
+{"actual_skin_complete": "forearm", "snapshots": 3, "initial_surface_checked": true, "full_warmup_skin_accepted": false}
+{"actual_skin_complete": "combined", "snapshots": 3, "initial_surface_checked": true, "full_warmup_skin_accepted": false}
+Complete numerical diagnostics, actual skin and render; visual review/sealing still required

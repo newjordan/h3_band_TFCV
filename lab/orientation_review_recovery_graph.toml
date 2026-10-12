@@ -1,0 +1,16 @@
+name = "piano-orientation-review-recovery"
+description = "Standalone synthesis/reviewer recovery after retained methodological rejection and deadline."
+deadline_secs = 900
+
+[[node]]
+id = "synthesize"
+tools = "none"
+prompt = """Produce a substantive next experiment proposal in at most 260 words using the supplied local facts and primary notes. This is a standalone two-stage review, not reuse of unavailable prior graph outputs. Specify decisive numeric comparisons, factor attribution, original-score semantics, matrix precision, and scope. No tool calls, literature survey or empirical approval. Task: {task}"""
+
+[[node]]
+id = "verify"
+persona = "reviewer"
+tools = "none"
+depends_on = ["synthesize"]
+gate = { verdict = true, retry = "synthesize", credit_to = "synthesize", max_retries = 1 }
+prompt = """Audit the substantive proposal in at most 160 words. Judge methodology, not empirical performance. Reject missing numeric comparisons, pretending bundled history/filtering isolates each, hiding score/skin regressions, calling direction angles clinical limits, or claiming sampled/nonlinear clearance or forces. The graph is running, so do not require its completed receipt. Source exp/log notes support the engineering proposal but not its exact objective or naturalness. Output the verdict and specific corrections. Task: {task}\nProposal: {output:synthesize}"""

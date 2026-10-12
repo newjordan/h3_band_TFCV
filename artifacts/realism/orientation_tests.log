@@ -1,0 +1,23 @@
+.........................../home/frosty40/h3/rig_realism/blockout/rig/skeleton.py:74: ResourceWarning: unclosed file <_io.TextIOWrapper name='/home/frosty40/h3/rig_realism/blockout/hand_model/skeleton.json' mode='r' encoding='UTF-8'>
+  B = json.load(open(path))["hands"][side]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/frosty40/h3/rig_realism/blockout/rig/skeleton.py:65: ResourceWarning: unclosed file <_io.TextIOWrapper name='/home/frosty40/h3/rig_realism/blockout/rig/furelise_cal.json' mode='r' encoding='UTF-8'>
+  return float(json.load(open(p)).get("hand_scale", 1.0))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/frosty40/h3/rig_realism/blockout/rig/hand.py:65: ResourceWarning: unclosed file <_io.TextIOWrapper name='/home/frosty40/h3/rig_realism/blockout/rig/comfort.json' mode='r' encoding='UTF-8'>
+  q = np.clip(np.array(json.load(open(cpath))[side]), self.lo, self.hi)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/frosty40/h3/rig_realism/blockout/rig/hand.py:30: ResourceWarning: unclosed file <_io.TextIOWrapper name='/home/frosty40/h3/rig_realism/blockout/rig/furelise_cal.json' mode='r' encoding='UTF-8'>
+  return json.load(open(p))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/frosty40/h3/rig_realism/blockout/rig/hand.py:79: ResourceWarning: unclosed file <_io.TextIOWrapper name='/home/frosty40/h3/rig_realism/blockout/human_ref.json' mode='r' encoding='UTF-8'>
+  ref = json.load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "human_ref.json")))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+........../home/frosty40/h3/rig_realism/blockout/piano.py:1609: ResourceWarning: unclosed file <_io.TextIOWrapper name='/home/frosty40/h3/rig_realism/blockout/rig/furelise_wrist.json' mode='r' encoding='UTF-8'>
+  _WM = json.load(open(p)) if os.path.exists(p) else {}
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+................................................................................................................................
+----------------------------------------------------------------------
+Ran 165 tests in 39.477s
+
+OK
