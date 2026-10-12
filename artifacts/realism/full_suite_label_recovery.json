@@ -1,0 +1,9 @@
+{
+  "reason": "Minute clip already had an on-screen title; first composite label overlapped it",
+  "recovery": "Opaque 28-pixel title strip before drawing current-controller label",
+  "saved_motion_unchanged": true,
+  "original_audio_unchanged": true,
+  "rejected_video": "full_suite_progress_label_overlap.mp4",
+  "final_video": "full_suite_progress_preview.mp4",
+  "final_visual_review_passed": true
+}

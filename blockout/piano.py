@@ -23,6 +23,7 @@ Rules, in order of application:
    seeded drift keeps the wrists and head alive. Keys are pushed by the sprung fingertips: a key goes down
    only as far as a finger actually presses it.
 """
+import copy
 import dataclasses
 import itertools, json, math, os
 
@@ -2120,48 +2121,162 @@ def _close_roles(hands, times, fps):
     return out, near, role
 
 
-def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats=None,
-            schedule=((0.0, "expressive"),), energy_fn=None, seed=0):
-    if speed != 1.0:
-        notes = [type(n)(n.start / speed, n.end / speed, n.pitch, n.velocity, n.track) for n in notes]
-    end = dur + start if dur else max(n.end for n in notes) + 1.0
+def _plan_settings():
+    """Detect controller changes between compilation, preparation and solving."""
+    def value(v):
+        if isinstance(v, np.ndarray):
+            return v.tolist()
+        if isinstance(v, (str, bool, int, float, type(None))):
+            return v
+        if isinstance(v, (tuple, list)):
+            return [value(x) for x in v]
+        if isinstance(v, dict):
+            return {str(k): value(x) for k, x in v.items()}
+        raise TypeError
+    result = {}
+    for key, v in globals().copy().items():
+        if key.isupper() and not key.startswith('_') and key not in ('CLOSE', 'LAST'):
+            try:
+                result[key] = value(v)
+            except TypeError:
+                pass
+    result['environment_hand_scale'] = os.environ.get('HAND_SCALE')
+    return result
+
+
+@dataclasses.dataclass
+class PianoScore:
+    """One full-score allocation and fingering, independent of render windows."""
+    notes: list
+    hands: dict
+    ownership: dict
+    centre_x: float
+    speed: float
+    settings: dict
+    outside_keyboard: list
+
+
+@dataclasses.dataclass
+class PianoPlan:
+    """Prepared targets for one continuous solve; consume once, then partition."""
+    hands: dict
+    times: np.ndarray
+    start: float
+    end: float
+    fps: float
+    speed: float
+    centre_x: float
+    ownership: dict
+    beats: np.ndarray
+    downbeats: np.ndarray
+    schedule: list
+    energy: np.ndarray
+    body: object
+    head: np.ndarray
+    torso: np.ndarray
+    first_visible: int
+    complete_score: bool
+    physical_warmup: bool
+    settings: dict
+    outside_keyboard: list
+    consumed: bool = False
+
+
+def _motion_notes(notes, speed=1.):
+    result = []
+    for original in notes:
+        note = copy.copy(original)
+        note.start, note.end = original.start / speed, original.end / speed
+        result.append(note)
+    return result
+
+
+def _hand_score(original, name):
+    ns = _motion_notes(original)  # repair may shorten motion holds; the score stays intact
+    fing = fingering(slices(ns, hand=name), name) if ns else []
+    ev = finger_events(fing)
+    if not WRIST_CARRY:
+        ev = release_far(fing, ev, name)
+    sl_end = np.array([max(n.end for n, _ in s) for s in fing]) if fing else np.zeros(0)
+    H = {"fing": fing, "ev": ev, "ev_on": {f: np.array([e[0] for e in ev[f]]) for f in ev},
+         "score_notes": [(n.start, n.end, n.pitch) for n in original],
+         "on": np.array([s[0][0].start for s in fing]) if fing else np.zeros(0),
+         "end": np.maximum.accumulate(sl_end) if len(sl_end) else sl_end,
+         "vel": np.array([max(n.velocity for n, _ in s) for s in fing]) if fing else np.zeros(0),
+         "touch": np.array([np.mean([getattr(n, "touch", 0.3) for n, _ in s]) for s in fing]) if fing else np.zeros(0),
+         "size": np.array([len(s) for s in fing]) if fing else np.zeros(0)}
+    return H
+
+
+def compile_score(notes, speed=1.):
+    """Compile the original ledger once. Scheduling conflicts remain diagnostic."""
+    if not notes or not np.isfinite(speed) or speed <= 0:
+        raise ValueError('A nonempty score and positive finite speed are required')
+    notes = _motion_notes(notes, speed)
     ownership = {}
-    # Staff presence, held ownership and redistribution use the full score, so
-    # a render chunk or a silent staff cannot change a note's hand.
-    if NO_HAND_CROSS:
+    rh, lh = split_hands(notes, ownership)
+    allx = [key_x(n.pitch) for n in notes]
+    return PianoScore(notes, {name: _hand_score(ns, name) for name, ns in (('R', rh), ('L', lh))},
+        ownership, float((min(allx) + max(allx)) / 2), speed, _plan_settings(),
+        [[n.start, n.end, n.pitch] for n in notes if not LOW <= n.pitch <= HIGH])
+
+
+def prepare_plan(notes=None, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats=None,
+                 schedule=((0.0, "expressive"),), energy_fn=None, seed=0,
+                 *, compiled_score=None, complete_score=False, physical_warmup=False):
+    """Prepare one trajectory, including springs. Physical warmup is solved later."""
+    if not np.isfinite(fps) or fps <= 0 or not np.isfinite(start):
+        raise ValueError('Finite start and positive finite fps are required')
+    if not np.isfinite(speed) or speed <= 0:
+        raise ValueError('Positive finite speed is required')
+    if compiled_score is not None:
+        if notes is not None:
+            raise ValueError('Pass notes or a compiled score, not both')
+        if compiled_score.settings != _plan_settings() or compiled_score.speed != speed:
+            raise ValueError('Compiled score controller or speed changed')
+        complete_score = True
+        notes = _motion_notes(compiled_score.notes)
+    elif complete_score:
+        compiled_score = compile_score(notes, speed)
+        notes = _motion_notes(compiled_score.notes)
+    else:
+        if not notes:
+            raise ValueError('A nonempty score is required')
+        notes = _motion_notes(notes, speed)
+    end = start + dur if dur is not None else max(n.end for n in notes) + 1.0
+    if not np.isfinite(end) or end <= start:
+        raise ValueError('The requested window must have positive finite duration')
+    ownership = {}
+    if NO_HAND_CROSS and not complete_score:
         rh, lh = split_hands(notes, ownership)
-    notes = [n for n in notes if n.end > start - 0.5 and n.start < end + 0.5]
-    # simulate from a little before the window so the springs are settled when it starts
+    # Keep legacy window compilation as the matched experimental control.
+    if not complete_score:
+        notes = [n for n in notes if n.end > start - .5 and n.start < end + .5]
+        if not notes:
+            raise ValueError('Legacy window compilation requires a nearby note; use a complete score for silence')
     pre = 2.0
     times = (start - pre) + np.arange(int(round((end - start + pre) * fps))) / fps
     N = len(times)
-    if NO_HAND_CROSS:
-        rh, lh = ([n for n in ns if n.end > start - .5 and n.start < end + .5] for ns in (rh, lh))
+    if N <= int(round(pre * fps)):
+        raise ValueError('The visible window must contain at least one sampled frame')
+    if complete_score:
+        hands = copy.deepcopy(compiled_score.hands)
+        ownership = copy.deepcopy(compiled_score.ownership)
+        cx = compiled_score.centre_x
+        outside_keyboard = copy.deepcopy(compiled_score.outside_keyboard)
     else:
-        rh, lh = split_hands(notes)
-    allx = [key_x(n.pitch) for n in notes]
-    cx = float(np.mean([min(allx), max(allx)]))
-
-    hands = {}
-    for name, ns, rest in (("R", rh, cx + 0.15), ("L", lh, cx - 0.15)):
-        ns = [type(n)(n.start, n.end, n.pitch, n.velocity, n.track) for n in ns]   # motion copies (repair may shorten holds)
-        for n, o in zip(ns, [m for m in (rh if name == "R" else lh)]):
-            n.touch, n.lift = getattr(o, "touch", 0.3), getattr(o, "lift", 1.0)
-        fing = fingering(slices(ns, hand=name), name) if ns else []
-        ev = finger_events(fing)
-        if not WRIST_CARRY:
-            ev = release_far(fing, ev, name)
-        sl_end = np.array([max(n.end for n, _ in s) for s in fing]) if fing else np.zeros(0)
-        H = {"fing": fing, "ev": ev, "ev_on": {f: np.array([e[0] for e in ev[f]]) for f in ev},
-             "score_notes": [(n.start, n.end, n.pitch) for n in (rh if name == "R" else lh)],
-             "on": np.array([s[0][0].start for s in fing]) if fing else np.zeros(0),
-             "end": np.maximum.accumulate(sl_end) if len(sl_end) else sl_end,
-             "vel": np.array([max(n.velocity for n, _ in s) for s in fing]) if fing else np.zeros(0),
-             "touch": np.array([np.mean([getattr(n, "touch", 0.3) for n, _ in s]) for s in fing]) if fing else np.zeros(0),
-             "size": np.array([len(s) for s in fing]) if fing else np.zeros(0)}
-        H["xh"], H["nbh"] = hand_track(fing, name, times + LEAD_HAND, rest)
-        H["xt"], H["nbt"] = hand_track(fing, name, times + LEAD_TIP, rest)
-        hands[name] = H
+        if NO_HAND_CROSS:
+            rh, lh = ([n for n in ns if n.end > start - .5 and n.start < end + .5] for ns in (rh, lh))
+        else:
+            rh, lh = split_hands(notes)
+        allx = [key_x(n.pitch) for n in notes]
+        cx = float(np.mean([min(allx), max(allx)]))
+        hands = {name: _hand_score(ns, name) for name, ns in (('R', rh), ('L', lh))}
+        outside_keyboard = [[n.start, n.end, n.pitch] for n in notes if not LOW <= n.pitch <= HIGH]
+    for name, H in hands.items():
+        rest = cx + (.15 if name == 'R' else -.15)
+        H["xh"], H["nbh"] = hand_track(H["fing"], name, times + LEAD_HAND, rest)
+        H["xt"], H["nbt"] = hand_track(H["fing"], name, times + LEAD_TIP, rest)
 
     beats = np.asarray(beats if beats is not None else np.arange(0, end + 1, 0.5))
     downbeats = np.asarray(downbeats if downbeats is not None else beats[::4])
@@ -2330,9 +2445,26 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     HEAD[:, 1] += dynamics.drift(times, 0.03, seed * 10 + 11)
     HEAD[:, 2] += dynamics.drift(times, 0.02, seed * 10 + 12)
 
+    return PianoPlan(hands, times, start, end, fps, speed, cx, ownership, beats, downbeats,
+        sched, energy, body, HEAD, TORSO, int(round(pre * fps)), bool(complete_score),
+        bool(physical_warmup), _plan_settings(), outside_keyboard)
+
+
+def solve_plan(plan):
+    """Solve every internal frame in one pass history, then expose the requested window."""
+    if plan.consumed:
+        raise ValueError('A plan is consumed once; partition its solved trajectory')
+    if plan.settings != _plan_settings():
+        raise ValueError('Prepared controller settings changed before solving')
+    plan.consumed = True
+    hands, times = plan.hands, plan.times
+    start, end, fps, speed, cx = plan.start, plan.end, plan.fps, plan.speed, plan.centre_x
+    ownership, beats, downbeats, sched = plan.ownership, plan.beats, plan.downbeats, plan.schedule
+    energy, body, HEAD, TORSO = plan.energy, plan.body, plan.head, plan.torso
+    N = len(times)
     # ---- pass 3: pose, IK, keys from the sprung fingertips
     frames = []
-    j0 = int(round(pre * fps))
+    j0 = 0 if plan.physical_warmup else plan.first_visible
     previous_elbows = None
     if HAND_MODEL == "mpfb":
         frames = _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO)
@@ -2454,6 +2586,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         fr["press"] = press
         frames.append(fr)
     arm_track = performer.relax_arm_track(frames, fps)
+    internal_frames = frames
+    warmup_count = plan.first_visible if plan.physical_warmup else 0
+    warmup_frames, frames = frames[:warmup_count], frames[warmup_count:]
     global LAST
     LAST = hands
     fing_out = {name: [[[n.start, n.pitch, f] for n, f in s] for s in H["fing"]] for name, H in hands.items()}
@@ -2465,6 +2600,14 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     if NO_HAND_CROSS and not order_audit['passed'] and HAND_MODEL == 'mpfb':
         raise RuntimeError('Generated performance violates requested wrist order')
     return {"fps": fps, "start": start, "speed": speed, "centre_x": cx, "keyboard": keyboard(),
+            "continuity": {"complete_score": plan.complete_score,
+                "physical_warmup": plan.physical_warmup, "internal_frames": len(internal_frames),
+                "warmup_frames": warmup_count, "history": "one physical previous frame throughout each solver pass",
+                "outside_keyboard_events": plan.outside_keyboard,
+                "full_performance_accepted": False},
+            "warmup": {"frames": warmup_frames,
+                "order": wrist_order_audit(warmup_frames, fps, WRIST_ORDER_GAP),
+                "anatomy": _anat_detail(warmup_frames)},
             "control_experiment": {"free_control": bool(FREE_CONTROL), "wrist_carry": bool(WRIST_CARRY),
                 "no_hand_cross": bool(NO_HAND_CROSS),
                 "scope": "kinematic preferences; actual-mesh trajectory acceptance required"},
@@ -2472,7 +2615,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             "scheduled_note_events": {name: {str(f): H["ev"][f] for f in range(5)} for name, H in hands.items()},
             "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,
             **({"hand_scale": float(_rig("R").sk.scale), "pose_precision": "full solver precision"} if HAND_MODEL == "mpfb" else {}),
-            "qa": {"finger_frames": int(len(pens)), "penetrating_over_1mm": int((pens > 0.001).sum()),
+            "qa": {"collision_and_reach_scope": "all internally solved frames, including physical warmup",
+                   "pose_diagnostic_scope": "visible frames; arm_track includes warmup",
+                   "finger_frames": int(len(pens)), "penetrating_over_1mm": int((pens > 0.001).sum()),
                    "max_penetration_mm": round(float(pens.max()) * 1000, 2),
                    "detail": _pen_detail([i for H in hands.values() for i in H.get("pen_info", [])]),
                    "hits": _hit_detail(frames), "order": _cross_detail(frames), "reach": _reach_detail(hands), "anatomy": _anat_detail(frames), "hands": _hands_detail(frames),
@@ -2480,6 +2625,13 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             "schedule": sched, "beats": [b - start for b in beats.tolist() if start <= b <= end],
             "downbeats": [b - start for b in downbeats.tolist() if start <= b <= end],
             "fingering": fing_out, "frames": frames}
+
+
+def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats=None,
+            schedule=((0.0, "expressive"),), energy_fn=None, seed=0,
+            *, complete_score=False, physical_warmup=False):
+    return solve_plan(prepare_plan(notes, fps, start, dur, speed, beats, downbeats,
+        schedule, energy_fn, seed, complete_score=complete_score, physical_warmup=physical_warmup))
 
 
 if os.environ.get("PIANO_OVR"):      # experiment hook: {"KNUCKLE_Z":0.07,"HOME_S":1.1,...}

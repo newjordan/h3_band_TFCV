@@ -1,0 +1,8 @@
+[aist#2:0/pcm_s16le @ 0xb5f15f0707a0] Guessed Channel Layout: stereo
+{
+  "status": "verified",
+  "video": "/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_archive_preview.mp4",
+  "video_sha256": "63500818623ee1e7a19c0cb78c96a0f89ac1ee724087b23ac8030c642483d532",
+  "duration_seconds": 393.75,
+  "latest_controller_integrated": false
+}

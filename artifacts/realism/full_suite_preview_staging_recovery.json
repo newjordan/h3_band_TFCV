@@ -1,0 +1,6 @@
+{
+  "reason": "Remove unnecessary dependency on completion of controller comparison before rendering user-requested full-suite opening",
+  "cancelled_only_waiting_helper": true,
+  "numerical_workers_untouched": true,
+  "opening_render_had_not_started": true
+}

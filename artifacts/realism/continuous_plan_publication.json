@@ -1,0 +1,41 @@
+{
+  "site": "https://toymaker.tail2d8af4.ts.net/band/",
+  "site_http_status": 200,
+  "records": [
+    {
+      "resource": "full_suite",
+      "http_status": 200,
+      "published_sha256": "b7c0f3d8714faa56c0e402a36be7452d9838d496b486e0cfb41915a153a300e4",
+      "local_sha256": "b7c0f3d8714faa56c0e402a36be7452d9838d496b486e0cfb41915a153a300e4",
+      "identical": true
+    },
+    {
+      "resource": "comparison",
+      "http_status": 200,
+      "published_sha256": "dd100cc0f05753834bca1349258c6557636c262704540c1b4985c61cfa442473",
+      "local_sha256": "dd100cc0f05753834bca1349258c6557636c262704540c1b4985c61cfa442473",
+      "identical": true
+    },
+    {
+      "resource": "preview_results",
+      "http_status": 200,
+      "published_sha256": "9edca9dcad506066ba5412a4e6faab57c736caf6d59b22efd838960d93edab44",
+      "local_sha256": "9edca9dcad506066ba5412a4e6faab57c736caf6d59b22efd838960d93edab44",
+      "identical": true
+    },
+    {
+      "resource": "continuous_results",
+      "http_status": 200,
+      "published_sha256": "aa164f0f4073ba0d6d6846bcc41c3714a026d14e56d583dad86169a7e3bacbc8",
+      "local_sha256": "aa164f0f4073ba0d6d6846bcc41c3714a026d14e56d583dad86169a7e3bacbc8",
+      "identical": true
+    }
+  ],
+  "whole_piece_video_seconds": 393.75,
+  "updated_minute_score_interval": [
+    239.9,
+    299.9
+  ],
+  "full_performance_accepted": false,
+  "full_original_audio": true
+}

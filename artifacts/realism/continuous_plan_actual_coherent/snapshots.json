@@ -1,0 +1,41 @@
+{
+  "status": "complete",
+  "hand_scale": 1.0,
+  "candidate_exported": false,
+  "records": [
+    {
+      "context": "continuous_plan_coherent.anim_frame47",
+      "frame": 47,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent.anim.json",
+      "source_sha256": "7b37aa71227836104f40e7e7ffc0070b79f7822ad7a1f09224c1d7a70c714f90",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_actual_coherent/frame47.npz",
+      "mesh_sha256": "73750f4f39c41f3aca9a2bc5dc9e3ac1636f4e640d23ab179c15e05a86cdc611",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    },
+    {
+      "context": "continuous_plan_coherent.anim_frame48",
+      "frame": 48,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent.anim.json",
+      "source_sha256": "7b37aa71227836104f40e7e7ffc0070b79f7822ad7a1f09224c1d7a70c714f90",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_actual_coherent/frame48.npz",
+      "mesh_sha256": "b2a68b00c84ecce25536d1df885cac7cbd21186c317e19a49fd4a5d36a585df6",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    }
+  ],
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent.anim.json": "7b37aa71227836104f40e7e7ffc0070b79f7822ad7a1f09224c1d7a70c714f90",
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/hand_order_snapshot.py": "0aaad9c6bc452ef02b9708143af983fd24e9648422de20ed27e36296dcda20e5"
+  },
+  "scope": "Matched actual skin snapshots only; no full trajectory acceptance",
+  "source_unchanged_during_run": true
+}

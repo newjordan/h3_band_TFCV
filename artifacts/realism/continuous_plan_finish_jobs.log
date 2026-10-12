@@ -1,0 +1,61 @@
+{
+  "windowed": {
+    "onset_passes": 16,
+    "original_score_onsets": 20,
+    "hold_coverage": 0.20754716981132076,
+    "maximum_joint_speed_rad_s": 34.77264505620786,
+    "maximum_wrist_speed_m_s": 2.27836347172239,
+    "maximum_wrist_rotation_speed_rad_s": 13.91824977919712
+  },
+  "coherent": {
+    "onset_passes": 16,
+    "original_score_onsets": 20,
+    "hold_coverage": 0.18867924528301888,
+    "maximum_joint_speed_rad_s": 12.000000000010914,
+    "maximum_wrist_speed_m_s": 0.8978520844142615,
+    "maximum_wrist_rotation_speed_rad_s": 5.190479047108713
+  },
+  "warm": {
+    "onset_passes": 15,
+    "original_score_onsets": 20,
+    "hold_coverage": 0.19245283018867926,
+    "maximum_joint_speed_rad_s": 12.000000000010914,
+    "maximum_wrist_speed_m_s": 0.7316278874725978,
+    "maximum_wrist_rotation_speed_rad_s": 7.381328242849104
+  },
+  "composed": {
+    "onset_passes": 15,
+    "original_score_onsets": 20,
+    "hold_coverage": 0.5018867924528302,
+    "maximum_joint_speed_rad_s": 12.000000000010914,
+    "maximum_wrist_speed_m_s": 0.831176709357513,
+    "maximum_wrist_rotation_speed_rad_s": 4.090148431414158
+  }
+}
+[aist#4:0/pcm_s16le @ 0xbfaeee33fa90] Guessed Channel Layout: stereo
+{
+  "status": "encoded",
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/continuous_plan_render.py": "ac1f8f33125e6cd41855b62c525c7c38550979092258accf00ef7983d50b73e6"
+  },
+  "source_unchanged_during_run": true,
+  "video": "/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_comparison.mp4",
+  "video_sha256": "dd100cc0f05753834bca1349258c6557636c262704540c1b4985c61cfa442473",
+  "frames": 48,
+  "fps": 12,
+  "duration_seconds": 4.0,
+  "resolution": [
+    1536,
+    864
+  ],
+  "start": 282.9,
+  "gpu_used": false,
+  "full_performance_accepted": false
+}
+{"actual_skin_complete": "windowed", "snapshots": 2}
+{"actual_skin_complete": "coherent", "snapshots": 2}
+{"actual_skin_complete": "warm", "snapshots": 2}
+{"actual_skin_complete": "composed", "snapshots": 2}
+Complete numerical diagnostics, actual skin and render; visual review and sealing still required

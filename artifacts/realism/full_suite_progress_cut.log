@@ -1,0 +1,8 @@
+[aist#2:0/pcm_s16le @ 0xb9deaae791e0] Guessed Channel Layout: stereo
+{
+  "status": "verified",
+  "video": "/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_progress_preview.mp4",
+  "video_sha256": "b7c0f3d8714faa56c0e402a36be7452d9838d496b486e0cfb41915a153a300e4",
+  "duration_seconds": 393.75,
+  "latest_controller_integrated": "partial: wrist-order minute at 239.9\u2013299.9 seconds"
+}

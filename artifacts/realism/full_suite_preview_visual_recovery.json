@@ -1,0 +1,6 @@
+{
+  "reason": "Mannequin head occludes left hand in inspected opening frame 0; rerender with explicit hide body diagnostic view",
+  "rejected_visual": "full_suite_opening_obstructed_frames/f_00000.png",
+  "saved_motion_unchanged": true,
+  "numerical_workers_untouched": true
+}

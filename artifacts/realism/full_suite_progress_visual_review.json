@@ -1,0 +1,54 @@
+{
+  "reviewed": true,
+  "seconds": [
+    0.0,
+    20.0,
+    239.833333,
+    240.0,
+    290.0,
+    299.833333,
+    300.083333,
+    393.0
+  ],
+  "samples": [
+    {
+      "path": "artifacts/realism/full_suite_progress_visual_0.png",
+      "sha256": "719f1296b78ef2ea854e0cfd6ca012c770620b9d94ad35170a790cc53f2312b9"
+    },
+    {
+      "path": "artifacts/realism/full_suite_progress_visual_1.png",
+      "sha256": "ea172854021a3b1f2af2e6851e11549c2ca02cff41745f7104bdb07971d66b08"
+    },
+    {
+      "path": "artifacts/realism/full_suite_progress_visual_2.png",
+      "sha256": "bceb9042cf16ce680e7072d140eb74c8bc68aa681d0a570f996f3b7429809ace"
+    },
+    {
+      "path": "artifacts/realism/full_suite_progress_visual_3.png",
+      "sha256": "d45dbc882cbfc1667232a158f1dda28644f0428798455af72141eab15097cab9"
+    },
+    {
+      "path": "artifacts/realism/full_suite_progress_visual_4.png",
+      "sha256": "9208b9ed90d904eb3ecbc2cd8dcb967c696f13c1b80ac27000c623bfeb42a76e"
+    },
+    {
+      "path": "artifacts/realism/full_suite_progress_visual_5.png",
+      "sha256": "73b2aad2f9b8c9b56020468a974cad5aba07809ea012b405bc9c1a3773159897"
+    },
+    {
+      "path": "artifacts/realism/full_suite_progress_visual_6.png",
+      "sha256": "19316574e55d5514f883a6b3cc5059a479dcdb3d57d3fa1fa4e64d2001011c08"
+    },
+    {
+      "path": "artifacts/realism/full_suite_progress_visual_7.png",
+      "sha256": "49240b9a7cd6ba247f7b977541bb37d5a1bde31e363308c90f12e9cf8b20a50f"
+    }
+  ],
+  "observations": [
+    "Opening and long suite are both present, with hands and keyboard visible.",
+    "The updated wrist-order minute occupies the original 239.9-299.9 second position; older and updated sections have distinct readable labels.",
+    "Controller/camera cuts remain visible; no continuous-physics or naturalness approval.",
+    "Updated 290-second sample removes the archived wrist inversion, but elevated/splayed digits and skin clipping still require work.",
+    "Final source posture is held during the original audio decay; body/costume validation remains absent."
+  ]
+}

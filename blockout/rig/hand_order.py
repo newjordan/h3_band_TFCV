@@ -113,12 +113,20 @@ def ordered_wrists(right, left, gap=.06, weights=(1., 1.), shoulders=None, arm_l
 
 
 def wrist_order_audit(frames, fps, gap=.06):
+    if not np.isfinite(fps) or fps <= 0 or not np.isfinite(gap) or gap < 0:
+        raise ValueError('Finite positive fps and finite nonnegative wrist gap are required')
+    if not frames:
+        return dict(required_gap_mm=1000.*gap, minimum_gap_mm=None, observed_frames=0,
+            violating_frames=[], crossing_frames=[], crossing_seconds=0., passed=None,
+            scope='No observed frames; no wrist-order verdict')
     values = np.array([f['hands']['R'].get('root', {'pos': f['hands']['R']['wrist']})['pos'][0]
                        - f['hands']['L'].get('root', {'pos': f['hands']['L']['wrist']})['pos'][0]
                        for f in frames], float)
+    if not np.isfinite(values).all():
+        raise ValueError('Wrist order cannot be certified with nonfinite positions')
     bad = np.flatnonzero(values < gap - 1e-9)
     crossing = np.flatnonzero(values < -1e-9)
-    return dict(required_gap_mm=1000. * gap, minimum_gap_mm=float(1000. * values.min()),
+    return dict(required_gap_mm=1000. * gap, minimum_gap_mm=float(1000. * values.min()), observed_frames=len(frames),
         violating_frames=bad.tolist(), crossing_frames=crossing.tolist(),
         crossing_seconds=len(crossing)/fps,
         passed=not len(bad), scope='sampled wrist-root order; skin, containment and nonlinear CCD separate')

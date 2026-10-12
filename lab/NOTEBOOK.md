@@ -1,5 +1,71 @@
 # Piano-hand lab notebook
 
+## 2026-10-11: coherent score, physical prelude and whole-suite review
+
+**Actual controller change.** Add compile/preparation/solve APIs. Complete-score
+fingering and fixed body placement are optional; the chronological solver and
+arm track can execute 48 prelude frames before exposing the requested passage.
+All warmup poses are retained. Render windows select already solved frames;
+checked rejoining recovers identical poses, keys, body and original timestamps.
+Legacy compilation and no physical warmup remain experimental controls.
+Original touch/lift survive time scaling. Empty order audits have no verdict;
+nonfinite root-x positions cannot pass. All 157 tests pass in 39.922 seconds.
+
+**Frozen full-budget 282.9–286.9 s trial.** Same original ledger, size 1, seed 0,
+24 Hz, maximum E36 per-frame budgets and notched geometry. Four CPU runs have
+unchanged fingerprints. Warmup adds work; per-frame maximum budgets are equal,
+not total computation. Full-score preparation also changes fingering, body
+placement and context, so the legacy→coherent comparison has combined causes.
+
+| Treatment | Onsets /20 | Original held coverage | Max joint rad/s | Runtime seconds |
+|---|---:|---:|---:|---:|
+| Independent 2 s windows |16|20.75%|34.773|544.5|
+| One 4 s full-score plan |16|18.87%|12.000|542.4|
+| Plan + actual 2 s prelude |15|19.25%|12.000|804.1|
+| Prelude + quiet digits/wrist carry |15|50.19%|12.000|929.6|
+
+The old join's right-wrist jump drops 94.932→1.255 mm with a single plan.
+One-plan visible and warmup-plus-visible samples retain the 12 rad/s joint
+bound; all treatments retain root/MCP centre order and exact arm lengths.
+At the identical common inactive-middle observations (R96, L59), prelude→
+composed rest-PIP RMS errors fall R11.62→6.04°, L30.86→25.27°. These are soft
+reference descriptors, not naturalness or muscle-force validation. Scheduling
+still shortens/misses original held events: 21 changes versus 14 composed.
+
+**Independent actual skin.** Eight production Blender level-2 LBS snapshots,
+frames 47/48, both quad diagonals and CPU parity. No interhand crossings at
+those instants. Left instrument depth: independent 5.642/5.994 mm, coherent
+2.813/2.542 mm, prelude 2.967/4.388 mm, composed 5.809/5.840 mm. All have self
+folds; composed frame47 has 497/453 left-hand triangle crossings. Its right
+hand also penetrates 0.333 mm. Thus better held-key diagnostics trade against
+actual surface failures. No treatment is accepted or adopted by default.
+Every actual warmup surface remains unverified, with no initialization claim.
+
+**Native research.** Five-node graph completed, episode
+`e085d72d3a37db6ce0f96f39477b8a15ea4495c39b2ac99789d6579273fe42b7`.
+Its methodological PASS requires additional same-plan midpoint reset and
+controller-without-warmup controls for attribution; both are pending. SO(3)
+transport/filtering and explicit wrist velocity bounds remain outstanding.
+Original ledger pitch20 at 37.196–39.941 s is outside the present 88-key
+instrument; retained and reported, not silently omitted from compilation.
+
+**Whole-suite view requested.** The old v19 “full” cut omits 0–39.9 s. Restore
+an archived opening whose 128 notes match pitches, times, releases and tracks;
+93 velocity values differ (maximum 6), so its motion is not a matched current
+controller run. Render that opening at 512×288/12 Hz on CPU. Use the existing
+v19 main performance and full original 393.680 s audio, with final posture
+held during audio decay. Insert the completed wrist-order minute at its
+original 239.9–299.9 s position. The 6:34 review cut labels updated versus
+archived sections and retains controller/camera cuts and all seven internal
+minute join failures. It is not a full continuous physical solve. A first
+opening view was rejected because the mannequin head obscured one hand;
+the rerender hides the body. Sources and rejected view are preserved.
+
+**Remaining full objective.** Actual positive-distance/containment, articulated
+nonlinear CCD, original physical music/pedal semantics, stable contacts and
+forces/action, natural form, complete body/costume and all drummer failures.
+Continuation and quiet digits help locally but do not meet that objective.
+
 ## 2026-10-11: no-crossing ownership and wrist planning
 
 **Requirement and hypothesis.** The user's minute contains unwanted hand
@@ -46,9 +112,10 @@ minute reports 263/283 and 50.83%, but differs in controller/bounds/chunking
 and is not a causal matched baseline. Full rendered motion is not accepted.
 
 **Actual skin.** Five independent production Blender level-2 snapshots,
-both quad diagonals and CPU parity below 0.0012 mm. No sampled interhand
-surface intersections, but self folds and instrument/key-support failures
-remain. Ordered stress frame 36 has 117 self pairs and R penetration 0.186 mm;
+both quad diagonals and CPU parity below 0.0012 mm. Ordered stress and closest
+minute samples have no interhand surface intersections. Legacy stress frame
+72 has 238/229 interhand pairs across the two quad diagonals. Self folds and
+instrument/key-support failures remain. Ordered stress frame 36 has 117 self pairs and R penetration 0.186 mm;
 frame 72 has 61 self pairs and R/L penetration 0.285/0.340 mm. The fresh
 minute's closest-hands frame 1079 has 392 L self pairs and L penetration
 6.533 mm (1,831 instrument triangle intersections). No complete geometry,

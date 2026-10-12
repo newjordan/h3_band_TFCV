@@ -1,0 +1,87 @@
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+EGL Error (0x3009): EGL_BAD_MATCH: Arguments are inconsistent (for example, a valid context requires buffers not supplied by a valid surface).
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+Blender 4.0.2
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00000.png'
+Time: 00:01.43 (Saving: 00:00.13)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00001.png'
+Time: 00:01.71 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00002.png'
+Time: 00:01.04 (Saving: 00:00.04)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00003.png'
+Time: 00:00.98 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00004.png'
+Time: 00:00.97 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00005.png'
+Time: 00:00.99 (Saving: 00:00.04)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00006.png'
+Time: 00:00.94 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00007.png'
+Time: 00:01.14 (Saving: 00:00.04)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00008.png'
+Time: 00:01.03 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00009.png'
+Time: 00:01.04 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00010.png'
+Time: 00:01.05 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00011.png'
+Time: 00:00.97 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00012.png'
+Time: 00:01.10 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00013.png'
+Time: 00:00.99 (Saving: 00:00.04)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00014.png'
+Time: 00:01.01 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00015.png'
+Time: 00:01.00 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00016.png'
+Time: 00:01.01 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00017.png'
+Time: 00:01.01 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00018.png'
+Time: 00:00.93 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00019.png'
+Time: 00:00.96 (Saving: 00:00.04)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00020.png'
+Time: 00:00.94 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00021.png'
+Time: 00:00.99 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00022.png'
+Time: 00:01.02 (Saving: 00:00.04)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/continuous_plan_coherent_frames/f_00023.png'
+Time: 00:00.93 (Saving: 00:00.03)
+
+done 24 frames
+
+Blender quit

@@ -1,0 +1,366 @@
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+EGL Error (0x3009): EGL_BAD_MATCH: Arguments are inconsistent (for example, a valid context requires buffers not supplied by a valid surface).
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+Blender 4.0.2
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00120.png'
+Time: 00:01.24 (Saving: 00:00.12)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00121.png'
+Time: 00:01.55 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00122.png'
+Time: 00:00.82 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00123.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00124.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00125.png'
+Time: 00:00.86 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00126.png'
+Time: 00:00.92 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00127.png'
+Time: 00:00.88 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00128.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00129.png'
+Time: 00:00.84 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00130.png'
+Time: 00:00.87 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00131.png'
+Time: 00:00.93 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00132.png'
+Time: 00:00.86 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00133.png'
+Time: 00:01.21 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00134.png'
+Time: 00:01.01 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00135.png'
+Time: 00:01.35 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00136.png'
+Time: 00:01.14 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00137.png'
+Time: 00:01.12 (Saving: 00:00.04)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00138.png'
+Time: 00:01.00 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00139.png'
+Time: 00:01.14 (Saving: 00:00.02)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00140.png'
+Time: 00:01.09 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00141.png'
+Time: 00:01.01 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00142.png'
+Time: 00:01.10 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00143.png'
+Time: 00:00.99 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00144.png'
+Time: 00:01.05 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00145.png'
+Time: 00:01.04 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00146.png'
+Time: 00:01.09 (Saving: 00:00.02)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00147.png'
+Time: 00:01.18 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00148.png'
+Time: 00:01.17 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00149.png'
+Time: 00:00.94 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00150.png'
+Time: 00:01.03 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00151.png'
+Time: 00:01.10 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00152.png'
+Time: 00:01.16 (Saving: 00:00.02)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00153.png'
+Time: 00:01.11 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00154.png'
+Time: 00:01.12 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00155.png'
+Time: 00:01.09 (Saving: 00:00.02)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00156.png'
+Time: 00:01.12 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00157.png'
+Time: 00:00.96 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00158.png'
+Time: 00:00.94 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00159.png'
+Time: 00:00.87 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00160.png'
+Time: 00:00.87 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00161.png'
+Time: 00:00.87 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00162.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00163.png'
+Time: 00:00.87 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00164.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00165.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00166.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00167.png'
+Time: 00:00.90 (Saving: 00:00.02)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00168.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00169.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00170.png'
+Time: 00:00.88 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00171.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00172.png'
+Time: 00:00.91 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00173.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00174.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00175.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00176.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00177.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00178.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00179.png'
+Time: 00:00.91 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00180.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00181.png'
+Time: 00:00.92 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00182.png'
+Time: 00:00.94 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00183.png'
+Time: 00:00.92 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00184.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00185.png'
+Time: 00:00.93 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00186.png'
+Time: 00:00.94 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00187.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00188.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00189.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00190.png'
+Time: 00:00.88 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00191.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00192.png'
+Time: 00:00.88 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00193.png'
+Time: 00:00.92 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00194.png'
+Time: 00:00.92 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00195.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00196.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00197.png'
+Time: 00:00.94 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00198.png'
+Time: 00:00.93 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00199.png'
+Time: 00:00.88 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00200.png'
+Time: 00:00.93 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00201.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00202.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00203.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00204.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00205.png'
+Time: 00:00.93 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00206.png'
+Time: 00:00.95 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00207.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00208.png'
+Time: 00:00.86 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00209.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00210.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00211.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00212.png'
+Time: 00:00.85 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00213.png'
+Time: 00:00.84 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00214.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00215.png'
+Time: 00:00.92 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00216.png'
+Time: 00:00.93 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00217.png'
+Time: 00:00.86 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00218.png'
+Time: 00:00.87 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00219.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00220.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00221.png'
+Time: 00:00.92 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00222.png'
+Time: 00:00.90 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00223.png'
+Time: 00:00.88 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00224.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00225.png'
+Time: 00:00.89 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00226.png'
+Time: 00:00.88 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00227.png'
+Time: 00:00.88 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00228.png'
+Time: 00:00.92 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00229.png'
+Time: 00:00.91 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00230.png'
+Time: 00:00.91 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00231.png'
+Time: 00:00.88 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00232.png'
+Time: 00:00.87 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00233.png'
+Time: 00:00.87 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00234.png'
+Time: 00:00.87 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00235.png'
+Time: 00:00.93 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00236.png'
+Time: 00:00.91 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_opening_frames/f_00237.png'
+Time: 00:00.91 (Saving: 00:00.01)
+

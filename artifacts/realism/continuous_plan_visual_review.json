@@ -1,0 +1,34 @@
+{
+  "reviewed": true,
+  "sample_frames_12fps": [
+    0,
+    23,
+    24,
+    47
+  ],
+  "images": [
+    {
+      "path": "artifacts/realism/continuous_plan_visual_0.png",
+      "sha256": "98bfd672d81dd018c54997e7c1a54052fc8ca1454d1acf9cffa910c8863f3444"
+    },
+    {
+      "path": "artifacts/realism/continuous_plan_visual_1.png",
+      "sha256": "e7e1e67402d94803d4a05990aea4d0a3483fc8c5ecbbe99e2bfbb180410c0f4f"
+    },
+    {
+      "path": "artifacts/realism/continuous_plan_visual_2.png",
+      "sha256": "cbbb4860039aea0239ec04a0dfe5a38d434bac8ffd0dee67f55e33c9b52f3242"
+    },
+    {
+      "path": "artifacts/realism/continuous_plan_visual_3.png",
+      "sha256": "5e6e120ae917716ac763f05d24a68d96baabdf1c21bef539c1d69349c739a214"
+    }
+  ],
+  "observations": [
+    "All four treatments and keyboard are visible with identical framing.",
+    "The independent-segment treatment has a large motion discontinuity at its midpoint; the one-plan alternatives keep the hand path near its prior pose.",
+    "Resting digits still show conspicuous splay/extension and curled folds at some instants; no naturalness acceptance.",
+    "Projected hands overlap in the independent-window treatment near the midpoint; root ordering alone does not certify composed hand orientation or surface clearance.",
+    "Body hidden in diagnostic view; cut upper arms are visualization endpoints, not full-body validation."
+  ]
+}

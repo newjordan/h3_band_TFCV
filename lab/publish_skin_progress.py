@@ -7,6 +7,7 @@ from deformation_progress_site import apply_deformation
 from performance_preview_site import apply_performance_preview
 from composure_site import apply_composure
 from hand_order_site import apply_hand_order
+from continuous_plan_site import apply_continuous_plan, apply_full_suite
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = Path('/home/frosty40/h3/results/band_site/web')
@@ -145,6 +146,14 @@ hand_order_path = ROOT / 'lab/realism_results/hand_order_20261011.json'
 hand_order = json.loads(hand_order_path.read_text()) if hand_order_path.exists() else None
 if hand_order is not None and hand_order['status'] == 'complete':
     apply_hand_order(section, hand_order)
+continuous_plan_path = ROOT / 'lab/realism_results/continuous_plan_20261011.json'
+continuous_plan = json.loads(continuous_plan_path.read_text()) if continuous_plan_path.exists() else None
+if continuous_plan is not None and continuous_plan['status'] == 'complete':
+    apply_continuous_plan(section, continuous_plan)
+full_suite_path = ROOT / 'lab/realism_results/full_suite_progress_20261011.json'
+full_suite = json.loads(full_suite_path.read_text()) if full_suite_path.exists() else None
+if full_suite is not None and full_suite['status'] == 'complete':
+    apply_full_suite(section, full_suite)
 manifest['sections'] = [section] + [s for s in manifest['sections'] if s['id'] != section['id']]
 manifest['updated'] = '2026-10-11 one-minute grayscale piano performance with audio, frozen deformation study and connected key-top pilot; complete realism remains unfinished'
 manifest['status'].insert(0, f"<b>Rig research:</b> {deformation['unit_tests']['passed']} tests pass. "
@@ -161,6 +170,14 @@ if composure is not None and composure['status'] == 'complete':
         'The one-minute performance and drummer diagnostics remain available below.')
 media = WEB / 'media'
 media.mkdir(exist_ok=True)
+if continuous_plan is not None and continuous_plan['status'] == 'complete':
+    for source, destination in ((ART/'continuous_plan_comparison.mp4','rig_realism_continuous_plan_comparison.mp4'),
+                                (continuous_plan_path,'rig_realism_continuous_plan_results.json')):
+        shutil.copy2(source, media/destination)
+if full_suite is not None and full_suite['status'] == 'complete':
+    for source, destination in ((ART/'full_suite_progress_preview.mp4','rig_realism_full_suite_progress.mp4'),
+                                (full_suite_path,'rig_realism_full_suite_preview_results.json')):
+        shutil.copy2(source, media/destination)
 if hand_order is not None and hand_order['status'] == 'complete':
     manifest['updated'] = '2026-10-11 ordered-hand one-minute performance; complete rig realism remains unfinished'
     manifest['status'][0] = (f"<b>Rig research:</b> {hand_order['unit_tests']['passed']} tests pass. "
@@ -209,5 +226,11 @@ for source, destination in (
         (ART / 'drums/crosshand_stroke_control.png', 'rig_realism_drummer_stroke_control.png'),
         (ROOT / 'lab/realism_results/drummer_crosshand_20261011.json', 'rig_realism_drummer_crosshand_results.json')):
     shutil.copy2(source, media / destination)
+if continuous_plan is not None and continuous_plan['status'] == 'complete':
+    manifest['status'][0] = (f"<b>Rig research:</b> {continuous_plan['unit_tests']['passed']} tests pass. "
+        'A single full-score plan and chronological solve remove the sampled join discontinuity in the tested passage. '
+        'All controller treatments, physical warmup and actual-skin failures are published; full realism remains unfinished.')
+if full_suite is not None and full_suite['status'] == 'complete':
+    manifest['updated'] = '2026-10-11 entire 6:34 Knights Suite preview with original audio and updated wrist-order minute; full realism remains unfinished'
 manifest_path.write_text(json.dumps(manifest, indent=1) + '\n')
 print('Updated existing band-site manifest and research media')
