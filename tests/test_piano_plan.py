@@ -88,6 +88,7 @@ class PianoPlanTests(unittest.TestCase):
                 self.assertEqual(len(result['frames']), 6)
                 self.assertAlmostEqual(result['frames'][0]['t'], 0.)
                 self.assertEqual(len(result['warmup']['frames']), 48 if warm else 0)
+                self.assertEqual(result['key_action_ledger'],plan.action_ledger)
                 with self.assertRaises(ValueError):
                     piano.solve_plan(plan)
 

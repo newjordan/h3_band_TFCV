@@ -1,5 +1,78 @@
 # Piano-hand lab notebook
 
+## 2026-10-11: recovered pedal estimates and explicit source/action lineage
+
+**Progress audit.** The previous turn sealed/published the orientation study
+and pushed `e260fc4`. The present turn recovers new authoritative source
+evidence and implements musical-state provenance. Keep the entire natural
+piano/drummer/body/costume, music, geometry, forces and continuous-time goal.
+
+The cached raw model transcription contains 947 notes and 282 CC64 events.
+Archived fit data keeps 940 notes; all match the raw file. The note-only
+export lost the controllers. Rebuilding Chopin and full suite reproduces
+both original MIDI byte hashes exactly. The source recording/model and old
+scripts are hashed; small source MIDI/fit/scripts are copied before relying
+on temporary paths. No new inference or model download was needed.
+
+**Recovered domain:** performed 166.9051358508–389.6952746902 seconds. All
+282 events remain accounted: 280 mapped inside, the preceding event carries
+initial value127, and the final up event remains outside. End state is still
+down; no artificial release is inserted. Mapping records crop, fitted bar
+ticks, excerpt offset, suite ticks and shared performance time map. The new
+timing receipt explicitly records per-note jitter/clamping separately.
+Estimated controls are not measured feet, half pedal, or unique key releases.
+Primary target-processing code supports pedal extension by default; exact
+checkpoint training settings remain unverified.
+
+**Lineage implemented.** Every performed attack has one immutable source ID.
+Ownership/slicing/fingering repair/finger reuse/reach release are traced.
+The original 2,046 events produce 2,044 proposals: IDs828 and943, both pitch61
+at120.562371s/128.519255s, disappear in onset slicing. They are explicitly
+missing, not assumed played. The source/physical-action distinction does not
+reschedule these attacks or relax their score acceptance. Rolls now copy
+source IDs/touch/lift instead of losing those attributes.
+
+1,478 unique proposed holds are shortened. Stages cut523 in fingering repair,
+1,083 in finger reuse and572 in reach release; some notes are cut at multiple
+stages. Estimated pedal covers391 uninterrupted, fails394, leaves693 unknown
+outside its domain. Native review recommended separate mechanisms; a joint
+classification of estimated pedal coverage and audio damping is retained.
+The previous synthesized soundtrack uses the old automatic bass-reset sampler
+without downbeats, verified from its archived render command. Of proposed
+cuts,475 keep its damping parameter and1,003 change it. No waveform/real-piano
+equivalence is claimed and no soundtrack is replaced.
+
+**Controls/tests.** All legacy full-score fingering, events, ownership and body
+centre reproduce the frozen baseline. All preexisting prepared fields/body
+spring states match the prior committed controller in three windows (144,
+144,96 internal frames). An initial comparison loader failed because archive
+location changed its relative asset context; preserve failure and restore the
+original module context without editing its source bytes. This is prepared
+input equivalence, not a fresh skin/continuous-motion acceptance. Eleven new
+tests pass; all176 rig tests pass in39.248s. No core changes during recovery.
+Default motion/scoring/holds/pedals are unchanged.
+
+**Native method graph.** Preserve sandbox DNS failure. Escalated native graph
+`piano-key-action-semantics` completes2/2 in696s, four traces including retry,
+episode `ca346188adbe9bc612fa033132ff6cbca2cea0d4c5f95ddc2bd18a489ee2f09a`.
+Only completion metadata and an undisclosed output handle were returned; the
+CLI final proposal independently reviews the supplied brief. No inspected
+reviewer consensus or empirical rig pass is claimed. Graph receipt, final
+answer and the complete source/action records are retained.
+
+**Next physical work.** Repair attack omission, then use explicitly justified
+key-release/pedal intervals to plan complete wrist/finger contact. Neither
+original long gates nor currently shortened proposals are physical ground
+truth. Two omitted attacks still fail, pitch20 remains outside the keyboard,
+all prior sampled skin folds/clipping remain, and initialization is infeasible.
+Actual foot/key action, forces and positive/continuous skin/body/costume
+clearance must precede any realistic performance acceptance. Drummer remains
+unchanged and its twelve stress patterns remain rejected.
+
+The band site retains the complete6:34 preview first, followed by new source/
+action chart and failures. It explains that the preserved soundtrack is the
+original synthesized suite audio rather than the reference Levy recording.
+
 ## 2026-10-11: absolute wrist history, physical initialization and score semantics
 
 **Authoritative continuation.** The preceding turn verified the published

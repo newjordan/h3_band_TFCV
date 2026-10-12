@@ -56,8 +56,19 @@ class TimeMap:
         return np.interp(t, self.ts, self.tp)
 
 
-def perform(notes, chart, seed=0):
-    """Returns (performed notes with velocity set and a .touch/.lift attribute, time map)."""
+def perform(notes, chart, seed=0, *, timing_receipt=None):
+    """Return performed notes and the shared score/performance time map.
+
+    An optional empty dict receives every source-to-output identity, shared
+    mapped time and actual timing variation (including duration clamps).
+    Controllers use the shared map; individual note jitter is separate.
+    """
+    if timing_receipt is not None and (not isinstance(timing_receipt,dict) or timing_receipt):
+        raise ValueError('The timing receipt must be an empty dictionary')
+    identities={id(n):i for i,n in enumerate(notes)} if timing_receipt is not None else None
+    if identities is not None and len(identities)!=len(notes):
+        raise ValueError('A timing receipt requires distinct source note objects')
+    recorded={}
     rng = np.random.default_rng(seed)
     t_end = max(n.end for n in notes)
     tm = TimeMap(chart, t_end)
@@ -89,7 +100,20 @@ def perform(notes, chart, seed=0):
             p.touch = float(np.clip(touch + rng.normal(0, 0.05 * free) + 0.15 * max(0, v - 0.6), 0, 1))
             p.lift = float(np.clip(1 + rng.normal(0, 0.25 * free), 0.4, 1.8))
             out.append(p)
+            if timing_receipt is not None:
+                recorded[id(p)]=dict(input_id=identities[id(n)],
+                    input_note=[n.start,n.end,n.pitch,n.velocity,n.track],
+                    output_note=[p.start,p.end,p.pitch,p.velocity,p.track],
+                    shared_start=float(tm(n.start)),shared_end=float(tm(n.end)),
+                    chord_shift_seconds=float(dt_hand),
+                    actual_start_variation_seconds=float(p.start-tm(n.start)),
+                    actual_end_variation_seconds=float(p.end-tm(n.end)),
+                    start_clamped_to_zero=bool(start<0),end_clamped_to_minimum_duration=bool(end<start+.05))
     out.sort(key=lambda n: (n.start, n.pitch))
+    if timing_receipt is not None:
+        timing_receipt.update(schema='piano-performance-timing/v1',seed=seed,
+            records=[dict(recorded[id(n)],output_id=i) for i,n in enumerate(out)],
+            shared_map_scope='score time integration; note timing variation does not alter controller time mapping')
     return out, tm
 
 

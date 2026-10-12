@@ -1,0 +1,44 @@
+{
+  "site": "https://toymaker.tail2d8af4.ts.net/band/",
+  "site_http_status": 200,
+  "site_sha256": "a37a42350be7baeaffd8a611533cc02cf9dac9f2105a1d09d7c86d204c6a0703",
+  "records": [
+    {
+      "resource": "chart",
+      "url": "https://toymaker.tail2d8af4.ts.net/band/media/rig_realism_key_action_semantics.png",
+      "http_status": 200,
+      "local_sha256": "dc2c51ae13b069606ddd49733c79d346fe5f85e7d7f3059342de7e2f2f57de00",
+      "published_sha256": "dc2c51ae13b069606ddd49733c79d346fe5f85e7d7f3059342de7e2f2f57de00",
+      "identical": true
+    },
+    {
+      "resource": "results",
+      "url": "https://toymaker.tail2d8af4.ts.net/band/media/rig_realism_key_action_results.json",
+      "http_status": 200,
+      "local_sha256": "a6b5145c6318553c1f58ebf05855d0ab5fcd32b835caee57741cb83e522de444",
+      "published_sha256": "a6b5145c6318553c1f58ebf05855d0ab5fcd32b835caee57741cb83e522de444",
+      "identical": true
+    },
+    {
+      "resource": "pedal",
+      "url": "https://toymaker.tail2d8af4.ts.net/band/media/rig_realism_recovered_pedal.json",
+      "http_status": 200,
+      "local_sha256": "738cc51df3452baac011e60ab96f730e8f4061764ed6fa01c04aed0d04ee9442",
+      "published_sha256": "738cc51df3452baac011e60ab96f730e8f4061764ed6fa01c04aed0d04ee9442",
+      "identical": true
+    },
+    {
+      "resource": "full_suite",
+      "url": "https://toymaker.tail2d8af4.ts.net/band/media/rig_realism_full_suite_progress.mp4",
+      "http_status": 200,
+      "local_sha256": "b7c0f3d8714faa56c0e402a36be7452d9838d496b486e0cfb41915a153a300e4",
+      "published_sha256": "b7c0f3d8714faa56c0e402a36be7452d9838d496b486e0cfb41915a153a300e4",
+      "identical": true
+    }
+  ],
+  "full_suite_first": true,
+  "unit_tests": 176,
+  "default_controller_changed": false,
+  "physical_key_actions_validated": false,
+  "full_performance_accepted": false
+}

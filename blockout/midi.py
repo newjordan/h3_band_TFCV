@@ -1,7 +1,7 @@
 """Minimal Standard MIDI File reader: notes in seconds, with the tempo map applied. No dependencies.
 
-Note = (start_s, end_s, pitch, velocity, track). Running status, sysex and meta events are handled;
-only note on/off and set-tempo are used.
+Note = (start_s, end_s, pitch, velocity, track). Running status, sysex and meta events are handled.
+Notes retain raw note-offs; control_changes() reads controllers separately, without pedal extension.
 """
 import struct
 from dataclasses import dataclass
@@ -14,6 +14,17 @@ class Note:
     pitch: int
     velocity: int
     track: int
+
+
+@dataclass(frozen=True)
+class ControlChange:
+    time: float
+    controller: int
+    value: int
+    channel: int
+    track: int
+    tick: int
+    event_index: int
 
 
 def _varlen(b, i):
@@ -44,7 +55,8 @@ def _events(trk):
 
 
 def _parse(path):
-    b = open(path, "rb").read()
+    with open(path, "rb") as source:
+        b = source.read()
     assert b[:4] == b"MThd", "not a MIDI file"
     _, ntrk, div = struct.unpack(">HHH", b[8:14])
     assert not div & 0x8000, "SMPTE time division not supported"
@@ -93,6 +105,27 @@ def read(path):
                     notes.append(Note(to_s(t0), to_s(tick), d[0], vel, ti))
     notes.sort(key=lambda n: (n.start, n.pitch))
     return notes
+
+
+def control_changes(path, controller=None):
+    """Read tempo-mapped CC events, retaining track/channel and source order.
+
+    Same-time events on different tracks stay separate; choosing or combining
+    controller streams is the caller's responsibility. No note is changed.
+    """
+    if controller is not None and (not isinstance(controller, int) or not 0 <= controller <= 127):
+        raise ValueError('A MIDI controller number must be an integer from 0 to 127')
+    tracks, _, to_s = _parse(path)
+    result = []
+    for ti, track in enumerate(tracks):
+        for index, (tick, status, data) in enumerate(track):
+            if isinstance(status, int) and status & 0xF0 == 0xB0:
+                if len(data) != 2 or any(x > 127 for x in data):
+                    raise ValueError('Invalid control-change data bytes')
+                if controller is None or data[0] == controller:
+                    result.append(ControlChange(to_s(tick), data[0], data[1], status & 0x0F,
+                                                ti, tick, index))
+    return sorted(result, key=lambda event: (event.time, event.track, event.event_index))
 
 
 def beats(path, speed=1.0):

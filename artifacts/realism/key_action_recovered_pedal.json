@@ -1,0 +1,5652 @@
+{
+  "schema": "piano-estimated-pedal-recovery/v1",
+  "domain": [
+    166.90513585076093,
+    389.69527469016913
+  ],
+  "initial_value": 127,
+  "initial_evidence_raw_id": 0,
+  "final_value": 127,
+  "events": [
+    {
+      "raw_id": 0,
+      "raw": {
+        "time": 0.5794270833333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 445,
+        "event_index": 0
+      },
+      "status": "before excerpt; retained as initial-state evidence",
+      "performed_time": null
+    },
+    {
+      "raw_id": 1,
+      "raw": {
+        "time": 3.15234375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 2421,
+        "event_index": 11
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 2.13234375,
+      "chopin_tick": 954,
+      "chopin_score_time": 2.13159375,
+      "suite_input_time": 161.01942775000003,
+      "suite_tick": 94554,
+      "suite_score_time": 161.0194257499999,
+      "performed_time": 169.08023188958379
+    },
+    {
+      "raw_id": 2,
+      "raw": {
+        "time": 3.33984375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 2565,
+        "event_index": 19
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 2.31984375,
+      "chopin_tick": 1038,
+      "chopin_score_time": 2.3192812500000004,
+      "suite_input_time": 161.20711525000002,
+      "suite_tick": 94638,
+      "suite_score_time": 161.20711324999988,
+      "performed_time": 169.27174974672656
+    },
+    {
+      "raw_id": 3,
+      "raw": {
+        "time": 5.359375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 4116,
+        "event_index": 31
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 4.339375,
+      "chopin_tick": 1939,
+      "chopin_score_time": 4.340369791666666,
+      "suite_input_time": 163.2282037916667,
+      "suite_tick": 95539,
+      "suite_score_time": 163.22820179166655,
+      "performed_time": 171.33408499332475
+    },
+    {
+      "raw_id": 4,
+      "raw": {
+        "time": 5.559895833333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 4270,
+        "event_index": 37
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 4.539895833333333,
+      "chopin_tick": 2014,
+      "chopin_score_time": 4.539197916666667,
+      "suite_input_time": 163.4270319166667,
+      "suite_tick": 95614,
+      "suite_score_time": 163.42702991666656,
+      "performed_time": 171.53697083516144
+    },
+    {
+      "raw_id": 5,
+      "raw": {
+        "time": 6.588541666666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 5060,
+        "event_index": 44
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 5.5685416666666665,
+      "chopin_tick": 2402,
+      "chopin_score_time": 5.5678020833333335,
+      "suite_input_time": 164.45563608333336,
+      "suite_tick": 96002,
+      "suite_score_time": 164.45563408333322,
+      "performed_time": 172.58656692359656
+    },
+    {
+      "raw_id": 6,
+      "raw": {
+        "time": 6.908854166666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 5306,
+        "event_index": 49
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 5.8888541666666665,
+      "chopin_tick": 2523,
+      "chopin_score_time": 5.888578125,
+      "suite_input_time": 164.77641212500004,
+      "suite_tick": 96123,
+      "suite_score_time": 164.77641012499987,
+      "performed_time": 172.91388941509308
+    },
+    {
+      "raw_id": 7,
+      "raw": {
+        "time": 8.372395833333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 6430,
+        "event_index": 51
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 7.352395833333334,
+      "chopin_tick": 3075,
+      "chopin_score_time": 7.351953125,
+      "suite_input_time": 166.23978712500002,
+      "suite_tick": 96675,
+      "suite_score_time": 166.23978512499988,
+      "performed_time": 174.40712921101112
+    },
+    {
+      "raw_id": 8,
+      "raw": {
+        "time": 9.438802083333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 7249,
+        "event_index": 56
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 8.418802083333334,
+      "chopin_tick": 3477,
+      "chopin_score_time": 8.417671875,
+      "suite_input_time": 167.30550587500002,
+      "suite_tick": 97077,
+      "suite_score_time": 167.30550387499989,
+      "performed_time": 175.4945973232558
+    },
+    {
+      "raw_id": 9,
+      "raw": {
+        "time": 10.885416666666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 8360,
+        "event_index": 61
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 9.865416666666667,
+      "chopin_tick": 4004,
+      "chopin_score_time": 9.866020833333332,
+      "suite_input_time": 168.75385483333335,
+      "suite_tick": 97604,
+      "suite_score_time": 168.7538528333332,
+      "performed_time": 176.97250442359558
+    },
+    {
+      "raw_id": 10,
+      "raw": {
+        "time": 10.938802083333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 8401,
+        "event_index": 62
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 9.918802083333334,
+      "chopin_tick": 4022,
+      "chopin_score_time": 9.919364583333332,
+      "suite_input_time": 168.80719858333336,
+      "suite_tick": 97622,
+      "suite_score_time": 168.80719658333322,
+      "performed_time": 177.02693682155476
+    },
+    {
+      "raw_id": 11,
+      "raw": {
+        "time": 11.934895833333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 9166,
+        "event_index": 68
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 10.914895833333334,
+      "chopin_tick": 4358,
+      "chopin_score_time": 10.915114583333333,
+      "suite_input_time": 169.80294858333335,
+      "suite_tick": 97958,
+      "suite_score_time": 169.8029465833332,
+      "performed_time": 178.04300825012592
+    },
+    {
+      "raw_id": 12,
+      "raw": {
+        "time": 12.029947916666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 9239,
+        "event_index": 69
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 11.009947916666667,
+      "chopin_tick": 4390,
+      "chopin_score_time": 11.009947916666665,
+      "suite_input_time": 169.8977819166667,
+      "suite_tick": 97990,
+      "suite_score_time": 169.89777991666656,
+      "performed_time": 178.13977695760892
+    },
+    {
+      "raw_id": 13,
+      "raw": {
+        "time": 12.555989583333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 9643,
+        "event_index": 73
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 11.535989583333334,
+      "chopin_tick": 4568,
+      "chopin_score_time": 11.537458333333332,
+      "suite_input_time": 170.42529233333335,
+      "suite_tick": 98168,
+      "suite_score_time": 170.4252903333332,
+      "performed_time": 178.67805289298292
+    },
+    {
+      "raw_id": 14,
+      "raw": {
+        "time": 12.87890625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 9891,
+        "event_index": 80
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 11.85890625,
+      "chopin_tick": 4676,
+      "chopin_score_time": 11.857520833333332,
+      "suite_input_time": 170.74535483333335,
+      "suite_tick": 98276,
+      "suite_score_time": 170.74535283333321,
+      "performed_time": 179.00464728073797
+    },
+    {
+      "raw_id": 15,
+      "raw": {
+        "time": 12.908854166666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 9914,
+        "event_index": 81
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 11.888854166666667,
+      "chopin_tick": 4687,
+      "chopin_score_time": 11.890119791666667,
+      "suite_input_time": 170.7779537916667,
+      "suite_tick": 98287,
+      "suite_score_time": 170.77795179166654,
+      "performed_time": 179.03791152393524
+    },
+    {
+      "raw_id": 16,
+      "raw": {
+        "time": 13.029947916666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 10007,
+        "event_index": 82
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 12.009947916666667,
+      "chopin_tick": 4727,
+      "chopin_score_time": 12.008661458333332,
+      "suite_input_time": 170.89649545833336,
+      "suite_tick": 98327,
+      "suite_score_time": 170.89649345833323,
+      "performed_time": 179.15887240828897
+    },
+    {
+      "raw_id": 17,
+      "raw": {
+        "time": 14.600260416666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 11213,
+        "event_index": 93
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 13.580260416666667,
+      "chopin_tick": 5257,
+      "chopin_score_time": 13.579338541666665,
+      "suite_input_time": 172.46717254166668,
+      "suite_tick": 98857,
+      "suite_score_time": 172.46717054166655,
+      "performed_time": 180.76160412597568
+    },
+    {
+      "raw_id": 18,
+      "raw": {
+        "time": 14.83984375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 11397,
+        "event_index": 98
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 13.81984375,
+      "chopin_tick": 5338,
+      "chopin_score_time": 13.819385416666666,
+      "suite_input_time": 172.7072194166667,
+      "suite_tick": 98938,
+      "suite_score_time": 172.70721741666654,
+      "performed_time": 181.00654991679193
+    },
+    {
+      "raw_id": 19,
+      "raw": {
+        "time": 16.147135416666668,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 12401,
+        "event_index": 103
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 15.127135416666668,
+      "chopin_tick": 5783,
+      "chopin_score_time": 15.126781249999999,
+      "suite_input_time": 174.01461525000002,
+      "suite_tick": 99383,
+      "suite_score_time": 174.01461324999988,
+      "performed_time": 182.34062729774402
+    },
+    {
+      "raw_id": 20,
+      "raw": {
+        "time": 16.639322916666668,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 12779,
+        "event_index": 108
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 15.619322916666668,
+      "chopin_tick": 5983,
+      "chopin_score_time": 15.620531249999999,
+      "suite_input_time": 174.50836525000003,
+      "suite_tick": 99583,
+      "suite_score_time": 174.5083632499999,
+      "performed_time": 182.84445382835617
+    },
+    {
+      "raw_id": 21,
+      "raw": {
+        "time": 17.959635416666668,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 13793,
+        "event_index": 109
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 16.93963541666667,
+      "chopin_tick": 6517,
+      "chopin_score_time": 16.938843749999997,
+      "suite_input_time": 175.82667775000002,
+      "suite_tick": 100117,
+      "suite_score_time": 175.82667574999988,
+      "performed_time": 184.18967066509052
+    },
+    {
+      "raw_id": 22,
+      "raw": {
+        "time": 20.149739583333332,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 15475,
+        "event_index": 114
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 19.129739583333333,
+      "chopin_tick": 7404,
+      "chopin_score_time": 19.128625,
+      "suite_input_time": 178.01645900000003,
+      "suite_tick": 101004,
+      "suite_score_time": 178.0164569999999,
+      "performed_time": 186.42414132835535
+    },
+    {
+      "raw_id": 23,
+      "raw": {
+        "time": 22.13671875,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 17001,
+        "event_index": 119
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 21.11671875,
+      "chopin_tick": 8275,
+      "chopin_score_time": 21.117760416666666,
+      "suite_input_time": 180.0055944166667,
+      "suite_tick": 101875,
+      "suite_score_time": 180.00559241666656,
+      "performed_time": 188.45387134536168
+    },
+    {
+      "raw_id": 24,
+      "raw": {
+        "time": 22.169270833333332,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 17026,
+        "event_index": 120
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 21.149270833333333,
+      "chopin_tick": 8289,
+      "chopin_score_time": 21.148531249999998,
+      "suite_input_time": 180.03636525000002,
+      "suite_tick": 101889,
+      "suite_score_time": 180.03636324999988,
+      "performed_time": 188.48527015488548
+    },
+    {
+      "raw_id": 25,
+      "raw": {
+        "time": 22.415364583333332,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 17215,
+        "event_index": 121
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 21.395364583333333,
+      "chopin_tick": 8401,
+      "chopin_score_time": 21.394697916666665,
+      "suite_input_time": 180.2825319166667,
+      "suite_tick": 102001,
+      "suite_score_time": 180.28252991666656,
+      "performed_time": 188.73646063107591
+    },
+    {
+      "raw_id": 26,
+      "raw": {
+        "time": 22.438802083333332,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 17233,
+        "event_index": 122
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 21.418802083333333,
+      "chopin_tick": 8412,
+      "chopin_score_time": 21.418875,
+      "suite_input_time": 180.306709,
+      "suite_tick": 102012,
+      "suite_score_time": 180.3067069999999,
+      "performed_time": 188.7611311242732
+    },
+    {
+      "raw_id": 27,
+      "raw": {
+        "time": 22.928385416666668,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 17609,
+        "event_index": 126
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 21.90838541666667,
+      "chopin_tick": 8635,
+      "chopin_score_time": 21.909010416666664,
+      "suite_input_time": 180.7968444166667,
+      "suite_tick": 102235,
+      "suite_score_time": 180.79684241666655,
+      "performed_time": 189.26126930454515
+    },
+    {
+      "raw_id": 28,
+      "raw": {
+        "time": 22.979166666666668,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 17648,
+        "event_index": 131
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 21.95916666666667,
+      "chopin_tick": 8658,
+      "chopin_score_time": 21.959562499999997,
+      "suite_input_time": 180.84739650000003,
+      "suite_tick": 102258,
+      "suite_score_time": 180.8473944999999,
+      "performed_time": 189.31285306304858
+    },
+    {
+      "raw_id": 29,
+      "raw": {
+        "time": 25.1015625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 19278,
+        "event_index": 168
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 24.0815625,
+      "chopin_tick": 9621,
+      "chopin_score_time": 24.080968749999997,
+      "suite_input_time": 182.96880275,
+      "suite_tick": 103221,
+      "suite_score_time": 182.9688007499999,
+      "performed_time": 191.47755331815011
+    },
+    {
+      "raw_id": 30,
+      "raw": {
+        "time": 25.319010416666668,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 19445,
+        "event_index": 175
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 24.29901041666667,
+      "chopin_tick": 9711,
+      "chopin_score_time": 24.299406249999997,
+      "suite_input_time": 183.18724025000003,
+      "suite_tick": 103311,
+      "suite_score_time": 183.1872382499999,
+      "performed_time": 191.70044872631334
+    },
+    {
+      "raw_id": 31,
+      "raw": {
+        "time": 26.6484375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 20466,
+        "event_index": 179
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 25.6284375,
+      "chopin_tick": 10259,
+      "chopin_score_time": 25.629447916666663,
+      "suite_input_time": 184.5172819166667,
+      "suite_tick": 103859,
+      "suite_score_time": 184.51727991666655,
+      "performed_time": 193.05763410046268
+    },
+    {
+      "raw_id": 32,
+      "raw": {
+        "time": 26.669270833333332,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 20482,
+        "event_index": 180
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 25.649270833333333,
+      "chopin_tick": 10267,
+      "chopin_score_time": 25.64886458333333,
+      "suite_input_time": 184.53669858333336,
+      "suite_tick": 103867,
+      "suite_score_time": 184.53669658333322,
+      "performed_time": 193.07744702563275
+    },
+    {
+      "raw_id": 33,
+      "raw": {
+        "time": 27.174479166666668,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 20870,
+        "event_index": 188
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 26.15447916666667,
+      "chopin_tick": 10475,
+      "chopin_score_time": 26.153697916666665,
+      "suite_input_time": 185.04153191666668,
+      "suite_tick": 104075,
+      "suite_score_time": 185.04152991666655,
+      "performed_time": 193.5925830800544
+    },
+    {
+      "raw_id": 34,
+      "raw": {
+        "time": 27.21875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 20904,
+        "event_index": 189
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 26.19875,
+      "chopin_tick": 10494,
+      "chopin_score_time": 26.199812499999997,
+      "suite_input_time": 185.08764650000003,
+      "suite_tick": 104094,
+      "suite_score_time": 185.0876444999999,
+      "performed_time": 193.6396387773333
+    },
+    {
+      "raw_id": 35,
+      "raw": {
+        "time": 27.401041666666668,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 21044,
+        "event_index": 190
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 26.38104166666667,
+      "chopin_tick": 10569,
+      "chopin_score_time": 26.381843749999998,
+      "suite_input_time": 185.26967775000003,
+      "suite_tick": 104169,
+      "suite_score_time": 185.2696757499999,
+      "performed_time": 193.82538495080263
+    },
+    {
+      "raw_id": 36,
+      "raw": {
+        "time": 27.4296875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 21066,
+        "event_index": 191
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 26.4096875,
+      "chopin_tick": 10580,
+      "chopin_score_time": 26.408541666666665,
+      "suite_input_time": 185.29637566666668,
+      "suite_tick": 104180,
+      "suite_score_time": 185.29637366666657,
+      "performed_time": 193.85262772291148
+    },
+    {
+      "raw_id": 37,
+      "raw": {
+        "time": 28.234375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 21684,
+        "event_index": 199
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 27.214375,
+      "chopin_tick": 10912,
+      "chopin_score_time": 27.214333333333332,
+      "suite_input_time": 186.10216733333337,
+      "suite_tick": 104512,
+      "suite_score_time": 186.10216533333323,
+      "performed_time": 194.67486411746913
+    },
+    {
+      "raw_id": 38,
+      "raw": {
+        "time": 28.359375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 21780,
+        "event_index": 205
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 27.339375,
+      "chopin_tick": 10964,
+      "chopin_score_time": 27.340541666666663,
+      "suite_input_time": 186.2283756666667,
+      "suite_tick": 104564,
+      "suite_score_time": 186.22837366666656,
+      "performed_time": 194.80364813107454
+    },
+    {
+      "raw_id": 39,
+      "raw": {
+        "time": 31.65234375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 24309,
+        "event_index": 225
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 30.63234375,
+      "chopin_tick": 12292,
+      "chopin_score_time": 30.632062499999996,
+      "suite_input_time": 189.51989650000002,
+      "suite_tick": 105892,
+      "suite_score_time": 189.51989449999988,
+      "performed_time": 198.1623428589649
+    },
+    {
+      "raw_id": 40,
+      "raw": {
+        "time": 31.83984375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 24453,
+        "event_index": 234
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 30.81984375,
+      "chopin_tick": 12367,
+      "chopin_score_time": 30.820734374999997,
+      "suite_input_time": 189.70856837500003,
+      "suite_tick": 105967,
+      "suite_score_time": 189.7085663749999,
+      "performed_time": 198.35486518039343
+    },
+    {
+      "raw_id": 41,
+      "raw": {
+        "time": 32.203125,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 24732,
+        "event_index": 236
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 31.183125,
+      "chopin_tick": 12511,
+      "chopin_score_time": 31.182984374999997,
+      "suite_input_time": 190.07081837500002,
+      "suite_tick": 106111,
+      "suite_score_time": 190.07081637499988,
+      "performed_time": 198.72450803753622
+    },
+    {
+      "raw_id": 42,
+      "raw": {
+        "time": 32.239583333333336,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 24760,
+        "event_index": 237
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 31.219583333333336,
+      "chopin_tick": 12526,
+      "chopin_score_time": 31.220718749999996,
+      "suite_input_time": 190.10855275000003,
+      "suite_tick": 106126,
+      "suite_score_time": 190.1085507499999,
+      "performed_time": 198.76301250182192
+    },
+    {
+      "raw_id": 43,
+      "raw": {
+        "time": 34.611979166666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 26582,
+        "event_index": 251
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 33.59197916666666,
+      "chopin_tick": 13481,
+      "chopin_score_time": 33.59217708333333,
+      "suite_input_time": 192.48001108333335,
+      "suite_tick": 107081,
+      "suite_score_time": 192.48000908333324,
+      "performed_time": 201.18286794399825
+    },
+    {
+      "raw_id": 44,
+      "raw": {
+        "time": 34.76953125,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 26703,
+        "event_index": 258
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 33.74953125,
+      "chopin_tick": 13570,
+      "chopin_score_time": 33.74885416666666,
+      "suite_input_time": 192.6366881666667,
+      "suite_tick": 107170,
+      "suite_score_time": 192.63668616666658,
+      "performed_time": 201.34274251882815
+    },
+    {
+      "raw_id": 45,
+      "raw": {
+        "time": 36.296875,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 27876,
+        "event_index": 267
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 35.276875,
+      "chopin_tick": 14438,
+      "chopin_score_time": 35.27689583333333,
+      "suite_input_time": 194.16472983333335,
+      "suite_tick": 108038,
+      "suite_score_time": 194.16472783333325,
+      "performed_time": 202.901968709304
+    },
+    {
+      "raw_id": 46,
+      "raw": {
+        "time": 36.37890625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 27939,
+        "event_index": 272
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 35.35890625,
+      "chopin_tick": 14485,
+      "chopin_score_time": 35.35963541666666,
+      "suite_input_time": 194.2474694166667,
+      "suite_tick": 108085,
+      "suite_score_time": 194.24746741666655,
+      "performed_time": 202.98639685556245
+    },
+    {
+      "raw_id": 47,
+      "raw": {
+        "time": 38.041666666666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 29216,
+        "event_index": 279
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 37.02166666666666,
+      "chopin_tick": 15436,
+      "chopin_score_time": 37.021520833333334,
+      "suite_input_time": 195.90935483333337,
+      "suite_tick": 109036,
+      "suite_score_time": 195.90935283333323,
+      "performed_time": 204.68219830114032
+    },
+    {
+      "raw_id": 48,
+      "raw": {
+        "time": 38.229166666666664,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 29360,
+        "event_index": 286
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 37.20916666666666,
+      "chopin_tick": 15553,
+      "chopin_score_time": 37.20859895833333,
+      "suite_input_time": 196.09643295833337,
+      "suite_tick": 109153,
+      "suite_score_time": 196.09643095833323,
+      "performed_time": 204.87309434705864
+    },
+    {
+      "raw_id": 49,
+      "raw": {
+        "time": 38.951822916666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 29915,
+        "event_index": 289
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 37.93182291666666,
+      "chopin_tick": 16005,
+      "chopin_score_time": 37.931328125,
+      "suite_input_time": 196.81916212500002,
+      "suite_tick": 109605,
+      "suite_score_time": 196.81916012499988,
+      "performed_time": 205.61057308855507
+    },
+    {
+      "raw_id": 50,
+      "raw": {
+        "time": 39.009114583333336,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 29959,
+        "event_index": 290
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 37.98911458333333,
+      "chopin_tick": 16041,
+      "chopin_score_time": 37.988890624999996,
+      "suite_input_time": 196.876724625,
+      "suite_tick": 109641,
+      "suite_score_time": 196.8767226249999,
+      "performed_time": 205.669310333453
+    },
+    {
+      "raw_id": 51,
+      "raw": {
+        "time": 39.645833333333336,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 30448,
+        "event_index": 294
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 38.62583333333333,
+      "chopin_tick": 16439,
+      "chopin_score_time": 38.625276041666666,
+      "suite_input_time": 197.5131100416667,
+      "suite_tick": 110039,
+      "suite_score_time": 197.51310804166656,
+      "performed_time": 206.31868320760253
+    },
+    {
+      "raw_id": 52,
+      "raw": {
+        "time": 39.71875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 30504,
+        "event_index": 296
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 38.69875,
+      "chopin_tick": 16485,
+      "chopin_score_time": 38.698828125,
+      "suite_input_time": 197.58666212500003,
+      "suite_tick": 110085,
+      "suite_score_time": 197.5866601249999,
+      "performed_time": 206.39373635386102
+    },
+    {
+      "raw_id": 53,
+      "raw": {
+        "time": 41.154947916666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 31607,
+        "event_index": 306
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 40.13494791666666,
+      "chopin_tick": 17381,
+      "chopin_score_time": 40.134651041666665,
+      "suite_input_time": 199.0224850416667,
+      "suite_tick": 110981,
+      "suite_score_time": 199.02248304166656,
+      "performed_time": 207.85886177903075
+    },
+    {
+      "raw_id": 54,
+      "raw": {
+        "time": 41.299479166666664,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 31718,
+        "event_index": 316
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 40.27947916666666,
+      "chopin_tick": 17470,
+      "chopin_score_time": 40.27973958333333,
+      "suite_input_time": 199.16757358333336,
+      "suite_tick": 111070,
+      "suite_score_time": 199.16757158333323,
+      "performed_time": 208.00691131134363
+    },
+    {
+      "raw_id": 55,
+      "raw": {
+        "time": 41.588541666666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 31940,
+        "event_index": 319
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 40.56854166666666,
+      "chopin_tick": 17647,
+      "chopin_score_time": 40.56828645833333,
+      "suite_input_time": 199.45612045833337,
+      "suite_tick": 111247,
+      "suite_score_time": 199.4561184583332,
+      "performed_time": 208.30134689807824
+    },
+    {
+      "raw_id": 56,
+      "raw": {
+        "time": 41.62890625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 31971,
+        "event_index": 320
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 40.60890625,
+      "chopin_tick": 17672,
+      "chopin_score_time": 40.60904166666666,
+      "suite_input_time": 199.49687566666668,
+      "suite_tick": 111272,
+      "suite_score_time": 199.49687366666654,
+      "performed_time": 208.34293384535715
+    },
+    {
+      "raw_id": 57,
+      "raw": {
+        "time": 44.197916666666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 33944,
+        "event_index": 374
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 43.17791666666666,
+      "chopin_tick": 19247,
+      "chopin_score_time": 43.177109375,
+      "suite_input_time": 202.06494337500004,
+      "suite_tick": 112847,
+      "suite_score_time": 202.06494137499988,
+      "performed_time": 210.96341109875792
+    },
+    {
+      "raw_id": 58,
+      "raw": {
+        "time": 44.359375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 34068,
+        "event_index": 383
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 43.339375,
+      "chopin_tick": 19346,
+      "chopin_score_time": 43.33953125,
+      "suite_input_time": 202.22736525000002,
+      "suite_tick": 112946,
+      "suite_score_time": 202.22736324999988,
+      "performed_time": 211.12914770590072
+    },
+    {
+      "raw_id": 59,
+      "raw": {
+        "time": 44.899739583333336,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 34483,
+        "event_index": 385
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 43.87973958333333,
+      "chopin_tick": 19675,
+      "chopin_score_time": 43.879296875,
+      "suite_input_time": 202.76713087500002,
+      "suite_tick": 113275,
+      "suite_score_time": 202.76712887499988,
+      "performed_time": 211.6799289559006
+    },
+    {
+      "raw_id": 60,
+      "raw": {
+        "time": 45.009114583333336,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 34567,
+        "event_index": 386
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 43.98911458333333,
+      "chopin_tick": 19742,
+      "chopin_score_time": 43.98921875,
+      "suite_input_time": 202.87705275000002,
+      "suite_tick": 113342,
+      "suite_score_time": 202.87705074999988,
+      "performed_time": 211.79209413447202
+    },
+    {
+      "raw_id": 61,
+      "raw": {
+        "time": 47.412760416666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 36413,
+        "event_index": 406
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 46.39276041666666,
+      "chopin_tick": 21193,
+      "chopin_score_time": 46.39371875,
+      "suite_input_time": 205.28155275000003,
+      "suite_tick": 114793,
+      "suite_score_time": 205.2815507499999,
+      "performed_time": 214.2456655630429
+    },
+    {
+      "raw_id": 62,
+      "raw": {
+        "time": 47.579427083333336,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 36541,
+        "event_index": 408
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 46.55942708333333,
+      "chopin_tick": 21277,
+      "chopin_score_time": 46.55909375,
+      "suite_input_time": 205.44692775000004,
+      "suite_tick": 114877,
+      "suite_score_time": 205.44692574999988,
+      "performed_time": 214.41441556304284
+    },
+    {
+      "raw_id": 63,
+      "raw": {
+        "time": 48.927083333333336,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 37576,
+        "event_index": 414
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 47.90708333333333,
+      "chopin_tick": 21962,
+      "chopin_score_time": 47.9076875,
+      "suite_input_time": 206.79552150000004,
+      "suite_tick": 115562,
+      "suite_score_time": 206.7955194999999,
+      "performed_time": 215.7905316344711
+    },
+    {
+      "raw_id": 64,
+      "raw": {
+        "time": 49.009114583333336,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 37639,
+        "event_index": 420
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 47.98911458333333,
+      "chopin_tick": 22003,
+      "chopin_score_time": 47.98840625,
+      "suite_input_time": 206.87624025000002,
+      "suite_tick": 115603,
+      "suite_score_time": 206.8762382499999,
+      "performed_time": 215.87289770589967
+    },
+    {
+      "raw_id": 65,
+      "raw": {
+        "time": 50.342447916666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 38663,
+        "event_index": 450
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 49.32244791666666,
+      "chopin_tick": 22681,
+      "chopin_score_time": 49.32321875,
+      "suite_input_time": 208.21105275000002,
+      "suite_tick": 116281,
+      "suite_score_time": 208.21105074999988,
+      "performed_time": 217.23495127732792
+    },
+    {
+      "raw_id": 66,
+      "raw": {
+        "time": 50.369791666666664,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 38684,
+        "event_index": 452
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 49.34979166666666,
+      "chopin_tick": 22694,
+      "chopin_score_time": 49.3488125,
+      "suite_input_time": 208.23664650000003,
+      "suite_tick": 116294,
+      "suite_score_time": 208.2366444999999,
+      "performed_time": 217.26106734875648
+    },
+    {
+      "raw_id": 67,
+      "raw": {
+        "time": 51.1328125,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 39270,
+        "event_index": 460
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 50.1128125,
+      "chopin_tick": 23075,
+      "chopin_score_time": 50.11348958333333,
+      "suite_input_time": 209.00132358333337,
+      "suite_tick": 116675,
+      "suite_score_time": 209.00132158333324,
+      "performed_time": 218.04134780043154
+    },
+    {
+      "raw_id": 68,
+      "raw": {
+        "time": 51.259114583333336,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 39367,
+        "event_index": 468
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 50.23911458333333,
+      "chopin_tick": 23128,
+      "chopin_score_time": 50.239916666666666,
+      "suite_input_time": 209.12775066666669,
+      "suite_tick": 116728,
+      "suite_score_time": 209.12774866666655,
+      "performed_time": 218.17034173664882
+    },
+    {
+      "raw_id": 69,
+      "raw": {
+        "time": 54.108072916666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 41555,
+        "event_index": 486
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 53.08807291666666,
+      "chopin_tick": 24322,
+      "chopin_score_time": 53.08810416666667,
+      "suite_input_time": 211.9759381666667,
+      "suite_tick": 117922,
+      "suite_score_time": 211.97593616666657,
+      "performed_time": 221.07321848171992
+    },
+    {
+      "raw_id": 70,
+      "raw": {
+        "time": 54.158854166666664,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 41594,
+        "event_index": 492
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 53.13885416666666,
+      "chopin_tick": 24343,
+      "chopin_score_time": 53.13819791666667,
+      "suite_input_time": 212.02603191666668,
+      "suite_tick": 117943,
+      "suite_score_time": 212.02602991666654,
+      "performed_time": 221.1242204131731
+    },
+    {
+      "raw_id": 71,
+      "raw": {
+        "time": 57.305989583333336,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 44011,
+        "event_index": 524
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 56.28598958333333,
+      "chopin_tick": 25698,
+      "chopin_score_time": 56.285875,
+      "suite_input_time": 215.17370900000003,
+      "suite_tick": 119298,
+      "suite_score_time": 215.1737069999999,
+      "performed_time": 224.32525235137405
+    },
+    {
+      "raw_id": 72,
+      "raw": {
+        "time": 57.408854166666664,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 44090,
+        "event_index": 546
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 56.38885416666666,
+      "chopin_tick": 25743,
+      "chopin_score_time": 56.3880625,
+      "suite_input_time": 215.27589650000002,
+      "suite_tick": 119343,
+      "suite_score_time": 215.2758944999999,
+      "performed_time": 224.4290497296771
+    },
+    {
+      "raw_id": 73,
+      "raw": {
+        "time": 58.33203125,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 44799,
+        "event_index": 549
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 57.31203125,
+      "chopin_tick": 26150,
+      "chopin_score_time": 57.31229166666667,
+      "suite_input_time": 216.20012566666668,
+      "suite_tick": 119750,
+      "suite_score_time": 216.20012366666657,
+      "performed_time": 225.36749083760762
+    },
+    {
+      "raw_id": 74,
+      "raw": {
+        "time": 58.359375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 44820,
+        "event_index": 550
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 57.339375,
+      "chopin_tick": 26162,
+      "chopin_score_time": 57.33954166666667,
+      "suite_input_time": 216.2273756666667,
+      "suite_tick": 119762,
+      "suite_score_time": 216.22737366666658,
+      "performed_time": 225.39515033514743
+    },
+    {
+      "raw_id": 75,
+      "raw": {
+        "time": 58.880208333333336,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 45220,
+        "event_index": 554
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 57.86020833333333,
+      "chopin_tick": 26391,
+      "chopin_score_time": 57.8595625,
+      "suite_input_time": 216.74739650000004,
+      "suite_tick": 119991,
+      "suite_score_time": 216.7473944999999,
+      "performed_time": 225.92288144380407
+    },
+    {
+      "raw_id": 76,
+      "raw": {
+        "time": 58.908854166666664,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 45242,
+        "event_index": 555
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 57.88885416666666,
+      "chopin_tick": 26404,
+      "chopin_score_time": 57.88908333333333,
+      "suite_input_time": 216.77691733333336,
+      "suite_tick": 120004,
+      "suite_score_time": 216.77691533333325,
+      "performed_time": 225.9528340263208
+    },
+    {
+      "raw_id": 77,
+      "raw": {
+        "time": 59.584635416666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 45761,
+        "event_index": 560
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 58.56463541666666,
+      "chopin_tick": 26701,
+      "chopin_score_time": 58.563520833333335,
+      "suite_input_time": 217.45135483333337,
+      "suite_tick": 120301,
+      "suite_score_time": 217.45135283333323,
+      "performed_time": 226.63696128965265
+    },
+    {
+      "raw_id": 78,
+      "raw": {
+        "time": 59.619791666666664,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 45788,
+        "event_index": 561
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 58.59979166666666,
+      "chopin_tick": 26717,
+      "chopin_score_time": 58.59985416666667,
+      "suite_input_time": 217.4876881666667,
+      "suite_tick": 120317,
+      "suite_score_time": 217.48768616666658,
+      "performed_time": 226.67380716336632
+    },
+    {
+      "raw_id": 79,
+      "raw": {
+        "time": 60.184895833333336,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 46222,
+        "event_index": 564
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 59.16489583333333,
+      "chopin_tick": 26976,
+      "chopin_score_time": 59.1645,
+      "suite_input_time": 218.05233400000003,
+      "suite_tick": 120576,
+      "suite_score_time": 218.05233199999992,
+      "performed_time": 227.24629398258537
+    },
+    {
+      "raw_id": 80,
+      "raw": {
+        "time": 60.44921875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 46425,
+        "event_index": 572
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 59.42921875,
+      "chopin_tick": 27107,
+      "chopin_score_time": 59.42991145833333,
+      "suite_input_time": 218.31774545833335,
+      "suite_tick": 120707,
+      "suite_score_time": 218.31774345833324,
+      "performed_time": 227.51531043373524
+    },
+    {
+      "raw_id": 81,
+      "raw": {
+        "time": 61.061197916666664,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 46895,
+        "event_index": 575
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 60.04119791666666,
+      "chopin_tick": 27409,
+      "chopin_score_time": 60.041776041666665,
+      "suite_input_time": 218.9296100416667,
+      "suite_tick": 121009,
+      "suite_score_time": 218.9296080416666,
+      "performed_time": 228.13528938192854
+    },
+    {
+      "raw_id": 82,
+      "raw": {
+        "time": 61.149739583333336,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 46963,
+        "event_index": 576
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 60.12973958333333,
+      "chopin_tick": 27452,
+      "chopin_score_time": 60.12889583333333,
+      "suite_input_time": 219.01672983333336,
+      "suite_tick": 121052,
+      "suite_score_time": 219.01672783333325,
+      "performed_time": 228.22354225368002
+    },
+    {
+      "raw_id": 83,
+      "raw": {
+        "time": 62.329427083333336,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 47869,
+        "event_index": 583
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 61.30942708333333,
+      "chopin_tick": 28035,
+      "chopin_score_time": 61.310078125,
+      "suite_input_time": 220.19791212500002,
+      "suite_tick": 121635,
+      "suite_score_time": 220.1979101249999,
+      "performed_time": 229.41953974525217
+    },
+    {
+      "raw_id": 84,
+      "raw": {
+        "time": 62.37890625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 47907,
+        "event_index": 584
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 61.35890625,
+      "chopin_tick": 28059,
+      "chopin_score_time": 61.358703125,
+      "suite_input_time": 220.24653712500003,
+      "suite_tick": 121659,
+      "suite_score_time": 220.24653512499992,
+      "performed_time": 229.46875279638942
+    },
+    {
+      "raw_id": 85,
+      "raw": {
+        "time": 63.28515625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 48603,
+        "event_index": 592
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 62.26515625,
+      "chopin_tick": 28506,
+      "chopin_score_time": 62.26434375,
+      "suite_input_time": 221.15217775000002,
+      "suite_tick": 122106,
+      "suite_score_time": 221.1521757499999,
+      "performed_time": 230.3850306855923
+    },
+    {
+      "raw_id": 86,
+      "raw": {
+        "time": 63.399739583333336,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 48691,
+        "event_index": 600
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 62.37973958333333,
+      "chopin_tick": 28563,
+      "chopin_score_time": 62.379828124999996,
+      "suite_input_time": 221.26766212500002,
+      "suite_tick": 122163,
+      "suite_score_time": 221.2676601249999,
+      "performed_time": 230.50182849805282
+    },
+    {
+      "raw_id": 87,
+      "raw": {
+        "time": 65.36197916666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 50198,
+        "event_index": 630
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 64.34197916666668,
+      "chopin_tick": 29632,
+      "chopin_score_time": 64.342,
+      "suite_input_time": 223.22983400000004,
+      "suite_tick": 123232,
+      "suite_score_time": 223.2298319999999,
+      "performed_time": 232.48483261348662
+    },
+    {
+      "raw_id": 88,
+      "raw": {
+        "time": 65.48958333333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 50296,
+        "event_index": 640
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 64.46958333333333,
+      "chopin_tick": 29704,
+      "chopin_score_time": 64.47025,
+      "suite_input_time": 223.35808400000002,
+      "suite_tick": 123304,
+      "suite_score_time": 223.3580819999999,
+      "performed_time": 232.6143467323752
+    },
+    {
+      "raw_id": 89,
+      "raw": {
+        "time": 67.40234375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 51765,
+        "event_index": 647
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 66.38234375,
+      "chopin_tick": 30781,
+      "chopin_score_time": 66.381984375,
+      "suite_input_time": 225.26981837500003,
+      "suite_tick": 124381,
+      "suite_score_time": 225.2698163749999,
+      "performed_time": 234.54350900314716
+    },
+    {
+      "raw_id": 90,
+      "raw": {
+        "time": 67.50911458333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 51847,
+        "event_index": 655
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 66.48911458333333,
+      "chopin_tick": 30845,
+      "chopin_score_time": 66.488984375,
+      "suite_input_time": 225.37681837500003,
+      "suite_tick": 124445,
+      "suite_score_time": 225.3768163749999,
+      "performed_time": 234.6514061154231
+    },
+    {
+      "raw_id": 91,
+      "raw": {
+        "time": 68.92317708333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 52933,
+        "event_index": 666
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 67.90317708333333,
+      "chopin_tick": 31691,
+      "chopin_score_time": 67.903390625,
+      "suite_input_time": 226.79122462500004,
+      "suite_tick": 125291,
+      "suite_score_time": 226.7912226249999,
+      "performed_time": 236.07689219193963
+    },
+    {
+      "raw_id": 92,
+      "raw": {
+        "time": 69.04947916666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 53030,
+        "event_index": 667
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 68.02947916666668,
+      "chopin_tick": 31766,
+      "chopin_score_time": 68.02878125,
+      "suite_input_time": 226.91661525,
+      "suite_tick": 125366,
+      "suite_score_time": 226.9166132499999,
+      "performed_time": 236.2031952286813
+    },
+    {
+      "raw_id": 93,
+      "raw": {
+        "time": 71.20963541666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 54689,
+        "event_index": 677
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 70.18963541666668,
+      "chopin_tick": 33092,
+      "chopin_score_time": 70.18918749999999,
+      "suite_input_time": 229.0770215,
+      "suite_tick": 126692,
+      "suite_score_time": 229.0770194999999,
+      "performed_time": 238.37753880393592
+    },
+    {
+      "raw_id": 94,
+      "raw": {
+        "time": 71.55989583333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 54958,
+        "event_index": 684
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 70.53989583333333,
+      "chopin_tick": 33319,
+      "chopin_score_time": 70.540328125,
+      "suite_input_time": 229.42816212500003,
+      "suite_tick": 126919,
+      "suite_score_time": 229.4281601249999,
+      "performed_time": 238.73062669746557
+    },
+    {
+      "raw_id": 95,
+      "raw": {
+        "time": 73.16276041666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 56189,
+        "event_index": 690
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 72.14276041666668,
+      "chopin_tick": 34355,
+      "chopin_score_time": 72.14289062499999,
+      "suite_input_time": 231.030724625,
+      "suite_tick": 127955,
+      "suite_score_time": 231.0307226249999,
+      "performed_time": 240.34094943446226
+    },
+    {
+      "raw_id": 96,
+      "raw": {
+        "time": 73.29947916666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 56294,
+        "event_index": 695
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 72.27947916666668,
+      "chopin_tick": 34443,
+      "chopin_score_time": 72.279015625,
+      "suite_input_time": 231.16684962500003,
+      "suite_tick": 128043,
+      "suite_score_time": 231.1668476249999,
+      "performed_time": 240.47764850171492
+    },
+    {
+      "raw_id": 97,
+      "raw": {
+        "time": 73.8984375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 56754,
+        "event_index": 697
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 72.8784375,
+      "chopin_tick": 34833,
+      "chopin_score_time": 72.87803124999999,
+      "suite_input_time": 231.76586525000002,
+      "suite_tick": 128433,
+      "suite_score_time": 231.7658632499999,
+      "performed_time": 241.0790321668005
+    },
+    {
+      "raw_id": 98,
+      "raw": {
+        "time": 74.0,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 56832,
+        "event_index": 698
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 72.98,
+      "chopin_tick": 34900,
+      "chopin_score_time": 72.98062499999999,
+      "suite_input_time": 231.86845900000003,
+      "suite_tick": 128500,
+      "suite_score_time": 231.8684569999999,
+      "performed_time": 241.1820056550805
+    },
+    {
+      "raw_id": 99,
+      "raw": {
+        "time": 74.4765625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 57198,
+        "event_index": 700
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 73.4565625,
+      "chopin_tick": 35211,
+      "chopin_score_time": 73.45684374999999,
+      "suite_input_time": 232.34467775000002,
+      "suite_tick": 128811,
+      "suite_score_time": 232.3446757499999,
+      "performed_time": 241.6598881466615
+    },
+    {
+      "raw_id": 100,
+      "raw": {
+        "time": 74.58984375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 57285,
+        "event_index": 703
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 73.56984375,
+      "chopin_tick": 35285,
+      "chopin_score_time": 73.57015625,
+      "suite_input_time": 232.45799025000002,
+      "suite_tick": 128885,
+      "suite_score_time": 232.4579882499999,
+      "performed_time": 241.7735725643804
+    },
+    {
+      "raw_id": 101,
+      "raw": {
+        "time": 75.37109375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 57885,
+        "event_index": 706
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 74.35109375,
+      "chopin_tick": 35795,
+      "chopin_score_time": 74.35109374999999,
+      "suite_input_time": 233.23892775000002,
+      "suite_tick": 129395,
+      "suite_score_time": 233.2389257499999,
+      "performed_time": 242.55682293574282
+    },
+    {
+      "raw_id": 102,
+      "raw": {
+        "time": 75.62890625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 58083,
+        "event_index": 708
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 74.60890625,
+      "chopin_tick": 35963,
+      "chopin_score_time": 74.60834374999999,
+      "suite_input_time": 233.49617775000002,
+      "suite_tick": 129563,
+      "suite_score_time": 233.4961757499999,
+      "performed_time": 242.81473913649202
+    },
+    {
+      "raw_id": 103,
+      "raw": {
+        "time": 77.74479166666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 59708,
+        "event_index": 720
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 76.72479166666668,
+      "chopin_tick": 37422,
+      "chopin_score_time": 76.72468749999999,
+      "suite_input_time": 235.6125215,
+      "suite_tick": 131022,
+      "suite_score_time": 235.6125194999999,
+      "performed_time": 244.9347666921587
+    },
+    {
+      "raw_id": 104,
+      "raw": {
+        "time": 77.84895833333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 59788,
+        "event_index": 727
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 76.82895833333333,
+      "chopin_tick": 37496,
+      "chopin_score_time": 76.82874999999999,
+      "suite_input_time": 235.716584,
+      "suite_tick": 131096,
+      "suite_score_time": 235.7165819999999,
+      "performed_time": 245.03892776960595
+    },
+    {
+      "raw_id": 105,
+      "raw": {
+        "time": 79.19140625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 60819,
+        "event_index": 738
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 78.17140625,
+      "chopin_tick": 38446,
+      "chopin_score_time": 78.17091666666666,
+      "suite_input_time": 237.0587506666667,
+      "suite_tick": 132046,
+      "suite_score_time": 237.05874866666656,
+      "performed_time": 246.38167506208777
+    },
+    {
+      "raw_id": 106,
+      "raw": {
+        "time": 79.359375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 60948,
+        "event_index": 746
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 78.339375,
+      "chopin_tick": 38555,
+      "chopin_score_time": 78.33895833333332,
+      "suite_input_time": 237.22679233333335,
+      "suite_tick": 132155,
+      "suite_score_time": 237.2267903333332,
+      "performed_time": 246.54971672875425
+    },
+    {
+      "raw_id": 107,
+      "raw": {
+        "time": 80.30078125,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 61671,
+        "event_index": 752
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 79.28078125,
+      "chopin_tick": 39166,
+      "chopin_score_time": 79.28091666666666,
+      "suite_input_time": 238.16875066666668,
+      "suite_tick": 132766,
+      "suite_score_time": 238.16874866666654,
+      "performed_time": 247.49167506208673
+    },
+    {
+      "raw_id": 108,
+      "raw": {
+        "time": 80.359375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 61716,
+        "event_index": 753
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 79.339375,
+      "chopin_tick": 39204,
+      "chopin_score_time": 79.3395,
+      "suite_input_time": 238.22733400000004,
+      "suite_tick": 132804,
+      "suite_score_time": 238.22733199999988,
+      "performed_time": 247.55025839542
+    },
+    {
+      "raw_id": 109,
+      "raw": {
+        "time": 80.71875,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 61992,
+        "event_index": 755
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 79.69875,
+      "chopin_tick": 39437,
+      "chopin_score_time": 79.69870833333333,
+      "suite_input_time": 238.58654233333334,
+      "suite_tick": 133037,
+      "suite_score_time": 238.5865403333332,
+      "performed_time": 247.90946672875302
+    },
+    {
+      "raw_id": 110,
+      "raw": {
+        "time": 80.859375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 62100,
+        "event_index": 764
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 79.839375,
+      "chopin_tick": 39528,
+      "chopin_score_time": 79.839,
+      "suite_input_time": 238.72683400000003,
+      "suite_tick": 133128,
+      "suite_score_time": 238.7268319999999,
+      "performed_time": 248.04975839541956
+    },
+    {
+      "raw_id": 111,
+      "raw": {
+        "time": 81.54296875,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 62625,
+        "event_index": 770
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 80.52296875,
+      "chopin_tick": 39972,
+      "chopin_score_time": 80.5235,
+      "suite_input_time": 239.411334,
+      "suite_tick": 133572,
+      "suite_score_time": 239.41133199999987,
+      "performed_time": 248.73425839541895
+    },
+    {
+      "raw_id": 112,
+      "raw": {
+        "time": 81.71875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 62760,
+        "event_index": 777
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 80.69875,
+      "chopin_tick": 40086,
+      "chopin_score_time": 80.69924999999999,
+      "suite_input_time": 239.587084,
+      "suite_tick": 133686,
+      "suite_score_time": 239.5870819999999,
+      "performed_time": 248.9100083954188
+    },
+    {
+      "raw_id": 113,
+      "raw": {
+        "time": 82.67838541666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 63497,
+        "event_index": 782
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 81.65838541666668,
+      "chopin_tick": 40767,
+      "chopin_score_time": 81.65832812499998,
+      "suite_input_time": 240.54616212500002,
+      "suite_tick": 134367,
+      "suite_score_time": 240.5461601249999,
+      "performed_time": 249.8690865204179
+    },
+    {
+      "raw_id": 114,
+      "raw": {
+        "time": 82.73958333333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 63544,
+        "event_index": 789
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 81.71958333333333,
+      "chopin_tick": 40813,
+      "chopin_score_time": 81.71990104166666,
+      "suite_input_time": 240.60773504166667,
+      "suite_tick": 134413,
+      "suite_score_time": 240.60773304166656,
+      "performed_time": 249.93065943708453
+    },
+    {
+      "raw_id": 115,
+      "raw": {
+        "time": 83.14192708333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 63853,
+        "event_index": 790
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 82.12192708333333,
+      "chopin_tick": 41113,
+      "chopin_score_time": 82.12146354166666,
+      "suite_input_time": 241.00929754166668,
+      "suite_tick": 134713,
+      "suite_score_time": 241.00929554166655,
+      "performed_time": 250.33222193708417
+    },
+    {
+      "raw_id": 116,
+      "raw": {
+        "time": 83.15885416666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 63866,
+        "event_index": 791
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 82.13885416666668,
+      "chopin_tick": 41126,
+      "chopin_score_time": 82.13886458333332,
+      "suite_input_time": 241.02669858333334,
+      "suite_tick": 134726,
+      "suite_score_time": 241.02669658333323,
+      "performed_time": 250.34962297875083
+    },
+    {
+      "raw_id": 117,
+      "raw": {
+        "time": 83.62239583333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 64222,
+        "event_index": 798
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 82.60239583333333,
+      "chopin_tick": 41472,
+      "chopin_score_time": 82.60199999999999,
+      "suite_input_time": 241.48983400000003,
+      "suite_tick": 135072,
+      "suite_score_time": 241.4898319999999,
+      "performed_time": 250.81275839541706
+    },
+    {
+      "raw_id": 118,
+      "raw": {
+        "time": 83.63932291666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 64235,
+        "event_index": 799
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 82.61932291666668,
+      "chopin_tick": 41485,
+      "chopin_score_time": 82.61940104166665,
+      "suite_input_time": 241.50723504166666,
+      "suite_tick": 135085,
+      "suite_score_time": 241.50723304166655,
+      "performed_time": 250.83015943708372
+    },
+    {
+      "raw_id": 119,
+      "raw": {
+        "time": 84.3046875,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 64746,
+        "event_index": 810
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 83.2846875,
+      "chopin_tick": 41982,
+      "chopin_score_time": 83.28465624999998,
+      "suite_input_time": 242.17249025,
+      "suite_tick": 135582,
+      "suite_score_time": 242.1724882499999,
+      "performed_time": 251.49541464541645
+    },
+    {
+      "raw_id": 120,
+      "raw": {
+        "time": 84.38932291666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 64811,
+        "event_index": 817
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 83.36932291666668,
+      "chopin_tick": 42045,
+      "chopin_score_time": 83.36898437499998,
+      "suite_input_time": 242.25681837500002,
+      "suite_tick": 135645,
+      "suite_score_time": 242.2568163749999,
+      "performed_time": 251.57974277041637
+    },
+    {
+      "raw_id": 121,
+      "raw": {
+        "time": 84.60286458333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 64975,
+        "event_index": 818
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 83.58286458333333,
+      "chopin_tick": 42205,
+      "chopin_score_time": 83.58315104166665,
+      "suite_input_time": 242.47098504166667,
+      "suite_tick": 135805,
+      "suite_score_time": 242.47098304166656,
+      "performed_time": 251.79390943708285
+    },
+    {
+      "raw_id": 122,
+      "raw": {
+        "time": 84.61979166666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 64988,
+        "event_index": 819
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 83.59979166666668,
+      "chopin_tick": 42217,
+      "chopin_score_time": 83.59921354166666,
+      "suite_input_time": 242.4870475416667,
+      "suite_tick": 135817,
+      "suite_score_time": 242.48704554166656,
+      "performed_time": 251.80997193708282
+    },
+    {
+      "raw_id": 123,
+      "raw": {
+        "time": 85.60026041666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 65741,
+        "event_index": 833
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 84.58026041666668,
+      "chopin_tick": 42970,
+      "chopin_score_time": 84.58052083333331,
+      "suite_input_time": 243.46835483333334,
+      "suite_tick": 136570,
+      "suite_score_time": 243.46835283333323,
+      "performed_time": 252.7912792287486
+    },
+    {
+      "raw_id": 124,
+      "raw": {
+        "time": 85.69921875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 65817,
+        "event_index": 843
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 84.67921875,
+      "chopin_tick": 43046,
+      "chopin_score_time": 84.67947916666665,
+      "suite_input_time": 243.56731316666668,
+      "suite_tick": 136646,
+      "suite_score_time": 243.56731116666654,
+      "performed_time": 252.89023756208184
+    },
+    {
+      "raw_id": 125,
+      "raw": {
+        "time": 86.30729166666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 66284,
+        "event_index": 848
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 85.28729166666668,
+      "chopin_tick": 43513,
+      "chopin_score_time": 85.28755208333331,
+      "suite_input_time": 244.17538608333334,
+      "suite_tick": 137113,
+      "suite_score_time": 244.17538408333323,
+      "performed_time": 253.49831047874795
+    },
+    {
+      "raw_id": 126,
+      "raw": {
+        "time": 86.32942708333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 66301,
+        "event_index": 850
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 85.30942708333333,
+      "chopin_tick": 43530,
+      "chopin_score_time": 85.30968749999998,
+      "suite_input_time": 244.1975215,
+      "suite_tick": 137130,
+      "suite_score_time": 244.19751949999988,
+      "performed_time": 253.52044589541458
+    },
+    {
+      "raw_id": 127,
+      "raw": {
+        "time": 87.23307291666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 66995,
+        "event_index": 861
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 86.21307291666668,
+      "chopin_tick": 44235,
+      "chopin_score_time": 86.21281249999998,
+      "suite_input_time": 245.1006465,
+      "suite_tick": 137835,
+      "suite_score_time": 245.10064449999987,
+      "performed_time": 254.42357089541377
+    },
+    {
+      "raw_id": 128,
+      "raw": {
+        "time": 87.359375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 67092,
+        "event_index": 873
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 86.339375,
+      "chopin_tick": 44350,
+      "chopin_score_time": 86.33979166666664,
+      "suite_input_time": 245.22762566666665,
+      "suite_tick": 137950,
+      "suite_score_time": 245.22762366666655,
+      "performed_time": 254.5505500620803
+    },
+    {
+      "raw_id": 129,
+      "raw": {
+        "time": 89.36328125,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 68631,
+        "event_index": 879
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 88.34328125,
+      "chopin_tick": 46152,
+      "chopin_score_time": 88.34299999999999,
+      "suite_input_time": 247.23083400000002,
+      "suite_tick": 139752,
+      "suite_score_time": 247.23083199999988,
+      "performed_time": 256.5537583954118
+    },
+    {
+      "raw_id": 130,
+      "raw": {
+        "time": 89.5,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 68736,
+        "event_index": 886
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 88.48,
+      "chopin_tick": 46258,
+      "chopin_score_time": 88.47991666666665,
+      "suite_input_time": 247.36775066666667,
+      "suite_tick": 139858,
+      "suite_score_time": 247.36774866666656,
+      "performed_time": 256.6906750620784
+    },
+    {
+      "raw_id": 131,
+      "raw": {
+        "time": 91.33463541666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 70145,
+        "event_index": 895
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 90.31463541666668,
+      "chopin_tick": 47678,
+      "chopin_score_time": 90.31408333333331,
+      "suite_input_time": 249.20191733333334,
+      "suite_tick": 141278,
+      "suite_score_time": 249.20191533333323,
+      "performed_time": 258.5248417287434
+    },
+    {
+      "raw_id": 132,
+      "raw": {
+        "time": 91.48958333333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 70264,
+        "event_index": 904
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 90.46958333333333,
+      "chopin_tick": 47798,
+      "chopin_score_time": 90.46908333333332,
+      "suite_input_time": 249.35691733333334,
+      "suite_tick": 141398,
+      "suite_score_time": 249.35691533333323,
+      "performed_time": 258.67984172874327
+    },
+    {
+      "raw_id": 133,
+      "raw": {
+        "time": 92.06380208333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 70705,
+        "event_index": 911
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 91.04380208333333,
+      "chopin_tick": 48244,
+      "chopin_score_time": 91.04389583333332,
+      "suite_input_time": 249.93172983333335,
+      "suite_tick": 141844,
+      "suite_score_time": 249.9317278333332,
+      "performed_time": 259.25465422874277
+    },
+    {
+      "raw_id": 134,
+      "raw": {
+        "time": 92.21875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 70824,
+        "event_index": 917
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 91.19875,
+      "chopin_tick": 48364,
+      "chopin_score_time": 91.19827083333332,
+      "suite_input_time": 250.08610483333337,
+      "suite_tick": 141964,
+      "suite_score_time": 250.0861028333332,
+      "performed_time": 259.4090292287426
+    },
+    {
+      "raw_id": 135,
+      "raw": {
+        "time": 94.37630208333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 72481,
+        "event_index": 934
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 93.35630208333333,
+      "chopin_tick": 50042,
+      "chopin_score_time": 93.35567708333332,
+      "suite_input_time": 252.24351108333335,
+      "suite_tick": 143642,
+      "suite_score_time": 252.2435090833332,
+      "performed_time": 261.56643547874063
+    },
+    {
+      "raw_id": 136,
+      "raw": {
+        "time": 94.58984375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 72645,
+        "event_index": 944
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 93.56984375,
+      "chopin_tick": 50210,
+      "chopin_score_time": 93.57005208333332,
+      "suite_input_time": 252.45788608333334,
+      "suite_tick": 143810,
+      "suite_score_time": 252.4578840833332,
+      "performed_time": 261.7808104787404
+    },
+    {
+      "raw_id": 137,
+      "raw": {
+        "time": 96.2109375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 73890,
+        "event_index": 953
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 95.1909375,
+      "chopin_tick": 51480,
+      "chopin_score_time": 95.19062499999998,
+      "suite_input_time": 254.078459,
+      "suite_tick": 145080,
+      "suite_score_time": 254.07845699999987,
+      "performed_time": 263.4013833954056
+    },
+    {
+      "raw_id": 138,
+      "raw": {
+        "time": 96.36979166666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 74012,
+        "event_index": 963
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 95.34979166666668,
+      "chopin_tick": 51605,
+      "chopin_score_time": 95.35013020833333,
+      "suite_input_time": 254.23796420833335,
+      "suite_tick": 145205,
+      "suite_score_time": 254.23796220833322,
+      "performed_time": 263.5608886037388
+    },
+    {
+      "raw_id": 139,
+      "raw": {
+        "time": 97.06901041666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 74549,
+        "event_index": 970
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 96.04901041666668,
+      "chopin_tick": 52120,
+      "chopin_score_time": 96.04958333333333,
+      "suite_input_time": 254.93741733333337,
+      "suite_tick": 145720,
+      "suite_score_time": 254.9374153333332,
+      "performed_time": 264.2603417287382
+    },
+    {
+      "raw_id": 140,
+      "raw": {
+        "time": 97.1796875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 74634,
+        "event_index": 971
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 96.1596875,
+      "chopin_tick": 52197,
+      "chopin_score_time": 96.15946874999999,
+      "suite_input_time": 255.04730275000003,
+      "suite_tick": 145797,
+      "suite_score_time": 255.04730074999986,
+      "performed_time": 264.3702271454047
+    },
+    {
+      "raw_id": 141,
+      "raw": {
+        "time": 97.68489583333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 75022,
+        "event_index": 979
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 96.66489583333333,
+      "chopin_tick": 52551,
+      "chopin_score_time": 96.66465625,
+      "suite_input_time": 255.55249025,
+      "suite_tick": 146151,
+      "suite_score_time": 255.55248824999987,
+      "performed_time": 264.87541464540425
+    },
+    {
+      "raw_id": 142,
+      "raw": {
+        "time": 97.80989583333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 75118,
+        "event_index": 987
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 96.78989583333333,
+      "chopin_tick": 52639,
+      "chopin_score_time": 96.79023958333333,
+      "suite_input_time": 255.67807358333334,
+      "suite_tick": 146239,
+      "suite_score_time": 255.6780715833332,
+      "performed_time": 265.0009979787375
+    },
+    {
+      "raw_id": 143,
+      "raw": {
+        "time": 98.99479166666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 76028,
+        "event_index": 997
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 97.97479166666668,
+      "chopin_tick": 53469,
+      "chopin_score_time": 97.97471875,
+      "suite_input_time": 256.86255275,
+      "suite_tick": 147069,
+      "suite_score_time": 256.86255074999985,
+      "performed_time": 266.18547714540307
+    },
+    {
+      "raw_id": 144,
+      "raw": {
+        "time": 99.12890625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 76131,
+        "event_index": 1007
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 98.10890625,
+      "chopin_tick": 53563,
+      "chopin_score_time": 98.10886458333333,
+      "suite_input_time": 256.99669858333334,
+      "suite_tick": 147163,
+      "suite_score_time": 256.9966965833332,
+      "performed_time": 266.3196229787363
+    },
+    {
+      "raw_id": 145,
+      "raw": {
+        "time": 100.52864583333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 77206,
+        "event_index": 1027
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 99.50864583333333,
+      "chopin_tick": 54558,
+      "chopin_score_time": 99.50803124999999,
+      "suite_input_time": 258.39586525000004,
+      "suite_tick": 148158,
+      "suite_score_time": 258.3958632499999,
+      "performed_time": 267.7187896454017
+    },
+    {
+      "raw_id": 146,
+      "raw": {
+        "time": 100.65885416666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 77306,
+        "event_index": 1032
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 99.63885416666668,
+      "chopin_tick": 54651,
+      "chopin_score_time": 99.63832812499999,
+      "suite_input_time": 258.52616212500004,
+      "suite_tick": 148251,
+      "suite_score_time": 258.5261601249999,
+      "performed_time": 267.84908652040156
+    },
+    {
+      "raw_id": 147,
+      "raw": {
+        "time": 101.63802083333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 78058,
+        "event_index": 1043
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 100.61802083333333,
+      "chopin_tick": 55350,
+      "chopin_score_time": 100.61765624999998,
+      "suite_input_time": 259.50549025,
+      "suite_tick": 148950,
+      "suite_score_time": 259.50548824999987,
+      "performed_time": 268.8284146454007
+    },
+    {
+      "raw_id": 148,
+      "raw": {
+        "time": 101.72916666666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 78128,
+        "event_index": 1046
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 100.70916666666668,
+      "chopin_tick": 55415,
+      "chopin_score_time": 100.70872395833332,
+      "suite_input_time": 259.59655795833334,
+      "suite_tick": 149015,
+      "suite_score_time": 259.5965559583332,
+      "performed_time": 268.91948235373394
+    },
+    {
+      "raw_id": 149,
+      "raw": {
+        "time": 103.48697916666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 79478,
+        "event_index": 1067
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 102.46697916666668,
+      "chopin_tick": 56681,
+      "chopin_score_time": 102.46680208333332,
+      "suite_input_time": 261.35463608333333,
+      "suite_tick": 150281,
+      "suite_score_time": 261.3546340833332,
+      "performed_time": 270.67756047873235
+    },
+    {
+      "raw_id": 150,
+      "raw": {
+        "time": 103.63932291666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 79595,
+        "event_index": 1076
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 102.61932291666668,
+      "chopin_tick": 56791,
+      "chopin_score_time": 102.61919791666665,
+      "suite_input_time": 261.5070319166667,
+      "suite_tick": 150391,
+      "suite_score_time": 261.50702991666657,
+      "performed_time": 270.8299563120656
+    },
+    {
+      "raw_id": 151,
+      "raw": {
+        "time": 104.01302083333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 79882,
+        "event_index": 1078
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 102.99302083333333,
+      "chopin_tick": 57061,
+      "chopin_score_time": 102.99326041666666,
+      "suite_input_time": 261.88109441666666,
+      "suite_tick": 150661,
+      "suite_score_time": 261.88109241666655,
+      "performed_time": 271.2040188120652
+    },
+    {
+      "raw_id": 152,
+      "raw": {
+        "time": 104.109375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 79956,
+        "event_index": 1079
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 103.089375,
+      "chopin_tick": 57130,
+      "chopin_score_time": 103.08885416666665,
+      "suite_input_time": 261.9766881666667,
+      "suite_tick": 150730,
+      "suite_score_time": 261.9766861666665,
+      "performed_time": 271.2996125620651
+    },
+    {
+      "raw_id": 153,
+      "raw": {
+        "time": 104.81640625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 80499,
+        "event_index": 1084
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 103.79640625,
+      "chopin_tick": 57635,
+      "chopin_score_time": 103.79669270833331,
+      "suite_input_time": 262.68452670833335,
+      "suite_tick": 151235,
+      "suite_score_time": 262.68452470833324,
+      "performed_time": 272.00745110373117
+    },
+    {
+      "raw_id": 154,
+      "raw": {
+        "time": 104.95963541666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 80609,
+        "event_index": 1091
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 103.93963541666668,
+      "chopin_tick": 57723,
+      "chopin_score_time": 103.93923437499998,
+      "suite_input_time": 262.827068375,
+      "suite_tick": 151323,
+      "suite_score_time": 262.8270663749999,
+      "performed_time": 272.1499927703977
+    },
+    {
+      "raw_id": 155,
+      "raw": {
+        "time": 106.50260416666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 81794,
+        "event_index": 1103
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 105.48260416666668,
+      "chopin_tick": 58676,
+      "chopin_score_time": 105.48289583333332,
+      "suite_input_time": 264.37072983333337,
+      "suite_tick": 152276,
+      "suite_score_time": 264.3707278333332,
+      "performed_time": 273.6936542287296
+    },
+    {
+      "raw_id": 156,
+      "raw": {
+        "time": 106.68880208333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 81937,
+        "event_index": 1112
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 105.66880208333333,
+      "chopin_tick": 58791,
+      "chopin_score_time": 105.66917187499998,
+      "suite_input_time": 264.557005875,
+      "suite_tick": 152391,
+      "suite_score_time": 264.5570038749999,
+      "performed_time": 273.87993027039613
+    },
+    {
+      "raw_id": 157,
+      "raw": {
+        "time": 107.01692708333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 82189,
+        "event_index": 1117
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 105.99692708333333,
+      "chopin_tick": 58993,
+      "chopin_score_time": 105.99636979166665,
+      "suite_input_time": 264.88420379166666,
+      "suite_tick": 152593,
+      "suite_score_time": 264.88420179166656,
+      "performed_time": 274.2071281870625
+    },
+    {
+      "raw_id": 158,
+      "raw": {
+        "time": 107.02994791666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 82199,
+        "event_index": 1118
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 106.00994791666668,
+      "chopin_tick": 59001,
+      "chopin_score_time": 106.00932812499998,
+      "suite_input_time": 264.897162125,
+      "suite_tick": 152601,
+      "suite_score_time": 264.8971601249999,
+      "performed_time": 274.22008652039585
+    },
+    {
+      "raw_id": 159,
+      "raw": {
+        "time": 108.01822916666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 82958,
+        "event_index": 1122
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 106.99822916666668,
+      "chopin_tick": 59614,
+      "chopin_score_time": 106.99834374999998,
+      "suite_input_time": 265.88617775,
+      "suite_tick": 153214,
+      "suite_score_time": 265.8861757499999,
+      "performed_time": 275.2091021453949
+    },
+    {
+      "raw_id": 160,
+      "raw": {
+        "time": 108.18880208333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 83089,
+        "event_index": 1129
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 107.16880208333333,
+      "chopin_tick": 59722,
+      "chopin_score_time": 107.16878124999998,
+      "suite_input_time": 266.05661525,
+      "suite_tick": 153322,
+      "suite_score_time": 266.0566132499999,
+      "performed_time": 275.37953964539474
+    },
+    {
+      "raw_id": 161,
+      "raw": {
+        "time": 109.54427083333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 84130,
+        "event_index": 1141
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 108.52427083333333,
+      "chopin_tick": 60581,
+      "chopin_score_time": 108.52439062499998,
+      "suite_input_time": 267.412224625,
+      "suite_tick": 154181,
+      "suite_score_time": 267.4122226249999,
+      "performed_time": 276.7351490203935
+    },
+    {
+      "raw_id": 162,
+      "raw": {
+        "time": 109.72916666666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 84272,
+        "event_index": 1150
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 108.70916666666668,
+      "chopin_tick": 60698,
+      "chopin_score_time": 108.70903124999998,
+      "suite_input_time": 267.59686525,
+      "suite_tick": 154298,
+      "suite_score_time": 267.5968632499999,
+      "performed_time": 276.91978964539334
+    },
+    {
+      "raw_id": 163,
+      "raw": {
+        "time": 110.04947916666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 84518,
+        "event_index": 1152
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 109.02947916666668,
+      "chopin_tick": 60901,
+      "chopin_score_time": 109.02939062499998,
+      "suite_input_time": 267.917224625,
+      "suite_tick": 154501,
+      "suite_score_time": 267.9172226249999,
+      "performed_time": 277.24014902039306
+    },
+    {
+      "raw_id": 164,
+      "raw": {
+        "time": 110.15885416666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 84602,
+        "event_index": 1153
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 109.13885416666668,
+      "chopin_tick": 60970,
+      "chopin_score_time": 109.13828124999998,
+      "suite_input_time": 268.02611525,
+      "suite_tick": 154570,
+      "suite_score_time": 268.0261132499999,
+      "performed_time": 277.34903964539296
+    },
+    {
+      "raw_id": 165,
+      "raw": {
+        "time": 111.03645833333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 85276,
+        "event_index": 1160
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 110.01645833333333,
+      "chopin_tick": 61560,
+      "chopin_score_time": 110.01687499999998,
+      "suite_input_time": 268.904709,
+      "suite_tick": 155160,
+      "suite_score_time": 268.90470699999986,
+      "performed_time": 278.2276384487448
+    },
+    {
+      "raw_id": 166,
+      "raw": {
+        "time": 111.16927083333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 85378,
+        "event_index": 1166
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 110.14927083333333,
+      "chopin_tick": 61676,
+      "chopin_score_time": 110.14918749999998,
+      "suite_input_time": 269.03702150000004,
+      "suite_tick": 155276,
+      "suite_score_time": 269.0370194999999,
+      "performed_time": 278.35996616101704
+    },
+    {
+      "raw_id": 167,
+      "raw": {
+        "time": 112.66927083333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 86530,
+        "event_index": 1176
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 111.64927083333333,
+      "chopin_tick": 62991,
+      "chopin_score_time": 111.64910937499998,
+      "suite_input_time": 270.536943375,
+      "suite_tick": 156591,
+      "suite_score_time": 270.5369413749999,
+      "performed_time": 279.86077175343917
+    },
+    {
+      "raw_id": 168,
+      "raw": {
+        "time": 112.82942708333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 86653,
+        "event_index": 1184
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 111.80942708333333,
+      "chopin_tick": 63132,
+      "chopin_score_time": 111.80993749999998,
+      "suite_input_time": 270.6977715,
+      "suite_tick": 156732,
+      "suite_score_time": 270.6977694999999,
+      "performed_time": 280.02177228337445
+    },
+    {
+      "raw_id": 169,
+      "raw": {
+        "time": 114.85807291666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 88211,
+        "event_index": 1203
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 113.83807291666668,
+      "chopin_tick": 64882,
+      "chopin_score_time": 113.83773958333332,
+      "suite_input_time": 272.72557358333336,
+      "suite_tick": 158482,
+      "suite_score_time": 272.7255715833332,
+      "performed_time": 282.0530402459822
+    },
+    {
+      "raw_id": 170,
+      "raw": {
+        "time": 114.98958333333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 88312,
+        "event_index": 1206
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 113.96958333333333,
+      "chopin_tick": 64996,
+      "chopin_score_time": 113.97014583333332,
+      "suite_input_time": 272.85797983333333,
+      "suite_tick": 158596,
+      "suite_score_time": 272.8579778333332,
+      "performed_time": 282.1857561467427
+    },
+    {
+      "raw_id": 171,
+      "raw": {
+        "time": 116.08984375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 89157,
+        "event_index": 1215
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 115.06984375,
+      "chopin_tick": 65998,
+      "chopin_score_time": 115.07035416666665,
+      "suite_input_time": 273.9581881666667,
+      "suite_tick": 159598,
+      "suite_score_time": 273.95818616666656,
+      "performed_time": 283.28893316827794
+    },
+    {
+      "raw_id": 172,
+      "raw": {
+        "time": 116.33984375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 89349,
+        "event_index": 1223
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 115.31984375,
+      "chopin_tick": 66231,
+      "chopin_score_time": 115.32034374999998,
+      "suite_input_time": 274.20817775,
+      "suite_tick": 159831,
+      "suite_score_time": 274.2081757499999,
+      "performed_time": 283.5396958361203
+    },
+    {
+      "raw_id": 173,
+      "raw": {
+        "time": 117.11848958333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 89947,
+        "event_index": 1229
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 116.09848958333333,
+      "chopin_tick": 66956,
+      "chopin_score_time": 116.09820833333332,
+      "suite_input_time": 274.98604233333333,
+      "suite_tick": 160556,
+      "suite_score_time": 274.9860403333332,
+      "performed_time": 284.3201995465993
+    },
+    {
+      "raw_id": 174,
+      "raw": {
+        "time": 117.22916666666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 90032,
+        "event_index": 1231
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 116.20916666666668,
+      "chopin_tick": 67059,
+      "chopin_score_time": 116.20871874999999,
+      "suite_input_time": 275.09655275,
+      "suite_tick": 160659,
+      "suite_score_time": 275.0965507499999,
+      "performed_time": 284.43111359756944
+    },
+    {
+      "raw_id": 175,
+      "raw": {
+        "time": 118.02994791666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 90647,
+        "event_index": 1243
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 117.00994791666668,
+      "chopin_tick": 67833,
+      "chopin_score_time": 117.00948437499999,
+      "suite_input_time": 275.897318375,
+      "suite_tick": 161433,
+      "suite_score_time": 275.8973163749999,
+      "performed_time": 285.23501742549655
+    },
+    {
+      "raw_id": 176,
+      "raw": {
+        "time": 118.21875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 90792,
+        "event_index": 1246
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 117.19875,
+      "chopin_tick": 68017,
+      "chopin_score_time": 117.19827604166665,
+      "suite_input_time": 276.08611004166664,
+      "suite_tick": 161617,
+      "suite_score_time": 276.0861080416666,
+      "performed_time": 285.4246036364614
+    },
+    {
+      "raw_id": 177,
+      "raw": {
+        "time": 119.12109375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 91485,
+        "event_index": 1254
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 118.10109375,
+      "chopin_tick": 68897,
+      "chopin_score_time": 118.10119270833331,
+      "suite_input_time": 276.9890267083333,
+      "suite_tick": 162497,
+      "suite_score_time": 276.98902470833326,
+      "performed_time": 286.3316089438885
+    },
+    {
+      "raw_id": 178,
+      "raw": {
+        "time": 119.27994791666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 91607,
+        "event_index": 1255
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 118.25994791666668,
+      "chopin_tick": 69052,
+      "chopin_score_time": 118.26022916666665,
+      "suite_input_time": 277.1480631666667,
+      "suite_tick": 162652,
+      "suite_score_time": 277.1480611666666,
+      "performed_time": 286.49141504451165
+    },
+    {
+      "raw_id": 179,
+      "raw": {
+        "time": 120.02994791666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 92183,
+        "event_index": 1263
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 119.00994791666668,
+      "chopin_tick": 69742,
+      "chopin_score_time": 119.01031249999998,
+      "suite_input_time": 277.8981465,
+      "suite_tick": 163342,
+      "suite_score_time": 277.89814449999994,
+      "performed_time": 287.2453282560189
+    },
+    {
+      "raw_id": 180,
+      "raw": {
+        "time": 120.34895833333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 92428,
+        "event_index": 1271
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 119.32895833333333,
+      "chopin_tick": 70033,
+      "chopin_score_time": 119.32859374999998,
+      "suite_input_time": 278.21642775,
+      "suite_tick": 163633,
+      "suite_score_time": 278.2164257499999,
+      "performed_time": 287.56533437530317
+    },
+    {
+      "raw_id": 181,
+      "raw": {
+        "time": 121.13541666666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 93032,
+        "event_index": 1275
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 120.11541666666668,
+      "chopin_tick": 70752,
+      "chopin_score_time": 120.11499999999998,
+      "suite_input_time": 279.002834,
+      "suite_tick": 164352,
+      "suite_score_time": 279.00283199999996,
+      "performed_time": 288.3562574158743
+    },
+    {
+      "raw_id": 182,
+      "raw": {
+        "time": 121.359375,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 93204,
+        "event_index": 1279
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 120.339375,
+      "chopin_tick": 70957,
+      "chopin_score_time": 120.33921874999999,
+      "suite_input_time": 279.22705275,
+      "suite_tick": 164557,
+      "suite_score_time": 279.22705074999993,
+      "performed_time": 288.5818305360825
+    },
+    {
+      "raw_id": 183,
+      "raw": {
+        "time": 122.14583333333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 93808,
+        "event_index": 1287
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 121.12583333333333,
+      "chopin_tick": 71642,
+      "chopin_score_time": 121.12606249999997,
+      "suite_input_time": 280.0138965,
+      "suite_tick": 165242,
+      "suite_score_time": 280.01389449999994,
+      "performed_time": 289.3736609433069
+    },
+    {
+      "raw_id": 184,
+      "raw": {
+        "time": 122.5,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 94080,
+        "event_index": 1296
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 121.48,
+      "chopin_tick": 71948,
+      "chopin_score_time": 121.47987499999998,
+      "suite_input_time": 280.367709,
+      "suite_tick": 165548,
+      "suite_score_time": 280.36770699999994,
+      "performed_time": 289.72983441671147
+    },
+    {
+      "raw_id": 185,
+      "raw": {
+        "time": 123.38932291666667,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 94763,
+        "event_index": 1301
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 122.36932291666668,
+      "chopin_tick": 72717,
+      "chopin_score_time": 122.36903124999998,
+      "suite_input_time": 281.25686525000003,
+      "suite_tick": 166317,
+      "suite_score_time": 281.25686325,
+      "performed_time": 290.6252492100317
+    },
+    {
+      "raw_id": 186,
+      "raw": {
+        "time": 123.91927083333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 95170,
+        "event_index": 1306
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 122.89927083333333,
+      "chopin_tick": 73130,
+      "chopin_score_time": 122.89968749999997,
+      "suite_input_time": 281.7875215,
+      "suite_tick": 166730,
+      "suite_score_time": 281.7875195,
+      "performed_time": 291.1598624891842
+    },
+    {
+      "raw_id": 187,
+      "raw": {
+        "time": 124.3515625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 95502,
+        "event_index": 1313
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 123.3315625,
+      "chopin_tick": 73424,
+      "chopin_score_time": 123.33149999999998,
+      "suite_input_time": 282.219334,
+      "suite_tick": 167024,
+      "suite_score_time": 282.219332,
+      "performed_time": 291.5950174309562
+    },
+    {
+      "raw_id": 188,
+      "raw": {
+        "time": 124.72916666666667,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 95792,
+        "event_index": 1322
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 123.70916666666668,
+      "chopin_tick": 73681,
+      "chopin_score_time": 123.70896874999998,
+      "suite_input_time": 282.59680275,
+      "suite_tick": 167281,
+      "suite_score_time": 282.59680075,
+      "performed_time": 291.97549805494873
+    },
+    {
+      "raw_id": 189,
+      "raw": {
+        "time": 125.03125,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 96024,
+        "event_index": 1323
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 124.01125,
+      "chopin_tick": 73887,
+      "chopin_score_time": 124.01153124999998,
+      "suite_input_time": 282.89936525,
+      "suite_tick": 167487,
+      "suite_score_time": 282.89936324999996,
+      "performed_time": 292.28053542689827
+    },
+    {
+      "raw_id": 190,
+      "raw": {
+        "time": 125.05989583333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 96046,
+        "event_index": 1324
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 124.03989583333333,
+      "chopin_tick": 73906,
+      "chopin_score_time": 124.03943749999998,
+      "suite_input_time": 282.9272715,
+      "suite_tick": 167506,
+      "suite_score_time": 282.92726949999997,
+      "performed_time": 292.3086726674425
+    },
+    {
+      "raw_id": 191,
+      "raw": {
+        "time": 125.9375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 96720,
+        "event_index": 1328
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 124.9175,
+      "chopin_tick": 74504,
+      "chopin_score_time": 124.91774999999998,
+      "suite_input_time": 283.805584,
+      "suite_tick": 168104,
+      "suite_score_time": 283.80558199999996,
+      "performed_time": 293.19449012880347
+    },
+    {
+      "raw_id": 192,
+      "raw": {
+        "time": 126.1796875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 96906,
+        "event_index": 1332
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 125.1596875,
+      "chopin_tick": 74669,
+      "chopin_score_time": 125.16009374999997,
+      "suite_input_time": 284.04792775,
+      "suite_tick": 168269,
+      "suite_score_time": 284.04792575,
+      "performed_time": 293.4389848515072
+    },
+    {
+      "raw_id": 193,
+      "raw": {
+        "time": 126.80989583333333,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 97390,
+        "event_index": 1336
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 125.78989583333333,
+      "chopin_tick": 75064,
+      "chopin_score_time": 125.7900833333333,
+      "suite_input_time": 284.6779173333333,
+      "suite_tick": 168664,
+      "suite_score_time": 284.6779153333333,
+      "performed_time": 294.0747284618522
+    },
+    {
+      "raw_id": 194,
+      "raw": {
+        "time": 126.91927083333333,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 97474,
+        "event_index": 1337
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 125.89927083333333,
+      "chopin_tick": 75127,
+      "chopin_score_time": 125.8996770833333,
+      "suite_input_time": 284.78751108333336,
+      "suite_tick": 168727,
+      "suite_score_time": 284.7875090833333,
+      "performed_time": 294.18534715365035
+    },
+    {
+      "raw_id": 195,
+      "raw": {
+        "time": 127.4921875,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 97914,
+        "event_index": 1340
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 126.4721875,
+      "chopin_tick": 75456,
+      "chopin_score_time": 126.47199999999997,
+      "suite_input_time": 285.359834,
+      "suite_tick": 169056,
+      "suite_score_time": 285.359832,
+      "performed_time": 294.7631379806909
+    },
+    {
+      "raw_id": 196,
+      "raw": {
+        "time": 127.6796875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 98058,
+        "event_index": 1343
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 126.6596875,
+      "chopin_tick": 75564,
+      "chopin_score_time": 126.65987499999997,
+      "suite_input_time": 285.547709,
+      "suite_tick": 169164,
+      "suite_score_time": 285.54770699999995,
+      "performed_time": 294.9528501858303
+    },
+    {
+      "raw_id": 197,
+      "raw": {
+        "time": 128.73567708333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 98869,
+        "event_index": 1345
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 127.71567708333335,
+      "chopin_tick": 76171,
+      "chopin_score_time": 127.7158020833333,
+      "suite_input_time": 286.6036360833333,
+      "suite_tick": 169771,
+      "suite_score_time": 286.6036340833333,
+      "performed_time": 296.01949192265636
+    },
+    {
+      "raw_id": 198,
+      "raw": {
+        "time": 128.89973958333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 98995,
+        "event_index": 1349
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 127.87973958333335,
+      "chopin_tick": 76265,
+      "chopin_score_time": 127.87932291666664,
+      "suite_input_time": 286.76715691666664,
+      "suite_tick": 169865,
+      "suite_score_time": 286.76715491666664,
+      "performed_time": 296.18473110489714
+    },
+    {
+      "raw_id": 199,
+      "raw": {
+        "time": 141.45442708333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 108637,
+        "event_index": 1375
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 140.43442708333333,
+      "chopin_tick": 82656,
+      "chopin_score_time": 140.43499999999997,
+      "suite_input_time": 299.322834,
+      "suite_tick": 176256,
+      "suite_score_time": 299.3228319999999,
+      "performed_time": 308.919919989457
+    },
+    {
+      "raw_id": 200,
+      "raw": {
+        "time": 142.19921875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 109209,
+        "event_index": 1377
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 141.17921875,
+      "chopin_tick": 83005,
+      "chopin_score_time": 141.18026041666664,
+      "suite_input_time": 300.06809441666667,
+      "suite_tick": 176605,
+      "suite_score_time": 300.06809241666656,
+      "performed_time": 309.6788040398856
+    },
+    {
+      "raw_id": 201,
+      "raw": {
+        "time": 144.4609375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 110946,
+        "event_index": 1381
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 143.4409375,
+      "chopin_tick": 84064,
+      "chopin_score_time": 143.44166666666663,
+      "suite_input_time": 302.32950066666666,
+      "suite_tick": 177664,
+      "suite_score_time": 302.32949866666655,
+      "performed_time": 311.9835982425818
+    },
+    {
+      "raw_id": 202,
+      "raw": {
+        "time": 144.51953125,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 110991,
+        "event_index": 1382
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 143.49953125,
+      "chopin_tick": 84091,
+      "chopin_score_time": 143.49932291666664,
+      "suite_input_time": 302.38715691666664,
+      "suite_tick": 177691,
+      "suite_score_time": 302.3871549166666,
+      "performed_time": 312.0424010406398
+    },
+    {
+      "raw_id": 203,
+      "raw": {
+        "time": 145.48307291666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 111731,
+        "event_index": 1390
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 144.46307291666665,
+      "chopin_tick": 84542,
+      "chopin_score_time": 144.4640104166666,
+      "suite_input_time": 303.3518444166666,
+      "suite_tick": 178142,
+      "suite_score_time": 303.3518424166666,
+      "performed_time": 313.0265573647676
+    },
+    {
+      "raw_id": 204,
+      "raw": {
+        "time": 145.55989583333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 111790,
+        "event_index": 1393
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 144.53989583333333,
+      "chopin_tick": 84577,
+      "chopin_score_time": 144.53966145833328,
+      "suite_input_time": 303.4274954583333,
+      "suite_tick": 178177,
+      "suite_score_time": 303.4274934583333,
+      "performed_time": 313.10374068059554
+    },
+    {
+      "raw_id": 205,
+      "raw": {
+        "time": 147.95833333333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 113632,
+        "event_index": 1427
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 146.93833333333333,
+      "chopin_tick": 85687,
+      "chopin_score_time": 146.9388802083333,
+      "suite_input_time": 305.8267142083333,
+      "suite_tick": 179287,
+      "suite_score_time": 305.8267122083333,
+      "performed_time": 315.5488248425356
+    },
+    {
+      "raw_id": 206,
+      "raw": {
+        "time": 148.11979166666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 113756,
+        "event_index": 1436
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 147.09979166666665,
+      "chopin_tick": 85761,
+      "chopin_score_time": 147.09882812499995,
+      "suite_input_time": 305.98666212499995,
+      "suite_tick": 179361,
+      "suite_score_time": 305.98666012499996,
+      "performed_time": 315.71164257801405
+    },
+    {
+      "raw_id": 207,
+      "raw": {
+        "time": 154.96744791666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 119015,
+        "event_index": 1493
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 153.94744791666665,
+      "chopin_tick": 89346,
+      "chopin_score_time": 153.94740624999997,
+      "suite_input_time": 312.83524024999997,
+      "suite_tick": 182946,
+      "suite_score_time": 312.8352382499999,
+      "performed_time": 322.66119291130457
+    },
+    {
+      "raw_id": 208,
+      "raw": {
+        "time": 155.19921875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 119193,
+        "event_index": 1512
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 154.17921875,
+      "chopin_tick": 89482,
+      "chopin_score_time": 154.17903124999995,
+      "suite_input_time": 313.06686525,
+      "suite_tick": 183082,
+      "suite_score_time": 313.0668632499999,
+      "performed_time": 322.89548764699725
+    },
+    {
+      "raw_id": 209,
+      "raw": {
+        "time": 157.99479166666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 121340,
+        "event_index": 1526
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 156.97479166666665,
+      "chopin_tick": 91265,
+      "chopin_score_time": 156.97546874999998,
+      "suite_input_time": 315.86330275,
+      "suite_tick": 184865,
+      "suite_score_time": 315.8633007499999,
+      "performed_time": 325.72033184070153
+    },
+    {
+      "raw_id": 210,
+      "raw": {
+        "time": 158.14973958333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 121459,
+        "event_index": 1534
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 157.12973958333333,
+      "chopin_tick": 91370,
+      "chopin_score_time": 157.12968749999996,
+      "suite_input_time": 316.0175215,
+      "suite_tick": 184970,
+      "suite_score_time": 316.01751949999993,
+      "performed_time": 325.87591199409394
+    },
+    {
+      "raw_id": 211,
+      "raw": {
+        "time": 160.57552083333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 123322,
+        "event_index": 1549
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 159.55552083333333,
+      "chopin_tick": 93022,
+      "chopin_score_time": 159.55606249999997,
+      "suite_input_time": 318.4438965,
+      "suite_tick": 186622,
+      "suite_score_time": 318.4438944999999,
+      "performed_time": 328.32089211685235
+    },
+    {
+      "raw_id": 212,
+      "raw": {
+        "time": 160.75911458333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 123463,
+        "event_index": 1556
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 159.73911458333333,
+      "chopin_tick": 93147,
+      "chopin_score_time": 159.73965624999997,
+      "suite_input_time": 318.62749025,
+      "suite_tick": 186747,
+      "suite_score_time": 318.6274882499999,
+      "performed_time": 328.5056786276838
+    },
+    {
+      "raw_id": 213,
+      "raw": {
+        "time": 161.87630208333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 124321,
+        "event_index": 1562
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 160.85630208333333,
+      "chopin_tick": 93907,
+      "chopin_score_time": 160.85590624999998,
+      "suite_input_time": 319.74374025,
+      "suite_tick": 187507,
+      "suite_score_time": 319.7437382499999,
+      "performed_time": 329.6285309687511
+    },
+    {
+      "raw_id": 214,
+      "raw": {
+        "time": 161.95963541666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 124385,
+        "event_index": 1568
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 160.93963541666665,
+      "chopin_tick": 93964,
+      "chopin_score_time": 160.93962499999995,
+      "suite_input_time": 319.827459,
+      "suite_tick": 187564,
+      "suite_score_time": 319.8274569999999,
+      "performed_time": 329.71269995481026
+    },
+    {
+      "raw_id": 215,
+      "raw": {
+        "time": 163.00390625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 125187,
+        "event_index": 1577
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 161.98390625,
+      "chopin_tick": 94686,
+      "chopin_score_time": 161.98428124999995,
+      "suite_input_time": 320.87211525,
+      "suite_tick": 188286,
+      "suite_score_time": 320.8721132499999,
+      "performed_time": 330.7624476704912
+    },
+    {
+      "raw_id": 216,
+      "raw": {
+        "time": 163.0390625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 125214,
+        "event_index": 1579
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 162.0190625,
+      "chopin_tick": 94710,
+      "chopin_score_time": 162.01890624999996,
+      "suite_input_time": 320.90674025,
+      "suite_tick": 188310,
+      "suite_score_time": 320.9067382499999,
+      "performed_time": 330.79722473994565
+    },
+    {
+      "raw_id": 217,
+      "raw": {
+        "time": 163.70833333333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 125728,
+        "event_index": 1587
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 162.68833333333333,
+      "chopin_tick": 95174,
+      "chopin_score_time": 162.68832291666664,
+      "suite_input_time": 321.57615691666666,
+      "suite_tick": 188774,
+      "suite_score_time": 321.57615491666655,
+      "performed_time": 331.4693712652666
+    },
+    {
+      "raw_id": 218,
+      "raw": {
+        "time": 163.75,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 125760,
+        "event_index": 1588
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 162.73,
+      "chopin_tick": 95203,
+      "chopin_score_time": 162.7301614583333,
+      "suite_input_time": 321.6179954583333,
+      "suite_tick": 188803,
+      "suite_score_time": 321.6179934583332,
+      "performed_time": 331.5113671605602
+    },
+    {
+      "raw_id": 219,
+      "raw": {
+        "time": 164.56510416666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 126386,
+        "event_index": 1598
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 163.54510416666665,
+      "chopin_tick": 95768,
+      "chopin_score_time": 163.54529166666663,
+      "suite_input_time": 322.4331256666667,
+      "suite_tick": 189368,
+      "suite_score_time": 322.4331236666666,
+      "performed_time": 332.32925185642085
+    },
+    {
+      "raw_id": 220,
+      "raw": {
+        "time": 164.63932291666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 126443,
+        "event_index": 1606
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 163.61932291666665,
+      "chopin_tick": 95819,
+      "chopin_score_time": 163.6188697916666,
+      "suite_input_time": 322.5067037916666,
+      "suite_tick": 189419,
+      "suite_score_time": 322.50670179166656,
+      "performed_time": 332.40304950841175
+    },
+    {
+      "raw_id": 221,
+      "raw": {
+        "time": 166.1796875,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 127626,
+        "event_index": 1622
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 165.1596875,
+      "chopin_tick": 96803,
+      "chopin_score_time": 165.15978124999998,
+      "suite_input_time": 324.04761525000004,
+      "suite_tick": 190403,
+      "suite_score_time": 324.04761324999987,
+      "performed_time": 333.94745257613613
+    },
+    {
+      "raw_id": 222,
+      "raw": {
+        "time": 166.29947916666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 127718,
+        "event_index": 1637
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 165.27947916666665,
+      "chopin_tick": 96878,
+      "chopin_score_time": 165.27931249999997,
+      "suite_input_time": 324.1671465,
+      "suite_tick": 190478,
+      "suite_score_time": 324.1671444999999,
+      "performed_time": 334.0671665416129
+    },
+    {
+      "raw_id": 223,
+      "raw": {
+        "time": 169.33072916666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 130046,
+        "event_index": 1655
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 168.31072916666665,
+      "chopin_tick": 98917,
+      "chopin_score_time": 168.31087499999998,
+      "suite_input_time": 327.198709,
+      "suite_tick": 192517,
+      "suite_score_time": 327.1987069999999,
+      "performed_time": 337.1018520190267
+    },
+    {
+      "raw_id": 224,
+      "raw": {
+        "time": 169.45963541666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 130145,
+        "event_index": 1664
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 168.43963541666665,
+      "chopin_tick": 99011,
+      "chopin_score_time": 168.44012499999997,
+      "suite_input_time": 327.32795899999996,
+      "suite_tick": 192611,
+      "suite_score_time": 327.3279569999999,
+      "performed_time": 337.2314779597928
+    },
+    {
+      "raw_id": 225,
+      "raw": {
+        "time": 170.63020833333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 131044,
+        "event_index": 1671
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 169.61020833333333,
+      "chopin_tick": 99860,
+      "chopin_score_time": 169.61010416666662,
+      "suite_input_time": 328.49793816666664,
+      "suite_tick": 193460,
+      "suite_score_time": 328.49793616666653,
+      "performed_time": 338.4064125680502
+    },
+    {
+      "raw_id": 226,
+      "raw": {
+        "time": 170.73958333333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 131128,
+        "event_index": 1678
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 169.71958333333333,
+      "chopin_tick": 99933,
+      "chopin_score_time": 169.71998437499997,
+      "suite_input_time": 328.60781837499997,
+      "suite_tick": 193533,
+      "suite_score_time": 328.60781637499986,
+      "performed_time": 338.5169020757803
+    },
+    {
+      "raw_id": 227,
+      "raw": {
+        "time": 171.83723958333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 131971,
+        "event_index": 1685
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 170.81723958333333,
+      "chopin_tick": 100662,
+      "chopin_score_time": 170.81728124999995,
+      "suite_input_time": 329.70511524999995,
+      "suite_tick": 194262,
+      "suite_score_time": 329.7051132499999,
+      "performed_time": 339.6216434208325
+    },
+    {
+      "raw_id": 228,
+      "raw": {
+        "time": 172.01953125,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 132111,
+        "event_index": 1692
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 170.99953125,
+      "chopin_tick": 100783,
+      "chopin_score_time": 170.9994114583333,
+      "suite_input_time": 329.8872454583333,
+      "suite_tick": 194383,
+      "suite_score_time": 329.8872434583332,
+      "performed_time": 339.8052489271408
+    },
+    {
+      "raw_id": 229,
+      "raw": {
+        "time": 173.15885416666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 132986,
+        "event_index": 1701
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 172.13885416666665,
+      "chopin_tick": 101540,
+      "chopin_score_time": 172.13885416666662,
+      "suite_input_time": 331.02668816666664,
+      "suite_tick": 195140,
+      "suite_score_time": 331.02668616666654,
+      "performed_time": 340.95547532621566
+    },
+    {
+      "raw_id": 230,
+      "raw": {
+        "time": 173.2890625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 133086,
+        "event_index": 1708
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 172.2690625,
+      "chopin_tick": 101627,
+      "chopin_score_time": 172.2698072916666,
+      "suite_input_time": 331.15764129166666,
+      "suite_tick": 195227,
+      "suite_score_time": 331.15763929166656,
+      "performed_time": 341.0878397980815
+    },
+    {
+      "raw_id": 231,
+      "raw": {
+        "time": 174.5625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 134064,
+        "event_index": 1721
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 173.5425,
+      "chopin_tick": 102431,
+      "chopin_score_time": 173.5429010416666,
+      "suite_input_time": 332.4307350416666,
+      "suite_tick": 196031,
+      "suite_score_time": 332.43073304166654,
+      "performed_time": 342.3765089453413
+    },
+    {
+      "raw_id": 232,
+      "raw": {
+        "time": 174.69921875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 134169,
+        "event_index": 1724
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 173.67921875,
+      "chopin_tick": 102516,
+      "chopin_score_time": 173.67881249999994,
+      "suite_input_time": 332.56664649999993,
+      "suite_tick": 196116,
+      "suite_score_time": 332.5666444999999,
+      "performed_time": 342.51428231105973
+    },
+    {
+      "raw_id": 233,
+      "raw": {
+        "time": 176.234375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 135348,
+        "event_index": 1760
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 175.214375,
+      "chopin_tick": 103476,
+      "chopin_score_time": 175.21381249999993,
+      "suite_input_time": 334.10164649999996,
+      "suite_tick": 197076,
+      "suite_score_time": 334.10164449999985,
+      "performed_time": 344.07298827412393
+    },
+    {
+      "raw_id": 234,
+      "raw": {
+        "time": 176.32942708333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 135421,
+        "event_index": 1765
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 175.30942708333333,
+      "chopin_tick": 103536,
+      "chopin_score_time": 175.30974999999995,
+      "suite_input_time": 334.197584,
+      "suite_tick": 197136,
+      "suite_score_time": 334.19758199999984,
+      "performed_time": 344.17057114231454
+    },
+    {
+      "raw_id": 235,
+      "raw": {
+        "time": 178.34635416666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 136970,
+        "event_index": 1791
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 177.32635416666665,
+      "chopin_tick": 104739,
+      "chopin_score_time": 177.32706249999993,
+      "suite_input_time": 336.21489649999995,
+      "suite_tick": 198339,
+      "suite_score_time": 336.21489449999984,
+      "performed_time": 346.22696495877517
+    },
+    {
+      "raw_id": 236,
+      "raw": {
+        "time": 178.48958333333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 137080,
+        "event_index": 1798
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 177.46958333333333,
+      "chopin_tick": 104823,
+      "chopin_score_time": 177.46881249999993,
+      "suite_input_time": 336.35664649999995,
+      "suite_tick": 198423,
+      "suite_score_time": 336.35664449999985,
+      "performed_time": 346.37178395636596
+    },
+    {
+      "raw_id": 237,
+      "raw": {
+        "time": 179.88802083333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 138154,
+        "event_index": 1804
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 178.86802083333333,
+      "chopin_tick": 105643,
+      "chopin_score_time": 178.86801562499994,
+      "suite_input_time": 337.755849625,
+      "suite_tick": 199243,
+      "suite_score_time": 337.7558476249999,
+      "performed_time": 347.80356686462227
+    },
+    {
+      "raw_id": 238,
+      "raw": {
+        "time": 179.97916666666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 138224,
+        "event_index": 1810
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 178.95916666666665,
+      "chopin_tick": 105688,
+      "chopin_score_time": 178.96012499999995,
+      "suite_input_time": 337.84795899999995,
+      "suite_tick": 199288,
+      "suite_score_time": 337.84795699999984,
+      "performed_time": 347.89796691757425
+    },
+    {
+      "raw_id": 239,
+      "raw": {
+        "time": 182.35286458333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 140047,
+        "event_index": 1840
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 181.33286458333333,
+      "chopin_tick": 106847,
+      "chopin_score_time": 181.33245312499994,
+      "suite_input_time": 340.22028712499997,
+      "suite_tick": 200447,
+      "suite_score_time": 340.22028512499986,
+      "performed_time": 350.3355387629325
+    },
+    {
+      "raw_id": 240,
+      "raw": {
+        "time": 182.5,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 140160,
+        "event_index": 1856
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 181.48,
+      "chopin_tick": 106919,
+      "chopin_score_time": 181.47982812499995,
+      "suite_input_time": 340.367662125,
+      "suite_tick": 200519,
+      "suite_score_time": 340.3676601249999,
+      "performed_time": 350.4873650339638
+    },
+    {
+      "raw_id": 241,
+      "raw": {
+        "time": 183.87369791666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 141215,
+        "event_index": 1862
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 182.85369791666665,
+      "chopin_tick": 107590,
+      "chopin_score_time": 182.85437499999995,
+      "suite_input_time": 341.742209,
+      "suite_tick": 201190,
+      "suite_score_time": 341.7422069999999,
+      "performed_time": 351.90568332692516
+    },
+    {
+      "raw_id": 242,
+      "raw": {
+        "time": 183.94921875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 141273,
+        "event_index": 1868
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 182.92921875,
+      "chopin_tick": 107626,
+      "chopin_score_time": 182.92862499999995,
+      "suite_input_time": 341.816459,
+      "suite_tick": 201226,
+      "suite_score_time": 341.81645699999984,
+      "performed_time": 351.9824139930725
+    },
+    {
+      "raw_id": 243,
+      "raw": {
+        "time": 187.87239583333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 144286,
+        "event_index": 1941
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 186.85239583333333,
+      "chopin_tick": 109517,
+      "chopin_score_time": 186.85287499999995,
+      "suite_input_time": 345.740709,
+      "suite_tick": 203117,
+      "suite_score_time": 345.7407069999999,
+      "performed_time": 356.0548274818606
+    },
+    {
+      "raw_id": 244,
+      "raw": {
+        "time": 188.00911458333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 144391,
+        "event_index": 1950
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 186.98911458333333,
+      "chopin_tick": 109574,
+      "chopin_score_time": 186.98824999999997,
+      "suite_input_time": 345.876084,
+      "suite_tick": 203174,
+      "suite_score_time": 345.8760819999998,
+      "performed_time": 356.1958638220084
+    },
+    {
+      "raw_id": 245,
+      "raw": {
+        "time": 189.703125,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 145692,
+        "event_index": 1960
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 188.683125,
+      "chopin_tick": 110288,
+      "chopin_score_time": 188.68399999999997,
+      "suite_input_time": 347.57183399999997,
+      "suite_tick": 203888,
+      "suite_score_time": 347.57183199999986,
+      "performed_time": 357.9634975240141
+    },
+    {
+      "raw_id": 246,
+      "raw": {
+        "time": 189.79947916666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 145766,
+        "event_index": 1962
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 188.77947916666665,
+      "chopin_tick": 110328,
+      "chopin_score_time": 188.77899999999997,
+      "suite_input_time": 347.666834,
+      "suite_tick": 203928,
+      "suite_score_time": 347.66683199999983,
+      "performed_time": 358.06257770120084
+    },
+    {
+      "raw_id": 247,
+      "raw": {
+        "time": 190.91276041666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 146621,
+        "event_index": 1972
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 189.89276041666665,
+      "chopin_tick": 110797,
+      "chopin_score_time": 189.89287499999995,
+      "suite_input_time": 348.780709,
+      "suite_tick": 204397,
+      "suite_score_time": 348.78070699999984,
+      "performed_time": 359.22471334774417
+    },
+    {
+      "raw_id": 248,
+      "raw": {
+        "time": 191.00911458333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 146695,
+        "event_index": 1973
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 189.98911458333333,
+      "chopin_tick": 110838,
+      "chopin_score_time": 189.99024999999995,
+      "suite_input_time": 348.87808399999994,
+      "suite_tick": 204438,
+      "suite_score_time": 348.87808199999984,
+      "performed_time": 359.32634415889606
+    },
+    {
+      "raw_id": 249,
+      "raw": {
+        "time": 191.70963541666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 147233,
+        "event_index": 1986
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 190.68963541666665,
+      "chopin_tick": 111132,
+      "chopin_score_time": 190.68849999999995,
+      "suite_input_time": 349.576334,
+      "suite_tick": 204732,
+      "suite_score_time": 349.57633199999987,
+      "performed_time": 360.0552851719858
+    },
+    {
+      "raw_id": 250,
+      "raw": {
+        "time": 191.81901041666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 147317,
+        "event_index": 1989
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 190.79901041666665,
+      "chopin_tick": 111179,
+      "chopin_score_time": 190.80012499999995,
+      "suite_input_time": 349.687959,
+      "suite_tick": 204779,
+      "suite_score_time": 349.68795699999987,
+      "performed_time": 360.17184484008095
+    },
+    {
+      "raw_id": 251,
+      "raw": {
+        "time": 192.34375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 147720,
+        "event_index": 1995
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 191.32375,
+      "chopin_tick": 111402,
+      "chopin_score_time": 191.32274999999996,
+      "suite_input_time": 350.210584,
+      "suite_tick": 205002,
+      "suite_score_time": 350.2105819999999,
+      "performed_time": 360.71767758323796
+    },
+    {
+      "raw_id": 252,
+      "raw": {
+        "time": 192.52994791666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 147863,
+        "event_index": 2005
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 191.50994791666665,
+      "chopin_tick": 111487,
+      "chopin_score_time": 191.5104583333333,
+      "suite_input_time": 350.3982923333333,
+      "suite_tick": 205087,
+      "suite_score_time": 350.3982903333332,
+      "performed_time": 360.91376307005476
+    },
+    {
+      "raw_id": 253,
+      "raw": {
+        "time": 194.6875,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 149520,
+        "event_index": 2014
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 193.6675,
+      "chopin_tick": 112464,
+      "chopin_score_time": 193.66799999999995,
+      "suite_input_time": 352.555834,
+      "suite_tick": 206064,
+      "suite_score_time": 352.55583199999984,
+      "performed_time": 363.1691789954296
+    },
+    {
+      "raw_id": 254,
+      "raw": {
+        "time": 194.80989583333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 149614,
+        "event_index": 2020
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 193.78989583333333,
+      "chopin_tick": 112519,
+      "chopin_score_time": 193.7894583333333,
+      "suite_input_time": 352.6772923333333,
+      "suite_tick": 206119,
+      "suite_score_time": 352.6772903333332,
+      "performed_time": 363.29623400043727
+    },
+    {
+      "raw_id": 255,
+      "raw": {
+        "time": 198.18489583333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 152206,
+        "event_index": 2047
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 197.16489583333333,
+      "chopin_tick": 114040,
+      "chopin_score_time": 197.16416666666663,
+      "suite_input_time": 356.0520006666667,
+      "suite_tick": 207640,
+      "suite_score_time": 356.0519986666665,
+      "performed_time": 366.83015624729404
+    },
+    {
+      "raw_id": 256,
+      "raw": {
+        "time": 198.38932291666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 152363,
+        "event_index": 2060
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 197.36932291666665,
+      "chopin_tick": 114132,
+      "chopin_score_time": 197.36924999999997,
+      "suite_input_time": 356.25708399999996,
+      "suite_tick": 207732,
+      "suite_score_time": 356.25708199999985,
+      "performed_time": 367.0451463701453
+    },
+    {
+      "raw_id": 257,
+      "raw": {
+        "time": 200.71354166666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 154148,
+        "event_index": 2067
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 199.69354166666665,
+      "chopin_tick": 115175,
+      "chopin_score_time": 199.6942708333333,
+      "suite_input_time": 358.58210483333335,
+      "suite_tick": 208775,
+      "suite_score_time": 358.5821028333332,
+      "performed_time": 369.4843373469425
+    },
+    {
+      "raw_id": 258,
+      "raw": {
+        "time": 200.75911458333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 154183,
+        "event_index": 2069
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 199.73911458333333,
+      "chopin_tick": 115195,
+      "chopin_score_time": 199.73885416666664,
+      "suite_input_time": 358.62668816666667,
+      "suite_tick": 208795,
+      "suite_score_time": 358.6266861666665,
+      "performed_time": 369.53114333672085
+    },
+    {
+      "raw_id": 259,
+      "raw": {
+        "time": 201.63411458333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 154855,
+        "event_index": 2077
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 200.61411458333333,
+      "chopin_tick": 115582,
+      "chopin_score_time": 200.61347916666665,
+      "suite_input_time": 359.5013131666667,
+      "suite_tick": 209182,
+      "suite_score_time": 359.5013111666665,
+      "performed_time": 370.44962626507515
+    },
+    {
+      "raw_id": 260,
+      "raw": {
+        "time": 201.79947916666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 154982,
+        "event_index": 2085
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 200.77947916666665,
+      "chopin_tick": 115655,
+      "chopin_score_time": 200.7784895833333,
+      "suite_input_time": 359.66632358333334,
+      "suite_tick": 209255,
+      "suite_score_time": 359.6663215833332,
+      "performed_time": 370.622965421399
+    },
+    {
+      "raw_id": 261,
+      "raw": {
+        "time": 202.21614583333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 155302,
+        "event_index": 2087
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 201.19614583333333,
+      "chopin_tick": 115840,
+      "chopin_score_time": 201.19666666666663,
+      "suite_input_time": 360.08450066666666,
+      "suite_tick": 209440,
+      "suite_score_time": 360.0844986666665,
+      "performed_time": 371.0623268345067
+    },
+    {
+      "raw_id": 262,
+      "raw": {
+        "time": 202.25911458333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 155335,
+        "event_index": 2088
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 201.23911458333333,
+      "chopin_tick": 115859,
+      "chopin_score_time": 201.2396145833333,
+      "suite_input_time": 360.1274485833333,
+      "suite_tick": 209459,
+      "suite_score_time": 360.12744658333315,
+      "performed_time": 371.10745671275413
+    },
+    {
+      "raw_id": 263,
+      "raw": {
+        "time": 203.25651041666666,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 156101,
+        "event_index": 2093
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 202.23651041666665,
+      "chopin_tick": 116300,
+      "chopin_score_time": 202.2364583333333,
+      "suite_input_time": 361.1242923333333,
+      "suite_tick": 209900,
+      "suite_score_time": 361.1242903333332,
+      "performed_time": 372.15527362102324
+    },
+    {
+      "raw_id": 264,
+      "raw": {
+        "time": 203.40885416666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 156218,
+        "event_index": 2097
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 202.38885416666665,
+      "chopin_tick": 116367,
+      "chopin_score_time": 202.38790624999996,
+      "suite_input_time": 361.27574025,
+      "suite_tick": 209967,
+      "suite_score_time": 361.27573824999985,
+      "performed_time": 372.3145209242346
+    },
+    {
+      "raw_id": 265,
+      "raw": {
+        "time": 204.6640625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 157182,
+        "event_index": 2101
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 203.6440625,
+      "chopin_tick": 116923,
+      "chopin_score_time": 203.64469791666664,
+      "suite_input_time": 362.5325319166667,
+      "suite_tick": 210523,
+      "suite_score_time": 362.5325299166665,
+      "performed_time": 373.63659782550275
+    },
+    {
+      "raw_id": 266,
+      "raw": {
+        "time": 204.69921875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 157209,
+        "event_index": 2102
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 203.67921875,
+      "chopin_tick": 116938,
+      "chopin_score_time": 203.67860416666664,
+      "suite_input_time": 362.56643816666667,
+      "suite_tick": 210538,
+      "suite_score_time": 362.5664361666665,
+      "performed_time": 373.6722792727863
+    },
+    {
+      "raw_id": 267,
+      "raw": {
+        "time": 205.19140625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 157587,
+        "event_index": 2106
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 204.17140625,
+      "chopin_tick": 117162,
+      "chopin_score_time": 204.17115624999997,
+      "suite_input_time": 363.05899024999997,
+      "suite_tick": 210762,
+      "suite_score_time": 363.0589882499998,
+      "performed_time": 374.1907260104291
+    },
+    {
+      "raw_id": 268,
+      "raw": {
+        "time": 205.29947916666666,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 157670,
+        "event_index": 2107
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 204.27947916666665,
+      "chopin_tick": 117218,
+      "chopin_score_time": 204.27936458333332,
+      "suite_input_time": 363.16719858333335,
+      "suite_tick": 210818,
+      "suite_score_time": 363.1671965833331,
+      "performed_time": 374.3047560085294
+    },
+    {
+      "raw_id": 269,
+      "raw": {
+        "time": 206.00390625,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 158211,
+        "event_index": 2113
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 204.98390625,
+      "chopin_tick": 117583,
+      "chopin_score_time": 204.98465104166664,
+      "suite_input_time": 363.87248504166666,
+      "suite_tick": 211183,
+      "suite_score_time": 363.8724830416665,
+      "performed_time": 375.05057413143754
+    },
+    {
+      "raw_id": 270,
+      "raw": {
+        "time": 206.0390625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 158238,
+        "event_index": 2115
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 205.0190625,
+      "chopin_tick": 117601,
+      "chopin_score_time": 205.01943229166665,
+      "suite_input_time": 363.9072662916667,
+      "suite_tick": 211201,
+      "suite_score_time": 363.9072642916665,
+      "performed_time": 375.087470844003
+    },
+    {
+      "raw_id": 271,
+      "raw": {
+        "time": 206.109375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 158292,
+        "event_index": 2117
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 205.089375,
+      "chopin_tick": 117637,
+      "chopin_score_time": 205.08899479166664,
+      "suite_input_time": 363.97682879166666,
+      "suite_tick": 211237,
+      "suite_score_time": 363.9768267916665,
+      "performed_time": 375.16129730781637
+    },
+    {
+      "raw_id": 272,
+      "raw": {
+        "time": 206.21875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 158376,
+        "event_index": 2118
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 205.19875,
+      "chopin_tick": 117694,
+      "chopin_score_time": 205.19913541666665,
+      "suite_input_time": 364.08696941666665,
+      "suite_tick": 211294,
+      "suite_score_time": 364.0869674166665,
+      "performed_time": 375.2782794034737
+    },
+    {
+      "raw_id": 273,
+      "raw": {
+        "time": 206.69921875,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 158745,
+        "event_index": 2119
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 205.67921875,
+      "chopin_tick": 117942,
+      "chopin_score_time": 205.67834374999998,
+      "suite_input_time": 364.56617775,
+      "suite_tick": 211542,
+      "suite_score_time": 364.5661757499998,
+      "performed_time": 375.78854623646157
+    },
+    {
+      "raw_id": 274,
+      "raw": {
+        "time": 206.80989583333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 158830,
+        "event_index": 2120
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 205.78989583333333,
+      "chopin_tick": 118000,
+      "chopin_score_time": 205.79041666666663,
+      "suite_input_time": 364.67825066666666,
+      "suite_tick": 211600,
+      "suite_score_time": 364.6782486666665,
+      "performed_time": 375.9081871831873
+    },
+    {
+      "raw_id": 275,
+      "raw": {
+        "time": 208.93880208333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 160465,
+        "event_index": 2130
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 207.91880208333333,
+      "chopin_tick": 119108,
+      "chopin_score_time": 207.91829166666665,
+      "suite_input_time": 366.8061256666667,
+      "suite_tick": 212708,
+      "suite_score_time": 366.80612366666645,
+      "performed_time": 378.20209292963455
+    },
+    {
+      "raw_id": 276,
+      "raw": {
+        "time": 208.98958333333334,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 160504,
+        "event_index": 2131
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 207.96958333333333,
+      "chopin_tick": 119137,
+      "chopin_score_time": 207.9687395833333,
+      "suite_input_time": 366.85657358333333,
+      "suite_tick": 212737,
+      "suite_score_time": 366.8565715833331,
+      "performed_time": 378.2571011894602
+    },
+    {
+      "raw_id": 277,
+      "raw": {
+        "time": 209.3203125,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 160758,
+        "event_index": 2135
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 208.3003125,
+      "chopin_tick": 119328,
+      "chopin_score_time": 208.301,
+      "suite_input_time": 367.18883400000004,
+      "suite_tick": 212928,
+      "suite_score_time": 367.18883199999976,
+      "performed_time": 378.6209898966331
+    },
+    {
+      "raw_id": 278,
+      "raw": {
+        "time": 209.37890625,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 160803,
+        "event_index": 2136
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 208.35890625,
+      "chopin_tick": 119361,
+      "chopin_score_time": 208.35840624999997,
+      "suite_input_time": 367.24624025,
+      "suite_tick": 212961,
+      "suite_score_time": 367.2462382499998,
+      "performed_time": 378.6841430389844
+    },
+    {
+      "raw_id": 279,
+      "raw": {
+        "time": 209.91536458333334,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 161215,
+        "event_index": 2143
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 208.89536458333333,
+      "chopin_tick": 119670,
+      "chopin_score_time": 208.89593749999997,
+      "suite_input_time": 367.7837715,
+      "suite_tick": 213270,
+      "suite_score_time": 367.7837694999998,
+      "performed_time": 379.2795758882996
+    },
+    {
+      "raw_id": 280,
+      "raw": {
+        "time": 209.9296875,
+        "controller": 64,
+        "value": 127,
+        "channel": 0,
+        "track": 1,
+        "tick": 161226,
+        "event_index": 2144
+      },
+      "status": "inside recovered Chopin domain",
+      "crop_shifted_time": 208.9096875,
+      "chopin_tick": 119678,
+      "chopin_score_time": 208.90985416666666,
+      "suite_input_time": 367.7976881666667,
+      "suite_tick": 213278,
+      "suite_score_time": 367.79768616666644,
+      "performed_time": 379.2950906621946
+    },
+    {
+      "raw_id": 281,
+      "raw": {
+        "time": 222.4375,
+        "controller": 64,
+        "value": 0,
+        "channel": 0,
+        "track": 1,
+        "tick": 170832,
+        "event_index": 2175
+      },
+      "status": "after excerpt; retained without extrapolated foot state",
+      "performed_time": null
+    }
+  ],
+  "source_sha256": "c9c3de936cf16650a1744bdd7e8d27c87598c2fb966b424c238657f0cd8e943f",
+  "source_recording_crop": [
+    1.02,
+    218.82942708333331
+  ],
+  "model_estimate": true,
+  "ground_truth": false,
+  "physical_foot_motion_validated": false,
+  "time_mapping": "recording crop; Chopin bar/tick export; suite excerpt offset and bar/tick export; shared performance time map",
+  "note_jitter_applied_to_pedals": false,
+  "earlier_pieces": "unknown; no estimated pedal stream supplied",
+  "terminal_release_fabricated": false
+}

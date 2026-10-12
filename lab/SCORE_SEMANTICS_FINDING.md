@@ -1,5 +1,31 @@
 # Original music and physical key actions, 2026-10-11
 
+**Later source recovery:** the cached upstream transcription was found at
+`/tmp/claude-1000/suite/work/raw.mid`, with 282 estimated CC64 events. The
+note-only export discarded them. Both delivered Chopin and suite MIDI files
+now reproduce byte for byte from the archived fitting data and unchanged
+writer. Recovery keeps all 282 events: 280 mapped into the Chopin domain,
+one earlier event supplies its initial down state, and one terminal event
+stays outside the crop. No terminal up transition is fabricated. See
+`key_actions_20261011.json` and `KEY_ACTION_PROTOCOL.md`.
+
+The preview's preserved audio is synthesized Salamander audio with the
+sampler's automatic bass-change resets, not the source Frank Levy recording.
+The archived rendering command supplied no downbeats. In the full-score
+controller, 1,478 action proposals shorten source holds; 1,003 of those cuts
+would change that sampler's damping time. Estimated Chopin pedal covers 391
+cuts uninterrupted, fails 394, and leaves 693 outside the recovered domain.
+These counts are conditional diagnostics, not verified releases or sound
+equivalence. The source ledger also reveals two attacks lost at slicing.
+All original notes, legacy controller targets and soundtrack remain intact.
+
+Primary target-processing code supports pedal-extended note offsets by
+default. The exact training invocation for this cached checkpoint remains
+unverified; neither all-key-off nor all-pedal-off interpretation is justified.
+The earlier evidence below refers to the delivered MIDI, which still has no
+CC events. Absence there no longer means the upstream pedal estimates are
+unavailable.
+
 This is evidence, not a changed arrangement or permission to omit notes.
 The immutable performed suite contains 2,046 events. Raw MIDI and performed
 MIDI both reach 22 simultaneous distinct pitches; raw gates exceed ten

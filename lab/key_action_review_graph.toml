@@ -1,0 +1,16 @@
+name = "piano-key-action-semantics"
+description = "Review recovered estimated pedal provenance and an immutable attack/action boundary."
+deadline_secs = 700
+
+[[node]]
+id = "synthesize"
+tools = "none"
+prompt = """Propose a substantive next piano key-action experiment in at most 280 words from the supplied local facts and primary notes. Keep every source attack, source offset and all physical rig obligations intact. Distinguish audible note/pedal estimates from unique physical releases, MIDI time mapping from per-note performance jitter, old synthesized audio from the original recording, and bookkeeping from actual contact. Specify decisive numeric evidence and rejection criteria. No tools, empirical approval or unverified literature claims. Task: {task}"""
+
+[[node]]
+id = "verify"
+persona = "reviewer"
+tools = "none"
+depends_on = ["synthesize"]
+gate = { verdict = true, retry = "synthesize", credit_to = "synthesize", max_retries = 1 }
+prompt = """Audit the proposal in at most 180 words and include a verdict. Reject silent shortening or missing attacks, treating predicted pedals as ground truth, deriving unique physical releases from pedal-extended offsets, silently replacing old audio, state loss at crop boundaries, fake earlier-piece pedals, unreported per-note timing jitter, or bookkeeping/optimizer claims of contact, force or continuous clearance. The graph is running; do not require its future receipt. Judge method, not empirical rig approval. Task: {task}\nProposal: {output:synthesize}"""

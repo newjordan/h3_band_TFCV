@@ -9,6 +9,7 @@ from composure_site import apply_composure
 from hand_order_site import apply_hand_order
 from continuous_plan_site import apply_continuous_plan, apply_full_suite
 from orientation_site import apply_orientation
+from key_action_site import apply_key_actions
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = Path('/home/frosty40/h3/results/band_site/web')
@@ -155,6 +156,10 @@ orientation_path = ROOT / 'lab/realism_results/orientation_20261011.json'
 orientation = json.loads(orientation_path.read_text()) if orientation_path.exists() else None
 if orientation is not None and orientation['status'] == 'complete':
     apply_orientation(section, orientation)
+key_action_path = ROOT / 'lab/realism_results/key_actions_20261011.json'
+key_action = json.loads(key_action_path.read_text()) if key_action_path.exists() else None
+if key_action is not None and key_action['status'] == 'complete':
+    apply_key_actions(section, key_action)
 full_suite_path = ROOT / 'lab/realism_results/full_suite_progress_20261011.json'
 full_suite = json.loads(full_suite_path.read_text()) if full_suite_path.exists() else None
 if full_suite is not None and full_suite['status'] == 'complete':
@@ -175,6 +180,11 @@ if composure is not None and composure['status'] == 'complete':
         'The one-minute performance and drummer diagnostics remain available below.')
 media = WEB / 'media'
 media.mkdir(exist_ok=True)
+if key_action is not None and key_action['status'] == 'complete':
+    for source, destination in ((ART/'key_action_semantics.png','rig_realism_key_action_semantics.png'),
+                                (key_action_path,'rig_realism_key_action_results.json'),
+                                (ART/'key_action_recovered_pedal.json','rig_realism_recovered_pedal.json')):
+        shutil.copy2(source, media/destination)
 if orientation is not None and orientation['status'] == 'complete':
     for source, destination in ((ART/'orientation_comparison.mp4','rig_realism_orientation_comparison.mp4'),
                                 (ART/'orientation_traces.png','rig_realism_orientation_traces.png'),
@@ -247,5 +257,11 @@ if orientation is not None and orientation['status'] == 'complete':
     manifest['status'][0] = (f"<b>Rig research:</b> {orientation['unit_tests']['passed']} tests pass. "
         'The full 6:34 preview and four matched wrist-orientation treatments are available below. '
         'Original music, sampled skin failures and physical warmup remain in the evidence; full realism is unfinished.')
+if key_action is not None and key_action['status'] == 'complete':
+    manifest['updated'] = '2026-10-11 full-suite preview, recovered pedal estimates and complete source-action audit; realism remains unfinished'
+    manifest['status'][0] = (f"<b>Rig research:</b> {key_action['unit_tests']['passed']} tests pass. "
+        'The 6:34 suite preview and controller comparisons remain available. '
+        'Recovered pedal evidence exposes unverified hold cuts and two unscheduled source attacks. '
+        'Physical key/foot actions, geometry and natural performance remain unfinished.')
 manifest_path.write_text(json.dumps(manifest, indent=1) + '\n')
 print('Updated existing band-site manifest and research media')

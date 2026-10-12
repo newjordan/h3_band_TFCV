@@ -1,0 +1,17 @@
+{
+  "status": "complete",
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/key_action_lineage.json": "7c0c0ef6098656c40c9a2ad672cfb0e36ab6f6cec5f86d847beed17ba8455d82",
+    "/home/frosty40/h3/rig_realism/artifacts/realism/key_action_recovered_pedal.json": "738cc51df3452baac011e60ab96f730e8f4061764ed6fa01c04aed0d04ee9442",
+    "/home/frosty40/h3/rig_realism/artifacts/realism/key_action_controller_result.json": "437723b2a7476b8e3ad4fb2304e600dd62c9e2610051c90a062c8a0fc657d3f5"
+  },
+  "source_unchanged_during_run": true,
+  "full_original_gate_peak": 22,
+  "scheduled_proposal_peak": 11,
+  "detail_window": [
+    318.0,
+    325.5
+  ],
+  "png_sha256": "dc2c51ae13b069606ddd49733c79d346fe5f85e7d7f3059342de7e2f2f57de00",
+  "physical_release_or_pedal_ground_truth_claimed": false
+}

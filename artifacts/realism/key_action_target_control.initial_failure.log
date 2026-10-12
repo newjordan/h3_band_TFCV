@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/home/frosty40/h3/rig_realism/lab/key_action_target_control.py", line 62, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/frosty40/h3/rig_realism/lab/key_action_target_control.py", line 33, in main
+    old=importlib.util.module_from_spec(spec);sys.modules[spec.name]=old;spec.loader.exec_module(old)
+                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/frosty40/h3/rig_realism/artifacts/realism/key_action_legacy_piano.py", line 528, in <module>
+    set_hand_model("mpfb")
+  File "/home/frosty40/h3/rig_realism/artifacts/realism/key_action_legacy_piano.py", line 482, in set_hand_model
+    hd = json.load(open(MPFB_JSON))["hands"]["R"]
+                   ^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_model/mpfb_hands.json'

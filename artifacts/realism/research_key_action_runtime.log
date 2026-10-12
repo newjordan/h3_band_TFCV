@@ -1,0 +1,9 @@
+[sota-moa] additional proposer(s): gemma
+[swarm] research scout: grok-research
+[swarm] sota-moa amplify: manual — coordinator-only; start a turn with "moa:" to fan out
+[swarm] mixture: propose=openai judge=grok verify=openai aggregate=openai
+[swarm] research scout: grok-research
+[angel --task] driver in hand: openai  workspace: /home/frosty40/h3/rig_realism  tool schemas: full
+[task-event] call agent_graph: graph=piano-key-action-semantics, task=Full user goal stays natural realistic piano/drummer/body/co
+[task-event] done agent_graph [ToolOutcome { execution: Succeeded, verification: NotApplicable }]: [graph piano-key-action-semantics phase=Done nodes=2/2 elapsed=696s episode=ca34
+[task-event] notice: cache-stable: history rewrites held across 2 hop(s) to keep the request prefix byte-stable; at the turn boundary aged 0 result(s) (−0 bytes), shrank 0 tool-call argument(s) (−0 bytes), and deduped 0 duplicate result(s) (−0 bytes)

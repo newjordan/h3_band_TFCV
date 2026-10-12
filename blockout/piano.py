@@ -644,9 +644,13 @@ def slices(notes, tol=SLICE_TOL, hand="R"):
                 cx0 = np.mean([key_x(m.pitch) for m in prev]); cx1 = np.mean([key_x(m.pitch) for m in subs[k]])
                 lag = min(ROLL_LAG_MAX, lag + abs(cx1 - cx0) / ROLL_V)
                 prev = subs[k]
-                subs[k] = [dataclasses.replace(m, start=m.start + min(lag, max(0.0, m.end - m.start - 0.06)),
-                                               end=max(m.end, m.start + lag + 0.05))
-                           for m in subs[k]]      # never past the note's own end (it has to sound while held)
+                shifted = []
+                for m in subs[k]:
+                    note = copy.copy(m)          # retain touch/lift and immutable source identity
+                    note.start = m.start + min(lag, max(0.0, m.end - m.start - 0.06))
+                    note.end = max(m.end, m.start + lag + 0.05)
+                    shifted.append(note)
+                subs[k] = shifted               # never past the note's own end (it has to sound while held)
         res += subs
     return res
 
@@ -769,7 +773,8 @@ def _conflicts(assign, held, hand):
 def _repair(sl, cands, path, hand):
     """Walk the music tracking every key still held (from any earlier chord, not just the last): where the
     chosen fingering would reuse a holding finger or cross a held key, switch to the best fingering that fits;
-    if none fits, the held key is let go early (a finger substitution under the pedal; it still sounds)."""
+    if none fits, propose an early release. Sustain/contact is unverified; the
+    source-action ledger retains the cut rather than assuming a pedal saves it."""
     from .midi import Note
     out, held, prev = [], [], None                    # held: [pitch, finger, note]
     for i, (s, k) in enumerate(zip(sl, path)):
@@ -859,8 +864,11 @@ REACH_D = float(__import__("os").environ.get("REACH_D", "0.04"))   # m: how far 
 
 
 def release_far(fing, ev, hand, D=None):
-    """A finger that holds a key while the hand moves on lets go before the hand leaves (the pedal / the
-    sound carries the note), instead of being dragged off its key: no key stays down without a finger on it."""
+    """Propose release before a wrist move to avoid dragging a finger sideways.
+
+    This scheduling heuristic does not prove sustain or supported key contact.
+    Its changes remain separate from source durations in the action ledger.
+    """
     D = REACH_D if D is None else D
     if not fing:
         return ev
@@ -2180,6 +2188,7 @@ class PianoScore:
     speed: float
     settings: dict
     outside_keyboard: list
+    action_ledger: dict
 
 
 @dataclasses.dataclass
@@ -2205,6 +2214,7 @@ class PianoPlan:
     physical_warmup: bool
     settings: dict
     outside_keyboard: list
+    action_ledger: dict
     consumed: bool = False
 
 
@@ -2218,11 +2228,17 @@ def _motion_notes(notes, speed=1.):
 
 
 def _hand_score(original, name):
+    from .key_actions import note_stage, event_stage
     ns = _motion_notes(original)  # repair may shorten motion holds; the score stays intact
-    fing = fingering(slices(ns, hand=name), name) if ns else []
+    selected = slices(ns, hand=name) if ns else []
+    trace = dict(ownership=note_stage(original), slicing=note_stage([n for row in selected for n in row]))
+    fing = fingering(selected, name) if selected else []
+    trace['fingering_repair'] = [dict(note_stage([n])[0], finger=f) for row in fing for n, f in row]
     ev = finger_events(fing)
+    trace['finger_reuse'] = event_stage(fing, ev)
     if not WRIST_CARRY:
         ev = release_far(fing, ev, name)
+    trace['reach_release'] = event_stage(fing, ev)
     sl_end = np.array([max(n.end for n, _ in s) for s in fing]) if fing else np.zeros(0)
     H = {"fing": fing, "ev": ev, "ev_on": {f: np.array([e[0] for e in ev[f]]) for f in ev},
          "score_notes": [(n.start, n.end, n.pitch) for n in original],
@@ -2230,7 +2246,8 @@ def _hand_score(original, name):
          "end": np.maximum.accumulate(sl_end) if len(sl_end) else sl_end,
          "vel": np.array([max(n.velocity for n, _ in s) for s in fing]) if fing else np.zeros(0),
          "touch": np.array([np.mean([getattr(n, "touch", 0.3) for n, _ in s]) for s in fing]) if fing else np.zeros(0),
-         "size": np.array([len(s) for s in fing]) if fing else np.zeros(0)}
+         "size": np.array([len(s) for s in fing]) if fing else np.zeros(0),
+         "action_trace": trace}
     return H
 
 
@@ -2239,12 +2256,16 @@ def compile_score(notes, speed=1.):
     if not notes or not np.isfinite(speed) or speed <= 0:
         raise ValueError('A nonempty score and positive finite speed are required')
     notes = _motion_notes(notes, speed)
+    for index, note in enumerate(notes):
+        note._score_event_id = index
     ownership = {}
     rh, lh = split_hands(notes, ownership)
     allx = [key_x(n.pitch) for n in notes]
-    return PianoScore(notes, {name: _hand_score(ns, name) for name, ns in (('R', rh), ('L', lh))},
+    hands = {name: _hand_score(ns, name) for name, ns in (('R', rh), ('L', lh))}
+    from .key_actions import action_ledger
+    return PianoScore(notes, hands,
         ownership, float((min(allx) + max(allx)) / 2), speed, _plan_settings(),
-        [[n.start, n.end, n.pitch] for n in notes if not LOW <= n.pitch <= HIGH])
+        [[n.start, n.end, n.pitch] for n in notes if not LOW <= n.pitch <= HIGH], action_ledger(notes, hands))
 
 
 def prepare_plan(notes=None, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats=None,
@@ -2269,6 +2290,8 @@ def prepare_plan(notes=None, fps=24, start=0.0, dur=None, speed=1.0, beats=None,
         if not notes:
             raise ValueError('A nonempty score is required')
         notes = _motion_notes(notes, speed)
+        for index, note in enumerate(notes):
+            note._score_event_id = index
     end = start + dur if dur is not None else max(n.end for n in notes) + 1.0
     if not np.isfinite(end) or end <= start:
         raise ValueError('The requested window must have positive finite duration')
@@ -2471,9 +2494,13 @@ def prepare_plan(notes=None, fps=24, start=0.0, dur=None, speed=1.0, beats=None,
     HEAD[:, 1] += dynamics.drift(times, 0.03, seed * 10 + 11)
     HEAD[:, 2] += dynamics.drift(times, 0.02, seed * 10 + 12)
 
+    from .key_actions import action_ledger
     return PianoPlan(hands, times, start, end, fps, speed, cx, ownership, beats, downbeats,
         sched, energy, body, HEAD, TORSO, int(round(pre * fps)), bool(complete_score),
-        bool(physical_warmup), _plan_settings(), outside_keyboard)
+        bool(physical_warmup), _plan_settings(), outside_keyboard,
+        copy.deepcopy(compiled_score.action_ledger) if complete_score else
+            action_ledger(
+                notes, hands, scope='legacy filtered window; not the complete input score'))
 
 
 def solve_plan(plan):
@@ -2646,6 +2673,7 @@ def solve_plan(plan):
                 "scope": "reference transport and sampled rotation fit; no anatomical/contact guarantee"},
             "hand_order": {"enabled": bool(NO_HAND_CROSS), "ownership": ownership, "audit": order_audit},
             "scheduled_note_events": {name: {str(f): H["ev"][f] for f in range(5)} for name, H in hands.items()},
+            "key_action_ledger": copy.deepcopy(plan.action_ledger),
             "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,
             **({"hand_scale": float(_rig("R").sk.scale), "pose_precision": "full solver precision"} if HAND_MODEL == "mpfb" else {}),
             "qa": {"collision_and_reach_scope": "all internally solved frames, including physical warmup",
