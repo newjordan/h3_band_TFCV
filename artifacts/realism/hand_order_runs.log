@@ -1,0 +1,20 @@
+{"started": "baseline", "pid": 10}
+{"started": "ordered", "pid": 11}
+{"started": "minute_0", "pid": 12}
+{"started": "minute_1", "pid": 13}
+{"started": "minute_2", "pid": 14}
+{"started": "minute_3", "pid": 15}
+{"started": "minute_4", "pid": 16}
+{"started": "minute_5", "pid": 17}
+{"started": "minute_6", "pid": 18}
+{"started": "minute_7", "pid": 19}
+{"trial": "baseline", "start": 287.0, "duration_seconds": 8.0, "ordered": false, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline.anim.json", "output_exists": true}
+{"trial": "ordered", "start": 287.0, "duration_seconds": 8.0, "ordered": true, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_ordered.anim.json", "output_exists": true}
+{"trial": "minute_0", "start": 239.9, "duration_seconds": 7.5, "ordered": true, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_0.anim.json", "output_exists": true}
+{"trial": "minute_1", "start": 247.4, "duration_seconds": 7.5, "ordered": true, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_1.anim.json", "output_exists": true}
+{"trial": "minute_2", "start": 254.9, "duration_seconds": 7.5, "ordered": true, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_2.anim.json", "output_exists": true}
+{"trial": "minute_3", "start": 262.4, "duration_seconds": 7.5, "ordered": true, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_3.anim.json", "output_exists": true}
+{"trial": "minute_4", "start": 269.9, "duration_seconds": 7.5, "ordered": true, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_4.anim.json", "output_exists": true}
+{"trial": "minute_5", "start": 277.4, "duration_seconds": 7.5, "ordered": true, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_5.anim.json", "output_exists": true}
+{"trial": "minute_6", "start": 284.9, "duration_seconds": 7.5, "ordered": true, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_6.anim.json", "output_exists": true}
+{"trial": "minute_7", "start": 292.4, "duration_seconds": 7.5, "ordered": true, "exit_code": 0, "animation": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_7.anim.json", "output_exists": true}

@@ -1,0 +1,28 @@
+{
+  "reviewed": true,
+  "minute_samples": [
+    0,
+    360,
+    539,
+    600,
+    719
+  ],
+  "comparison_samples": {
+    "baseline": [
+      18,
+      36
+    ],
+    "ordered": [
+      18,
+      36
+    ]
+  },
+  "observations": [
+    "Both hands and keys visible in all reviewed samples.",
+    "Forearm crossover visible in baseline at comparison frame36; absent in ordered samples.",
+    "Hands approach closely near minute frame539; image overlap is not a physical clearance proof.",
+    "Free digits still show unnatural extension/splay in places.",
+    "Upper-body geometry is hidden in this diagnostic framing."
+  ],
+  "scope": "Manual review of saved PNGs, not complete frame-by-frame naturalness or collision acceptance"
+}

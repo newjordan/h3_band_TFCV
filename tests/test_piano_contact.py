@@ -152,16 +152,16 @@ class PianoContactTests(unittest.TestCase):
         rigs = {name: Rig() for name in ('R', 'L')}
         hands = {name: {'act': [[None] * 5]} for name in rigs}
         targets = {name: np.zeros((5, 3)) for name in rigs}
-        refs = {name: (np.eye(3), np.array([0.1, 0.2, 0.0])) for name in rigs}
+        refs = {name: (np.eye(3), np.array([0.1 if name == 'R' else -0.1, 0.2, 0.0])) for name in rigs}
         with patch.object(piano, '_rig', side_effect=rigs.get), \
              patch.object(piano, '_plan_root', return_value=(np.eye(3), np.zeros(3))), \
              patch.object(piano, '_key_env', return_value=None), \
              patch.object(piano, '_hand_blobs', return_value=None):
             piano._solve_frame(hands, 0, targets, {}, {}, refs=refs)
-        for rig in rigs.values():
+        for name, rig in rigs.items():
             self.assertEqual(len(rig.seen), 2)
             np.testing.assert_allclose(rig.seen[0], rig.seen[1])
-            np.testing.assert_allclose(rig.seen[1][:, :2], np.tile([0.1, 0.2], (5, 1)))
+            np.testing.assert_allclose(rig.seen[1][:, :2], np.tile(refs[name][1][:2], (5, 1)))
         for target in targets.values():
             np.testing.assert_array_equal(target, 0)
 

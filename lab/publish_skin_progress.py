@@ -6,6 +6,7 @@ from mesh_progress_site import apply_latest
 from deformation_progress_site import apply_deformation
 from performance_preview_site import apply_performance_preview
 from composure_site import apply_composure
+from hand_order_site import apply_hand_order
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = Path('/home/frosty40/h3/results/band_site/web')
@@ -140,6 +141,10 @@ composure_path = ROOT / 'lab/realism_results/composure_20261011.json'
 composure = json.loads(composure_path.read_text()) if composure_path.exists() else None
 if composure is not None and composure['status'] == 'complete':
     apply_composure(section, composure)
+hand_order_path = ROOT / 'lab/realism_results/hand_order_20261011.json'
+hand_order = json.loads(hand_order_path.read_text()) if hand_order_path.exists() else None
+if hand_order is not None and hand_order['status'] == 'complete':
+    apply_hand_order(section, hand_order)
 manifest['sections'] = [section] + [s for s in manifest['sections'] if s['id'] != section['id']]
 manifest['updated'] = '2026-10-11 one-minute grayscale piano performance with audio, frozen deformation study and connected key-top pilot; complete realism remains unfinished'
 manifest['status'].insert(0, f"<b>Rig research:</b> {deformation['unit_tests']['passed']} tests pass. "
@@ -156,6 +161,18 @@ if composure is not None and composure['status'] == 'complete':
         'The one-minute performance and drummer diagnostics remain available below.')
 media = WEB / 'media'
 media.mkdir(exist_ok=True)
+if hand_order is not None and hand_order['status'] == 'complete':
+    manifest['updated'] = '2026-10-11 ordered-hand one-minute performance; complete rig realism remains unfinished'
+    manifest['status'][0] = (f"<b>Rig research:</b> {hand_order['unit_tests']['passed']} tests pass. "
+        'The fresh minute keeps left/right wrist order across all 1,440 solved samples. '
+        'Original music, sampled skin failures and chunk-boundary limits are reported below. '
+        'A root-order pass does not accept full realistic motion.')
+    for source, destination in (
+            (ART / 'hand_order_minute.mp4', 'rig_realism_ordered_piano_60s.mp4'),
+            (ART / 'hand_order_comparison.mp4', 'rig_realism_hand_order_comparison.mp4'),
+            (ART / 'hand_order_metrics.png', 'rig_realism_hand_order_metrics.png'),
+            (hand_order_path, 'rig_realism_hand_order_results.json')):
+        shutil.copy2(source, media / destination)
 if composure is not None and composure['status'] == 'complete':
     for source, destination in (
             (ART / 'composure_comparison.mp4', 'rig_realism_composure_comparison.mp4'),

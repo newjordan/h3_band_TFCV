@@ -28,7 +28,7 @@ def main():
     os.environ['HAND_SCALE'] = '.7284'
     overrides = dict(PRESS_AXES=[20., 1., 20.], PRESS_AXES_BLACK=[20., 20., 20.],
         REPAIR_ITERS=2, PRESS_OVERSHOOT=.003, REACH_SPLIT=True,
-        FREE_CONTROL=args.free, WRIST_CARRY=args.wrist)
+        FREE_CONTROL=args.free, WRIST_CARRY=args.wrist, NO_HAND_CROSS=False)
     os.environ['PIANO_OVR'] = json.dumps(overrides)
     from blockout import midi, feeling, piano
     source = ROOT / 'examples/piano/knights_suite.mid'

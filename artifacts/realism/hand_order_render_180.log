@@ -1,0 +1,285 @@
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+EGL Error (0x3009): EGL_BAD_MATCH: Arguments are inconsistent (for example, a valid context requires buffers not supplied by a valid surface).
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+Blender 4.0.2
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00180.png'
+Time: 00:01.26 (Saving: 00:00.13)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00181.png'
+Time: 00:01.62 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00182.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00183.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00184.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00185.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00186.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00187.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00188.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00189.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00190.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00191.png'
+Time: 00:00.86 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00192.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00193.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00194.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00195.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00196.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00197.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00198.png'
+Time: 00:00.86 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00199.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00200.png'
+Time: 00:00.85 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00201.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00202.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00203.png'
+Time: 00:00.92 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00204.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00205.png'
+Time: 00:00.93 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00206.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00207.png'
+Time: 00:00.84 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00208.png'
+Time: 00:00.90 (Saving: 00:00.02)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00209.png'
+Time: 00:00.92 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00210.png'
+Time: 00:00.93 (Saving: 00:00.04)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00211.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00212.png'
+Time: 00:00.93 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00213.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00214.png'
+Time: 00:00.86 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00215.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00216.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00217.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00218.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00219.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00220.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00221.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00222.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00223.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00224.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00225.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00226.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00227.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00228.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00229.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00230.png'
+Time: 00:00.89 (Saving: 00:00.02)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00231.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00232.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00233.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00234.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00235.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00236.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00237.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00238.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00239.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00240.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00241.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00242.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00243.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00244.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00245.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00246.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00247.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00248.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00249.png'
+Time: 00:00.83 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00250.png'
+Time: 00:00.88 (Saving: 00:00.02)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00251.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00252.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00253.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00254.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00255.png'
+Time: 00:00.86 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00256.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00257.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00258.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00259.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00260.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00261.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00262.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00263.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00264.png'
+Time: 00:00.85 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00265.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00266.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00267.png'
+Time: 00:00.92 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00268.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute_frames/f_00269.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+done 90 frames
+
+Blender quit

@@ -539,15 +539,25 @@ if _CAL and "span" in __import__("blockout.rig.hand", fromlist=["_cal_parts"])._
 
 REACH_SPLIT = False          # after the staff split, a hand's chord wider than HAND_SPAN gives its inner-edge note
                             # to the other hand when that hand can take it (as pianists redistribute between hands)
+NO_HAND_CROSS = True         # requested performance style: original releases and left/right wrist order
+WRIST_ORDER_GAP = .060       # m, hard root planning bound; actual skin clearance is audited separately
 
 
-def split_hands(notes):
+def split_hands(notes, report=None):
     tracks = {n.track for n in notes}
     if len(tracks) >= 2:
         hi, lo = sorted(tracks)[:2]
         R, L = [n for n in notes if n.track == hi], [n for n in notes if n.track != hi]
     else:
         R, L = [n for n in notes if n.pitch >= 60], [n for n in notes if n.pitch < 60]
+    if NO_HAND_CROSS:
+        from .rig.hand_order import ordered_notes
+        ids = {id(n) for n in R}
+        R, L, detail = ordered_notes(notes, ['R' if id(n) in ids else 'L' for n in notes],
+                                     key_x, HAND_SPAN, SLICE_TOL)
+        if report is not None:
+            report.update(detail)
+        return R, L
     return _reach_split(R, L) if REACH_SPLIT else (R, L)
 
 
@@ -1596,7 +1606,7 @@ def _wrist_model():
     return _WM
 
 
-def _learned_wrist(H, name, ts):
+def _learned_wrist(H, name, ts, fallback=None):
     """Wrist position per frame time from the FürElise model: placement at each strike group from the struck keys
     and the fingers striking them, and the pianists' travel curve between groups (ballistic for big moves, landing
     early). Long gaps hold, then travel over the last second."""
@@ -1626,7 +1636,14 @@ def _learned_wrist(H, name, ts):
     for i, t in enumerate(ts):
         g = int(np.searchsorted(on, t, side="right")) - 1
         if g < 0:
-            out[i] = P[0]; continue
+            if NO_HAND_CROSS and fallback is not None:
+                # No attraction to a lone future bass note throughout a long
+                # rest. Carry the planned wrist until the real approach window.
+                u = _smooth((t - (on[0] - .35)) / .325)
+                out[i] = fallback[i] + u * (P[0] - fallback[i])
+            else:
+                out[i] = P[0]
+            continue
         if g >= len(on) - 1:
             out[i] = P[-1]; continue
         t0, t1 = on[g], on[g + 1]
@@ -1713,6 +1730,21 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
     # Applying the wrist transform to an already transformed free target made
     # the second solve move idle fingers twice as far as the hand.
     frame_targets = targets
+    root_limits = {}
+    if NO_HAND_CROSS and 'R' in hands and 'L' in hands:
+        from .rig.hand_order import ordered_wrists
+        refs = dict(refs) if refs else {n: _plan_root(H, n, j) for n, H in hands.items()}
+        if roots is None:
+            support = tuple(8. if any(a is not None for a in hands[n]['act'][j]) else 1. for n in ('R', 'L'))
+            r, l = ordered_wrists(refs['R'][1], refs['L'][1], WRIST_ORDER_GAP, support)
+            refs['R'], refs['L'] = (refs['R'][0], r), (refs['L'][0], l)
+        else:
+            r, l = roots['R'][:3], roots['L'][:3]
+            if r[0] - l[0] < WRIST_ORDER_GAP - 1e-9:
+                raise ValueError('Fixed bimanual wrists violate requested order')
+        plane = .5 * (r[0] + l[0])
+        root_limits = {'R': [[plane + WRIST_ORDER_GAP/2, -np.inf, -np.inf], [np.inf]*3],
+                       'L': [[-np.inf]*3, [plane - WRIST_ORDER_GAP/2, np.inf, np.inf]]}
     order = list(hands.items())
     for name, H in order + (order if len(order) == 2 else []):
         rig = _rig(name)
@@ -1750,6 +1782,8 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
         W["dt"] = H.get("dt", 1.0 / 24)
         W["max_joint_speed"] = JOINT_SPEED_MAX
         W["motion_last"] = prev.get(name)
+        if name in root_limits:
+            W['root_bounds'] = root_limits[name]
         tk = float(H["WF"][j][0]) if "WF" in H else 0.0
         if not pressing[0] and tk > 0.05:               # off duty: the thumb's relaxed pose tucks, easing in and out
             W["rest_override"] = {0: np.clip(rig.q_rest[:rig.sl[1]] + tk * np.array(THUMB_TUCK)[:rig.sl[1]],
@@ -1827,7 +1861,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
     first_prior = None
     if WRIST_MODEL:                                     # where a pianist's wrist goes (FürElise), not our plan
         for name, H in hands.items():
-            P = _learned_wrist(H, name, times[j0:N])
+            P = _learned_wrist(H, name, times[j0:N], np.array([r[1] for r in REF[name]]))
             if P is not None:
                 REF[name] = [(r[0], p_) for r, p_ in zip(REF[name], P)]
         first_prior = WRIST_MODEL_PRIOR
@@ -1893,6 +1927,13 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
     for name in hands:
         REF[name] = [(rotation, _reachable_wrist(position, shoulders[j0 + i][name]))
                      for i, (rotation, position) in enumerate(REF[name])]
+    if NO_HAND_CROSS and 'R' in hands and 'L' in hands:
+        from .rig.hand_order import ordered_wrists
+        for i, j in enumerate(range(j0, N)):
+            support = tuple(8. if any(a is not None for a in hands[n]['act'][j]) else 1. for n in ('R', 'L'))
+            r, l = ordered_wrists(REF['R'][i][1], REF['L'][i][1], WRIST_ORDER_GAP, support,
+                [shoulders[j]['R'], shoulders[j]['L']], (performer.UPPER_ARM, performer.FOREARM))
+            REF['R'][i], REF['L'][i] = (REF['R'][i][0], r), (REF['L'][i][0], l)
     roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
     QP = None
     if FINGER_REFINE:                                   # the fingers once, then their joint paths smoothed: in pass B
@@ -2084,12 +2125,20 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     if speed != 1.0:
         notes = [type(n)(n.start / speed, n.end / speed, n.pitch, n.velocity, n.track) for n in notes]
     end = dur + start if dur else max(n.end for n in notes) + 1.0
+    ownership = {}
+    # Staff presence, held ownership and redistribution use the full score, so
+    # a render chunk or a silent staff cannot change a note's hand.
+    if NO_HAND_CROSS:
+        rh, lh = split_hands(notes, ownership)
     notes = [n for n in notes if n.end > start - 0.5 and n.start < end + 0.5]
     # simulate from a little before the window so the springs are settled when it starts
     pre = 2.0
     times = (start - pre) + np.arange(int(round((end - start + pre) * fps))) / fps
     N = len(times)
-    rh, lh = split_hands(notes)
+    if NO_HAND_CROSS:
+        rh, lh = ([n for n in ns if n.end > start - .5 and n.start < end + .5] for ns in (rh, lh))
+    else:
+        rh, lh = split_hands(notes)
     allx = [key_x(n.pitch) for n in notes]
     cx = float(np.mean([min(allx), max(allx)]))
 
@@ -2411,9 +2460,15 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     if os.environ.get("REACH_DBG"):
         json.dump([d for H in hands.values() for d in H.get("dbg", [])], open(os.environ["REACH_DBG"], "w"))
     pens = np.concatenate([H.get("pen", [0.0]) for H in hands.values()])
+    from .rig.hand_order import wrist_order_audit
+    order_audit = wrist_order_audit(frames, fps, WRIST_ORDER_GAP)
+    if NO_HAND_CROSS and not order_audit['passed'] and HAND_MODEL == 'mpfb':
+        raise RuntimeError('Generated performance violates requested wrist order')
     return {"fps": fps, "start": start, "speed": speed, "centre_x": cx, "keyboard": keyboard(),
             "control_experiment": {"free_control": bool(FREE_CONTROL), "wrist_carry": bool(WRIST_CARRY),
+                "no_hand_cross": bool(NO_HAND_CROSS),
                 "scope": "kinematic preferences; actual-mesh trajectory acceptance required"},
+            "hand_order": {"enabled": bool(NO_HAND_CROSS), "ownership": ownership, "audit": order_audit},
             "scheduled_note_events": {name: {str(f): H["ev"][f] for f in range(5)} for name, H in hands.items()},
             "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,
             **({"hand_scale": float(_rig("R").sk.scale), "pose_precision": "full solver precision"} if HAND_MODEL == "mpfb" else {}),

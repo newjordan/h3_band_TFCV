@@ -1,0 +1,34 @@
+[aist#1:0/pcm_s16le @ 0xb25fe736a530] Guessed Channel Layout: stereo
+{
+  "source": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute.anim.json",
+  "source_sha256": "8926dd121afd240b32f79c1b2663a7ec26c925a7e26e5a7a4b3b27ed5911d306",
+  "preview": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute.preview.anim.json",
+  "preview_sha256": "520ecdebcccdb6f96e35409545a4da911273bafe7b02d961c1ac33c7967866b4",
+  "source_pose_preserved": true,
+  "render_fps": 12,
+  "duration_seconds": 60.0,
+  "resolution": [
+    768,
+    432
+  ],
+  "camera": {
+    "eye": [
+      0,
+      -1,
+      1
+    ],
+    "look": [
+      -0.04,
+      0.015,
+      0.02
+    ],
+    "lens": 40
+  },
+  "video": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_minute.mp4",
+  "video_sha256": "d64532977a680aa7898216740d37191b9b5708b7b75d416f6bf57ab9efbece96",
+  "gpu_used": false,
+  "audio_source_sha256": "d2df971e2f8cfc991dcf88f7cdb79a0555c598243c445c27b223762f76241221",
+  "audio_start": 239.9,
+  "audio_note_identity_verified": true,
+  "full_performance_accepted": false
+}

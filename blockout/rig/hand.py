@@ -352,6 +352,13 @@ class HandRig:
             x = np.concatenate([ref_pos, np.zeros(3), self.q_rest])
         joint_lo, joint_hi = self._motion_bounds(x, W)
         lo = np.concatenate([np.full(6, -np.inf), joint_lo]); hi = np.concatenate([np.full(6, np.inf), joint_hi])
+        if W.get("root_bounds") is not None:
+            limits = np.asarray(W["root_bounds"], float)
+            if limits.shape != (2, 3) or np.isnan(limits).any() or np.any(limits[0] > limits[1]):
+                raise ValueError("root_bounds must contain ordered lower/upper xyz limits")
+            lo[:3], hi[:3] = limits
+            if fix_root and (np.any(x[:3] < lo[:3] - 1e-9) or np.any(x[:3] > hi[:3] + 1e-9)):
+                raise ValueError("Fixed wrist violates root bounds")
         x = np.clip(x, lo, hi)
         args = (ref_rot, ref_pos, targets, weights, env, forearm, W, None if last is None else np.asarray(last, float))
         r, pose = self.residuals(x, *args)

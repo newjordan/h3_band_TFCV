@@ -1,0 +1,3 @@
+{"context": "hand_order_baseline.anim_frame36", "mode": "linear", "subdivision_levels": 2, "self_intersections": 238, "degenerate_triangles": 0, "scope_counts": [{"R_self": 63, "L_self": 140}, {"R_self": 65, "L_self": 173}], "seconds": 31.829201301035937, "instrument": {"R": {"depth_mm": 0.0, "triangles": 0}, "L": {"depth_mm": 0.0, "triangles": 14}}}
+{"context": "hand_order_baseline.anim_frame72", "mode": "linear", "subdivision_levels": 2, "self_intersections": 279, "degenerate_triangles": 0, "scope_counts": [{"interhand": 238, "R_self": 41}, {"interhand": 229, "R_self": 47}], "seconds": 63.82182643801207, "instrument": {"R": {"depth_mm": 0.0, "triangles": 0}, "L": {"depth_mm": 0.0, "triangles": 0}}}
+Complete actual-mesh ablation; full performance remains unaccepted

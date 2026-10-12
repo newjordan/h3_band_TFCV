@@ -1,0 +1,8 @@
+{
+  "events": 2046,
+  "right": 1202,
+  "left": 844,
+  "redistributed": 318,
+  "capacity_or_span_conflicts": 610,
+  "whole_score_held_register_inversions": []
+}

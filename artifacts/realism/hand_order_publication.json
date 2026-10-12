@@ -1,0 +1,13 @@
+{
+  "status": "verified",
+  "http_status": 200,
+  "site": "https://toymaker.tail2d8af4.ts.net/band/",
+  "published_files": {
+    "hand_order_minute.mp4": "d64532977a680aa7898216740d37191b9b5708b7b75d416f6bf57ab9efbece96",
+    "hand_order_comparison.mp4": "297cb27163a812b904b91f6b9b78da78487d262c02d468ce4dde28d728ceeef3",
+    "hand_order_20261011.json": "f9e3a1cca90ef4ae10b034e5bfb73faa3bdaf7282fbd93b3b7dba4c9d57c26eb"
+  },
+  "final_code_matches_frozen_runs": true,
+  "minute_order_passed": true,
+  "full_performance_accepted": false
+}

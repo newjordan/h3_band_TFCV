@@ -1,0 +1,9 @@
+{
+  "initial_failure": "hand_order_finish_jobs_protocol_failure.log",
+  "cause": "NumPy boolean in report serialization",
+  "recovery": "Convert report-only observation flag to Python bool; rerun report/plot/render/sealing without changing solved poses",
+  "run_report_complete": true,
+  "actual_audits_complete": true,
+  "renders_verified": true,
+  "final_report_status": "complete"
+}

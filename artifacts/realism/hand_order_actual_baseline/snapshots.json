@@ -1,0 +1,41 @@
+{
+  "status": "complete",
+  "hand_scale": 1.0,
+  "candidate_exported": false,
+  "records": [
+    {
+      "context": "hand_order_baseline.anim_frame36",
+      "frame": 36,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline.anim.json",
+      "source_sha256": "3942d4bd1e26c7ca1be8259876317499aeaa5068d896f9e84f07ea53cdde7f7d",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_actual_baseline/frame36.npz",
+      "mesh_sha256": "a47350ba010ba68feb6558e9d5123930ad7e0e6b414cbe765246796a24c3a964",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    },
+    {
+      "context": "hand_order_baseline.anim_frame72",
+      "frame": 72,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline.anim.json",
+      "source_sha256": "3942d4bd1e26c7ca1be8259876317499aeaa5068d896f9e84f07ea53cdde7f7d",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_actual_baseline/frame72.npz",
+      "mesh_sha256": "40be84a6cea1c5294c434b8b216b909d32a40e4b593873817cdeb5d3a2ff859e",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    }
+  ],
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline.anim.json": "3942d4bd1e26c7ca1be8259876317499aeaa5068d896f9e84f07ea53cdde7f7d",
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/hand_order_snapshot.py": "0aaad9c6bc452ef02b9708143af983fd24e9648422de20ed27e36296dcda20e5"
+  },
+  "scope": "Matched actual skin snapshots only; no full trajectory acceptance",
+  "source_unchanged_during_run": true
+}

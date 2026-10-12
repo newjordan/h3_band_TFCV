@@ -1,0 +1,87 @@
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+EGL Error (0x3009): EGL_BAD_MATCH: Arguments are inconsistent (for example, a valid context requires buffers not supplied by a valid surface).
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+Blender 4.0.2
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00072.png'
+Time: 00:01.30 (Saving: 00:00.13)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00073.png'
+Time: 00:01.60 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00074.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00075.png'
+Time: 00:00.90 (Saving: 00:00.04)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00076.png'
+Time: 00:00.91 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00077.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00078.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00079.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00080.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00081.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00082.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00083.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00084.png'
+Time: 00:00.85 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00085.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00086.png'
+Time: 00:00.87 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00087.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00088.png'
+Time: 00:00.89 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00089.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00090.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00091.png'
+Time: 00:00.86 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00092.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00093.png'
+Time: 00:00.85 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00094.png'
+Time: 00:00.88 (Saving: 00:00.03)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_baseline_frames/f_00095.png'
+Time: 00:00.90 (Saving: 00:00.03)
+
+done 24 frames
+
+Blender quit

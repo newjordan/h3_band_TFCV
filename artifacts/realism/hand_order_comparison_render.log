@@ -1,0 +1,16 @@
+[aist#2:0/pcm_s16le @ 0xc734c44c59b0] Guessed Channel Layout: stereo
+{
+  "status": "encoded",
+  "video": "/home/frosty40/h3/rig_realism/artifacts/realism/hand_order_comparison.mp4",
+  "video_sha256": "297cb27163a812b904b91f6b9b78da78487d262c02d468ce4dde28d728ceeef3",
+  "frames": 96,
+  "fps": 12,
+  "duration_seconds": 8.0,
+  "resolution": [
+    1536,
+    432
+  ],
+  "start": 287.0,
+  "gpu_used": false,
+  "full_performance_accepted": false
+}

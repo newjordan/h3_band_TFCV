@@ -1,5 +1,69 @@
 # Piano-hand lab notebook
 
+## 2026-10-11: no-crossing ownership and wrist planning
+
+**Requirement and hypothesis.** The user's minute contains unwanted hand
+crossing. Its saved roots invert in five intervals at playback 47.917–52.917 s:
+40/720 samples, 3.333 seconds, worst R−L gap −251.803 mm. Original v19 part 17
+has a lone right-hand bass note at 293.193 s; the learned reference attracts
+that otherwise idle hand throughout the earlier rest. Window-dependent staff
+splitting is a second instability. Persistent held-note ownership, restrained
+first-note anticipation and hard bimanual root bounds should remove these
+inversions while retaining all original events, dimensions and budgets.
+
+**Change.** `NO_HAND_CROSS` is on by default in this isolated test branch.
+Allocate the full performed score before extracting a window. An event keeps
+its hand until its original release; new notes use an ordered register cut.
+Retain all 2,046 events and report 318 redistributions and 610 conservative
+capacity/span conflicts; zero held-register inversions over every score
+transition. The initial learned approach begins 350 ms before the first note,
+rather than several seconds early. Whole-hand solves have hard root-x bounds.
+After smoothing, project both wrist roots into their ordered halfspace and
+exact physical arm workspaces before solving fingers. Minimum root gap is
+60 mm. This is a style/planning constraint, not a skin or force certificate.
+Other curl/wrist-carry switches remain off in this matched experiment.
+
+**Matched result.** Complete-budget 287–295-second stress runs, size 1, 24 Hz,
+same E36 settings, original note ledger and frozen input/code hashes:
+
+| Policy | Crossed samples | Minimum root gap | Onsets | Original held-key coverage |
+|---|---:|---:|---:|---:|
+| Legacy |72/192|−31.526 mm|21/31|18.55%|
+| Ordered |0/192|166.605 mm|27/31|45.70%|
+
+Both retain exact arm lengths and the 12 rad/s joint-speed bound. Matched
+ordered maximum wrist speed falls 1.310→0.711 m/s. This is a measured speed,
+not a newly enforced wrist-velocity cap. No onset windows are censored.
+
+**Fresh minute and limitation.** Eight independently solved 7.5-second chunks,
+239.9–299.9 s, unaltered poses, original size 1 and audio: zero inversions in
+1,440 samples; minimum wrist gap 97.897 mm. Mean long-finger MCP heads also
+remain ordered, minimum gap 59.516 mm; these are skeleton landmarks. Exact
+arm-length error is floating-point noise, 1.11e−13 mm. However all seven
+chunk joins exceed the joint-speed gate, maximum 40.366 rad/s; one wrist
+jumps 111.643 mm at a join. Onsets 250/283, held-key coverage 45.67%. The older
+minute reports 263/283 and 50.83%, but differs in controller/bounds/chunking
+and is not a causal matched baseline. Full rendered motion is not accepted.
+
+**Actual skin.** Five independent production Blender level-2 snapshots,
+both quad diagonals and CPU parity below 0.0012 mm. No sampled interhand
+surface intersections, but self folds and instrument/key-support failures
+remain. Ordered stress frame 36 has 117 self pairs and R penetration 0.186 mm;
+frame 72 has 61 self pairs and R/L penetration 0.285/0.340 mm. The fresh
+minute's closest-hands frame 1079 has 392 L self pairs and L penetration
+6.533 mm (1,831 instrument triangle intersections). No complete geometry,
+positive-clearance, body/costume, force or continuous-time acceptance.
+
+**Reviewable artifacts.** Fresh grayscale minute, 768×432/12 fps/720 frames,
+and matched eight-second comparison, 1536×432/12 fps/96 frames, original audio,
+full decode checks and manual fixed-view samples. `hand_order_20261011.json`
+retains every controller outcome, original ledger metrics, join failures,
+actual surfaces, visual notes and input hashes. 150 tests pass. A report-only
+NumPy boolean serialization failure was fixed without changing any solved
+pose; its failed protocol log is retained. Next: one persistent whole-piece
+plan/state to eliminate chunk resets, with full skin/contact constraints and
+restrained free posture. The no-crossing gate is not full rig realism.
+
 ## 2026-10-11: wrist-carried curl and isolated reach, all four outcomes retained
 
 **Hypothesis.** Unused digits should stay gently curled and controlled near
