@@ -1,0 +1,43 @@
+{
+  "status": "complete",
+  "records": [
+    {
+      "mode": "uniform",
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/uniform/diagnostic.anim.json",
+      "source_sha256": "984d967104ad852db4574f7dfe736e6aea8d4e0f90c117773024db2c14501aa7",
+      "directory": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/uniform",
+      "audit": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/uniform/audit.json",
+      "audit_sha256": "8b890fc5bc543ce2b85cd3b21a4b5674ea731a2043df3ba284b4ab78a85e0321",
+      "image": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/uniform/render/f_00000.png",
+      "image_sha256": "bac0b9f1ad36ed0154291b57757e446c02251add2ed050d20bd321add03d5e59"
+    },
+    {
+      "mode": "complete",
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/complete/diagnostic.anim.json",
+      "source_sha256": "a69b8c8ef620d894660d2779a0f692805dc43f56b279778e2c405591231dfdc0",
+      "directory": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/complete",
+      "audit": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/complete/audit.json",
+      "audit_sha256": "97b339953155aa3aed40e87476664e0f633e008eea68c5c652f954c9654a966a",
+      "image": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/complete/render/f_00000.png",
+      "image_sha256": "1be74c4a50ef1a6660a89ffa17ae457bae504865f42103d9ab585a55599d1b33"
+    },
+    {
+      "mode": "complete_seeded",
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/complete_seeded/diagnostic.anim.json",
+      "source_sha256": "754920e59bebc08e6af21ff37ed35c1e5eaa4bde71bcd577281ef7c85afb91e1",
+      "directory": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/complete_seeded",
+      "audit": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/complete_seeded/audit.json",
+      "audit_sha256": "4f80471960fa5d3533a7f5b33ee8d44a29c668b446d7d74cb278cd9b39bf17e5",
+      "image": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/complete_seeded/render/f_00000.png",
+      "image_sha256": "624159e3051496057a24048802bc35a22c607cb643eb9be01f7ae0043b9e2fa4"
+    }
+  ],
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/lab/finish_skin_diagonal.py": "1028e549b595a978b215908d995e833e8250c0ce9c021261a7ba5235ea5bc917",
+    "/home/frosty40/h3/rig_realism/lab/hand_order_snapshot.py": "0aaad9c6bc452ef02b9708143af983fd24e9648422de20ed27e36296dcda20e5",
+    "/home/frosty40/h3/rig_realism/lab/skin_deformation_audit.py": "2b16e314be353c3b38c7663c822b9a7377315700bf94934855b39a008e3b1169",
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db"
+  },
+  "source_unchanged_during_run": true,
+  "full_performance_accepted": false
+}

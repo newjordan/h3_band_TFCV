@@ -1008,3 +1008,28 @@ to scale 1. Earlier references to a calibrated production default were
 incorrect. Fresh measured-size generation remains required. Visual right-hand
 form still fails. 105 tests pass in 8.612 s. Code checkpoint `9a95cec`; complete
 detail in `lab/REALISM_20261011.md` and the existing band site. Goal active.
+
+# 2026-10-12: mixed quad-choice blind spot and one local right-hand repair
+
+Production Blender exposed three thumb folds in a historically CPU-accepted
+starting pose. Exact CPU reconstruction confirms crossings between different
+faces using different diagonal choices, up to 1.434 mm long. The final audit
+now includes those choices while excluding incompatible alternatives of the
+same quad only. Full untrimmed geometry still controls acceptance.
+
+Eight first-phase hand solves produce no independently accepted complete
+starting state. All historical snapshots are retained and reaudited into new
+files. Two matched cold right-hand repairs both reject; an exploratory staged
+repair passes independent production-mesh geometry, thumb support and final
+movement bounds. Right-hand crossing buckets are 0/0/0 with zero instrument
+triangle contacts. Preparation plus refinement costs 364.319 seconds, so no
+equal-total-work claim is made.
+
+195 tests pass. Two native method graphs complete; their PASS does not accept
+empirical rigs. The left hand still fails, held pitches 56/64 are unassigned,
+and the next pose, continuous path, naturalness, key/foot/force relationships,
+full-body clearance and drummer stress cases remain unvalidated. No default
+adoption or new complete-performance claim. Static render comparisons and
+complete evidence are published on the band site, with the 6:34 progress suite
+still first. Full details: `REALISM_20261012.md` and
+`realism_results/skin_initialization_20261012.json`.

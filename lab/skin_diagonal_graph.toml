@@ -1,0 +1,16 @@
+name = "piano-quad-choice-coverage"
+description = "Review Blender-confirmed mixed-diagonal counterevidence and conservative per-face coverage."
+deadline_secs = 800
+
+[[node]]
+id = "synthesize"
+tools = "none"
+prompt = """Review this geometry counterevidence and exact revised experiment in at most 250 words. Distinguish incompatible alternatives on ONE quad from compatible mixed choices on DIFFERENT quads. Define the needed complete veto and control contrast. Keep initial-state, music, bounds, naturalness and continuous-motion limitations. No tools, literature survey or empirical approval. Task: {task}"""
+
+[[node]]
+id = "verify"
+persona = "reviewer"
+tools = "none"
+depends_on = ["synthesize"]
+gate = { verdict = true, retry = "synthesize", credit_to = "synthesize", max_retries = 1 }
+prompt = """Audit the method in at most 180 words with verdict. Reject missing compatible mixed different-face choices, fake same-face alternative overlaps, exempting genuine within-quad bow ties, blanket shared-vertex exemptions, hidden first-phase failures, seed-only bound validation or static-to-trajectory/IPC/naturalness claims. Require production parity/full triangle/finite support and final-coordinate bounds. Judge the method, not file existence. Task: {task}\nProposal: {output:synthesize}"""

@@ -1,0 +1,2 @@
+{"context": "diagnostic.anim_frame0", "mode": "linear", "subdivision_levels": 2, "self_intersections": 477, "degenerate_triangles": 0, "scope_counts": [{"R_self": 113, "L_self": 130}, {"R_self": 110, "L_self": 122}, {"R_self": 225, "L_self": 252}], "seconds": 65.73998659302015, "instrument": {"R": {"depth_mm": 0.0, "triangles": 0}, "L": {"depth_mm": 8.98736622184515, "triangles": 6118}}}
+Complete actual-mesh ablation; full performance remains unaccepted

@@ -1,0 +1,467 @@
+{
+  "schema": "angel-agent-graph-episode/v1",
+  "episode_id": "858bd23c4dd196ab369cc66a816c51e18ac346d686eb71b316d3816e6cf2312d",
+  "graph_name": "piano-quad-choice-coverage",
+  "graph_spec_sha256": "9ee2b3de9156c1be7f0654cd95ecf2d777757f02eb09767487193a1c0cc4bb81",
+  "task_sha256": "4baf0c44e9a6827b0872d8b6b39593a8de87138ab94ecb0fe785073e3d1fbd3d",
+  "workspace_key_sha256": "f309c2f027f2f7fe78f096014b404e14559c98786abd602e6bce823d74f1d9e2",
+  "workspace_state_sha256": "f3a9a0363a76203465f41fb33117e2368ea23af40afb137002705bf1fbbdcbf1",
+  "workspace_state_source": "git-workspace-evidence/v1",
+  "runner_version": "1.1.33",
+  "cockpit_source_sha256": "unbound",
+  "runtime": {
+    "schema": "angel-agent-graph-runtime/v1",
+    "config_sha256": "845a29129bbf0700cb14d671746fe8fed4e447cf42ed7f0ff8d563e7eaf93ae6",
+    "runner_version": "1.1.33",
+    "cockpit_source_sha256": "unbound",
+    "graph_deadline_secs": 800,
+    "graph_max_seats": 3,
+    "spawn_inflight_limit": 64,
+    "node_max_hops": 8,
+    "node_turn_deadline_secs": 1100,
+    "competition_turn_deadline_secs": 0,
+    "dependency_context_chars": 12000,
+    "wind_down_grace_secs": 10,
+    "provider_retries": 2,
+    "provider_retry_backoff_ms": 500,
+    "rollout_capture": "off",
+    "rollout_required": false,
+    "unrestricted": false,
+    "harness_treatment_sha256": "696459b806e951f4e76dde07884eebad613b116738e7cdf879de8fc3d8f17f3e",
+    "reward_policy": "external_only"
+  },
+  "started_ms": 1791785606034,
+  "sealed_ms": 1791786012843,
+  "traces": [
+    {
+      "schema": "angel-agent-graph-trace/v1",
+      "trace_id": "6b085920467bebaaffd07534099af5f41d15c1152c7e9152cfdfb981cb52150c",
+      "role": "synthesize",
+      "persona": null,
+      "trainable": false,
+      "requested_route": {
+        "driver": "openai",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh"
+      },
+      "resolved_route": {
+        "driver": "openai",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh"
+      },
+      "requested_route_config": {
+        "schema": "angel-agent-graph-route-config/v1",
+        "config_sha256": "ff706bab84af5d78786e13c1e51c9460f6c51e84b6cf0261410de4d242f6badd",
+        "route": {
+          "driver": "openai",
+          "model": "gpt-6.1-sol",
+          "reasoning_effort": "xhigh"
+        },
+        "output_budget_policy": "endpoint_managed",
+        "max_output_tokens": null,
+        "output_budget_source": null,
+        "output_budget_provenance_sha256": "7efc8d973c5185d3f48f933e92af96b4a16407116571512bd623c7e10dc87e69",
+        "sampling_policy": "provider_or_route_default"
+      },
+      "resolved_route_config": {
+        "schema": "angel-agent-graph-route-config/v1",
+        "config_sha256": "ff706bab84af5d78786e13c1e51c9460f6c51e84b6cf0261410de4d242f6badd",
+        "route": {
+          "driver": "openai",
+          "model": "gpt-6.1-sol",
+          "reasoning_effort": "xhigh"
+        },
+        "output_budget_policy": "endpoint_managed",
+        "max_output_tokens": null,
+        "output_budget_source": null,
+        "output_budget_provenance_sha256": "7efc8d973c5185d3f48f933e92af96b4a16407116571512bd623c7e10dc87e69",
+        "sampling_policy": "provider_or_route_default"
+      },
+      "grant": "none",
+      "attempt_index": 0,
+      "parent_trace_ids": [],
+      "retry_of_trace_id": null,
+      "feedback_sha256": null,
+      "system": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "418af80b10653fc3ddc500b2d971cf40035dea2ea24caec6c94cc868d7e13f3e",
+        "utf8_bytes": 430,
+        "chars": 428,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "prompt": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "a393c30ab86ee020a14a0ffcc7f86a458f0b3c7af4f9fbb5723f7c9e441b8619",
+        "utf8_bytes": 4512,
+        "chars": 4508,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "output": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "60e0babfc95c4d4cc2f12a184161af14428adc24eaf546b1d358e084a7380191",
+        "utf8_bytes": 2027,
+        "chars": 2023,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "termination": {
+        "kind": "answer",
+        "stop_reason": "answer",
+        "interrupted": false,
+        "deadline_reached": false,
+        "max_hops_reached": false,
+        "infrastructure_failure": false,
+        "detail_sha256": null
+      },
+      "hops": 1,
+      "elapsed_ms": 95080,
+      "rollout_id": null,
+      "control_credit": [
+        {
+          "contract": "angel-agent-graph-gate-control/v1",
+          "evaluator_role": "verify",
+          "evaluator_trace_id": "a2f50a5839b6c5ec24b126a59b92aa2758383ed8e12aaaaa8c48ff859ceb6bf8",
+          "evaluator_output_sha256": "f5707ad4cdbb113f25b8bee8343fcab77f9b28722776781abf1bc3c424dfe4b5",
+          "credit_distance": 1,
+          "outcome": "rejected"
+        }
+      ],
+      "reward": null,
+      "reward_source": null,
+      "eligibility": {
+        "training_eligible": false,
+        "reasons": [
+          "external_reward_missing",
+          "frozen_role",
+          "semantic_bodies_not_captured"
+        ]
+      }
+    },
+    {
+      "schema": "angel-agent-graph-trace/v1",
+      "trace_id": "a2f50a5839b6c5ec24b126a59b92aa2758383ed8e12aaaaa8c48ff859ceb6bf8",
+      "role": "verify",
+      "persona": "reviewer",
+      "trainable": false,
+      "requested_route": {
+        "driver": "openai",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh"
+      },
+      "resolved_route": {
+        "driver": "openai",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh"
+      },
+      "requested_route_config": {
+        "schema": "angel-agent-graph-route-config/v1",
+        "config_sha256": "ff706bab84af5d78786e13c1e51c9460f6c51e84b6cf0261410de4d242f6badd",
+        "route": {
+          "driver": "openai",
+          "model": "gpt-6.1-sol",
+          "reasoning_effort": "xhigh"
+        },
+        "output_budget_policy": "endpoint_managed",
+        "max_output_tokens": null,
+        "output_budget_source": null,
+        "output_budget_provenance_sha256": "7efc8d973c5185d3f48f933e92af96b4a16407116571512bd623c7e10dc87e69",
+        "sampling_policy": "provider_or_route_default"
+      },
+      "resolved_route_config": {
+        "schema": "angel-agent-graph-route-config/v1",
+        "config_sha256": "ff706bab84af5d78786e13c1e51c9460f6c51e84b6cf0261410de4d242f6badd",
+        "route": {
+          "driver": "openai",
+          "model": "gpt-6.1-sol",
+          "reasoning_effort": "xhigh"
+        },
+        "output_budget_policy": "endpoint_managed",
+        "max_output_tokens": null,
+        "output_budget_source": null,
+        "output_budget_provenance_sha256": "7efc8d973c5185d3f48f933e92af96b4a16407116571512bd623c7e10dc87e69",
+        "sampling_policy": "provider_or_route_default"
+      },
+      "grant": "none",
+      "attempt_index": 0,
+      "parent_trace_ids": [
+        "6b085920467bebaaffd07534099af5f41d15c1152c7e9152cfdfb981cb52150c"
+      ],
+      "retry_of_trace_id": null,
+      "feedback_sha256": null,
+      "system": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "a6fbc88bc0a456bfb64ac4856e416bd844bb6f298fa308830af1495a6ad399ce",
+        "utf8_bytes": 891,
+        "chars": 883,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "prompt": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "fd1d0fb394094207e89d57f6af5653f7ca8da283ef4a40d6dea42e0aa25d4552",
+        "utf8_bytes": 6800,
+        "chars": 6792,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "output": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "f5707ad4cdbb113f25b8bee8343fcab77f9b28722776781abf1bc3c424dfe4b5",
+        "utf8_bytes": 1496,
+        "chars": 1474,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "termination": {
+        "kind": "answer",
+        "stop_reason": "answer",
+        "interrupted": false,
+        "deadline_reached": false,
+        "max_hops_reached": false,
+        "infrastructure_failure": false,
+        "detail_sha256": null
+      },
+      "hops": 1,
+      "elapsed_ms": 70528,
+      "rollout_id": null,
+      "control_credit": [],
+      "reward": null,
+      "reward_source": null,
+      "eligibility": {
+        "training_eligible": false,
+        "reasons": [
+          "external_reward_missing",
+          "frozen_role",
+          "semantic_bodies_not_captured"
+        ]
+      }
+    },
+    {
+      "schema": "angel-agent-graph-trace/v1",
+      "trace_id": "319f1a8640cc7055007fa6acde14cbd48df5e9cc4048726f7003799871276169",
+      "role": "synthesize",
+      "persona": null,
+      "trainable": false,
+      "requested_route": {
+        "driver": "openai",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh"
+      },
+      "resolved_route": {
+        "driver": "openai",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh"
+      },
+      "requested_route_config": {
+        "schema": "angel-agent-graph-route-config/v1",
+        "config_sha256": "ff706bab84af5d78786e13c1e51c9460f6c51e84b6cf0261410de4d242f6badd",
+        "route": {
+          "driver": "openai",
+          "model": "gpt-6.1-sol",
+          "reasoning_effort": "xhigh"
+        },
+        "output_budget_policy": "endpoint_managed",
+        "max_output_tokens": null,
+        "output_budget_source": null,
+        "output_budget_provenance_sha256": "7efc8d973c5185d3f48f933e92af96b4a16407116571512bd623c7e10dc87e69",
+        "sampling_policy": "provider_or_route_default"
+      },
+      "resolved_route_config": {
+        "schema": "angel-agent-graph-route-config/v1",
+        "config_sha256": "ff706bab84af5d78786e13c1e51c9460f6c51e84b6cf0261410de4d242f6badd",
+        "route": {
+          "driver": "openai",
+          "model": "gpt-6.1-sol",
+          "reasoning_effort": "xhigh"
+        },
+        "output_budget_policy": "endpoint_managed",
+        "max_output_tokens": null,
+        "output_budget_source": null,
+        "output_budget_provenance_sha256": "7efc8d973c5185d3f48f933e92af96b4a16407116571512bd623c7e10dc87e69",
+        "sampling_policy": "provider_or_route_default"
+      },
+      "grant": "none",
+      "attempt_index": 1,
+      "parent_trace_ids": [],
+      "retry_of_trace_id": "6b085920467bebaaffd07534099af5f41d15c1152c7e9152cfdfb981cb52150c",
+      "feedback_sha256": "f5707ad4cdbb113f25b8bee8343fcab77f9b28722776781abf1bc3c424dfe4b5",
+      "system": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "418af80b10653fc3ddc500b2d971cf40035dea2ea24caec6c94cc868d7e13f3e",
+        "utf8_bytes": 430,
+        "chars": 428,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "prompt": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "43fbb4fb4471519e776c0fa4592d422e50a0c2cd30ac0cbdd8886a5419d4a8b4",
+        "utf8_bytes": 6098,
+        "chars": 6070,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "output": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "e87f4617ec910bc9504b5337530fdf92b92a5fe85069fbdb2956adef70e22285",
+        "utf8_bytes": 2225,
+        "chars": 2225,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "termination": {
+        "kind": "answer",
+        "stop_reason": "answer",
+        "interrupted": false,
+        "deadline_reached": false,
+        "max_hops_reached": false,
+        "infrastructure_failure": false,
+        "detail_sha256": null
+      },
+      "hops": 1,
+      "elapsed_ms": 194566,
+      "rollout_id": null,
+      "control_credit": [
+        {
+          "contract": "angel-agent-graph-gate-control/v1",
+          "evaluator_role": "verify",
+          "evaluator_trace_id": "a819d68867a1b61f26fb46399b517a54add32cdcd8223f22d04ee3bc36769d8f",
+          "evaluator_output_sha256": "2adbed754b7b7e9eb8140f88ffed54a47fdd7e74a6bac104dbcb085771a6030d",
+          "credit_distance": 1,
+          "outcome": "accepted"
+        }
+      ],
+      "reward": null,
+      "reward_source": null,
+      "eligibility": {
+        "training_eligible": false,
+        "reasons": [
+          "external_reward_missing",
+          "frozen_role",
+          "semantic_bodies_not_captured"
+        ]
+      }
+    },
+    {
+      "schema": "angel-agent-graph-trace/v1",
+      "trace_id": "a819d68867a1b61f26fb46399b517a54add32cdcd8223f22d04ee3bc36769d8f",
+      "role": "verify",
+      "persona": "reviewer",
+      "trainable": false,
+      "requested_route": {
+        "driver": "openai",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh"
+      },
+      "resolved_route": {
+        "driver": "openai",
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh"
+      },
+      "requested_route_config": {
+        "schema": "angel-agent-graph-route-config/v1",
+        "config_sha256": "ff706bab84af5d78786e13c1e51c9460f6c51e84b6cf0261410de4d242f6badd",
+        "route": {
+          "driver": "openai",
+          "model": "gpt-6.1-sol",
+          "reasoning_effort": "xhigh"
+        },
+        "output_budget_policy": "endpoint_managed",
+        "max_output_tokens": null,
+        "output_budget_source": null,
+        "output_budget_provenance_sha256": "7efc8d973c5185d3f48f933e92af96b4a16407116571512bd623c7e10dc87e69",
+        "sampling_policy": "provider_or_route_default"
+      },
+      "resolved_route_config": {
+        "schema": "angel-agent-graph-route-config/v1",
+        "config_sha256": "ff706bab84af5d78786e13c1e51c9460f6c51e84b6cf0261410de4d242f6badd",
+        "route": {
+          "driver": "openai",
+          "model": "gpt-6.1-sol",
+          "reasoning_effort": "xhigh"
+        },
+        "output_budget_policy": "endpoint_managed",
+        "max_output_tokens": null,
+        "output_budget_source": null,
+        "output_budget_provenance_sha256": "7efc8d973c5185d3f48f933e92af96b4a16407116571512bd623c7e10dc87e69",
+        "sampling_policy": "provider_or_route_default"
+      },
+      "grant": "none",
+      "attempt_index": 1,
+      "parent_trace_ids": [
+        "319f1a8640cc7055007fa6acde14cbd48df5e9cc4048726f7003799871276169"
+      ],
+      "retry_of_trace_id": "a2f50a5839b6c5ec24b126a59b92aa2758383ed8e12aaaaa8c48ff859ceb6bf8",
+      "feedback_sha256": null,
+      "system": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "a6fbc88bc0a456bfb64ac4856e416bd844bb6f298fa308830af1495a6ad399ce",
+        "utf8_bytes": 891,
+        "chars": 883,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "prompt": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "ebe31d04e75d308d96b06805dc339a01f8a5f94186e1a5ae09873b8497813cbb",
+        "utf8_bytes": 6998,
+        "chars": 6994,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "output": {
+        "schema": "angel-agent-graph-text/v1",
+        "sha256": "2adbed754b7b7e9eb8140f88ffed54a47fdd7e74a6bac104dbcb085771a6030d",
+        "utf8_bytes": 1410,
+        "chars": 1400,
+        "preview": null,
+        "preview_truncated": true,
+        "secret_rejected": false
+      },
+      "termination": {
+        "kind": "answer",
+        "stop_reason": "answer",
+        "interrupted": false,
+        "deadline_reached": false,
+        "max_hops_reached": false,
+        "infrastructure_failure": false,
+        "detail_sha256": null
+      },
+      "hops": 1,
+      "elapsed_ms": 45771,
+      "rollout_id": null,
+      "control_credit": [],
+      "reward": null,
+      "reward_source": null,
+      "eligibility": {
+        "training_eligible": false,
+        "reasons": [
+          "external_reward_missing",
+          "frozen_role",
+          "semantic_bodies_not_captured"
+        ]
+      }
+    }
+  ],
+  "termination": {
+    "kind": "completed",
+    "phase": "done",
+    "detail_sha256": null,
+    "final_output_sha256": "2adbed754b7b7e9eb8140f88ffed54a47fdd7e74a6bac104dbcb085771a6030d"
+  },
+  "eligible_trace_count": 0,
+  "receipt_sha256": "31ebeaaf46cfd53474cae19da60de81cabe7eeda85ba56f47d4de07258b146f6"
+}

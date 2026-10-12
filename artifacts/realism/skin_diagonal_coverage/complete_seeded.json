@@ -1,0 +1,535 @@
+{
+  "accepted": true,
+  "scope": "one hand pose; instrument skin and same-hand surface intersections, proxy finger spacing, two-sided joint/wrist speed when neighbors supplied, fixed shoulders; no interhand/body/continuous-time proof",
+  "trajectory_validated": false,
+  "optimizer_success": true,
+  "initial_penetration_mm": 0.0,
+  "final_penetration_mm": 0.0,
+  "triangle_intersections": 0,
+  "wrist_displacement_mm": [
+    0.5920513084143875,
+    0.3754979911411854,
+    0.1491823735054118
+  ],
+  "maximum_joint_speed_rad_s": 5.155670906667584,
+  "arm_length_error_mm": 5.551115123125783e-14,
+  "configuration_bounds_violation": 0.0,
+  "feasibility_iterations": 80,
+  "initialization": "bounded supplied seed",
+  "proxy_self_clearance_mm": -3.237148916979127e-08,
+  "anchors": [
+    {
+      "finger": 1,
+      "pitch": 80,
+      "top_gap_mm": 0.01901505057498934,
+      "placement_error_mm": 5.757468444610614,
+      "contact_depth_mm": 66.26246976164558,
+      "requested_depth_mm": 72.0,
+      "placement_prior": {
+        "kind": "black",
+        "fallback": false,
+        "samples": 30347,
+        "desired_depth_mm": 72.0,
+        "achieved_depth_mm": 72.0,
+        "depth_iqr_mm": [
+          65.0,
+          78.0
+        ],
+        "finite_surface_adjustment_mm": 0.0,
+        "component": "key80",
+        "reference_scope": "pooled MANO fingertip depth mapped to actual skin, not subject/per-key force data"
+      },
+      "tangential_placement_hard": false,
+      "finite_key_components": "union",
+      "exposed_top_support": true
+    }
+  ],
+  "history": [
+    {
+      "pass_index": 0,
+      "optimizer_success": true,
+      "message": "Optimization terminated successfully",
+      "iterations": 24,
+      "active_vertices": 91,
+      "triangle_witnesses_added": 0,
+      "triangle_constraint_mode": "sat",
+      "active_triangle_constraints": 0,
+      "feasibility_seed_evaluations": 64,
+      "feasibility_seed_constraint_minimum": 1.98225966890897e-08,
+      "candidate_source": "SLSQP",
+      "minimum_clearance_mm": 0.01000004431611981,
+      "constraint_minimum_mm": -3.237148916979127e-08,
+      "triangle_intersections": 0,
+      "skin_self_intersections": 0,
+      "active_skin_pair_constraints": 3,
+      "skin_pair_witnesses": {
+        "mode": "complete_interior",
+        "triangulations": 2,
+        "mixed_choices_on_different_faces": true,
+        "discovered_pairs": 3,
+        "constrained_pairs": 3,
+        "incident_interior_pairs": 2,
+        "nonincident_full_pairs": 1,
+        "barycentric_inset": 0.01,
+        "incident_margin_minimum_mm": 0.0001460658885646725,
+        "incident_margin_maximum_mm": 0.0002349781338475362,
+        "clearance_certificate": false,
+        "scope": "Optimization witnesses only; full untrimmed both-diagonal audit remains mandatory"
+      }
+    }
+  ],
+  "mesh_self": {
+    "surface_intersection_clear": true,
+    "unexpected_surface_intersections": 0,
+    "possible_triangulation_crossing_pairs": 0,
+    "degenerate_triangles": 0,
+    "triangulations": [
+      {
+        "surface_intersection_clear": true,
+        "unexpected_surface_intersections": 0,
+        "pairs": [],
+        "kinds": {},
+        "degenerate_triangles": 0,
+        "candidate_pairs": 405279,
+        "expected_shared_features": 393520,
+        "witnesses": [],
+        "complete_mesh_clearance_proven": false,
+        "exclusions": [
+          "volume containment",
+          "positive minimum distance",
+          "other geometry",
+          "continuous time"
+        ]
+      },
+      {
+        "surface_intersection_clear": true,
+        "unexpected_surface_intersections": 0,
+        "pairs": [],
+        "kinds": {},
+        "degenerate_triangles": 0,
+        "candidate_pairs": 405182,
+        "expected_shared_features": 393454,
+        "witnesses": [],
+        "complete_mesh_clearance_proven": false,
+        "exclusions": [
+          "volume containment",
+          "positive minimum distance",
+          "other geometry",
+          "continuous time"
+        ]
+      }
+    ],
+    "cross_diagonal": {
+      "surface_intersection_clear": true,
+      "unexpected_surface_intersections": 0,
+      "pairs": [],
+      "kinds": {},
+      "degenerate_triangles": 0,
+      "candidate_pairs": 612872,
+      "expected_shared_features": 562088,
+      "witnesses": [],
+      "complete_mesh_clearance_proven": false,
+      "exclusions": [
+        "volume containment",
+        "positive minimum distance",
+        "other geometry",
+        "continuous time"
+      ],
+      "pair_namespace": "Concatenated diagonal-0 then diagonal-1 triangles; different quad faces only"
+    },
+    "diagonal_choice_complete": true,
+    "complete_mesh_clearance_proven": false
+  },
+  "mesh_self_constraints_enabled": true,
+  "skin_pair_witnesses": {
+    "mode": "complete_interior",
+    "triangulations": 2,
+    "mixed_choices_on_different_faces": true,
+    "discovered_pairs": 3,
+    "constrained_pairs": 3,
+    "incident_interior_pairs": 2,
+    "nonincident_full_pairs": 1,
+    "barycentric_inset": 0.01,
+    "incident_margin_minimum_mm": 0.0001460658885646725,
+    "incident_margin_maximum_mm": 0.0002349781338475362,
+    "clearance_certificate": false,
+    "scope": "Optimization witnesses only; full untrimmed both-diagonal audit remains mandatory"
+  },
+  "contact_objective": "actual anchor skin for held fingers; source pads for free fingers",
+  "human_form": {
+    "weight": 4.0,
+    "before": {
+      "cost": 0.00013208005021070335,
+      "angles_deg": [
+        [
+          1.1681349050651653,
+          29.024209575277627,
+          2.801818045298928
+        ],
+        [
+          3.8552322254131006,
+          39.165576285453135,
+          7.36098016951148
+        ],
+        [
+          11.930853281734102,
+          37.83516560631311,
+          3.3954121990328634
+        ],
+        [
+          18.884375698496015,
+          25.890015322339476,
+          -1.2820855502428663
+        ]
+      ],
+      "target_iqr_deg": [
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ]
+      ],
+      "target_median_deg": [
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          9.282,
+          27.667,
+          0.267
+        ]
+      ],
+      "outside_iqr": 4,
+      "maximum_iqr_excess_deg": 0.10437569849601402,
+      "source_sha256": "9103204c6a9a643569fa6bb2864959fc0f86c7e684719b025d054a3abd3abfd8",
+      "scope": "soft pooled phase prior for fingers 2\u20135; no realism acceptance"
+    },
+    "numerical_iterate": {
+      "cost": 0.00013325194012026031,
+      "angles_deg": [
+        [
+          1.168546564196055,
+          29.03841062722086,
+          2.8057926225953644
+        ],
+        [
+          3.8649480543219634,
+          39.165556552926894,
+          7.361155668410876
+        ],
+        [
+          11.955159001254616,
+          37.8422813825742,
+          3.4082901398864593
+        ],
+        [
+          18.885586288930018,
+          25.913376963510927,
+          -1.2668925961416486
+        ]
+      ],
+      "target_iqr_deg": [
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ]
+      ],
+      "target_median_deg": [
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          9.282,
+          27.667,
+          0.267
+        ]
+      ],
+      "outside_iqr": 4,
+      "maximum_iqr_excess_deg": 0.10558628893001654,
+      "source_sha256": "9103204c6a9a643569fa6bb2864959fc0f86c7e684719b025d054a3abd3abfd8",
+      "scope": "soft pooled phase prior for fingers 2\u20135; no realism acceptance"
+    },
+    "acceptance_scope": "soft guidance only; no human naturalness pass"
+  },
+  "orientation_temporal_bounds_available": true,
+  "maximum_wrist_angular_speed_rad_s": 1.8222073378069092,
+  "maximum_elbow_plane_speed_rad_s": 0.6256199722679112,
+  "candidate_exported": true,
+  "numerical_iterate": {
+    "solver_coordinates": [
+      0.5920513084143619,
+      0.37549799114118154,
+      0.1491823735054138,
+      0.010347523538830394,
+      -0.0039849100066224,
+      -0.025543910882746778,
+      0.03610558608390311,
+      0.3257270657821477,
+      0.2778468308093583,
+      -0.16152654228637545,
+      -0.130142637829369,
+      -0.19769603855667373,
+      0.30076459170822795,
+      -0.06538443471250698,
+      0.15496377259700445,
+      -0.23080657494893836,
+      0.5684186412134921,
+      0.014818098910038083,
+      0.09147833527332802,
+      -0.06646979024836053,
+      0.5241394576415177,
+      -0.044817313053875096,
+      -0.05454270989693421,
+      0.00868297413844753,
+      0.28980514855893086,
+      -0.01384457898606225
+    ],
+    "translation_units": "mm offset from source root",
+    "rotation_units": "rad rotation vector relative to source root",
+    "joint_units": "rad",
+    "side": "R",
+    "hand_scale": 1.0,
+    "scope": "Unvalidated diagnostic state for independent reconstruction; not a pose or animation candidate"
+  },
+  "schema": "mixed-diagonal-restoration/v1",
+  "mode": "complete",
+  "side": "R",
+  "frame": 0,
+  "absolute_time": 316.9,
+  "hand_scale": 1.0,
+  "input_sha256": {
+    "artifacts/realism/performance_source_v19/notes.json": "175114790f34de351c4cbd4b0ea5a617b4f67ef82ff7482d7840ebd36d888051",
+    "artifacts/realism/physical_key_actual_legacy/internal.anim.json": "3acb72da1ca1bd44029a1ed1ebcb1a223df72ec18dd5bbbbbf67c252a601780b",
+    "blockout/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "blockout/cameras.py": "2a2de2c37a0764c37d0d96c35de4bd7304bd74bf31b6964918a6cd90b290e2bf",
+    "blockout/contact.py": "8a21b18e142119654523ac8b0121fbe88f91d5d7d5e0731e2762b325edbe6689",
+    "blockout/drum_preview.py": "325f5476592c97d5a2ede444c5e5fd9650cd8d5ec1e26baeafe9ca5a8ba7a347",
+    "blockout/drums.py": "67e84479761785a8aa1e71df199c3213b244911589c9b43e0f9a2cf12ea7c599",
+    "blockout/dynamics.py": "90436446a1600f3554f18710362ccfdcf0883c8e93d165d8b75fd457803f0b6e",
+    "blockout/eval_suite.py": "db2a40d27a356c7812b92dab403cb9f57fc983bbcca4e862e5a16ac2fbf3a597",
+    "blockout/export_skin_bind.py": "ca0282aad56c5ab93e0ac66eb5b12093dd245f1528e74d18891aed21600d3d51",
+    "blockout/feeling.py": "be20a7ef47da6cbaa1d4df587183f6358efe603f142e2edf6d33a572cb05de6e",
+    "blockout/furelise/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blockout/furelise/calibrate.py": "e971543d7126aa92d1f5aef9c71c94850d50c06aac585542cfc4dbd20c894c68",
+    "blockout/furelise/compare.py": "cd45c5f033c93c262d45e30fb6e261479542990c15ce822bafff674892c4c879",
+    "blockout/furelise/load.py": "da485c9a21a97ab9071c560fa62f82cfcb0e64db9d202ff71537fa8b32ed5b94",
+    "blockout/furelise/ref.py": "d8e77abaef0f753525a67014803fb67dc38cc466ab574dc2064ae5b28929fb81",
+    "blockout/furelise/wristmodel.py": "8401b273adf77d3aa47df5e201a0c18c06e81f48c492eefc0f335c536800a2a9",
+    "blockout/h3_lock.py": "e0e54ef35def5c4303d07d4455439ffa152eb44b15de1064b71e5778346a6d8b",
+    "blockout/hand_model/mpfb_hands.json": "4b821ebb3b6a714eaa3321909ae3cb5026e85f989e93a6f0ffc830a4470459e1",
+    "blockout/hand_model/mpfb_make_hand.py": "e5d230d524e1f3b67667561222545dbe0be38fd6be786f452b9950fb33448acd",
+    "blockout/hand_model/skeleton.json": "bb5cd7c817474096cd272255555744a5a760f66cec754e9c107f4a44e7dc6a30",
+    "blockout/hand_model/skin_bind.npz": "9ba727f8ae6d07747907becbb7f3dfbf3ea7103397bf30103c84f1661c406f63",
+    "blockout/human_ref.json": "a9f6a75c0945a0fc795378ac656993b209ae4f02ac4c28e996da50853b40cbe2",
+    "blockout/human_score.py": "49613248f54a67861049c10b617de16e34212e311e9f29d18a18029e5dd33768",
+    "blockout/key_actions.py": "ab477ef7d24de2326a3b68745818706a8948b0f6e5b53c6a5e2887b68b78528a",
+    "blockout/key_shapes.py": "e759a83ea02f740e34c3e7ba7ae42fac0ac1704268c55765eba44a08c6f3416e",
+    "blockout/mesh_contact.py": "c715512f991cbcff07a6fd6c814ac992285eb1f6f8f8e9a25a050e949e2557d7",
+    "blockout/mesh_self.py": "daf422e918d6861085f99980b912c1a57cc1d6fa2ee097bc490fc2e682536dad",
+    "blockout/midi.py": "c85b4e21384f2089760cca40498da0b92a8b468b56701e985cb50d38dbaa911e",
+    "blockout/performance_windows.py": "6ab6c9808584f308a2b23c03f2fea5c3f85418dc5a671a72491967bd100419de",
+    "blockout/performer.py": "1f6a9d7b286ead83e8f6d2fd44832df186fe59715781fdd4b028df55f5f14aa6",
+    "blockout/piano.py": "091e2fd31be83c351016e994d982bc1e7e3c209245269918d09463f4a3fcb4ed",
+    "blockout/piano_geometry.py": "1ed0f12bf5670efed7ed09951d08ab5051cf35a858335f443e5d52f9517db8fe",
+    "blockout/review.py": "9949e6f9ffbf97851d3e8d040c16c342f651cf135300139cc0c4d3c96231cc79",
+    "blockout/rig/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blockout/rig/calibrate.py": "9152d8e517a133a1923830d821287a6db15afab1684f3e4cc82703b652274174",
+    "blockout/rig/comfort.json": "87b67639e332d949f30d408372d145b04c9b3e0124f835de37dbc2d37a84683e",
+    "blockout/rig/comfort_mediapipe.json": "c05a19ca5e6e2345eb81af8963cd8dd20b3143279a83ec4d5696eb302cede0e0",
+    "blockout/rig/composure.py": "45bfa090b7ff6d00f0d5bd8afd94dbf1373d4a560774d3503be7a2f39f7d3a5e",
+    "blockout/rig/contact_placement.py": "d7efc09d0a473bd77d139b1b5f796d9c7f93dbfe0b34f032e1d257acf993bd38",
+    "blockout/rig/export_skeleton.py": "a8c921697534d07742e4d96739cd2e3b837f0cc298f8270c33ba380faa53fb7b",
+    "blockout/rig/furelise_cal.json": "2cb7a3414ad84bf86f1599eeff0b72f05b73ab81b1cb8192d1f00123d74d3c68",
+    "blockout/rig/furelise_wrist.json": "506e82ca12775800f1c7f4b74aadaf0376c16ce3772c04d338774a3f2bb7ee90",
+    "blockout/rig/hand.py": "f2bb6d40f408cac7a899e7f96396b23cf46d8de83ab92e500b3e29d0edcee251",
+    "blockout/rig/hand_order.py": "cab2e739bc0f249f1477a1e2b88d4891357f87748be63bcfde022c43b44dfbc2",
+    "blockout/rig/human_form.py": "0d9dda7a5c8dae90bdf5b22faa16198b38bbd2b9754c66f6cebeb065e4b6266f",
+    "blockout/rig/ik.py": "66601ab94208afe660650249c8f3a4b1dc63fec0d477a5bf58e52830d3dd5132",
+    "blockout/rig/motion.py": "14307e67eb288cf5a2d8ef7cec3cd2fc0e62989a7bc5d3f818bb86ace6f6d530",
+    "blockout/rig/orientation.py": "4a7134514a8a93dddcddf7b083124f95e74130eb09534a47df060aa79f38f338",
+    "blockout/rig/path_checkpoint.py": "817f920e582680151d288c3dfab2c480618c5a69f9f5bbebdc27ed2251f321d6",
+    "blockout/rig/path_validation.py": "5a3cdd55b71e9ab988b86cf13dfcf42486c60f20196229090e5ea1d42cd86d53",
+    "blockout/rig/pianist_reference.json": "9103204c6a9a643569fa6bb2864959fc0f86c7e684719b025d054a3abd3abfd8",
+    "blockout/rig/pose_io.py": "8ac310359c9fae6ae46eb3b2a064ae41b560d98edf5c616fbf04cf8fdd16b416",
+    "blockout/rig/skeleton.py": "cefd3f45852b18e89703813ee362dec0f2a84a9ba0fd610d1ac68b479be3921d",
+    "blockout/rig/skin_contact.py": "24c7c9068811c7a9846dd6386f3e8c3d34fb3ff0f3a28b146a6b8964bbc26ca5",
+    "blockout/rig/skin_pair_constraints.py": "347fc5b3555f00df63551e615b0e3b6a381c8739b5767b6a3a365ee2f18d1975",
+    "blockout/rig_qa.py": "c42e03b2065c396b258148290e0d7170b27bfd9b2f002610cca01a777802c9d1",
+    "blockout/sampler.py": "c8b4870a9fa955be6f030a6820caa7c7f2cc5c79cd04794abeeb4aa2502119cb",
+    "blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "blockout/skin_contacts.py": "f08212c02291f6c876abe91eac683184eee14baae81f042daef4afd18f26b280",
+    "blockout/subdivision.py": "cfe964d593e7011557f9e2b53592d576a0c96f3751c3322bc223593bf72b550a",
+    "blockout/suite.py": "db9a299d6cfa4caf9bd52b3e58abdf0b96bca9c7ec633f18fbfb2da72472221f",
+    "blockout/synth.py": "7e9321f2931e26ffc5911450559fa0485210d60cdc3c1269fb161e7ae381abe1",
+    "blockout/triangle_contact.py": "2e52ae065af1d867bacec0ee29c064a598a2df31910cc004e8db4d1b50a25f2d",
+    "lab/SKIN_DIAGONAL_COVERAGE_PROTOCOL.md": "03ba73b7b65eb94380be5e085cfb970e13d1bb36946c7ec818df9231399a59b8",
+    "lab/skin_diagonal_trial.py": "ca17d92386beea1c10e69924af60a61302a0e0533497eebebe1d71a6e62312d6",
+    "lab/skin_initialization_trial.py": "478a9d81f30f4520cc5b995bae35e39df405b46cc3b3526c054a5b3a9a24bb62"
+  },
+  "source_unchanged_during_run": true,
+  "seconds": 101.97210363397608,
+  "source_key_commands": {
+    "80": 0.8228408173874554
+  },
+  "seed_identity": {
+    "path": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/uniform.json",
+    "sha256": "69a6f91c282f8d902e35756e7c533946b6682f754f2f9a2044b85282a0073a37",
+    "preparation_seconds": 262.3471214469755,
+    "validated_pose": false,
+    "protocol_sha256": "5fe30a3c10bc1fd61315ab19dc11a876e0e1a94b9b09b3572b19f3100b7e95ba"
+  },
+  "requested_anchors": [
+    {
+      "finger": 1,
+      "pitch": 80,
+      "vertex": 13994,
+      "target": [
+        0.27025,
+        0.072,
+        0.005272252181268345
+      ],
+      "component": "key80",
+      "placement": {
+        "kind": "black",
+        "fallback": false,
+        "samples": 30347,
+        "desired_depth_mm": 72.0,
+        "achieved_depth_mm": 72.0,
+        "depth_iqr_mm": [
+          65.0,
+          78.0
+        ],
+        "finite_surface_adjustment_mm": 0.0,
+        "component": "key80",
+        "reference_scope": "pooled MANO fingertip depth mapped to actual skin, not subject/per-key force data"
+      }
+    }
+  ],
+  "original_source_compatibility_duties": [
+    49,
+    56,
+    61,
+    64,
+    80
+  ],
+  "full_performance_accepted": false,
+  "full_starting_state_accepted": false,
+  "default_adoption": false,
+  "budget": {
+    "iterations": 100,
+    "passes": 4,
+    "feasibility_iterations": 80
+  }
+}

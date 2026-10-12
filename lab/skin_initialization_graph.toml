@@ -1,0 +1,16 @@
+name = "piano-skin-initialization"
+description = "Method review of complete topology-aware skin restoration witnesses and controlled free-finger seeds."
+deadline_secs = 800
+
+[[node]]
+id = "synthesize"
+tools = "none"
+prompt = """Review the supplied exact preregistration in at most 300 words. Recommend this matched experiment or give a concrete correction. Separate engineering witnesses from complete acceptance, retain shared topology, diagonal identity, musical duties, neighbors and scope. Cite supplied primary evidence without claiming a literature survey or empirical approval. No tools. Task: {task}"""
+
+[[node]]
+id = "verify"
+persona = "reviewer"
+tools = "none"
+depends_on = ["synthesize"]
+gate = { verdict = true, retry = "synthesize", credit_to = "synthesize", max_retries = 1 }
+prompt = """Audit the exact proposed method in at most 180 words with a verdict. Reject positive separation on full incident triangles, mixed alternative diagonals, treating inset witnesses as full clearance, weakened full-mesh veto, missing source duties, changed key states, dropped neighbor bounds, hidden failures or static-to-trajectory/naturalness/IPC guarantees. Distinguish preserved source gates as diagnostic compatibility duties from verified physical offsets. Full piano/drummer/body/force/continuous-motion goal remains open. Task: {task}\nProposal: {output:synthesize}"""

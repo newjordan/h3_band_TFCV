@@ -1,0 +1,6 @@
+{"verified": "original", "self_pairs": 375}
+{"verified": "legacy_source", "self_pairs": 67}
+{"verified": "legacy_quiet", "self_pairs": 111}
+{"verified": "both_source", "self_pairs": 31}
+{"verified": "both_quiet", "self_pairs": 243}
+All five two-hand diagnostic snapshots verified and rendered; full performance remains rejected

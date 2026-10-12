@@ -11,6 +11,7 @@ from continuous_plan_site import apply_continuous_plan, apply_full_suite
 from orientation_site import apply_orientation
 from key_action_site import apply_key_actions
 from physical_key_site import apply_physical_keys
+from skin_initialization_site import apply_skin_initialization
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = Path('/home/frosty40/h3/results/band_site/web')
@@ -165,6 +166,10 @@ physical_keys_path = ROOT / 'lab/realism_results/physical_keys_20261011.json'
 physical_keys = json.loads(physical_keys_path.read_text()) if physical_keys_path.exists() else None
 if physical_keys is not None and physical_keys['status'] == 'complete':
     apply_physical_keys(section, physical_keys)
+initialization_path = ROOT / 'lab/realism_results/skin_initialization_20261012.json'
+initialization = json.loads(initialization_path.read_text()) if initialization_path.exists() else None
+if initialization is not None and initialization['status'] == 'complete':
+    apply_skin_initialization(section, initialization)
 full_suite_path = ROOT / 'lab/realism_results/full_suite_progress_20261011.json'
 full_suite = json.loads(full_suite_path.read_text()) if full_suite_path.exists() else None
 if full_suite is not None and full_suite['status'] == 'complete':
@@ -185,6 +190,11 @@ if composure is not None and composure['status'] == 'complete':
         'The one-minute performance and drummer diagnostics remain available below.')
 media = WEB / 'media'
 media.mkdir(exist_ok=True)
+if initialization is not None and initialization['status'] == 'complete':
+    for source, destination in ((ART/'skin_initialization/initialization_grid.png', 'rig_realism_skin_initialization_grid.png'),
+                                (ART/'skin_diagonal_coverage/comparison.png', 'rig_realism_skin_diagonal_comparison.png'),
+                                (initialization_path, 'rig_realism_skin_initialization_results.json')):
+        shutil.copy2(source, media/destination)
 if physical_keys is not None and physical_keys['status'] == 'complete':
     for source, destination in ((ART/'physical_key_comparison.mp4','rig_realism_physical_key_comparison.mp4'),
                                 (ART/'physical_key_traces.png','rig_realism_physical_key_traces.png'),
@@ -278,5 +288,10 @@ if physical_keys is not None and physical_keys['status'] == 'complete':
     manifest['status'][0] = (f"<b>Rig research:</b> {physical_keys['unit_tests']['passed']} tests pass. "
         'The full 6:34 grayscale suite, original soundtrack and new three-treatment key-hold comparison are available. '
         'Source voices stay accounted for; actual skin, hold conflicts and musical failures remain visible. No complete rig is accepted.')
+if initialization is not None and initialization['status'] == 'complete':
+    manifest['updated'] = '2026-10-12 full-suite progress preview and complete triangle-choice initialization study; full realism remains unfinished'
+    manifest['status'][0] = (f"<b>Rig research:</b> {initialization['unit_tests']['passed']} tests pass. "
+        'The full 6:34 grayscale performance remains available. The renderer exposed a missed collision case; '
+        'new complete checks, matched starting-pose repairs and all failures are published. No complete performance is accepted.')
 manifest_path.write_text(json.dumps(manifest, indent=1) + '\n')
 print('Updated existing band-site manifest and research media')

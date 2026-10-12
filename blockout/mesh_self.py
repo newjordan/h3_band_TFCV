@@ -49,6 +49,10 @@ def candidate_pairs(vertices, triangles, tolerance=1e-7):
 
 
 def self_intersections(vertices, triangles, tolerance=1e-7, witness_limit=20):
+    return _self_intersections(vertices, triangles, tolerance, witness_limit)
+
+
+def _self_intersections(vertices, triangles, tolerance, witness_limit, mixed_quad_count=None):
     vertices, triangles = np.asarray(vertices, float), np.asarray(triangles)
     geometry = vertices[triangles]
     edges = np.roll(geometry, -1, axis=1) - geometry
@@ -57,6 +61,14 @@ def self_intersections(vertices, triangles, tolerance=1e-7, witness_limit=20):
     degenerate = np.flatnonzero(length <= tolerance * np.linalg.norm(edges, axis=2).max(1))
     valid_ids = np.flatnonzero(length > tolerance * np.linalg.norm(edges, axis=2).max(1))
     pairs = valid_ids[candidate_pairs(vertices, triangles[valid_ids], tolerance)] if len(valid_ids) else np.empty((0, 2), int)
+    if mixed_quad_count is not None:
+        # Alternative triangles of one face cannot coexist. Alternatives on
+        # DIFFERENT faces can coexist, and Blender can rotate corner order
+        # independently per face. Uniform global diagonal tests miss these.
+        first, second = pairs.T
+        cross_choice = (first < 2 * mixed_quad_count) != (second < 2 * mixed_quad_count)
+        different_face = first % mixed_quad_count != second % mixed_quad_count
+        pairs = pairs[cross_choice & different_face]
     normals = normal / np.maximum(length[:, None], 1e-30)
     unexpected, witnesses, kinds = [], [], Counter()
     expected = 0
@@ -100,12 +112,24 @@ def self_intersections(vertices, triangles, tolerance=1e-7, witness_limit=20):
 
 
 def quad_self_intersections(vertices, faces, tolerance=1e-7):
-    """Audit each quad triangulation separately, never overlap two alternatives."""
-    results = []
+    """Audit all coexisting choices, including mixed choices on different faces.
+
+    Alternative triangles belonging to the same quad cannot coexist and must
+    not create fake self contacts. Both within-face diagonal choices are still
+    checked independently for genuine bow-tie/folded quads.
+    """
+    results, alternatives = [], []
     for first, second in (((0, 1, 2), (0, 2, 3)), ((1, 2, 3), (1, 3, 0))):
         triangles = np.concatenate([faces[:, first], faces[:, second]])
+        alternatives.append(triangles)
         results.append(self_intersections(vertices, triangles, tolerance))
-    return dict(surface_intersection_clear=all(r['surface_intersection_clear'] for r in results),
-        unexpected_surface_intersections=max(r['unexpected_surface_intersections'] for r in results),
+    mixed = _self_intersections(vertices, np.concatenate(alternatives), tolerance, 20,
+                               mixed_quad_count=len(faces))
+    mixed['pair_namespace'] = 'Concatenated diagonal-0 then diagonal-1 triangles; different quad faces only'
+    all_results = results + [mixed]
+    return dict(surface_intersection_clear=all(r['surface_intersection_clear'] for r in all_results),
+        unexpected_surface_intersections=max(r['unexpected_surface_intersections'] for r in all_results),
+        possible_triangulation_crossing_pairs=sum(r['unexpected_surface_intersections'] for r in all_results),
         degenerate_triangles=max(r['degenerate_triangles'] for r in results),
-        triangulations=results, complete_mesh_clearance_proven=False)
+        triangulations=results, cross_diagonal=mixed,
+        diagonal_choice_complete=True, complete_mesh_clearance_proven=False)

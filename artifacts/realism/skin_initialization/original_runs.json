@@ -1,0 +1,139 @@
+{
+  "status": "complete",
+  "pid": 9,
+  "input_sha256": {
+    "artifacts/realism/performance_source_v19/notes.json": "175114790f34de351c4cbd4b0ea5a617b4f67ef82ff7482d7840ebd36d888051",
+    "artifacts/realism/physical_key_actual_legacy/internal.anim.json": "3acb72da1ca1bd44029a1ed1ebcb1a223df72ec18dd5bbbbbf67c252a601780b",
+    "blockout/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "blockout/cameras.py": "2a2de2c37a0764c37d0d96c35de4bd7304bd74bf31b6964918a6cd90b290e2bf",
+    "blockout/contact.py": "8a21b18e142119654523ac8b0121fbe88f91d5d7d5e0731e2762b325edbe6689",
+    "blockout/drum_preview.py": "325f5476592c97d5a2ede444c5e5fd9650cd8d5ec1e26baeafe9ca5a8ba7a347",
+    "blockout/drums.py": "67e84479761785a8aa1e71df199c3213b244911589c9b43e0f9a2cf12ea7c599",
+    "blockout/dynamics.py": "90436446a1600f3554f18710362ccfdcf0883c8e93d165d8b75fd457803f0b6e",
+    "blockout/eval_suite.py": "db2a40d27a356c7812b92dab403cb9f57fc983bbcca4e862e5a16ac2fbf3a597",
+    "blockout/export_skin_bind.py": "ca0282aad56c5ab93e0ac66eb5b12093dd245f1528e74d18891aed21600d3d51",
+    "blockout/feeling.py": "be20a7ef47da6cbaa1d4df587183f6358efe603f142e2edf6d33a572cb05de6e",
+    "blockout/furelise/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blockout/furelise/calibrate.py": "e971543d7126aa92d1f5aef9c71c94850d50c06aac585542cfc4dbd20c894c68",
+    "blockout/furelise/compare.py": "cd45c5f033c93c262d45e30fb6e261479542990c15ce822bafff674892c4c879",
+    "blockout/furelise/load.py": "da485c9a21a97ab9071c560fa62f82cfcb0e64db9d202ff71537fa8b32ed5b94",
+    "blockout/furelise/ref.py": "d8e77abaef0f753525a67014803fb67dc38cc466ab574dc2064ae5b28929fb81",
+    "blockout/furelise/wristmodel.py": "8401b273adf77d3aa47df5e201a0c18c06e81f48c492eefc0f335c536800a2a9",
+    "blockout/h3_lock.py": "e0e54ef35def5c4303d07d4455439ffa152eb44b15de1064b71e5778346a6d8b",
+    "blockout/hand_model/mpfb_hands.json": "4b821ebb3b6a714eaa3321909ae3cb5026e85f989e93a6f0ffc830a4470459e1",
+    "blockout/hand_model/mpfb_make_hand.py": "e5d230d524e1f3b67667561222545dbe0be38fd6be786f452b9950fb33448acd",
+    "blockout/hand_model/skeleton.json": "bb5cd7c817474096cd272255555744a5a760f66cec754e9c107f4a44e7dc6a30",
+    "blockout/hand_model/skin_bind.npz": "9ba727f8ae6d07747907becbb7f3dfbf3ea7103397bf30103c84f1661c406f63",
+    "blockout/human_ref.json": "a9f6a75c0945a0fc795378ac656993b209ae4f02ac4c28e996da50853b40cbe2",
+    "blockout/human_score.py": "49613248f54a67861049c10b617de16e34212e311e9f29d18a18029e5dd33768",
+    "blockout/key_actions.py": "ab477ef7d24de2326a3b68745818706a8948b0f6e5b53c6a5e2887b68b78528a",
+    "blockout/key_shapes.py": "e759a83ea02f740e34c3e7ba7ae42fac0ac1704268c55765eba44a08c6f3416e",
+    "blockout/mesh_contact.py": "c715512f991cbcff07a6fd6c814ac992285eb1f6f8f8e9a25a050e949e2557d7",
+    "blockout/mesh_self.py": "7ba8eb431bd735dba3fcca81c05787d01bfe999418c24da82499aa0657d17715",
+    "blockout/midi.py": "c85b4e21384f2089760cca40498da0b92a8b468b56701e985cb50d38dbaa911e",
+    "blockout/performance_windows.py": "6ab6c9808584f308a2b23c03f2fea5c3f85418dc5a671a72491967bd100419de",
+    "blockout/performer.py": "1f6a9d7b286ead83e8f6d2fd44832df186fe59715781fdd4b028df55f5f14aa6",
+    "blockout/piano.py": "091e2fd31be83c351016e994d982bc1e7e3c209245269918d09463f4a3fcb4ed",
+    "blockout/piano_geometry.py": "1ed0f12bf5670efed7ed09951d08ab5051cf35a858335f443e5d52f9517db8fe",
+    "blockout/review.py": "9949e6f9ffbf97851d3e8d040c16c342f651cf135300139cc0c4d3c96231cc79",
+    "blockout/rig/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blockout/rig/calibrate.py": "9152d8e517a133a1923830d821287a6db15afab1684f3e4cc82703b652274174",
+    "blockout/rig/comfort.json": "87b67639e332d949f30d408372d145b04c9b3e0124f835de37dbc2d37a84683e",
+    "blockout/rig/comfort_mediapipe.json": "c05a19ca5e6e2345eb81af8963cd8dd20b3143279a83ec4d5696eb302cede0e0",
+    "blockout/rig/composure.py": "45bfa090b7ff6d00f0d5bd8afd94dbf1373d4a560774d3503be7a2f39f7d3a5e",
+    "blockout/rig/contact_placement.py": "d7efc09d0a473bd77d139b1b5f796d9c7f93dbfe0b34f032e1d257acf993bd38",
+    "blockout/rig/export_skeleton.py": "a8c921697534d07742e4d96739cd2e3b837f0cc298f8270c33ba380faa53fb7b",
+    "blockout/rig/furelise_cal.json": "2cb7a3414ad84bf86f1599eeff0b72f05b73ab81b1cb8192d1f00123d74d3c68",
+    "blockout/rig/furelise_wrist.json": "506e82ca12775800f1c7f4b74aadaf0376c16ce3772c04d338774a3f2bb7ee90",
+    "blockout/rig/hand.py": "f2bb6d40f408cac7a899e7f96396b23cf46d8de83ab92e500b3e29d0edcee251",
+    "blockout/rig/hand_order.py": "cab2e739bc0f249f1477a1e2b88d4891357f87748be63bcfde022c43b44dfbc2",
+    "blockout/rig/human_form.py": "0d9dda7a5c8dae90bdf5b22faa16198b38bbd2b9754c66f6cebeb065e4b6266f",
+    "blockout/rig/ik.py": "66601ab94208afe660650249c8f3a4b1dc63fec0d477a5bf58e52830d3dd5132",
+    "blockout/rig/motion.py": "14307e67eb288cf5a2d8ef7cec3cd2fc0e62989a7bc5d3f818bb86ace6f6d530",
+    "blockout/rig/orientation.py": "4a7134514a8a93dddcddf7b083124f95e74130eb09534a47df060aa79f38f338",
+    "blockout/rig/path_checkpoint.py": "817f920e582680151d288c3dfab2c480618c5a69f9f5bbebdc27ed2251f321d6",
+    "blockout/rig/path_validation.py": "5a3cdd55b71e9ab988b86cf13dfcf42486c60f20196229090e5ea1d42cd86d53",
+    "blockout/rig/pianist_reference.json": "9103204c6a9a643569fa6bb2864959fc0f86c7e684719b025d054a3abd3abfd8",
+    "blockout/rig/pose_io.py": "8ac310359c9fae6ae46eb3b2a064ae41b560d98edf5c616fbf04cf8fdd16b416",
+    "blockout/rig/skeleton.py": "cefd3f45852b18e89703813ee362dec0f2a84a9ba0fd610d1ac68b479be3921d",
+    "blockout/rig/skin_contact.py": "24c7c9068811c7a9846dd6386f3e8c3d34fb3ff0f3a28b146a6b8964bbc26ca5",
+    "blockout/rig/skin_pair_constraints.py": "b06df5e1df76cb9a41e35cd03f0a5266e89a9e4b0db7806b4eac94bef946de89",
+    "blockout/rig_qa.py": "c42e03b2065c396b258148290e0d7170b27bfd9b2f002610cca01a777802c9d1",
+    "blockout/sampler.py": "c8b4870a9fa955be6f030a6820caa7c7f2cc5c79cd04794abeeb4aa2502119cb",
+    "blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "blockout/skin_contacts.py": "f08212c02291f6c876abe91eac683184eee14baae81f042daef4afd18f26b280",
+    "blockout/subdivision.py": "cfe964d593e7011557f9e2b53592d576a0c96f3751c3322bc223593bf72b550a",
+    "blockout/suite.py": "db9a299d6cfa4caf9bd52b3e58abdf0b96bca9c7ec633f18fbfb2da72472221f",
+    "blockout/synth.py": "7e9321f2931e26ffc5911450559fa0485210d60cdc3c1269fb161e7ae381abe1",
+    "blockout/triangle_contact.py": "2e52ae065af1d867bacec0ee29c064a598a2df31910cc004e8db4d1b50a25f2d",
+    "lab/SKIN_INITIALIZATION_PROTOCOL.md": "5cd119ddb987e117e3782a717bd326f08b4144b44de063e512fe663722b1437b",
+    "lab/research_skin_initialization_task.txt": "337732c7045ab480d7dc281a40eb211492773a5313803b3ad8d5f37ccd29563c",
+    "lab/run_skin_initialization.py": "070e38161a04f5ad90658482ae43e179a0baa279eefd0f8122970b520a3b0516",
+    "lab/skin_initialization_graph.toml": "aa42b6be6ce98d576b16d7070676635414a135cce4fa71a60b548a8d0fec5a2d",
+    "lab/skin_initialization_trial.py": "478a9d81f30f4520cc5b995bae35e39df405b46cc3b3526c054a5b3a9a24bb62"
+  },
+  "cells": [
+    "legacy_source",
+    "legacy_quiet",
+    "both_source",
+    "both_quiet"
+  ],
+  "sides": [
+    "L",
+    "R"
+  ],
+  "workers": 3,
+  "records": [
+    {
+      "cell": "legacy_source",
+      "side": "R",
+      "sha256": "dd8319ba15d61f942011b298e96ee53d3f587a77d8999b1fb0f6d953714beb44",
+      "reused_identical_finished_trial": false
+    },
+    {
+      "cell": "legacy_source",
+      "side": "L",
+      "sha256": "a91829148c37d9ce2faf8a8d4e7d05a5b32f1a0826afe51e8077f0d4acd3c354",
+      "reused_identical_finished_trial": false
+    },
+    {
+      "cell": "legacy_quiet",
+      "side": "L",
+      "sha256": "9d55796e9c8b313b3eed6f2c8abad40ebcd78541f7854f57aae22c362922cb3d",
+      "reused_identical_finished_trial": false
+    },
+    {
+      "cell": "legacy_quiet",
+      "side": "R",
+      "sha256": "cf43350e70c22c3c098e154667710f7f4a0b3949d51899d252e98d3308e5a64d",
+      "reused_identical_finished_trial": false
+    },
+    {
+      "cell": "both_source",
+      "side": "R",
+      "sha256": "e7ffdc09721fe595a81ae8ea86d4c707175e937b8d0e9322177713d09a6c204d",
+      "reused_identical_finished_trial": false
+    },
+    {
+      "cell": "both_source",
+      "side": "L",
+      "sha256": "86cc3dfc2755e83f3e65d1a8d5806217c0438680cfc77defacf559ba63475bcb",
+      "reused_identical_finished_trial": false
+    },
+    {
+      "cell": "both_quiet",
+      "side": "L",
+      "sha256": "bf1a377e6693b4225b96b86802cbcc7a90590bf6ea36fb03ca033b5bb95e54d6",
+      "reused_identical_finished_trial": false
+    },
+    {
+      "cell": "both_quiet",
+      "side": "R",
+      "sha256": "58792ab63960386261b1d5cc313eff3c8aea59c0943d98064a0f4b42baf76998",
+      "reused_identical_finished_trial": false
+    }
+  ],
+  "code_unchanged_during_run": true,
+  "seconds": 690.6220013950369
+}

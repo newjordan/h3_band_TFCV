@@ -95,8 +95,10 @@ def main():
             assert np.array_equal(faces, linear_faces)
         audit = quad_self_intersections(vertices, faces)
         counts, region_counts = [], []
-        for triangulation in audit['triangulations']:
-            triangles = np.concatenate([faces[:, [0, 1, 2]], faces[:, [0, 2, 3]]]) if not counts else np.concatenate([faces[:, [1, 2, 3]], faces[:, [1, 3, 0]]])
+        choices = [np.concatenate([faces[:, [0, 1, 2]], faces[:, [0, 2, 3]]]),
+                   np.concatenate([faces[:, [1, 2, 3]], faces[:, [1, 3, 0]]])]
+        for triangulation, triangles in zip(audit['triangulations'] + [audit['cross_diagonal']],
+                                            choices + [np.concatenate(choices)]):
             counter, regional = Counter(), Counter()
             for first, second in triangulation['pairs']:
                 a, b = triangles[first], triangles[second]
@@ -134,6 +136,8 @@ def main():
                         **key_support(vertices, actual_distal, pitch, scene)))
         result = dict(record)
         result.update(mapping_from_identical_linear_topology=True, lbs_parity_maximum_error_mm=mapping_error,
+            scope_count_buckets=['uniform_diagonal_0', 'uniform_diagonal_1', 'mixed_choices_different_faces'],
+            diagonal_choice_complete=True,
             surface_intersection_clear=audit['surface_intersection_clear'],
             self_intersections=audit['unexpected_surface_intersections'], degenerate_triangles=audit['degenerate_triangles'],
             scope_counts=counts, region_counts=region_counts, mesh_audit=audit,

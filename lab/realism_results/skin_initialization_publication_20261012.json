@@ -1,0 +1,41 @@
+{
+  "status": "complete",
+  "verified_at_utc": "2026-10-12T13:27:07.278097+00:00",
+  "base_url": "https://toymaker.tail2d8af4.ts.net/band/",
+  "records": [
+    {
+      "path": "index.html",
+      "http_status": 200,
+      "bytes": 95253,
+      "sha256": "1e1af5315390ac5e900fd29e2ac51fff6cd621786a3f0ce32714cc79e59db511",
+      "remote_matches_local": true
+    },
+    {
+      "path": "media/rig_realism_skin_diagonal_comparison.png",
+      "http_status": 200,
+      "bytes": 147391,
+      "sha256": "2c9def1b94e2394de3055369cf43c7312cc617c296957a69bb7dded369634d0d",
+      "remote_matches_local": true
+    },
+    {
+      "path": "media/rig_realism_skin_initialization_grid.png",
+      "http_status": 200,
+      "bytes": 275324,
+      "sha256": "9b84106d437d48ae5c732215b704a89b22d0ef32175881787487d2b906170737",
+      "remote_matches_local": true
+    },
+    {
+      "path": "media/rig_realism_skin_initialization_results.json",
+      "http_status": 200,
+      "bytes": 1090838,
+      "sha256": "07d9c87637cf7b26f08503bbcfefb3821a0f1bb5aae01d3245f5f2419c5473d4",
+      "remote_matches_local": true
+    }
+  ],
+  "full_suite_head": {
+    "http_status": 200,
+    "content_type": "video/mp4",
+    "bytes": 8928597
+  },
+  "full_suite_first": true
+}

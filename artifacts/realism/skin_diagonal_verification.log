@@ -1,0 +1,9 @@
+{"verified": "complete", "counts": [{"L_self": 97, "R_self": 147}, {"L_self": 111, "R_self": 133}, {"L_self": 210, "R_self": 284}]}
+{"verified": "uniform", "counts": [{"L_self": 97}, {"L_self": 111, "R_self": 3}, {"L_self": 210}]}
+{"verified": "complete_seeded", "counts": [{"L_self": 97}, {"L_self": 111}, {"L_self": 210}]}
+{"reevaluated": "original", "counts": [{"L_self": 97, "R_self": 278}, {"L_self": 111, "R_self": 260}, {"L_self": 210, "R_self": 541}]}
+{"reevaluated": "legacy_source", "counts": [{"R_self": 67}, {"R_self": 65}, {"R_self": 128}]}
+{"reevaluated": "legacy_quiet", "counts": [{"R_self": 106}, {"R_self": 111}, {"R_self": 222}]}
+{"reevaluated": "both_source", "counts": [{"L_self": 20}, {"L_self": 28, "R_self": 3}, {"L_self": 49}]}
+{"reevaluated": "both_quiet", "counts": [{"R_self": 113, "L_self": 130}, {"R_self": 110, "L_self": 122}, {"R_self": 225, "L_self": 252}]}
+Both new trials and all five original snapshots verified with complete diagonal-choice coverage

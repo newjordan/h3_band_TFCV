@@ -1,0 +1,13 @@
+[sota-moa] additional proposer(s): gemma
+[swarm] research scout: grok-research
+[swarm] sota-moa amplify: manual — coordinator-only; start a turn with "moa:" to fan out
+[swarm] mixture: propose=openai judge=grok verify=openai aggregate=openai
+[swarm] research scout: grok-research
+[angel --task] driver in hand: openai  workspace: /home/frosty40/h3/rig_realism  tool schemas: full
+[task-event] call agent_graph: graph=piano-skin-initialization, task=# Actual-skin initialization experiment, 2026-10-12
+
+Preregi
+[task-event] done agent_graph [ToolOutcome { execution: Succeeded, verification: NotApplicable }]: [graph piano-skin-initialization phase=Done nodes=2/2 elapsed=146s episode=bb3cd
+[task-event] call handle_read: handle=hnd_1, max_bytes=4000, offset=0
+[task-event] done handle_read [ToolOutcome { execution: Succeeded, verification: NotApplicable }]: [handle disclose: hnd_1 offset=0 bytes=1433 total=1433]
+[task-event] notice: cache-stable: history rewrites held across 3 hop(s) to keep the request prefix byte-stable; at the turn boundary aged 0 result(s) (−0 bytes), shrank 0 tool-call argument(s) (−0 bytes), and deduped 0 duplicate result(s) (−0 bytes)

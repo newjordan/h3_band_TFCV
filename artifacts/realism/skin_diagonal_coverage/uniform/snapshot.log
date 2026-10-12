@@ -1,0 +1,34 @@
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+done 0 frames
+{
+  "status": "complete",
+  "hand_scale": 1.0,
+  "candidate_exported": false,
+  "records": [
+    {
+      "context": "diagnostic.anim_frame0",
+      "frame": 0,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/uniform/diagnostic.anim.json",
+      "source_sha256": "984d967104ad852db4574f7dfe736e6aea8d4e0f90c117773024db2c14501aa7",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/uniform/frame0.npz",
+      "mesh_sha256": "0d6ae292292256f3796c63642a8574bbc4ab64141d1c0c06e179c9ccbd373267",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    }
+  ],
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/skin_diagonal_coverage/uniform/diagnostic.anim.json": "984d967104ad852db4574f7dfe736e6aea8d4e0f90c117773024db2c14501aa7",
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/hand_order_snapshot.py": "0aaad9c6bc452ef02b9708143af983fd24e9648422de20ed27e36296dcda20e5"
+  },
+  "scope": "Matched actual skin snapshots only; no full trajectory acceptance",
+  "source_unchanged_during_run": true
+}
+Blender 4.0.2
+
+Blender quit

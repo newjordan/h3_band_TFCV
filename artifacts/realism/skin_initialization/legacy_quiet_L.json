@@ -1,0 +1,2115 @@
+{
+  "accepted": false,
+  "scope": "one hand pose; instrument skin and same-hand surface intersections, proxy finger spacing, two-sided joint/wrist speed when neighbors supplied, fixed shoulders; no interhand/body/continuous-time proof",
+  "trajectory_validated": false,
+  "optimizer_success": false,
+  "initial_penetration_mm": 1.6794225872177222,
+  "final_penetration_mm": 7.9442780085989195,
+  "triangle_intersections": 7550,
+  "wrist_displacement_mm": [
+    -34.99999999999999,
+    20.31176199512119,
+    -25.261450238170166
+  ],
+  "maximum_joint_speed_rad_s": 12.0,
+  "arm_length_error_mm": 5.551115123125783e-14,
+  "configuration_bounds_violation": 0.0,
+  "feasibility_iterations": 80,
+  "initialization": "bounded supplied seed",
+  "proxy_self_clearance_mm": -0.001956321679236206,
+  "anchors": [
+    {
+      "finger": 3,
+      "pitch": 61,
+      "top_gap_mm": -0.6094138483683561,
+      "placement_error_mm": 34.217761000551505,
+      "contact_depth_mm": 119.2177610005515,
+      "requested_depth_mm": 85.0,
+      "placement_prior": {
+        "kind": "black",
+        "fallback": false,
+        "samples": 25946,
+        "desired_depth_mm": 85.0,
+        "achieved_depth_mm": 85.0,
+        "depth_iqr_mm": [
+          73.0,
+          110.0
+        ],
+        "finite_surface_adjustment_mm": 0.0,
+        "component": "key61",
+        "reference_scope": "pooled MANO fingertip depth mapped to actual skin, not subject/per-key force data"
+      },
+      "tangential_placement_hard": false,
+      "finite_key_components": "union",
+      "exposed_top_support": false
+    },
+    {
+      "finger": 5,
+      "pitch": 49,
+      "top_gap_mm": 1.11127115233659,
+      "placement_error_mm": 16.912622353604355,
+      "contact_depth_mm": 63.91976501192401,
+      "requested_depth_mm": 74.0,
+      "placement_prior": {
+        "kind": "black",
+        "fallback": false,
+        "samples": 20320,
+        "desired_depth_mm": 74.0,
+        "achieved_depth_mm": 74.0,
+        "depth_iqr_mm": [
+          67.0,
+          82.0
+        ],
+        "finite_surface_adjustment_mm": 0.0,
+        "component": "key49",
+        "reference_scope": "pooled MANO fingertip depth mapped to actual skin, not subject/per-key force data"
+      },
+      "tangential_placement_hard": false,
+      "finite_key_components": "union",
+      "exposed_top_support": false
+    }
+  ],
+  "history": [
+    {
+      "pass_index": 0,
+      "optimizer_success": false,
+      "message": "Positive directional derivative for linesearch",
+      "iterations": 53,
+      "active_vertices": 112,
+      "triangle_witnesses_added": 7550,
+      "triangle_constraint_mode": "sat",
+      "active_triangle_constraints": 7550,
+      "feasibility_seed_evaluations": 80,
+      "feasibility_seed_constraint_minimum": -10.07262235360436,
+      "candidate_source": "bounded feasibility seed",
+      "minimum_clearance_mm": -7.9442780085989195,
+      "constraint_minimum_mm": -10.07262235360436,
+      "triangle_intersections": 7550,
+      "skin_self_intersections": 0,
+      "active_skin_pair_constraints": 70,
+      "skin_pair_witnesses": {
+        "mode": "legacy",
+        "triangulations": 1,
+        "discovered_pairs": 70,
+        "constrained_pairs": 70,
+        "incident_interior_pairs": 0,
+        "nonincident_full_pairs": 70,
+        "barycentric_inset": null,
+        "incident_margin_minimum_mm": null,
+        "incident_margin_maximum_mm": null,
+        "clearance_certificate": false,
+        "scope": "Optimization witnesses only; full untrimmed both-diagonal audit remains mandatory"
+      }
+    },
+    {
+      "pass_index": 1,
+      "optimizer_success": false,
+      "message": "Inequality constraints incompatible",
+      "iterations": 32,
+      "active_vertices": 2466,
+      "triangle_witnesses_added": 7550,
+      "triangle_constraint_mode": "sat",
+      "active_triangle_constraints": 7550,
+      "feasibility_seed_evaluations": 56,
+      "feasibility_seed_constraint_minimum": -10.07262235360436,
+      "candidate_source": "bounded feasibility seed",
+      "minimum_clearance_mm": -7.9442780085989195,
+      "constraint_minimum_mm": -10.07262235360436,
+      "triangle_intersections": 7550,
+      "skin_self_intersections": 0,
+      "active_skin_pair_constraints": 70,
+      "skin_pair_witnesses": {
+        "mode": "legacy",
+        "triangulations": 1,
+        "discovered_pairs": 70,
+        "constrained_pairs": 70,
+        "incident_interior_pairs": 0,
+        "nonincident_full_pairs": 70,
+        "barycentric_inset": null,
+        "incident_margin_minimum_mm": null,
+        "incident_margin_maximum_mm": null,
+        "clearance_certificate": false,
+        "scope": "Optimization witnesses only; full untrimmed both-diagonal audit remains mandatory"
+      }
+    },
+    {
+      "pass_index": 2,
+      "optimizer_success": false,
+      "message": "Inequality constraints incompatible",
+      "iterations": 32,
+      "active_vertices": 2466,
+      "triangle_witnesses_added": 7550,
+      "triangle_constraint_mode": "sat",
+      "active_triangle_constraints": 7550,
+      "feasibility_seed_evaluations": 56,
+      "feasibility_seed_constraint_minimum": -10.07262235360436,
+      "candidate_source": "bounded feasibility seed",
+      "minimum_clearance_mm": -7.9442780085989195,
+      "constraint_minimum_mm": -10.07262235360436,
+      "triangle_intersections": 7550,
+      "skin_self_intersections": 0,
+      "active_skin_pair_constraints": 70,
+      "skin_pair_witnesses": {
+        "mode": "legacy",
+        "triangulations": 1,
+        "discovered_pairs": 70,
+        "constrained_pairs": 70,
+        "incident_interior_pairs": 0,
+        "nonincident_full_pairs": 70,
+        "barycentric_inset": null,
+        "incident_margin_minimum_mm": null,
+        "incident_margin_maximum_mm": null,
+        "clearance_certificate": false,
+        "scope": "Optimization witnesses only; full untrimmed both-diagonal audit remains mandatory"
+      }
+    },
+    {
+      "pass_index": 3,
+      "optimizer_success": false,
+      "message": "Inequality constraints incompatible",
+      "iterations": 32,
+      "active_vertices": 2466,
+      "triangle_witnesses_added": 7550,
+      "triangle_constraint_mode": "sat",
+      "active_triangle_constraints": 7550,
+      "feasibility_seed_evaluations": 56,
+      "feasibility_seed_constraint_minimum": -10.07262235360436,
+      "candidate_source": "bounded feasibility seed",
+      "minimum_clearance_mm": -7.9442780085989195,
+      "constraint_minimum_mm": -10.07262235360436,
+      "triangle_intersections": 7550,
+      "skin_self_intersections": 0,
+      "active_skin_pair_constraints": 70,
+      "skin_pair_witnesses": {
+        "mode": "legacy",
+        "triangulations": 1,
+        "discovered_pairs": 70,
+        "constrained_pairs": 70,
+        "incident_interior_pairs": 0,
+        "nonincident_full_pairs": 70,
+        "barycentric_inset": null,
+        "incident_margin_minimum_mm": null,
+        "incident_margin_maximum_mm": null,
+        "clearance_certificate": false,
+        "scope": "Optimization witnesses only; full untrimmed both-diagonal audit remains mandatory"
+      }
+    }
+  ],
+  "mesh_self": {
+    "surface_intersection_clear": true,
+    "unexpected_surface_intersections": 0,
+    "degenerate_triangles": 0,
+    "triangulations": [
+      {
+        "surface_intersection_clear": true,
+        "unexpected_surface_intersections": 0,
+        "pairs": [],
+        "kinds": {},
+        "degenerate_triangles": 0,
+        "candidate_pairs": 404747,
+        "expected_shared_features": 393520,
+        "witnesses": [],
+        "complete_mesh_clearance_proven": false,
+        "exclusions": [
+          "volume containment",
+          "positive minimum distance",
+          "other geometry",
+          "continuous time"
+        ]
+      },
+      {
+        "surface_intersection_clear": true,
+        "unexpected_surface_intersections": 0,
+        "pairs": [],
+        "kinds": {},
+        "degenerate_triangles": 0,
+        "candidate_pairs": 404559,
+        "expected_shared_features": 393454,
+        "witnesses": [],
+        "complete_mesh_clearance_proven": false,
+        "exclusions": [
+          "volume containment",
+          "positive minimum distance",
+          "other geometry",
+          "continuous time"
+        ]
+      }
+    ],
+    "complete_mesh_clearance_proven": false
+  },
+  "mesh_self_constraints_enabled": true,
+  "skin_pair_witnesses": {
+    "mode": "legacy",
+    "triangulations": 1,
+    "discovered_pairs": 70,
+    "constrained_pairs": 70,
+    "incident_interior_pairs": 0,
+    "nonincident_full_pairs": 70,
+    "barycentric_inset": null,
+    "incident_margin_minimum_mm": null,
+    "incident_margin_maximum_mm": null,
+    "clearance_certificate": false,
+    "scope": "Optimization witnesses only; full untrimmed both-diagonal audit remains mandatory"
+  },
+  "contact_objective": "actual anchor skin for held fingers; source pads for free fingers",
+  "human_form": {
+    "weight": 4.0,
+    "before": {
+      "cost": 2.1064473729442734,
+      "angles_deg": [
+        [
+          9.594279061872173,
+          32.426843408190145,
+          1.5485752344014625
+        ],
+        [
+          -2.7416645154643664,
+          66.82932332755402,
+          1.54242182961417
+        ],
+        [
+          9.69126586570211,
+          29.478899351312844,
+          1.0070876938525763
+        ],
+        [
+          22.59890913466527,
+          24.990146035428904,
+          -1.133441194694206
+        ]
+      ],
+      "target_iqr_deg": [
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            2.2550802368914304,
+            17.448592905357792,
+            -6.284563344692932
+          ],
+          [
+            20.01614527076732,
+            38.637648648469174,
+            6.914866553882304
+          ]
+        ],
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            1.248002657031921,
+            17.566999687600433,
+            -6.040000645244133
+          ],
+          [
+            18.78000326138606,
+            39.08399882236813,
+            7.341998873071718
+          ]
+        ]
+      ],
+      "target_median_deg": [
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          10.407022382209124,
+          27.44056967896301,
+          -0.10728420623157964
+        ],
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          9.28200296820479,
+          27.666999402597167,
+          0.2669990125066038
+        ]
+      ],
+      "outside_iqr": 3,
+      "maximum_iqr_excess_deg": 28.191674679084848,
+      "source_sha256": "9103204c6a9a643569fa6bb2864959fc0f86c7e684719b025d054a3abd3abfd8",
+      "scope": "soft pooled phase prior for fingers 2\u20135; no realism acceptance"
+    },
+    "numerical_iterate": {
+      "cost": 2.1745788330654108,
+      "angles_deg": [
+        [
+          15.810457093770449,
+          38.739446845116156,
+          1.8463723127375637
+        ],
+        [
+          -4.1567202253744675,
+          33.48553146641436,
+          1.636468460630467
+        ],
+        [
+          -1.3889360115035563,
+          17.749756949194825,
+          22.716412580686555
+        ],
+        [
+          4.6167250123210435,
+          9.469470273239994,
+          -5.5384928073429105
+        ]
+      ],
+      "target_iqr_deg": [
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            2.2550802368914304,
+            17.448592905357792,
+            -6.284563344692932
+          ],
+          [
+            20.01614527076732,
+            38.637648648469174,
+            6.914866553882304
+          ]
+        ],
+        [
+          [
+            1.248,
+            17.567,
+            -6.04
+          ],
+          [
+            18.78,
+            39.084,
+            7.342
+          ]
+        ],
+        [
+          [
+            1.248002657031921,
+            17.566999687600433,
+            -6.040000645244133
+          ],
+          [
+            18.78000326138606,
+            39.08399882236813,
+            7.341998873071718
+          ]
+        ]
+      ],
+      "target_median_deg": [
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          10.407022382209124,
+          27.44056967896301,
+          -0.10728420623157964
+        ],
+        [
+          9.282,
+          27.667,
+          0.267
+        ],
+        [
+          9.28200296820479,
+          27.666999402597167,
+          0.2669990125066038
+        ]
+      ],
+      "outside_iqr": 4,
+      "maximum_iqr_excess_deg": 15.374412580686556,
+      "source_sha256": "9103204c6a9a643569fa6bb2864959fc0f86c7e684719b025d054a3abd3abfd8",
+      "scope": "soft pooled phase prior for fingers 2\u20135; no realism acceptance"
+    },
+    "acceptance_scope": "soft guidance only; no human naturalness pass"
+  },
+  "orientation_temporal_bounds_available": true,
+  "maximum_wrist_angular_speed_rad_s": 5.137120992264897,
+  "maximum_elbow_plane_speed_rad_s": 0.9772764604115087,
+  "candidate_exported": false,
+  "numerical_iterate": {
+    "solver_coordinates": [
+      -34.99999999999999,
+      20.311761995121195,
+      -25.261450238170166,
+      -0.052301294246402126,
+      -0.25729912852821607,
+      0.20741819261127348,
+      0.2923006669617724,
+      0.4166943170064624,
+      -0.16304014831917205,
+      -0.2985906113569036,
+      0.15225277040896712,
+      0.058604229769644745,
+      0.47014930258582854,
+      -0.08214955255347935,
+      -0.43316316817681705,
+      -0.34906585039886584,
+      0.47475209069304497,
+      -0.08726646259971646,
+      -0.3116441835704968,
+      -0.2885354538255065,
+      0.17823334610410096,
+      0.288718043358389,
+      0.35561798472247386,
+      -0.22160906282716164,
+      5.862560457021396e-29,
+      -0.08726646259971646
+    ],
+    "translation_units": "mm offset from source root",
+    "rotation_units": "rad rotation vector relative to source root",
+    "joint_units": "rad",
+    "side": "L",
+    "hand_scale": 1.0,
+    "scope": "Unvalidated diagnostic state for independent reconstruction; not a pose or animation candidate"
+  },
+  "schema": "actual-skin-initialization/v1",
+  "cell": "legacy_quiet",
+  "side": "L",
+  "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_legacy/internal.anim.json",
+  "source_sha256": "3acb72da1ca1bd44029a1ed1ebcb1a223df72ec18dd5bbbbbf67c252a601780b",
+  "frame": 0,
+  "absolute_time": 316.9,
+  "input_sha256": {
+    "artifacts/realism/performance_source_v19/notes.json": "175114790f34de351c4cbd4b0ea5a617b4f67ef82ff7482d7840ebd36d888051",
+    "artifacts/realism/physical_key_actual_legacy/internal.anim.json": "3acb72da1ca1bd44029a1ed1ebcb1a223df72ec18dd5bbbbbf67c252a601780b",
+    "blockout/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "blockout/cameras.py": "2a2de2c37a0764c37d0d96c35de4bd7304bd74bf31b6964918a6cd90b290e2bf",
+    "blockout/contact.py": "8a21b18e142119654523ac8b0121fbe88f91d5d7d5e0731e2762b325edbe6689",
+    "blockout/drum_preview.py": "325f5476592c97d5a2ede444c5e5fd9650cd8d5ec1e26baeafe9ca5a8ba7a347",
+    "blockout/drums.py": "67e84479761785a8aa1e71df199c3213b244911589c9b43e0f9a2cf12ea7c599",
+    "blockout/dynamics.py": "90436446a1600f3554f18710362ccfdcf0883c8e93d165d8b75fd457803f0b6e",
+    "blockout/eval_suite.py": "db2a40d27a356c7812b92dab403cb9f57fc983bbcca4e862e5a16ac2fbf3a597",
+    "blockout/export_skin_bind.py": "ca0282aad56c5ab93e0ac66eb5b12093dd245f1528e74d18891aed21600d3d51",
+    "blockout/feeling.py": "be20a7ef47da6cbaa1d4df587183f6358efe603f142e2edf6d33a572cb05de6e",
+    "blockout/furelise/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blockout/furelise/calibrate.py": "e971543d7126aa92d1f5aef9c71c94850d50c06aac585542cfc4dbd20c894c68",
+    "blockout/furelise/compare.py": "cd45c5f033c93c262d45e30fb6e261479542990c15ce822bafff674892c4c879",
+    "blockout/furelise/load.py": "da485c9a21a97ab9071c560fa62f82cfcb0e64db9d202ff71537fa8b32ed5b94",
+    "blockout/furelise/ref.py": "d8e77abaef0f753525a67014803fb67dc38cc466ab574dc2064ae5b28929fb81",
+    "blockout/furelise/wristmodel.py": "8401b273adf77d3aa47df5e201a0c18c06e81f48c492eefc0f335c536800a2a9",
+    "blockout/h3_lock.py": "e0e54ef35def5c4303d07d4455439ffa152eb44b15de1064b71e5778346a6d8b",
+    "blockout/hand_model/mpfb_hands.json": "4b821ebb3b6a714eaa3321909ae3cb5026e85f989e93a6f0ffc830a4470459e1",
+    "blockout/hand_model/mpfb_make_hand.py": "e5d230d524e1f3b67667561222545dbe0be38fd6be786f452b9950fb33448acd",
+    "blockout/hand_model/skeleton.json": "bb5cd7c817474096cd272255555744a5a760f66cec754e9c107f4a44e7dc6a30",
+    "blockout/hand_model/skin_bind.npz": "9ba727f8ae6d07747907becbb7f3dfbf3ea7103397bf30103c84f1661c406f63",
+    "blockout/human_ref.json": "a9f6a75c0945a0fc795378ac656993b209ae4f02ac4c28e996da50853b40cbe2",
+    "blockout/human_score.py": "49613248f54a67861049c10b617de16e34212e311e9f29d18a18029e5dd33768",
+    "blockout/key_actions.py": "ab477ef7d24de2326a3b68745818706a8948b0f6e5b53c6a5e2887b68b78528a",
+    "blockout/key_shapes.py": "e759a83ea02f740e34c3e7ba7ae42fac0ac1704268c55765eba44a08c6f3416e",
+    "blockout/mesh_contact.py": "c715512f991cbcff07a6fd6c814ac992285eb1f6f8f8e9a25a050e949e2557d7",
+    "blockout/mesh_self.py": "7ba8eb431bd735dba3fcca81c05787d01bfe999418c24da82499aa0657d17715",
+    "blockout/midi.py": "c85b4e21384f2089760cca40498da0b92a8b468b56701e985cb50d38dbaa911e",
+    "blockout/performance_windows.py": "6ab6c9808584f308a2b23c03f2fea5c3f85418dc5a671a72491967bd100419de",
+    "blockout/performer.py": "1f6a9d7b286ead83e8f6d2fd44832df186fe59715781fdd4b028df55f5f14aa6",
+    "blockout/piano.py": "091e2fd31be83c351016e994d982bc1e7e3c209245269918d09463f4a3fcb4ed",
+    "blockout/piano_geometry.py": "1ed0f12bf5670efed7ed09951d08ab5051cf35a858335f443e5d52f9517db8fe",
+    "blockout/review.py": "9949e6f9ffbf97851d3e8d040c16c342f651cf135300139cc0c4d3c96231cc79",
+    "blockout/rig/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blockout/rig/calibrate.py": "9152d8e517a133a1923830d821287a6db15afab1684f3e4cc82703b652274174",
+    "blockout/rig/comfort.json": "87b67639e332d949f30d408372d145b04c9b3e0124f835de37dbc2d37a84683e",
+    "blockout/rig/comfort_mediapipe.json": "c05a19ca5e6e2345eb81af8963cd8dd20b3143279a83ec4d5696eb302cede0e0",
+    "blockout/rig/composure.py": "45bfa090b7ff6d00f0d5bd8afd94dbf1373d4a560774d3503be7a2f39f7d3a5e",
+    "blockout/rig/contact_placement.py": "d7efc09d0a473bd77d139b1b5f796d9c7f93dbfe0b34f032e1d257acf993bd38",
+    "blockout/rig/export_skeleton.py": "a8c921697534d07742e4d96739cd2e3b837f0cc298f8270c33ba380faa53fb7b",
+    "blockout/rig/furelise_cal.json": "2cb7a3414ad84bf86f1599eeff0b72f05b73ab81b1cb8192d1f00123d74d3c68",
+    "blockout/rig/furelise_wrist.json": "506e82ca12775800f1c7f4b74aadaf0376c16ce3772c04d338774a3f2bb7ee90",
+    "blockout/rig/hand.py": "f2bb6d40f408cac7a899e7f96396b23cf46d8de83ab92e500b3e29d0edcee251",
+    "blockout/rig/hand_order.py": "cab2e739bc0f249f1477a1e2b88d4891357f87748be63bcfde022c43b44dfbc2",
+    "blockout/rig/human_form.py": "0d9dda7a5c8dae90bdf5b22faa16198b38bbd2b9754c66f6cebeb065e4b6266f",
+    "blockout/rig/ik.py": "66601ab94208afe660650249c8f3a4b1dc63fec0d477a5bf58e52830d3dd5132",
+    "blockout/rig/motion.py": "14307e67eb288cf5a2d8ef7cec3cd2fc0e62989a7bc5d3f818bb86ace6f6d530",
+    "blockout/rig/orientation.py": "4a7134514a8a93dddcddf7b083124f95e74130eb09534a47df060aa79f38f338",
+    "blockout/rig/path_checkpoint.py": "817f920e582680151d288c3dfab2c480618c5a69f9f5bbebdc27ed2251f321d6",
+    "blockout/rig/path_validation.py": "5a3cdd55b71e9ab988b86cf13dfcf42486c60f20196229090e5ea1d42cd86d53",
+    "blockout/rig/pianist_reference.json": "9103204c6a9a643569fa6bb2864959fc0f86c7e684719b025d054a3abd3abfd8",
+    "blockout/rig/pose_io.py": "8ac310359c9fae6ae46eb3b2a064ae41b560d98edf5c616fbf04cf8fdd16b416",
+    "blockout/rig/skeleton.py": "cefd3f45852b18e89703813ee362dec0f2a84a9ba0fd610d1ac68b479be3921d",
+    "blockout/rig/skin_contact.py": "24c7c9068811c7a9846dd6386f3e8c3d34fb3ff0f3a28b146a6b8964bbc26ca5",
+    "blockout/rig/skin_pair_constraints.py": "b06df5e1df76cb9a41e35cd03f0a5266e89a9e4b0db7806b4eac94bef946de89",
+    "blockout/rig_qa.py": "c42e03b2065c396b258148290e0d7170b27bfd9b2f002610cca01a777802c9d1",
+    "blockout/sampler.py": "c8b4870a9fa955be6f030a6820caa7c7f2cc5c79cd04794abeeb4aa2502119cb",
+    "blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "blockout/skin_contacts.py": "f08212c02291f6c876abe91eac683184eee14baae81f042daef4afd18f26b280",
+    "blockout/subdivision.py": "cfe964d593e7011557f9e2b53592d576a0c96f3751c3322bc223593bf72b550a",
+    "blockout/suite.py": "db9a299d6cfa4caf9bd52b3e58abdf0b96bca9c7ec633f18fbfb2da72472221f",
+    "blockout/synth.py": "7e9321f2931e26ffc5911450559fa0485210d60cdc3c1269fb161e7ae381abe1",
+    "blockout/triangle_contact.py": "2e52ae065af1d867bacec0ee29c064a598a2df31910cc004e8db4d1b50a25f2d",
+    "lab/SKIN_INITIALIZATION_PROTOCOL.md": "5cd119ddb987e117e3782a717bd326f08b4144b44de063e512fe663722b1437b",
+    "lab/research_skin_initialization_task.txt": "337732c7045ab480d7dc281a40eb211492773a5313803b3ad8d5f37ccd29563c",
+    "lab/run_skin_initialization.py": "070e38161a04f5ad90658482ae43e179a0baa279eefd0f8122970b520a3b0516",
+    "lab/skin_initialization_graph.toml": "aa42b6be6ce98d576b16d7070676635414a135cce4fa71a60b548a8d0fec5a2d",
+    "lab/skin_initialization_trial.py": "478a9d81f30f4520cc5b995bae35e39df405b46cc3b3526c054a5b3a9a24bb62"
+  },
+  "source_unchanged_during_run": true,
+  "source_self_audit": {
+    "surface_intersection_clear": false,
+    "unexpected_surface_intersections": 105,
+    "degenerate_triangles": 0,
+    "triangulations": [
+      {
+        "surface_intersection_clear": false,
+        "unexpected_surface_intersections": 103,
+        "pairs": [
+          [
+            24721,
+            54047
+          ],
+          [
+            24751,
+            25913
+          ],
+          [
+            24751,
+            54047
+          ],
+          [
+            24748,
+            54041
+          ],
+          [
+            24748,
+            25912
+          ],
+          [
+            52849,
+            54047
+          ],
+          [
+            25913,
+            52876
+          ],
+          [
+            52876,
+            54041
+          ],
+          [
+            23697,
+            24723
+          ],
+          [
+            24723,
+            24731
+          ],
+          [
+            24723,
+            51825
+          ],
+          [
+            24723,
+            52859
+          ],
+          [
+            23703,
+            25889
+          ],
+          [
+            25892,
+            51831
+          ],
+          [
+            23703,
+            25895
+          ],
+          [
+            25895,
+            51831
+          ],
+          [
+            23703,
+            25919
+          ],
+          [
+            24724,
+            25919
+          ],
+          [
+            24727,
+            25919
+          ],
+          [
+            25919,
+            52852
+          ],
+          [
+            25919,
+            52853
+          ],
+          [
+            52851,
+            52859
+          ],
+          [
+            23703,
+            54017
+          ],
+          [
+            51831,
+            54020
+          ],
+          [
+            23703,
+            54023
+          ],
+          [
+            24727,
+            54047
+          ],
+          [
+            52855,
+            54047
+          ],
+          [
+            24722,
+            52859
+          ],
+          [
+            23697,
+            54021
+          ],
+          [
+            51831,
+            54021
+          ],
+          [
+            24722,
+            24730
+          ],
+          [
+            4190,
+            31789
+          ],
+          [
+            4576,
+            31780
+          ],
+          [
+            3654,
+            32711
+          ],
+          [
+            4179,
+            31790
+          ],
+          [
+            31789,
+            32318
+          ],
+          [
+            31790,
+            32307
+          ],
+          [
+            3661,
+            4189
+          ],
+          [
+            4189,
+            31790
+          ],
+          [
+            4189,
+            31789
+          ],
+          [
+            4581,
+            31790
+          ],
+          [
+            31790,
+            32709
+          ],
+          [
+            3650,
+            4581
+          ],
+          [
+            4581,
+            31778
+          ],
+          [
+            4582,
+            31778
+          ],
+          [
+            3654,
+            4582
+          ],
+          [
+            31778,
+            32710
+          ],
+          [
+            3660,
+            4190
+          ],
+          [
+            5174,
+            33349
+          ],
+          [
+            5175,
+            33348
+          ],
+          [
+            5220,
+            33303
+          ],
+          [
+            5174,
+            5220
+          ],
+          [
+            5175,
+            5220
+          ],
+          [
+            5173,
+            33349
+          ],
+          [
+            33302,
+            33349
+          ],
+          [
+            5173,
+            5221
+          ],
+          [
+            33307,
+            33355
+          ],
+          [
+            5227,
+            33307
+          ],
+          [
+            5221,
+            33307
+          ],
+          [
+            5179,
+            5227
+          ],
+          [
+            5224,
+            33305
+          ],
+          [
+            32313,
+            33348
+          ],
+          [
+            32313,
+            32776
+          ],
+          [
+            4648,
+            32313
+          ],
+          [
+            33305,
+            33352
+          ],
+          [
+            32319,
+            32776
+          ],
+          [
+            4185,
+            32776
+          ],
+          [
+            16950,
+            44944
+          ],
+          [
+            3660,
+            32319
+          ],
+          [
+            3655,
+            4576
+          ],
+          [
+            5224,
+            16951
+          ],
+          [
+            5176,
+            5227
+          ],
+          [
+            5227,
+            33304
+          ],
+          [
+            16951,
+            16996
+          ],
+          [
+            16996,
+            45079
+          ],
+          [
+            31783,
+            32711
+          ],
+          [
+            5176,
+            33352
+          ],
+          [
+            44944,
+            45074
+          ],
+          [
+            44944,
+            45079
+          ],
+          [
+            16951,
+            45124
+          ],
+          [
+            16819,
+            45074
+          ],
+          [
+            16819,
+            16946
+          ],
+          [
+            16946,
+            44947
+          ],
+          [
+            44947,
+            45075
+          ],
+          [
+            16818,
+            45075
+          ],
+          [
+            3655,
+            32705
+          ],
+          [
+            3655,
+            4577
+          ],
+          [
+            4577,
+            31783
+          ],
+          [
+            44958,
+            45075
+          ],
+          [
+            16957,
+            44958
+          ],
+          [
+            44958,
+            45147
+          ],
+          [
+            16830,
+            45147
+          ],
+          [
+            44958,
+            45085
+          ],
+          [
+            17019,
+            44958
+          ],
+          [
+            16826,
+            17018
+          ],
+          [
+            17018,
+            44954
+          ],
+          [
+            44954,
+            45147
+          ],
+          [
+            16826,
+            45146
+          ],
+          [
+            16826,
+            17022
+          ],
+          [
+            16827,
+            45150
+          ],
+          [
+            17022,
+            44955
+          ],
+          [
+            16827,
+            17021
+          ],
+          [
+            16827,
+            17022
+          ]
+        ],
+        "kinds": {
+          "surface_crossing": 103
+        },
+        "degenerate_triangles": 0,
+        "candidate_pairs": 405478,
+        "expected_shared_features": 393516,
+        "witnesses": [
+          {
+            "first_triangle": 24721,
+            "second_triangle": 54047,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.08418774640885296,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05239235751159158,
+              -0.04412234260122081,
+              0.04072109675257111
+            ]
+          },
+          {
+            "first_triangle": 24751,
+            "second_triangle": 25913,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.4385823090539221,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.052501201628562394,
+              -0.04489127175257714,
+              0.04072981299537705
+            ]
+          },
+          {
+            "first_triangle": 24751,
+            "second_triangle": 54047,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.005228914002221393,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05246002048898235,
+              -0.04467324189028535,
+              0.040729202479353535
+            ]
+          },
+          {
+            "first_triangle": 24748,
+            "second_triangle": 54041,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.08199303397980555,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.052379073477875286,
+              -0.044851890514599084,
+              0.04031694313212998
+            ]
+          },
+          {
+            "first_triangle": 24748,
+            "second_triangle": 25912,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 1,
+            "intersection_length_mm": 0.6153734438607686,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05228869676743515,
+              -0.04461954727817853,
+              0.04021798799248301
+            ]
+          },
+          {
+            "first_triangle": 52849,
+            "second_triangle": 54047,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.5473574803534467,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05242714467480847,
+              -0.044400069177785495,
+              0.04070457296792694
+            ]
+          },
+          {
+            "first_triangle": 25913,
+            "second_triangle": 52876,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.18107326624485376,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05256354865141918,
+              -0.04519040977718908,
+              0.040703652618001
+            ]
+          },
+          {
+            "first_triangle": 52876,
+            "second_triangle": 54041,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.6274479854608959,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05248000317892991,
+              -0.04504314729212629,
+              0.04049207961061084
+            ]
+          },
+          {
+            "first_triangle": 23697,
+            "second_triangle": 24723,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.07584074818497236,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05114588343619852,
+              -0.04130256892176963,
+              0.038259012916048205
+            ]
+          },
+          {
+            "first_triangle": 24723,
+            "second_triangle": 24731,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.01680261836921218,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05108614968716453,
+              -0.04130577238740056,
+              0.03827016286187829
+            ]
+          },
+          {
+            "first_triangle": 24723,
+            "second_triangle": 51825,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.017260155474393187,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.051101714641534284,
+              -0.04130934474633972,
+              0.03827147479234616
+            ]
+          },
+          {
+            "first_triangle": 24723,
+            "second_triangle": 52859,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.05247752854908839,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05105301854290522,
+              -0.04130103897167502,
+              0.03827011730727917
+            ]
+          },
+          {
+            "first_triangle": 23703,
+            "second_triangle": 25889,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.2040848355143428,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05217596700590242,
+              -0.04205619680575666,
+              0.03965773223225892
+            ]
+          },
+          {
+            "first_triangle": 25892,
+            "second_triangle": 51831,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.3026344885773817,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05147725918351674,
+              -0.041413138512893286,
+              0.03850141847119046
+            ]
+          },
+          {
+            "first_triangle": 23703,
+            "second_triangle": 25895,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.2628295413309007,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.0518495906957985,
+              -0.04171351447641214,
+              0.03906480136371412
+            ]
+          },
+          {
+            "first_triangle": 25895,
+            "second_triangle": 51831,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.42295952254367664,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05171883058933211,
+              -0.04156186509216196,
+              0.03878656540507634
+            ]
+          },
+          {
+            "first_triangle": 23703,
+            "second_triangle": 25919,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.3772203927280963,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05229473916748041,
+              -0.04235533250740708,
+              0.04014864613294271
+            ]
+          },
+          {
+            "first_triangle": 24724,
+            "second_triangle": 25919,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.5999484683246515,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.052340155836916785,
+              -0.04272735448237332,
+              0.040440132886801594
+            ]
+          },
+          {
+            "first_triangle": 24727,
+            "second_triangle": 25919,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.44146811554021625,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.052360616719285394,
+              -0.043562592287886254,
+              0.04073241935967761
+            ]
+          },
+          {
+            "first_triangle": 25919,
+            "second_triangle": 52852,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.3790715117118566,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.052362793192170784,
+              -0.0431701942494939,
+              0.04064748240294186
+            ]
+          }
+        ],
+        "complete_mesh_clearance_proven": false,
+        "exclusions": [
+          "volume containment",
+          "positive minimum distance",
+          "other geometry",
+          "continuous time"
+        ]
+      },
+      {
+        "surface_intersection_clear": false,
+        "unexpected_surface_intersections": 105,
+        "pairs": [
+          [
+            24748,
+            54041
+          ],
+          [
+            24751,
+            54041
+          ],
+          [
+            25912,
+            52876
+          ],
+          [
+            52879,
+            54041
+          ],
+          [
+            25913,
+            52876
+          ],
+          [
+            52876,
+            54041
+          ],
+          [
+            52879,
+            54047
+          ],
+          [
+            24727,
+            25919
+          ],
+          [
+            52855,
+            54047
+          ],
+          [
+            24727,
+            54047
+          ],
+          [
+            24722,
+            52853
+          ],
+          [
+            24722,
+            52859
+          ],
+          [
+            25892,
+            51831
+          ],
+          [
+            25893,
+            51831
+          ],
+          [
+            25895,
+            51831
+          ],
+          [
+            24724,
+            25919
+          ],
+          [
+            24730,
+            52850
+          ],
+          [
+            24731,
+            52850
+          ],
+          [
+            52850,
+            52853
+          ],
+          [
+            52850,
+            52858
+          ],
+          [
+            52850,
+            52859
+          ],
+          [
+            23703,
+            54017
+          ],
+          [
+            51825,
+            54021
+          ],
+          [
+            51831,
+            54021
+          ],
+          [
+            23703,
+            54023
+          ],
+          [
+            51831,
+            54023
+          ],
+          [
+            23700,
+            54047
+          ],
+          [
+            23703,
+            54047
+          ],
+          [
+            24724,
+            54047
+          ],
+          [
+            51828,
+            54047
+          ],
+          [
+            52849,
+            54047
+          ],
+          [
+            52852,
+            54047
+          ],
+          [
+            24723,
+            51825
+          ],
+          [
+            24723,
+            52859
+          ],
+          [
+            51825,
+            52851
+          ],
+          [
+            3661,
+            4190
+          ],
+          [
+            3655,
+            32705
+          ],
+          [
+            31790,
+            32709
+          ],
+          [
+            3662,
+            32709
+          ],
+          [
+            3662,
+            32307
+          ],
+          [
+            3662,
+            32317
+          ],
+          [
+            3661,
+            32317
+          ],
+          [
+            3661,
+            4189
+          ],
+          [
+            31778,
+            32709
+          ],
+          [
+            3655,
+            4577
+          ],
+          [
+            3654,
+            4582
+          ],
+          [
+            4582,
+            31778
+          ],
+          [
+            4581,
+            31778
+          ],
+          [
+            4582,
+            31782
+          ],
+          [
+            3660,
+            4190
+          ],
+          [
+            5173,
+            5221
+          ],
+          [
+            5174,
+            5221
+          ],
+          [
+            5174,
+            5220
+          ],
+          [
+            5175,
+            5220
+          ],
+          [
+            33303,
+            33348
+          ],
+          [
+            5175,
+            33348
+          ],
+          [
+            5173,
+            33349
+          ],
+          [
+            5176,
+            5227
+          ],
+          [
+            33301,
+            33349
+          ],
+          [
+            5176,
+            5224
+          ],
+          [
+            5176,
+            33352
+          ],
+          [
+            32319,
+            32776
+          ],
+          [
+            32313,
+            32776
+          ],
+          [
+            32313,
+            33348
+          ],
+          [
+            16951,
+            45124
+          ],
+          [
+            45079,
+            45124
+          ],
+          [
+            33352,
+            45079
+          ],
+          [
+            3660,
+            4191
+          ],
+          [
+            4191,
+            31788
+          ],
+          [
+            31788,
+            32319
+          ],
+          [
+            3652,
+            4576
+          ],
+          [
+            3654,
+            4583
+          ],
+          [
+            3655,
+            4576
+          ],
+          [
+            3655,
+            4583
+          ],
+          [
+            3655,
+            32711
+          ],
+          [
+            5179,
+            5227
+          ],
+          [
+            16816,
+            16951
+          ],
+          [
+            16951,
+            44944
+          ],
+          [
+            33307,
+            33349
+          ],
+          [
+            5177,
+            33352
+          ],
+          [
+            33305,
+            33352
+          ],
+          [
+            5179,
+            33355
+          ],
+          [
+            33307,
+            33355
+          ],
+          [
+            16816,
+            16950
+          ],
+          [
+            16816,
+            45078
+          ],
+          [
+            16816,
+            45074
+          ],
+          [
+            16818,
+            45075
+          ],
+          [
+            16819,
+            16947
+          ],
+          [
+            16819,
+            45075
+          ],
+          [
+            16819,
+            16946
+          ],
+          [
+            16819,
+            45074
+          ],
+          [
+            44946,
+            45075
+          ],
+          [
+            44958,
+            45075
+          ],
+          [
+            44958,
+            45085
+          ],
+          [
+            44958,
+            45147
+          ],
+          [
+            17019,
+            44958
+          ],
+          [
+            17019,
+            44954
+          ],
+          [
+            17021,
+            44955
+          ],
+          [
+            16826,
+            45146
+          ],
+          [
+            16826,
+            45150
+          ],
+          [
+            44954,
+            45146
+          ],
+          [
+            16827,
+            45150
+          ],
+          [
+            17022,
+            44955
+          ],
+          [
+            17018,
+            44954
+          ],
+          [
+            16827,
+            17022
+          ]
+        ],
+        "kinds": {
+          "surface_crossing": 104,
+          "unshared_contact": 1
+        },
+        "degenerate_triangles": 0,
+        "candidate_pairs": 405359,
+        "expected_shared_features": 393449,
+        "witnesses": [
+          {
+            "first_triangle": 24748,
+            "second_triangle": 54041,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.039028926117948365,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.052408930747736976,
+              -0.0447678220787005,
+              0.04061804204910206
+            ]
+          },
+          {
+            "first_triangle": 24751,
+            "second_triangle": 54041,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.029048650181075976,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05241012322091196,
+              -0.04473383771044443,
+              0.04061660445211707
+            ]
+          },
+          {
+            "first_triangle": 25912,
+            "second_triangle": 52876,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 1,
+            "intersection_length_mm": 2.844056586133638,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05280471647277038,
+              -0.04655416604150227,
+              0.04089957196587227
+            ]
+          },
+          {
+            "first_triangle": 52879,
+            "second_triangle": 54041,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.13056956276489695,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05243544720519887,
+              -0.0446967906496918,
+              0.04067226049026226
+            ]
+          },
+          {
+            "first_triangle": 25913,
+            "second_triangle": 52876,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.6387014810159345,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05238405845136123,
+              -0.0449390274356323,
+              0.040421125324015976
+            ]
+          },
+          {
+            "first_triangle": 52876,
+            "second_triangle": 54041,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.299021170182095,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.052362788351066586,
+              -0.04470824068955396,
+              0.04050063473229583
+            ]
+          },
+          {
+            "first_triangle": 52879,
+            "second_triangle": 54047,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.006617943827280431,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05246116129872755,
+              -0.0446725692887407,
+              0.04073099336694261
+            ]
+          },
+          {
+            "first_triangle": 24727,
+            "second_triangle": 25919,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.13555637494237716,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05253064568062412,
+              -0.04363549714634889,
+              0.040881468855490696
+            ]
+          },
+          {
+            "first_triangle": 52855,
+            "second_triangle": 54047,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.6779881916359676,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.052537592788223675,
+              -0.0440706109757301,
+              0.040902234310351365
+            ]
+          },
+          {
+            "first_triangle": 24727,
+            "second_triangle": 54047,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.04078282360992229,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05253256603036617,
+              -0.04371904332855578,
+              0.04086137949922625
+            ]
+          },
+          {
+            "first_triangle": 24722,
+            "second_triangle": 52853,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.05526894566048528,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05084625652496658,
+              -0.041294175936317165,
+              0.03827707659059415
+            ]
+          },
+          {
+            "first_triangle": 24722,
+            "second_triangle": 52859,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.15164154213911496,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05082637268356132,
+              -0.04126229261039743,
+              0.038181585762615475
+            ]
+          },
+          {
+            "first_triangle": 25892,
+            "second_triangle": 51831,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.37366396843470884,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05149498446911854,
+              -0.04144412668554078,
+              0.038533572916356174
+            ]
+          },
+          {
+            "first_triangle": 25893,
+            "second_triangle": 51831,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.15678895114525473,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.051302130366901205,
+              -0.0413543357455826,
+              0.03838037983684188
+            ]
+          },
+          {
+            "first_triangle": 25895,
+            "second_triangle": 51831,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.5662238090459297,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.051799935145536685,
+              -0.04161930880561288,
+              0.03883526985646768
+            ]
+          },
+          {
+            "first_triangle": 24724,
+            "second_triangle": 25919,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.22688180925801885,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05252176761834314,
+              -0.04346551619596403,
+              0.04084342840441495
+            ]
+          },
+          {
+            "first_triangle": 24730,
+            "second_triangle": 52850,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.033643460055317015,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.050684335372852884,
+              -0.04123375712904616,
+              0.03815660069694778
+            ]
+          },
+          {
+            "first_triangle": 24731,
+            "second_triangle": 52850,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.017734239667722453,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.050697247331968856,
+              -0.04124673101986579,
+              0.03817431873263988
+            ]
+          },
+          {
+            "first_triangle": 52850,
+            "second_triangle": 52853,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 0,
+            "intersection_length_mm": 0.09700623997554829,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05082086193909886,
+              -0.041289878892713114,
+              0.03826921628107715
+            ]
+          },
+          {
+            "first_triangle": 52850,
+            "second_triangle": 52858,
+            "kind": "surface_crossing",
+            "unexpected": true,
+            "shared_vertices": 1,
+            "intersection_length_mm": 0.4755401620868691,
+            "intersection_area_mm2": 0.0,
+            "witness": [
+              0.05056724955604026,
+              -0.04109598365588798,
+              0.03797737913095904
+            ]
+          }
+        ],
+        "complete_mesh_clearance_proven": false,
+        "exclusions": [
+          "volume containment",
+          "positive minimum distance",
+          "other geometry",
+          "continuous time"
+        ]
+      }
+    ],
+    "complete_mesh_clearance_proven": false
+  },
+  "seconds": 217.77802957198583,
+  "hand_scale": 1.0,
+  "source_key_commands": {
+    "80": 0.8228408173874554
+  },
+  "source_held_diagnostic_ids": [
+    1716,
+    1717,
+    1718,
+    1719,
+    1720
+  ],
+  "source_held_diagnostic_pitches": [
+    49,
+    56,
+    61,
+    64,
+    80
+  ],
+  "unassigned_source_held_pitches": [
+    56,
+    64
+  ],
+  "changed_seed_fingers": [
+    1,
+    2,
+    4
+  ],
+  "held_source_compatibility_scope": "Original source gates retained as diagnostic obligations; physical offset meaning unverified",
+  "requested_anchors": [
+    {
+      "finger": 3,
+      "pitch": 61,
+      "vertex": 2582,
+      "target": [
+        0.011750000000000038,
+        0.085,
+        0.012
+      ],
+      "component": "key61",
+      "placement": {
+        "kind": "black",
+        "fallback": false,
+        "samples": 25946,
+        "desired_depth_mm": 85.0,
+        "achieved_depth_mm": 85.0,
+        "depth_iqr_mm": [
+          73.0,
+          110.0
+        ],
+        "finite_surface_adjustment_mm": 0.0,
+        "component": "key61",
+        "reference_scope": "pooled MANO fingertip depth mapped to actual skin, not subject/per-key force data"
+      }
+    },
+    {
+      "finger": 5,
+      "pitch": 49,
+      "vertex": 13285,
+      "target": [
+        -0.15275,
+        0.074,
+        0.012
+      ],
+      "component": "key49",
+      "placement": {
+        "kind": "black",
+        "fallback": false,
+        "samples": 20320,
+        "desired_depth_mm": 74.0,
+        "achieved_depth_mm": 74.0,
+        "depth_iqr_mm": [
+          67.0,
+          82.0
+        ],
+        "finite_surface_adjustment_mm": 0.0,
+        "component": "key49",
+        "reference_scope": "pooled MANO fingertip depth mapped to actual skin, not subject/per-key force data"
+      }
+    }
+  ],
+  "temporal_bounds_enforced": true,
+  "full_performance_accepted": false,
+  "budget": {
+    "iterations": 100,
+    "passes": 4,
+    "feasibility_iterations": 80
+  },
+  "full_starting_state_accepted": false,
+  "source_key_commands_unchanged": true,
+  "initial_surface_evaluation": "Solver initialization after optional seed clipping; source_self_audit is untouched source"
+}

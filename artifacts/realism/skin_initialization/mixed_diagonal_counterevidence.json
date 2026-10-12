@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "source_audit_sha256": "0a397bc22808b0baf09624c5f76561b3f9cddf23addedb3eb6b820c15806075e",
+  "pairs": [
+    {
+      "actual_triangle_pair": [
+        23772,
+        80029
+      ],
+      "cpu_diagonal_choices": [
+        [
+          1
+        ],
+        [
+          0
+        ]
+      ],
+      "cpu_relation": {
+        "kind": "surface_crossing",
+        "unexpected": true,
+        "shared_vertices": 0,
+        "intersection_length_mm": 0.09364580056839918,
+        "intersection_area_mm2": 0.0,
+        "witness": [
+          0.28238865572256433,
+          0.010269319920477533,
+          0.03316485139038575
+        ]
+      },
+      "actual_relation": {
+        "kind": "surface_crossing",
+        "unexpected": true,
+        "shared_vertices": 0,
+        "intersection_length_mm": 0.09408565351426207,
+        "intersection_area_mm2": 0.0,
+        "witness": [
+          0.282389103037051,
+          0.01026938943910017,
+          0.03316468156782854
+        ]
+      }
+    },
+    {
+      "actual_triangle_pair": [
+        23772,
+        23773
+      ],
+      "cpu_diagonal_choices": [
+        [
+          1
+        ],
+        [
+          0
+        ]
+      ],
+      "cpu_relation": {
+        "kind": "surface_crossing",
+        "unexpected": true,
+        "shared_vertices": 1,
+        "intersection_length_mm": 0.536414108745082,
+        "intersection_area_mm2": 0.0,
+        "witness": [
+          0.28226300223434897,
+          0.010225787665763215,
+          0.03345004844100005
+        ]
+      },
+      "actual_relation": {
+        "kind": "surface_crossing",
+        "unexpected": true,
+        "shared_vertices": 1,
+        "intersection_length_mm": 0.5361637550270764,
+        "intersection_area_mm2": 0.0,
+        "witness": [
+          0.28226341002116245,
+          0.010225844088600871,
+          0.03344996164638455
+        ]
+      }
+    },
+    {
+      "actual_triangle_pair": [
+        80028,
+        80029
+      ],
+      "cpu_diagonal_choices": [
+        [
+          1
+        ],
+        [
+          0
+        ]
+      ],
+      "cpu_relation": {
+        "kind": "surface_crossing",
+        "unexpected": true,
+        "shared_vertices": 1,
+        "intersection_length_mm": 1.433780145294902,
+        "intersection_area_mm2": 0.0,
+        "witness": [
+          0.2826851885661104,
+          0.010255872689271379,
+          0.03246128457482657
+        ]
+      },
+      "actual_relation": {
+        "kind": "surface_crossing",
+        "unexpected": true,
+        "shared_vertices": 1,
+        "intersection_length_mm": 1.4335988998476525,
+        "intersection_area_mm2": 0.0,
+        "witness": [
+          0.2826856987999233,
+          0.010255941156364825,
+          0.03246100139627272
+        ]
+      }
+    }
+  ],
+  "precision_is_not_the_cause": true
+}
