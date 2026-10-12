@@ -1,0 +1,31 @@
+{
+  "records": [
+    {
+      "source": "/home/frosty40/h3/rig_realism/lab/physical_key_finish_jobs.py",
+      "executed_archive": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_finish_jobs.executed.py",
+      "executed_sha256": "6f15b39a16b3b2a85ebd9008c4fceccf25a8c9c1b518706abe9576698522bdf6",
+      "current_sha256": "744cd99a8ebe890467fc334da47d7ab2e3e7af50aca0083dc9b8618e254ac19f",
+      "ast_identical": true,
+      "change": "Remove trailing blank line after all jobs completed"
+    },
+    {
+      "source": "/home/frosty40/h3/rig_realism/lab/physical_key_render.py",
+      "executed_archive": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_render.executed.py",
+      "executed_sha256": "06ad47073b5e19134f385fa1bb2217e19c5181fc61f7e1ac33f2d8ad597b8023",
+      "current_sha256": "f72d673a2828f01752bc4cc8a9a788fe931ed14bcd93477065deec5db11f0bc7",
+      "ast_identical": true,
+      "change": "Remove trailing blank line after all jobs completed"
+    },
+    {
+      "source": "/home/frosty40/h3/rig_realism/lab/physical_key_target_control.py",
+      "executed_archive": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_target_control.executed.py",
+      "executed_sha256": "0ac115971fdddf475a1562e758984d8976d22065c7b894189c3219a0a36c46d8",
+      "current_sha256": "1a477d592d4389a6faab728839de16d077eb2a0a39ab35427c82fbd76d01ae64",
+      "ast_identical": true,
+      "change": "Remove trailing blank line after all jobs completed"
+    }
+  ],
+  "numerical_core_unchanged": true,
+  "render_poses_unchanged": true,
+  "full_performance_accepted": false
+}

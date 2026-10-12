@@ -1,5 +1,66 @@
 # Piano-hand lab notebook
 
+## 2026-10-11: explicit physical key holds, source unisons and rejected releases
+
+The two lost performed records are exact original pitch61 unisons across the
+two score tracks, with independently jittered performed onsets 15–18 ms apart.
+Parser evidence verifies all 2,046 suite note-ons are channel0. Experimental
+groups retain both source voices under one physical action; every timing,
+velocity and endpoint difference remains visible. Two shared-strike hypotheses
+yield 2,044 physical proposals representing all 2,046 source voices. This is
+many-to-one accounting, not proof that the jittered soundtrack's two impulses
+were physically played. Original notes and synthesized audio stay unchanged.
+
+The optional key-plan API separates source gates from proposed holds. Strict
+slicing preserves nearby repeats; repair/reuse/reach stages retain requested
+ends; long holds remain targets after eight seconds. Overlapping requests are
+reported rather than silently shortened. Conditional proposals require ideal
+uninterrupted recovered binary sustain and a nearby estimated up for every
+voice. They remain hypotheses, not observed key releases or checkpoint offset
+ground truth. Defaults remain legacy. Eight new tests pass; all184 pass in
+39.452s. Default prepared motion inputs match f544969 in four passages.
+
+Three full-score conditions solve performed318.9–322.9s,24Hz,size1,seed0,
+96visible+48physical warmup poses and unchanged E36 per-frame budgets. Original
+gate support is77/1114 (6.91%) current,229/1114 (20.56%) conservative,
+246/1114 (22.08%) conditional. Key-depth onset checks are18/27,13/27,13/27;
+each has one censored observation window. Proposed assigned holds use different
+denominators:67/101,229/1114,246/840. Whole-score same-finger interval conflicts
+are177/1510/1312; this passage has0/108/53. All144 sampled anatomical/joint-speed,
+root order and exact arm checks remain diagnostic, not nonlinear clearance.
+
+The conditional hypothesis cuts104 requests. Including two unison extensions,
+its106 changed source endpoints keep the old sampler damping parameter for17
+and change it for89. No waveform equivalence or soundtrack replacement occurs.
+Legacy-to-conservative bundles unison grouping, strict slicing/hold persistence
+and long-held selection. Conservative-to-conditional changes release-policy
+input; full-score ownership/fingering recompute. Equal per-frame budgets do
+not imply equal work.
+
+Native graph `piano-physical-key-plan` fails after two verifier rejections,
+654s, four answered attempts, episode `d38aaf9085b5ee3b119e1c7901d5a8a976d89039b625678ba16ce23857ae6f8c`.
+The driver reports unverified performed-offset meaning/clock alignment as its
+objection. Numerical mapping reproduces source bytes/notes; that does not
+establish physical or acoustic offset semantics. Retain the failed graph and
+its substantive response; no rerun or research approval is claimed. The
+conditional arm remains a diagnostic unsupported-offset hypothesis and is
+blocked for adoption, with zero physically validated releases.
+
+Nine independent production Blender level2 surfaces include first warmup and
+visible90/91 in each condition, both quad diagonals, instrument/self/interhand
+checks and finite assigned distal support. Every initial state fails. New
+holds worsen folding/support/penetration; the conditional visible91 reaches
+9.8523mm left-hand key penetration. No full geometry or controller adoption.
+Wider matched grayscale framing retains the unchanged numerical poses and
+original soundtrack in a four-second comparison. Initial cropped-camera
+video/source/metadata and the initial metadata-only control mismatch remain
+archived. The complete6:34 preview stays first on the band site.
+
+Next: feasible actual-skin initialization, playable source-preserving action
+and wrist/contact trajectories, restrained idle form, verified key/foot/force
+mechanics and nonlinear full-body/costume clearance. Drummer is unchanged;
+all twelve stress patterns remain rejected. The complete realism goal is active.
+
 ## 2026-10-11: recovered pedal estimates and explicit source/action lineage
 
 **Progress audit.** The previous turn sealed/published the orientation study

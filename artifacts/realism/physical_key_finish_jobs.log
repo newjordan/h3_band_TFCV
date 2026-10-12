@@ -1,0 +1,57 @@
+{
+  "legacy": {
+    "onsets": 18,
+    "original_hold_coverage": 0.06912028725314183,
+    "requested_hold_coverage": 0.6633663366336634,
+    "releases": null,
+    "conflicts": 177
+  },
+  "conservative": {
+    "onsets": 13,
+    "original_hold_coverage": 0.20556552962298025,
+    "requested_hold_coverage": 0.20556552962298025,
+    "releases": {
+      "conditional": 0,
+      "conservative": 2044,
+      "shared": 2
+    },
+    "conflicts": 1510
+  },
+  "conditional": {
+    "onsets": 13,
+    "original_hold_coverage": 0.22082585278276481,
+    "requested_hold_coverage": 0.29285714285714287,
+    "releases": {
+      "conditional": 104,
+      "conservative": 1940,
+      "shared": 2
+    },
+    "conflicts": 1312
+  }
+}
+{"actual_skin_complete": "legacy", "reused_identical_completed_source": true}
+[aist#3:0/pcm_s16le @ 0xabf80a0a9d20] Guessed Channel Layout: stereo
+{
+  "status": "encoded",
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/physical_key_render.py": "b762f2739595870cdcc76c0025d70655d75ad59829c42ba80e8d48e5c8645cbb"
+  },
+  "source_unchanged_during_run": true,
+  "video": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_comparison.mp4",
+  "video_sha256": "700a9e6ba63cfa517c2b06e74ca1a2f3192c1666624d33752638004f650f9595",
+  "frames": 48,
+  "fps": 12,
+  "duration_seconds": 4.0,
+  "resolution": [
+    1536,
+    288
+  ],
+  "start": 318.9,
+  "gpu_used": false,
+  "full_performance_accepted": false
+}
+{"actual_skin_complete": "conservative", "snapshots": 3, "initial_surface_checked": true, "full_warmup_skin_accepted": false}
+{"actual_skin_complete": "conditional", "snapshots": 3, "initial_surface_checked": true, "full_warmup_skin_accepted": false}
+Complete numerical diagnostics, actual skin and render; visual review/sealing still required

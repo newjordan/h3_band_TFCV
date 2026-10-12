@@ -1,0 +1,54 @@
+{
+  "status": "complete",
+  "hand_scale": 1.0,
+  "candidate_exported": false,
+  "records": [
+    {
+      "context": "internal.anim_frame0",
+      "frame": 0,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_conservative/internal.anim.json",
+      "source_sha256": "de6b7cac70a3be0a7f8345870280254e1a1fe9d4929d8c6379f2450c7cd896db",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_conservative/frame0.npz",
+      "mesh_sha256": "36e792c26f7b4f5acf40748b4e3ba0ffec8bb74f6be049df74e4d68cf69ee7c5",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    },
+    {
+      "context": "internal.anim_frame138",
+      "frame": 138,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_conservative/internal.anim.json",
+      "source_sha256": "de6b7cac70a3be0a7f8345870280254e1a1fe9d4929d8c6379f2450c7cd896db",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_conservative/frame138.npz",
+      "mesh_sha256": "fb5231a5ba28272ae1bed6799bb3bccaecc3357a609c898ec8be1d406b049787",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    },
+    {
+      "context": "internal.anim_frame139",
+      "frame": 139,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_conservative/internal.anim.json",
+      "source_sha256": "de6b7cac70a3be0a7f8345870280254e1a1fe9d4929d8c6379f2450c7cd896db",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_conservative/frame139.npz",
+      "mesh_sha256": "bed31dc07da2b5d78e7fdd1124a5209a70c8edcdced87e586a6b7747c63ec565",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    }
+  ],
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_conservative/internal.anim.json": "de6b7cac70a3be0a7f8345870280254e1a1fe9d4929d8c6379f2450c7cd896db",
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/hand_order_snapshot.py": "0aaad9c6bc452ef02b9708143af983fd24e9648422de20ed27e36296dcda20e5"
+  },
+  "scope": "Matched actual skin snapshots only; no full trajectory acceptance",
+  "source_unchanged_during_run": true
+}

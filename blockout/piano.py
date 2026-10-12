@@ -616,10 +616,12 @@ ROLL_V, ROLL_LAG_MAX = 1.5, 0.20   # m/s hand travel in a roll; s, the latest a 
 SPLIT_WIDE = True           # chords wider than a hand / > 5 keys: rolled sub-chords (False: drop to playable())
 
 
-def slices(notes, tol=SLICE_TOL, hand="R"):
+def slices(notes, tol=SLICE_TOL, hand="R", *, preserve_attacks=False):
+    if preserve_attacks and (not SPLIT_WIDE or ROLL_STAGGER):
+        raise ValueError('Strict key plans require complete, unstaggered attack slicing')
     out = []
     for n in sorted(notes, key=lambda n: (n.start, n.pitch)):
-        if out and n.start - out[-1][0].start < tol:
+        if out and n.start - out[-1][0].start < tol and (not preserve_attacks or all(m.pitch!=n.pitch for m in out[-1])):
             out[-1].append(n)
         else:
             out.append([n])
@@ -676,7 +678,7 @@ def _place(assign, near_black, hand):
     return float(np.mean(xs))
 
 
-def fingering(sl, hand):
+def fingering(sl, hand, *, preserve_holds=False):
     """Viterbi over slices. Returns, per slice, a list of (note, finger)."""
     cands = []
     for s in sl:
@@ -754,7 +756,7 @@ def fingering(sl, hand):
         k = bp[k]
         path.append(k)
     path.reverse()
-    return _repair(sl, cands, path, hand)
+    return _repair(sl, cands, path, hand, preserve_holds=preserve_holds)
 
 
 def _conflicts(assign, held, hand):
@@ -770,7 +772,7 @@ def _conflicts(assign, held, hand):
     return bad
 
 
-def _repair(sl, cands, path, hand):
+def _repair(sl, cands, path, hand, *, preserve_holds=False):
     """Walk the music tracking every key still held (from any earlier chord, not just the last): where the
     chosen fingering would reuse a holding finger or cross a held key, switch to the best fingering that fits;
     if none fits, propose an early release. Sustain/contact is unverified; the
@@ -786,7 +788,7 @@ def _repair(sl, cands, path, hand):
             ok = [c for c in cands[i] if not _conflicts(c[0], hv, hand)]
             if ok:
                 choice = min(ok, key=lambda c: c[1] + abs(c[2] - (prev[2] if prev else c[2])) / WHITE_W)[0]
-            else:                                     # let the clashing held keys go just before this chord
+            elif not preserve_holds:                  # explicit strict plans retain and report the conflict
                 for h in held:
                     if _conflicts(choice, [h], hand):
                         h[2].end = max(h[2].start + 0.05, t0 - 0.03)
@@ -843,7 +845,7 @@ def hand_track(fing, hand, times, rest_x):
     return x, nb[idx]
 
 
-def finger_events(fing):
+def finger_events(fing, *, preserve_holds=False):
     """Per finger: list of [t_on, t_off_eff, pitch, velocity, near_black, touch, lift], sorted by t_on."""
     ev = {f: [] for f in range(5)}
     for s in fing:
@@ -853,7 +855,7 @@ def finger_events(fing):
     for f in ev:
         e = ev[f]
         e.sort(key=lambda r: r[0])
-        for i in range(len(e) - 1):  # a finger must let go before it strikes again
+        for i in range(0 if preserve_holds else len(e) - 1):
             e[i][1] = min(e[i][1], e[i + 1][0] - strike_time(e[i + 1][5]) - 0.02)
             e[i][1] = max(e[i][1], e[i][0] + 0.03)
     return ev
@@ -2189,6 +2191,7 @@ class PianoScore:
     settings: dict
     outside_keyboard: list
     action_ledger: dict
+    physical_key_plan: dict | None = None
 
 
 @dataclasses.dataclass
@@ -2215,6 +2218,7 @@ class PianoPlan:
     settings: dict
     outside_keyboard: list
     action_ledger: dict
+    physical_key_plan: dict | None = None
     consumed: bool = False
 
 
@@ -2227,16 +2231,18 @@ def _motion_notes(notes, speed=1.):
     return result
 
 
-def _hand_score(original, name):
+def _hand_score(original, name, *, preserve_holds=False):
     from .key_actions import note_stage, event_stage
     ns = _motion_notes(original)  # repair may shorten motion holds; the score stays intact
-    selected = slices(ns, hand=name) if ns else []
+    selected = slices(ns, hand=name, preserve_attacks=preserve_holds) if ns else []
     trace = dict(ownership=note_stage(original), slicing=note_stage([n for row in selected for n in row]))
-    fing = fingering(selected, name) if selected else []
+    if preserve_holds:
+        trace['key_action_plan']=note_stage(original)
+    fing = fingering(selected, name, preserve_holds=preserve_holds) if selected else []
     trace['fingering_repair'] = [dict(note_stage([n])[0], finger=f) for row in fing for n, f in row]
-    ev = finger_events(fing)
+    ev = finger_events(fing, preserve_holds=preserve_holds)
     trace['finger_reuse'] = event_stage(fing, ev)
-    if not WRIST_CARRY:
+    if not WRIST_CARRY and not preserve_holds:
         ev = release_far(fing, ev, name)
     trace['reach_release'] = event_stage(fing, ev)
     sl_end = np.array([max(n.end for n, _ in s) for s in fing]) if fing else np.zeros(0)
@@ -2247,25 +2253,45 @@ def _hand_score(original, name):
          "vel": np.array([max(n.velocity for n, _ in s) for s in fing]) if fing else np.zeros(0),
          "touch": np.array([np.mean([getattr(n, "touch", 0.3) for n, _ in s]) for s in fing]) if fing else np.zeros(0),
          "size": np.array([len(s) for s in fing]) if fing else np.zeros(0),
-         "action_trace": trace}
+         "action_trace": trace,"preserve_holds":preserve_holds}
     return H
 
 
-def compile_score(notes, speed=1.):
+def compile_score(notes, speed=1., *, key_action_plan=None):
     """Compile the original ledger once. Scheduling conflicts remain diagnostic."""
     if not notes or not np.isfinite(speed) or speed <= 0:
         raise ValueError('A nonempty score and positive finite speed are required')
+    from .key_actions import action_ledger, physical_notes, interval_conflicts
+    motion = physical_notes(notes,key_action_plan) if key_action_plan is not None else notes
+    motion = _motion_notes(motion,speed)
     notes = _motion_notes(notes, speed)
     for index, note in enumerate(notes):
         note._score_event_id = index
     ownership = {}
-    rh, lh = split_hands(notes, ownership)
+    if key_action_plan is None:
+        motion=notes
+    rh, lh = split_hands(motion, ownership)
     allx = [key_x(n.pitch) for n in notes]
-    hands = {name: _hand_score(ns, name) for name, ns in (('R', rh), ('L', lh))}
-    from .key_actions import action_ledger
+    hands = {name: _hand_score(ns, name,preserve_holds=key_action_plan is not None) for name, ns in (('R', rh), ('L', lh))}
+    metadata=copy.deepcopy(key_action_plan)
+    if metadata is not None:
+        metadata.update(clock_speed=speed,requested_interval_conflicts=interval_conflicts(hands),
+                        strict_holds=True,source_voices_preserved=True)
     return PianoScore(notes, hands,
         ownership, float((min(allx) + max(allx)) / 2), speed, _plan_settings(),
-        [[n.start, n.end, n.pitch] for n in notes if not LOW <= n.pitch <= HIGH], action_ledger(notes, hands))
+        [[n.start, n.end, n.pitch] for n in notes if not LOW <= n.pitch <= HIGH], action_ledger(notes, hands),metadata)
+
+
+def _event_candidates(H, finger, time):
+    onsets=H['ev_on'][finger]
+    hi=int(np.searchsorted(onsets,time+.3))
+    if H.get('preserve_holds',False):
+        # A key requested for more than eight seconds still needs a finger.
+        candidates=[e for e in H['ev'][finger][:hi] if e[1]+.5>=time]
+    else:
+        lo=max(0,int(np.searchsorted(onsets,time-8.)))
+        candidates=H['ev'][finger][lo:hi]
+    return sorted(candidates[::-1],key=lambda e:0 if e[0]-strike_time(e[5])<=time<=e[1] else 1)
 
 
 def prepare_plan(notes=None, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats=None,
@@ -2366,11 +2392,9 @@ def prepare_plan(notes=None, fps=24, start=0.0, dur=None, speed=1.0, beats=None,
                 home[2] = surface_under(home[0], home[1], TIP_R[f], {}) + TIP_R[f] + hover
                 tip = home
                 eo = H["ev_on"][f]
-                lo, hi = max(0, int(np.searchsorted(eo, t - 8.0))), int(np.searchsorted(eo, t + 0.3))
-                cand = H["ev"][f][lo:hi][::-1]
                 # a note that is sounding (or being struck) now outranks the next note's approach: with fast repeated
                 # notes the next approach window opens before the current note is released
-                cand = sorted(cand, key=lambda e: 0 if e[0] - strike_time(e[5]) <= t <= e[1] else 1)
+                cand = _event_candidates(H,f,t)
                 for e in cand:
                     tp, dep = finger_tip(t, e, home, TIP_R[f], f)
                     if tp is not None:
@@ -2500,7 +2524,8 @@ def prepare_plan(notes=None, fps=24, start=0.0, dur=None, speed=1.0, beats=None,
         bool(physical_warmup), _plan_settings(), outside_keyboard,
         copy.deepcopy(compiled_score.action_ledger) if complete_score else
             action_ledger(
-                notes, hands, scope='legacy filtered window; not the complete input score'))
+                notes, hands, scope='legacy filtered window; not the complete input score'),
+        copy.deepcopy(compiled_score.physical_key_plan) if complete_score else None)
 
 
 def solve_plan(plan):
@@ -2674,6 +2699,7 @@ def solve_plan(plan):
             "hand_order": {"enabled": bool(NO_HAND_CROSS), "ownership": ownership, "audit": order_audit},
             "scheduled_note_events": {name: {str(f): H["ev"][f] for f in range(5)} for name, H in hands.items()},
             "key_action_ledger": copy.deepcopy(plan.action_ledger),
+            "physical_key_plan": copy.deepcopy(plan.physical_key_plan),
             "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,
             **({"hand_scale": float(_rig("R").sk.scale), "pose_precision": "full solver precision"} if HAND_MODEL == "mpfb" else {}),
             "qa": {"collision_and_reach_scope": "all internally solved frames, including physical warmup",

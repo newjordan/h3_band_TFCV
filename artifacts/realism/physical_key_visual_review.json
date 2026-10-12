@@ -1,0 +1,23 @@
+{
+  "reviewed": true,
+  "video_sha256": "8435f27c386251ca6a72fdceaed3297ecb8e2bad1eed31b1fee577f08c281791",
+  "plot_sha256": "6ad6860f8c3f7a484b5fd3a121577c87a720b8e0ea82c778460aa34c25fd8c05",
+  "visible_frame_indices": [
+    0,
+    12,
+    24,
+    36,
+    46,
+    47
+  ],
+  "camera": "Wider matched lens32, both hands visible at reviewed instants",
+  "observations": [
+    "Grey comparison labels readable; normal-tempo original soundtrack retained",
+    "Idle fingers remain visibly extended/strained in places; natural restraint is unresolved",
+    "Strict-hold hands can look more composed briefly but end with strained, raised/splayed poses",
+    "Wrists remain ordered in samples; physical skin fails independent audits",
+    "Skin chart uses only actual snapshot markers, without interpolating missing geometry",
+    "No natural-performance, actual-contact or force acceptance"
+  ],
+  "full_performance_accepted": false
+}

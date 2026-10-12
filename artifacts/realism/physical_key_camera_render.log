@@ -1,0 +1,37 @@
+[aist#3:0/pcm_s16le @ 0xc3715ce2d0b0] Guessed Channel Layout: stereo
+{
+  "status": "encoded",
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/physical_key_render.py": "06ad47073b5e19134f385fa1bb2217e19c5181fc61f7e1ac33f2d8ad597b8023"
+  },
+  "source_unchanged_during_run": true,
+  "video": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_comparison.mp4",
+  "video_sha256": "8435f27c386251ca6a72fdceaed3297ecb8e2bad1eed31b1fee577f08c281791",
+  "frames": 48,
+  "fps": 12,
+  "duration_seconds": 4.0,
+  "resolution": [
+    1536,
+    288
+  ],
+  "start": 318.9,
+  "gpu_used": false,
+  "full_performance_accepted": false,
+  "camera": {
+    "view": "overhead",
+    "eye": [
+      0.0,
+      -1.0,
+      1.0
+    ],
+    "look": [
+      0.0,
+      0.015,
+      0.02
+    ],
+    "lens": 32,
+    "change_reason": "Initial matched camera clipped part of the baseline right hand; numerical poses unchanged"
+  }
+}

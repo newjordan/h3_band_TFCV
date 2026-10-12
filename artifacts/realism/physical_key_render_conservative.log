@@ -1,0 +1,159 @@
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+EGL Error (0x3009): EGL_BAD_MATCH: Arguments are inconsistent (for example, a valid context requires buffers not supplied by a valid surface).
+EGL Error (0x3001): EGL_NOT_INITIALIZED: EGL is not initialized, or could not be initialized, for the specified EGL display connection.
+
+Managed to successfully fallback to surfaceless EGL rendering!
+
+Blender 4.0.2
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00000.png'
+Time: 00:01.17 (Saving: 00:00.11)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00001.png'
+Time: 00:01.49 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00002.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00003.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00004.png'
+Time: 00:00.79 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00005.png'
+Time: 00:00.79 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00006.png'
+Time: 00:00.80 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00007.png'
+Time: 00:00.80 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00008.png'
+Time: 00:00.80 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00009.png'
+Time: 00:00.82 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00010.png'
+Time: 00:00.82 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00011.png'
+Time: 00:00.82 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00012.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00013.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00014.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00015.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00016.png'
+Time: 00:00.83 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00017.png'
+Time: 00:00.82 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00018.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00019.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00020.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00021.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00022.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00023.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00024.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00025.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00026.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00027.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00028.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00029.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00030.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00031.png'
+Time: 00:00.80 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00032.png'
+Time: 00:00.80 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00033.png'
+Time: 00:00.80 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00034.png'
+Time: 00:00.83 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00035.png'
+Time: 00:00.81 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00036.png'
+Time: 00:00.79 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00037.png'
+Time: 00:00.79 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00038.png'
+Time: 00:00.80 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00039.png'
+Time: 00:00.79 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00040.png'
+Time: 00:00.80 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00041.png'
+Time: 00:00.77 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00042.png'
+Time: 00:00.78 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00043.png'
+Time: 00:00.79 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00044.png'
+Time: 00:00.79 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00045.png'
+Time: 00:00.79 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00046.png'
+Time: 00:00.79 (Saving: 00:00.01)
+
+Saved: '/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative_frames/f_00047.png'
+Time: 00:00.80 (Saving: 00:00.01)
+
+done 48 frames
+
+Blender quit

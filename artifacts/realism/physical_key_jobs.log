@@ -1,0 +1,6 @@
+{"started": "legacy", "pid": 10}
+{"started": "conservative", "pid": 11}
+{"started": "conditional", "pid": 12}
+{"treatment": "legacy", "exit_code": 0, "output_exists": true, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_legacy.anim.json", "sha256": "5e61b797d9210de08438fbf376b0b9e98eae2c9100cf693fa80f732271231421"}
+{"treatment": "conservative", "exit_code": 0, "output_exists": true, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conservative.anim.json", "sha256": "85936e2edd749f5e46cb6fea23f90781478f49b3b849a6e7aaac9a7cec55dd48"}
+{"treatment": "conditional", "exit_code": 0, "output_exists": true, "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_conditional.anim.json", "sha256": "2573aa101fdbee9015d662a119f4126003c128718f6e8da23f83aef3665fa3ae"}

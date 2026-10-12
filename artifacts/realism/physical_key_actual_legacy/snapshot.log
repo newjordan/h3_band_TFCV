@@ -1,0 +1,60 @@
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+pa_write() failed while trying to wake up the mainloop: Operation not permitted
+done 0 frames
+{
+  "status": "complete",
+  "hand_scale": 1.0,
+  "candidate_exported": false,
+  "records": [
+    {
+      "context": "internal.anim_frame0",
+      "frame": 0,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_legacy/internal.anim.json",
+      "source_sha256": "3acb72da1ca1bd44029a1ed1ebcb1a223df72ec18dd5bbbbbf67c252a601780b",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_legacy/frame0.npz",
+      "mesh_sha256": "67312056adfb2e96f9abb5a65d31f6253787b8cea7975b5566ed9c5e106080ab",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    },
+    {
+      "context": "internal.anim_frame138",
+      "frame": 138,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_legacy/internal.anim.json",
+      "source_sha256": "3acb72da1ca1bd44029a1ed1ebcb1a223df72ec18dd5bbbbbf67c252a601780b",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_legacy/frame138.npz",
+      "mesh_sha256": "3f9a67cfa31370fd22a53686b80071dc872061a23bed460898f68097a392a1cb",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    },
+    {
+      "context": "internal.anim_frame139",
+      "frame": 139,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_legacy/internal.anim.json",
+      "source_sha256": "3acb72da1ca1bd44029a1ed1ebcb1a223df72ec18dd5bbbbbf67c252a601780b",
+      "mode": "linear",
+      "subdivision_levels": 2,
+      "mesh": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_legacy/frame139.npz",
+      "mesh_sha256": "2a5c08503a585448e436f04852e72ff328728b37b73200ce1d92a3e761bc969f",
+      "vertices": 56338,
+      "quads": 56256,
+      "triangles": 112512
+    }
+  ],
+  "input_sha256": {
+    "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_actual_legacy/internal.anim.json": "3acb72da1ca1bd44029a1ed1ebcb1a223df72ec18dd5bbbbbf67c252a601780b",
+    "/home/frosty40/h3/rig_realism/blockout/blender_piano.py": "f8d69c3dd6398cbc5d89044a21c84c6bbcdb7269d9ef3e85993a4e366421e7db",
+    "/home/frosty40/h3/rig_realism/blockout/skin.py": "fd34a6f3bd407a6145f6d5678f7a3859faab9357d32abed3933e927c7b42f36e",
+    "/home/frosty40/h3/rig_realism/lab/hand_order_snapshot.py": "0aaad9c6bc452ef02b9708143af983fd24e9648422de20ed27e36296dcda20e5"
+  },
+  "scope": "Matched actual skin snapshots only; no full trajectory acceptance",
+  "source_unchanged_during_run": true
+}
+Blender 4.0.2
+
+Blender quit

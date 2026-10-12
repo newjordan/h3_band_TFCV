@@ -1,0 +1,20 @@
+{
+  "status": "complete",
+  "input_sha256": {
+    "artifacts/realism/physical_key_controller_result.json": "7e0ed6faf8ec5f336af02e9e590c2099dbbda8dd8dcd70fdb76fdfb438802cb1",
+    "artifacts/realism/key_action_recovered_pedal.json": "738cc51df3452baac011e60ab96f730e8f4061764ed6fa01c04aed0d04ee9442",
+    "artifacts/realism/performance_source_v19/notes.json": "175114790f34de351c4cbd4b0ea5a617b4f67ef82ff7482d7840ebd36d888051",
+    "artifacts/realism/physical_key_legacy.anim.json": "5e61b797d9210de08438fbf376b0b9e98eae2c9100cf693fa80f732271231421",
+    "artifacts/realism/physical_key_conservative.anim.json": "85936e2edd749f5e46cb6fea23f90781478f49b3b849a6e7aaac9a7cec55dd48",
+    "artifacts/realism/physical_key_conditional.anim.json": "2573aa101fdbee9015d662a119f4126003c128718f6e8da23f83aef3665fa3ae",
+    "artifacts/realism/physical_key_actual_legacy/audit.json": "89141571a45e792b5e272cd82bbf114607f7aae43d268be16815c8b3004666a1",
+    "artifacts/realism/physical_key_actual_conservative/audit.json": "4dd91ec948e1cad095ac6fc80993346cbbdb4d3b95ee52fff025987042331d20",
+    "artifacts/realism/physical_key_actual_conditional/audit.json": "e307916eedf64ad65b97c5a499dffcbac8f87167bd6ac3fed1aab1eb6c173003"
+  },
+  "source_unchanged_during_run": true,
+  "png": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_traces.png",
+  "png_sha256": "6ad6860f8c3f7a484b5fd3a121577c87a720b8e0ea82c778460aa34c25fd8c05",
+  "svg": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_traces.svg",
+  "svg_sha256": "55f72acfc35f749db7b117c3aa443dac51db3f4d37739be0075ec932b66f4bb1",
+  "full_performance_accepted": false
+}

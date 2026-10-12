@@ -1,0 +1,16 @@
+name = "piano-physical-key-plan"
+description = "Review source-voice unisons and uncertain pedal-conditioned key-action trajectories."
+deadline_secs = 800
+
+[[node]]
+id = "synthesize"
+tools = "none"
+prompt = """Propose the exact next experiment in at most 300 words from supplied facts. Distinguish shared source voices, actual physical strikes, unchanged jittered soundtrack and uncertain pedal-conditioned releases. Specify source partition, conservative/conditional/legacy controls, hold persistence/conflicts, initial feasible surfaces and decisive numeric actual-motion gates. No tools, ground truth assumptions or empirical approval. Task: {task}"""
+
+[[node]]
+id = "verify"
+persona = "reviewer"
+tools = "none"
+depends_on = ["synthesize"]
+gate = { verdict = true, retry = "synthesize", credit_to = "synthesize", max_retries = 1 }
+prompt = """Audit the proposal in at most 180 words with a verdict. Reject grouping merely-close repeated onsets without exact source proof, treating voice coverage as two actual presses, claiming waveform equivalence of a max-velocity shared strike, guessed key-off ground truth, unknown pedal cuts, silent additional scheduling cuts, hidden interval conflicts or trimmed infeasible initial poses. Judge method rather than an execution receipt. Full natural geometry/forces/body/drummer/continuous-time scope remains open. Task: {task}\nProposal: {output:synthesize}"""

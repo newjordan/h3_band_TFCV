@@ -1,0 +1,44 @@
+{
+  "status": "published_and_verified",
+  "url": "https://toymaker.tail2d8af4.ts.net/band/",
+  "records": [
+    {
+      "name": "index",
+      "status": 200,
+      "source": "/home/frosty40/h3/results/band_site/web/index.html",
+      "sha256": "ec93d4ffa05d2429e6dd2c694fd6a60305653ad9ae39c5c85d5cae2e09f4ba19",
+      "live_bytes_identical": true
+    },
+    {
+      "name": "video",
+      "status": 200,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_comparison.mp4",
+      "sha256": "8435f27c386251ca6a72fdceaed3297ecb8e2bad1eed31b1fee577f08c281791",
+      "live_bytes_identical": true
+    },
+    {
+      "name": "plot",
+      "status": 200,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/physical_key_traces.png",
+      "sha256": "6ad6860f8c3f7a484b5fd3a121577c87a720b8e0ea82c778460aa34c25fd8c05",
+      "live_bytes_identical": true
+    },
+    {
+      "name": "results",
+      "status": 200,
+      "source": "/home/frosty40/h3/rig_realism/lab/realism_results/physical_keys_20261011.json",
+      "sha256": "de7fa298a55c3ce35f1b389fd18dd4de85236d996cbeaa6e7e2b644976dbb284",
+      "live_bytes_identical": true
+    },
+    {
+      "name": "suite",
+      "status": 200,
+      "source": "/home/frosty40/h3/rig_realism/artifacts/realism/full_suite_progress_preview.mp4",
+      "sha256": "b7c0f3d8714faa56c0e402a36be7452d9838d496b486e0cfb41915a153a300e4",
+      "live_bytes_identical": true
+    }
+  ],
+  "full_suite_first": true,
+  "method_rejection_visible": true,
+  "full_performance_accepted": false
+}

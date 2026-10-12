@@ -1,0 +1,137 @@
+{
+  "source_note_on_channels": {
+    "(1, 0)": 1052,
+    "(2, 0)": 994
+  },
+  "source_attacks": 2046,
+  "unison_pairs": [
+    {
+      "source_ids": [
+        823,
+        828
+      ],
+      "records": [
+        {
+          "input_id": 827,
+          "input_note": [
+            115.99270999999999,
+            116.4765805,
+            61,
+            90,
+            2
+          ],
+          "output_note": [
+            120.54708312715543,
+            121.04058989233505,
+            61,
+            115,
+            2
+          ],
+          "shared_start": 120.52865495640948,
+          "shared_end": 121.02433949140202,
+          "chord_shift_seconds": 0.017850584834384932,
+          "actual_start_variation_seconds": 0.018428170745949046,
+          "actual_end_variation_seconds": 0.016250400933031983,
+          "start_clamped_to_zero": false,
+          "end_clamped_to_minimum_duration": false,
+          "output_id": 823
+        },
+        {
+          "input_id": 826,
+          "input_note": [
+            115.99270999999999,
+            117.928192,
+            61,
+            90,
+            1
+          ],
+          "output_note": [
+            120.56237104391855,
+            122.54265380361315,
+            61,
+            120,
+            1
+          ],
+          "shared_start": 120.52865495640948,
+          "shared_end": 122.51302735268231,
+          "chord_shift_seconds": 0.027312819011184705,
+          "actual_start_variation_seconds": 0.033716087509063186,
+          "actual_end_variation_seconds": 0.02962645093083438,
+          "start_clamped_to_zero": false,
+          "end_clamped_to_minimum_duration": false,
+          "output_id": 828
+        }
+      ],
+      "canonical_onset_equal": true,
+      "pitch_equal": true,
+      "distinct_input_tracks": true,
+      "performed_timing_difference": 0.01528791676311414
+    },
+    {
+      "source_ids": [
+        937,
+        943
+      ],
+      "records": [
+        {
+          "input_id": 941,
+          "input_note": [
+            123.73463799999999,
+            124.2185085,
+            61,
+            90,
+            2
+          ],
+          "output_note": [
+            128.50126420362798,
+            128.99219228223603,
+            61,
+            90,
+            2
+          ],
+          "shared_start": 128.50054431321144,
+          "shared_end": 129.00521988454977,
+          "chord_shift_seconds": -0.005778477759878811,
+          "actual_start_variation_seconds": 0.0007198904165477416,
+          "actual_end_variation_seconds": -0.013027602313741227,
+          "start_clamped_to_zero": false,
+          "end_clamped_to_minimum_duration": false,
+          "output_id": 937
+        },
+        {
+          "input_id": 940,
+          "input_note": [
+            123.73463799999999,
+            124.702379,
+            61,
+            90,
+            1
+          ],
+          "output_note": [
+            128.51925549015084,
+            129.52610883186432,
+            61,
+            97,
+            1
+          ],
+          "shared_start": 128.50054431321144,
+          "shared_end": 129.5112148846403,
+          "chord_shift_seconds": 0.0157442208403371,
+          "actual_start_variation_seconds": 0.01871117693940505,
+          "actual_end_variation_seconds": 0.014893947224010162,
+          "start_clamped_to_zero": false,
+          "end_clamped_to_minimum_duration": false,
+          "output_id": 943
+        }
+      ],
+      "canonical_onset_equal": true,
+      "pitch_equal": true,
+      "distinct_input_tracks": true,
+      "performed_timing_difference": 0.017991286522857308
+    }
+  ],
+  "physical_shared_strike_is_hypothesis": true,
+  "existing_soundtrack_has_separate_jittered_events": true,
+  "waveform_equivalence_verified": false,
+  "full_performance_accepted": false
+}
