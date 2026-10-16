@@ -1493,7 +1493,8 @@ def _key_env(keydepth, pressing, other=None, rig=None):
             d = surface_under_soft_v(C[:, 0], C[:, 1], 0.8 * W_, DW, DB) - low
             d -= np.array([(THUMB_PRESS_GIVE if f == 0 and i >= 1 else OWN_KEY_GIVE) if pressing[f] and (i == 2 and u >= 0.5 or f == 0 and i >= 1)
                            else 0.0 for f, i, u, *_r in S_])   # a pressing thumb lies over the neighbour's edge
-            d[low > 0.02] = 0.0                        # well above every key top
+            if not CASE_COLLIDE:
+                d[low > 0.02] = 0.0                    # well above every key top (but not the fallboard: CASE_COLLIDE)
             out.extend(np.maximum(d, 0.0))             # (a pressing pad rests on its own lowered key, not a neighbour)
         return np.array(out)
 
@@ -1544,6 +1545,7 @@ REPAIR_W = 4.0              # how much harder a missed note's finger pulls on ea
 OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) key's surface in the collision model
 THUMB_PRESS_GIVE = 0.004    # m a pressing thumb's distal and proximal phalanx may sink past key tops (its side
                             # rests over the neighbouring key's edge as it presses its own)
+CASE_COLLIDE = False        # skin above 2 cm also meets the fallboard (5.5 cm) instead of being skipped (False: v18/H)
 SOFT_ENV = True             # collisions as eased per-sample residuals (False: v16's single hard-edged penalty)
 FINGER_ITERS = 20           # finger solve iterations once the wrist is set
 FINGER_SMOOTH = 2e-5        # finger joints' frame-to-frame smoothness once the wrist is set

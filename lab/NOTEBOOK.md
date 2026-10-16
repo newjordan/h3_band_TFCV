@@ -660,3 +660,13 @@ broken at 1 fps. Band site section `v18-hands`; files `v18tune_20261016/h/`. Cur
   40-80 mm in. Pre-strike lift p50 2-5 mm, p90 12-26 mm; knuckle height 57-63 mm (pianists 42 mm x 24.3/17.7 = 58).
   Side views: pressing tips are on their keys; some long fingers lie nearly flat along the keys. Asking the user what
   "too high" refers to before changing anything.
+- User on "too high": **"some long fingers lie almost flat along the keys and press with the pad from very low. A real hand
+  would come down more from above with a curled finger"** -- that is the point.
+  Measured (H windows, `finger_angle.py`, world frame): pressing fingertips are mostly steep (distal 47-70 deg below
+  horizontal at the median, flat < 25 deg in 0-11%, mostly the index); the flat long fingers are mostly IDLE ones lying
+  straight along the keys (the same fingers whose tips enter the fallboard). Inputs that make them straight: the
+  collision skip above 2 cm; both calibrated rest poses are flat (comfort.json MCP -7..-2, PIP 10-22, DIP -5..0;
+  comfort_mediapipe.json MCP 8-16, PIP 7-21); DIP coupling ~0 for index/ring/pinky (FürElise kdip).
+- New switches: `CASE_COLLIDE` (piano.py; skin above 2 cm still meets the fallboard), `RIG_CURL` env (rig/hand.py;
+  rounded rest pose for fingers 2-5 {"mcp", "pip", "kdip"}). Running on H: **I1** CASE_COLLIDE; **I2** CASE_COLLIDE +
+  RIG_CURL {"mcp": 20, "pip": 45, "kdip": 0.67} (the classic rounded hand; DIP = 2/3 PIP).

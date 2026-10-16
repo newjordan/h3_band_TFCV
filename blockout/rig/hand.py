@@ -73,6 +73,17 @@ class HandRig:
         if cal and "k_dip" in cal and "kdip" in _cal_parts():                 # measured on concert pianists (FürElise): the end joint stays
             for ch, k in zip(self.chains[1:], cal["k_dip"]):    # nearly straight while the PIP bends
                 ch.k_dip = max(float(k), 1e-3)
+        curl = os.environ.get("RIG_CURL")
+        if curl:             # a rounded playing hand for fingers 2-5: {"mcp": deg, "pip": deg, "kdip": DIP per PIP}
+            cc = json.loads(curl)
+            for ch, a in zip(self.chains[1:], self.sl[1:-1]):
+                for i, d in enumerate(ch.dofs):
+                    if d[1] != "flex":
+                        continue
+                    kind = self.sk.kind[d[0]]
+                    v = cc["mcp"] if kind in ("mcp", "mcp_edge") else cc["pip"] if kind == "pip" else cc["pip"] * cc["kdip"]
+                    self.q_rest[a + i] = ch.q_rest[i] = float(np.clip(math.radians(v), self.lo[a + i], self.hi[a + i]))
+                ch.k_dip = float(cc["kdip"])
         # comfort is measured in units of how much people actually vary each joint while playing (human IQR / 1.35)
         self.sigma = self.rng.copy()
         try:
