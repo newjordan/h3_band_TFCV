@@ -551,7 +551,7 @@ def split_hands(notes):
     return _consolidate(R, L) if CONSOLIDATE else (R, L)
 
 
-CONSOLIDATE = False         # a note played right next to keys the other hand is sounding goes to that hand when it can
+CONSOLIDATE = True          # a note played right next to keys the other hand is sounding goes to that hand when it can
 CONS_NEAR = 0.12            # take it (one hand covers it with more fingers; the hands don't pile into each other).
                             # m: "right next to" = this close to one of the other hand's sounding keys
 
@@ -825,8 +825,8 @@ def _smooth(u):
     return u * u * (3 - 2 * u)
 
 
-IDLE_SEP = None             # m: a hand with nothing to play keeps at least this far from the other hand (None: v18)
-REST_HOLD = None            # (gap s, travel s): a hand with longer than gap to its next note holds, then travels in the
+IDLE_SEP = 0.24             # m: a hand with nothing to play keeps at least this far from the other hand (None: v18)
+REST_HOLD = (1.0, 0.6)      # (gap s, travel s): a hand with longer than gap to its next note holds, then travels in the
                             # last travel s (None: v18, it drifts toward its next note across the whole gap)
 
 
@@ -1301,7 +1301,7 @@ SPRING_HAND = (2.6, 0.72, 1.3)
 SPRING_TIP = (10.0, 0.80, 0.4)
 SPRING_FREE = (4.5, 0.45, 0.6)     # free fingers: soft and under-damped, the hand's subconscious ragdoll
 EXT_UP, EXT_FWD = 0.010, 0.008    # m: how far an idle finger lifts and lengthens
-EXT_OUT = (-0.006, -0.003, 0.0, 0.002, 0.005)   # m: and fans away from the middle finger (right hand; mirrored)
+EXT_OUT = (0.0, 0.0, 0.0, 0.0, 0.0)  # m: idle fingers no longer fan out (H; v18: -0.006, -0.003, 0, 0.002, 0.005)
 # ---- two hands close, overlapping, crossing (from footage study; notes in the commit message). Two cases:
 #  * Overlap / shared register while both play: the hand that is TRAVELLING along the keys while it plays (the
 #    passage hand) stays UNDER: low, flat wrist, at the key fronts, its thumb tucked under its palm. The settled
@@ -1433,7 +1433,8 @@ THUMB_REST = 4.0                    # an idle thumb follows its resting spot by 
 PRESS_AXES = (3.0, 1.0, 3.0)  # v18 (lab E29): press depth weighted like position
 PRESS_AXES_BLACK = (3.0, 3.0, 3.0)  # a black key starts 55 mm in: a pad short of it misses it, so depth counts too
 HAND_CLEAR, HAND_W = 0.003, 1.0    # m kept between the two hands' skin; weight of that against the targets
-RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=9e-6, comfort_sigma=True, iters=12, smooth=2e-5)   # target weights and the plan prior
+RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=9e-6, comfort_sigma=True, iters=12, smooth=2e-5,
+             comfort_abd=10.0, formation=1e-4)   # target weights and the plan prior (H: spread costs 10x, idle fingers keep formation)
 _RIGS = {}
 
 
@@ -1537,7 +1538,7 @@ FINGER_PRESS_W = 8.0        # ... pinned this hard on the frames the finger is o
 FINGER_PRIOR = 5e-3         # how hard a finger holds its smoothed path in the second solve
 FINGER_SPLIT = True         # with the wrist set, each finger solves on its own
 FREE_FOLLOW = True          # free fingers' float targets move with the solved wrist (across/along the keys)
-PRESS_OVERSHOOT = 0.003     # m the pressing pad aims below the key bed (0: at the bed)
+PRESS_OVERSHOOT = 0.006     # m the pressing pad aims below the key bed (0: at the bed; v18: 0.003)
 REPAIR_ITERS = 2            # verify-and-repair passes: re-solve the fingers with missed notes' presses boosted
 REPAIR_W = 4.0              # how much harder a missed note's finger pulls on each repair pass
 OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) key's surface in the collision model

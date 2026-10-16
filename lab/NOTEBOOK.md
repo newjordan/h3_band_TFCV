@@ -644,3 +644,19 @@ Review (1 fps contact sheets, every video, before posting): Debussy wide 50-62 /
 282-294 wide / L / R close-ups, Chopin 266-278 R close-up — H hands apart, resting hand calm on its keys, nothing
 broken at 1 fps. Band site section `v18-hands`; files `v18tune_20261016/h/`. Current candidate: **H** (PIANO_OVR in
 `v18tune_20261016/variants.txt`).
+
+### 2026-10-16 night: user "its really good" on H -> H settings become this branch's defaults; next: keys hit "a bit too high", fingertips through the piano case
+- **H as defaults** (piano.py): PRESS_OVERSHOOT 0.006, EXT_OUT 0, RIG_W comfort_abd 10 + formation 1e-4, CONSOLIDATE True,
+  REST_HOLD (1.0, 0.6), IDLE_SEP 0.24. Checked byte-for-byte against the PIANO_OVR H windows (Brahms 0-12, Debussy 50-62)
+  before pushing. v18 itself stays on piano-v18-base.
+- **Fingertips through the case** (`v18tune_20261016/case_strike.py`; tip = distal bone end + 6 mm): every hit is an IDLE
+  finger, nearly straight (total bend p50 -5..22 deg), tip inside the fallboard (y >= 0.153, z < 0.055) while the hand is
+  5-9 cm into the keys; mostly the middle finger, also index/ring: 106 / 19 / 51 / 115 / 81 / 8 finger-frames per 12 s in
+  Debussy 50-62 / 62-74, Chopin 282-294 / 266-278, Rach, Brahms. Cause: `_key_env` drops every skin sample whose lowest
+  point is above 2 cm (`d[low > 0.02] = 0`, "well above every key top") -- but the fallboard stands 5.5 cm and the lid body
+  7 cm, so a fingertip in the fallboard's face is never tested. A human curls that finger slightly.
+- **Strike point is not the "too high"**: pressing pads land 21-25 mm from the key front for index-ring (median), 6-13 mm
+  for thumb and pinky; deeper (45-60 mm, p75) only in some Rach/Brahms chords. FürElise pianists' long fingers strike
+  40-80 mm in. Pre-strike lift p50 2-5 mm, p90 12-26 mm; knuckle height 57-63 mm (pianists 42 mm x 24.3/17.7 = 58).
+  Side views: pressing tips are on their keys; some long fingers lie nearly flat along the keys. Asking the user what
+  "too high" refers to before changing anything.
