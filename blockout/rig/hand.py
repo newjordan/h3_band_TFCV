@@ -94,6 +94,16 @@ class HandRig:
         except (OSError, KeyError):
             pass
 
+    def _abd_gain(self, k):
+        """Per-dof comfort multiplier: sqrt(k) on the MCP abduction of fingers 2-5, 1 elsewhere."""
+        g = np.ones(len(self.lo))
+        for ci, (ch, a) in enumerate(zip(self.chains, self.sl[:-1])):
+            if ci:
+                for i, d in enumerate(ch.dofs):
+                    if d[1] == "abd":
+                        g[a + i] = math.sqrt(k)
+        return g
+
     def anatomical_abduction(self, root_rot, root_pos, pts, f):
         """Finger f's (2-5) abduction in degrees as anatomy measures it: the proximal phalanx against its
         metacarpal (wrist -> MCP), both seen in the palm plane."""
@@ -176,6 +186,8 @@ class HandRig:
             q_rest = q_rest.copy()
             for f, v in W["rest_override"].items():
                 q_rest[self.sl[f]:self.sl[f + 1]] = v
+        if W.get("comfort_abd", 1.0) != 1.0:          # spreading a finger costs more: the hand moves over instead
+            cw = cw * self._abd_gain(W["comfort_abd"])
         r.append(math.sqrt(W["comfort"]) * cw * (q - q_rest) / scale)
         for ch, a in zip(self.chains, self.sl[:-1]):
             if ch.k_dip:
@@ -265,6 +277,8 @@ class HandRig:
         rest = W.get("rest_override", {}).get(f, self.q_rest[a:b])
         if f in W.get("rest_override", {}):
             cw *= math.sqrt(W.get("rest_override_w", 30.0))   # an overridden pose (the idle thumb's tuck) is held
+        if W.get("comfort_abd", 1.0) != 1.0:
+            cw = cw * self._abd_gain(W["comfort_abd"])[a:b]
         r.append(math.sqrt(W["comfort"]) * cw * (qf - rest) / scale)
         if ch.k_dip:
             r.append([math.sqrt(W["couple"]) * (qf[ch.i_dip] - ch.k_dip * qf[ch.i_pip])])

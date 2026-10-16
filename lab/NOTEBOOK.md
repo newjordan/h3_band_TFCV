@@ -499,3 +499,71 @@ E37 trade measured: tremor does NOT come back with the middle mask — jitter 1.
 level (1.76 / 0.67), while keysync drops 0.4 pt (96.98 -> 96.56; Debussy 100 -> 93.9). So E36 (hard mask) stays
 best: its only cost, tremor x1.9 vs E29, is identical in E37. Anatomy_out is the same 11-12/min for both —
 the tremor is not what causes the 248-252 s glitch either.
+
+## 2026-10-16: pose-to-pose rewrite (rejected by eye), then back to small steps on v18
+
+### Pose-to-pose rig, branch `piano-grace` (worktree ~/h3b_grace): REJECTED
+**Verdict (user, by eye):** "a big regression", "very jarring and jumpy"; "v18 was so close". Parked; do not resume
+without the user asking. Videos and tables: band site section `pose-rig` (marked rejected).
+- What it was: `WRIST_MODE=landing` (wrist follows the FürElise pianists' path; one whole-hand solve per chord onset,
+  eased between landings, 0.12 s dwell) and `FINGER_MODE=pose` (`blockout/fingers.py`: each finger keyed in joint space,
+  lift / key bed / held contact, minimum-jerk blends; idle fingers in one curl family on a soft spring).
+- Its numbers all said "better" (suite keys in time 95.6 vs 93.2%, pops 4.8 vs 21/min, frozen 6.8 vs 12.4%, crossed
+  2.9 vs 11.9%, broken 0.05 vs 0.46%; never-tuned Brahms 98.5%, Alla Turca 97.2%). The eye said worse.
+  **Lesson: pops/min (any joint > 15 rad/s) and frozen % do not measure visible jerkiness.** Arm stop-and-go between
+  landings and minimum-jerk finger blends read as jumpy even with no single-frame jump. Judge on footage first;
+  one change at a time against v18.
+- An early bug in that branch also folded the idle thumbs up over the backs of the hands (see the thumb axis note).
+
+### Findings from that work that still hold for v18
+1. **Rachmaninoff leap lag.** In the agitato both hands leap ~30 cm every 0.5 s. v18's pass-A wrist (per-frame solves
+   + Whittaker) arrives late: up to **9 cm off the chord at its onset** (R wrist x 0.021 where the chord needs -0.07 at
+   100.91 s); fingers then stretch to their abduction limits. Most v18 pops there are free fingers (thumb IP, pinky MCP
+   flipping 40-50 deg in one frame: per-frame LM restarts from q_rest pick another pose family).
+2. **Thumb hinge axis (rig bug, not changed: the user decides on rigging).** `rig/skeleton.py` derives the thumb
+   MCP/IP flex axis from the rest bend between thumb bones: it comes out as the bone's local **Z** (0.94-0.96), while
+   fingers 2-5 bend about local **X** (0.96-0.99, MPFB's curl axis). Positive thumb "flex" therefore swings the tip
+   toward the fingers and *up* (dorsal); bending about local +X moves it across and under the palm (tip z -26 -> -45
+   -> -55 mm for MCP=IP=0/20/40 deg). With LIMITS tmcp (-10, 55), tip (-20, 80) the thumb can barely curl palmar
+   (10/20 deg) and comfort.json's thumb sits pinned at those limits (MCP -10.0, IP -17.4). Likely cause of "the thumb
+   sticks straight out". Fix = use local X with the palmar sign for tmcp/tip; old takes would then need the old axis
+   to render (store the convention in the anim JSON).
+3. **Splay vs real pianists** (human_score keypoint measures; FürElise pieces 81, 32, 5, 12, 40 at 1/20 frames):
+   | finger spread, median (p90) | v18 suite | pianists |
+   |---|---|---|
+   | index-middle | 9 (28) | 8 (16) |
+   | middle-ring | -1 (14) | -5 (3) |
+   | ring-pinky | 23 (44) | 18 (30) |
+   Worst when the pinky presses (ring-pinky 31 / 48), but idle fingers fan too (20 / 39; v18's EXT_OUT fans idle
+   fingers outward on purpose). Hand yaw is NOT the problem: v18 median -2 deg (slightly in), pianists +5.
+   This is the user's "turned its hands out a bit too much".
+4. **Press depth (v18 suite):** 86% of notes reach >= 0.95 key depth within 0.25 s of onset, 9% stay under 0.8,
+   4% under 0.5. The user's "didn't press down enough sometimes".
+5. **Real-pianist calibration of the review metrics** (FürElise 81 + 32, keypoint-derived joint angles at 24 fps):
+   finger speed 31 deg/s, frozen 5.0%, pops 3.4/min, PIP 27 deg. v18 (same measure): 45, 12.4%, 27.5, 39.
+6. **Hand split for one-track MIDI** (`piano.split_by_path` on piano-grace, commit 527dd59; portable): Viterbi over a
+   moving left/right boundary. Agreement with the FürElise pianists' own hands: 95.5% on five pieces it was not set
+   on (20, 60, 100, 120, 140) vs 83.2% for middle C.
+7. Part-boundary artefact (any part-wise solve): a part only sees notes from 0.5 s before its start, so a hand that
+   rests across the boundary is planned from its *next* chord (the 287.3 s part put the idle R hand in the L hand's
+   register). Planning from ~8 s of earlier notes fixed it on piano-grace.
+
+### v18 tuning, branch `piano-v18-tune` (worktree ~/h3b_v18t), 12 s windows
+New knob: `RIG_W["comfort_abd"]` (rig/hand.py): multiplies the comfort term of fingers 2-5 MCP abduction so the hand
+moves over instead of a finger fanning out. Default 1 = v18 byte-for-byte. Windows solved with v18 code + PIANO_OVR
+(score s: Rach 100-112, Debussy 50-62, Chopin 282-294, Brahms 0-12 held out). Anims, logs and scripts:
+`~/h3/hands_loop/v18tune_20261016/` (`windows/`, `v18check.py`, `score.py`).
+- **T-A**: `PRESS_OVERSHOOT` 0.003 -> 0.006.
+- **T-B**: T-A + `EXT_OUT` all 0 (no idle fan) + `comfort_abd` 4.
+- **T-C**: T-A + `EXT_OUT` all 0 + `comfort_abd` 10.
+
+| window | keys fully down (>=0.95) v18 / A / B / C | index-middle p90 v18 / C | ring-pinky p90 v18 / C | keys in time v18 / C | pops/min v18 / C |
+|---|---|---|---|---|---|
+| Brahms | 94 / 99 / 99 / 99 % | 17 / 11 | 33 / 33 | 97.0 / 97.0 | 7.5 / 10 |
+| Chopin 282-294 | 92 / 94 / 96 / 96 % | 35 / 19 | 46 / 46 | 96.2 / 96.2 | 12.5 / 12.5 |
+| Debussy 50-62 | 86 / 90 / 90 / 100 % | 15 / 11 | 35 / 26 | 90.5 / 100 | 10 / 2.5 |
+| Rach 100-112 | 89 / 94 / 91 / 93 % | 52 / 40 | 57 / 52 | 90.9 / 92.1 | 152 / 175 |
+Reading: deeper press works everywhere; comfort_abd 10 pulls the index in hard but barely moves the pinky (it flares
+while pressing: the pinky's key is reached by abduction because the other fingers pin the hand). Rach got a little
+busier on paper (pops 175 vs 152, broken 1.7 vs 1.0%). Next: footage (v18 | A | C side by side), then a pinky-
+specific step if the user agrees the flare is the remaining "turned out" look.
