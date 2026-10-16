@@ -9,7 +9,7 @@ P=${PY:-/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python}
 M=${MIDI_DIR:-/home/frosty40/h3b_suite/examples/piano}
 cd "$REPO"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 HAND_SCALE=1
-export PIANO_OVR=${PIANO_OVR-'{"PRESS_AXES":[3.0,1.0,3.0],"PRESS_AXES_BLACK":[3.0,3.0,3.0],"REPAIR_ITERS":2,"PRESS_OVERSHOOT":0.003,"REACH_SPLIT":true}'}
+export PIANO_OVR=${PIANO_OVR-}     # v18 (lab E29) settings are the code defaults; set this only for experiments
 END=390.5; N=24
 for k in $(seq 0 $((N-1))); do
   a=$(python3 -c "print(round(39.9+($END-39.9)*$k/$N,3))"); b=$(python3 -c "print(round(39.9+($END-39.9)*($k+1)/$N,3))")

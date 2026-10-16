@@ -536,7 +536,7 @@ if _CAL and "span" in __import__("blockout.rig.hand", fromlist=["_cal_parts"])._
     SPAN.update({(int(k[0]), int(k[1])): tuple(v) for k, v in _CAL["span"].items()})
 
 
-REACH_SPLIT = False          # after the staff split, a hand's chord wider than HAND_SPAN gives its inner-edge note
+REACH_SPLIT = True           # after the staff split, a hand's chord wider than HAND_SPAN gives its inner-edge note
                             # to the other hand when that hand can take it (as pianists redistribute between hands)
 
 
@@ -1386,8 +1386,8 @@ def _roll_offsets(off, roll):
 
 # ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
 THUMB_REST = 4.0                    # an idle thumb follows its resting spot by the keys this much harder
-PRESS_AXES = (3.0, 1.0, 1.5)
-PRESS_AXES_BLACK = (3.0, 3.0, 1.5)  # a black key starts 55 mm in: a pad short of it misses it, so depth counts too
+PRESS_AXES = (3.0, 1.0, 3.0)  # v18 (lab E29): press depth weighted like position
+PRESS_AXES_BLACK = (3.0, 3.0, 3.0)  # a black key starts 55 mm in: a pad short of it misses it, so depth counts too
 HAND_CLEAR, HAND_W = 0.003, 1.0    # m kept between the two hands' skin; weight of that against the targets
 RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=9e-6, comfort_sigma=True, iters=12, smooth=2e-5)   # target weights and the plan prior
 _RIGS = {}
@@ -1493,8 +1493,8 @@ FINGER_PRESS_W = 8.0        # ... pinned this hard on the frames the finger is o
 FINGER_PRIOR = 5e-3         # how hard a finger holds its smoothed path in the second solve
 FINGER_SPLIT = True         # with the wrist set, each finger solves on its own
 FREE_FOLLOW = True          # free fingers' float targets move with the solved wrist (across/along the keys)
-PRESS_OVERSHOOT = 0.0       # m the pressing pad aims below the key bed (0: at the bed)
-REPAIR_ITERS = 0            # verify-and-repair passes: re-solve the fingers with missed notes' presses boosted
+PRESS_OVERSHOOT = 0.003     # m the pressing pad aims below the key bed (0: at the bed)
+REPAIR_ITERS = 2            # verify-and-repair passes: re-solve the fingers with missed notes' presses boosted
 REPAIR_W = 4.0              # how much harder a missed note's finger pulls on each repair pass
 OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) key's surface in the collision model
 THUMB_PRESS_GIVE = 0.004    # m a pressing thumb's distal and proximal phalanx may sink past key tops (its side
