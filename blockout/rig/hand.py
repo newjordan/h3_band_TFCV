@@ -284,6 +284,12 @@ class HandRig:
             r.append([math.sqrt(W["couple"]) * (qf[ch.i_dip] - ch.k_dip * qf[ch.i_pip])])
         if x_last is not None and W.get("smooth", 0) > 0:
             r.append(math.sqrt(W["smooth"]) * (qf - x_last[6 + a:6 + b]) / self.sigma[a:b])
+        if W.get("formation", 0) > 0 and not pressing and f >= 1:
+            # an idle finger keeps formation: its knuckle bends follow the mean of its neighbours' (fingers 2-5), so
+            # it curls and travels with the hand instead of pointing off on its own
+            nb = [g for g in (f - 1, f + 1) if 1 <= g <= 4]
+            ref = np.mean([x[6 + self.sl[g] + 1:6 + self.sl[g + 1]] for g in nb], 0)
+            r.append(math.sqrt(W["formation"]) * (qf[1:] - ref) / self.sigma[a + 1:b])
         if env is not None:
             smp = [[] for _ in range(5)]
             smp[f] = ch.samples(P, Rs)

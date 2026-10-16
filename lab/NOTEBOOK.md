@@ -570,3 +570,25 @@ specific step if the user agrees the flare is the remaining "turned out" look.
 Footage (v18 | T-A | T-C, same camera and moment, piano audio): band site section `v18-tune`; files in
 `~/h3/hands_loop/v18tune_20261016/*.mp4` (Rach close-up + wide, Chopin close-up + wide, Debussy close-up, Brahms
 close-up). Stills: T-C reads like v18 with the fingers held closer together; no new look. Awaiting the user's eye.
+
+### 2026-10-16 evening: user picked T-C; next = idle fingers keep formation
+User on the A/C footage: "c is good, only thing i notice is the middle finger, or center two fingers kinda pop out
+sometimes when moving or not being used, and its usually more natural to just kinda stay in formation with the other
+fingers as you go across". **T-C is the new base** (PRESS_OVERSHOOT 0.006, EXT_OUT 0, RIG_W comfort_abd 10).
+- Frames at the worst moments (T-C, L hand): Debussy 53.7-54.2 s (L crossing over R) idle index and middle stand
+  straight up; Rach 100.3-101.3 s one idle finger points straight forward while the others curl. Cause: v18 drives each
+  idle finger to its own world-space float target (home spot + lift EXT_UP 10 mm + lengthen EXT_FWD 8 mm, glide to the
+  next key up to GLIDE_MAX 0.8 s early, OVER_FREE_UP when over the other hand) plus collision pushes; nothing ties it
+  to its neighbours.
+- Measure (`v18tune_20261016/formation2.py`): per idle finger 2-5, |total bend (MCP+PIP+DIP) - mean of neighbours'|;
+  "pointing" = idle finger bend < 30 deg while its neighbours average > 70.
+  | window | v18 p50/p90, pointing | T-C p50/p90, pointing |
+  |---|---|---|
+  | Debussy 50-62 | 14 / 50 deg, 5.1% | 11 / 48, 4.1% |
+  | Rach 100-112 | 34 / 94, 14.6% | 39 / 110, 15.5% |
+  | Chopin 282-294 | 12 / 42, 2.5% | 12 / 45, 2.1% |
+  | Brahms 0-12 | 13 / 47, 7.9% | 12 / 53, 8.3% |
+- New knob `RIG_W["formation"]` (rig/hand.py `finger_residuals`, opt-in, 0 = v18): an idle finger's MCP/PIP/DIP are
+  pulled toward the mean of its neighbours' (fingers 2-5), scaled by the human joint spread like comfort.
+- Running on top of T-C (exact PIANO_OVR in `v18tune_20261016/variants.txt`): **F1** formation 3e-5; **F2** 1e-4;
+  **F3** F2 + EXT_FWD 0 + EXT_UP 0.004 + GLIDE_MAX 0.4.
