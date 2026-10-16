@@ -670,3 +670,18 @@ broken at 1 fps. Band site section `v18-hands`; files `v18tune_20261016/h/`. Cur
 - New switches: `CASE_COLLIDE` (piano.py; skin above 2 cm still meets the fallboard), `RIG_CURL` env (rig/hand.py;
   rounded rest pose for fingers 2-5 {"mcp", "pip", "kdip"}). Running on H: **I1** CASE_COLLIDE; **I2** CASE_COLLIDE +
   RIG_CURL {"mcp": 20, "pip": 45, "kdip": 0.67} (the classic rounded hand; DIP = 2/3 PIP).
+Results I1 / I2 (vs H; `score.py`, `idle_straight.py`):
+| window | idle fingers straight H / I1 / I2 | tips in fallboard H / I1 / I2 | keys in time H / I1 / I2 |
+|---|---|---|---|
+| Debussy 50-62 | 89 / 89 / 17% | 106 / 6 / 0 | 100 / **85.7** / 100 |
+| Debussy 62-74 | 85 / 87 / 0% | 19 / 0 / 0 | 100 / 100 / 100 |
+| Chopin 282-294 | 80 / 78 / 4% | 51 / 10 / 0 | 98.1 / 98.1 / 96.2 |
+| Chopin 266-278 | 64 / 61 / 14% | 115 / 15 / 2 | 100 / 98.6 / 98.6 |
+| Rach 100-112 | 41 / 38 / 19% | 81 / 20 / 5 | 92.1 / 89.0 / 89.6 |
+| Brahms 0-12 | 70 / 70 / 25% | 8 / 0 / 0 | 97.0 / 95.5 / 97.0 |
+I1 (case collision alone) stops the fallboard hits but leaves idle fingers straight and costs keys: dropped. I2 curls the
+hand (idle bend p50 21-48 -> 64-89 deg) and empties the fallboard, but hooked tips (DIP > PIP + 30) rise in the Rach
+(40 -> 99 finger-frames, ~80% idle): the rest pose gives the DIP 30 deg while its coupling to the PIP is weak (couple
+5e-5), so a PIP that straightens leaves the tip bent. Frames (H | I2, Chopin 270.6 s, Debussy 56.2 s): H's long fingers
+lie flat along the keys; I2's curl down onto them, perhaps a little far ("curl slightly"). Running **I3** = I2 + couple
+1e-3, and **I4** = gentler curl (MCP 15, PIP 35) + couple 1e-3, both with CASE_COLLIDE.
