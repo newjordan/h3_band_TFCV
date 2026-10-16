@@ -627,3 +627,20 @@ contact sheet (`v18tune_20261016/review_sheets.sh`) that I look at in full befor
   last 0.6 s (v18 drifted across the whole gap).
 - Running **G** = F2 + CONSOLIDATE + REST_HOLD on Debussy 50-62 and 62-74, Chopin 282-294 and 266-278 (R hand
   playing), Rach 100-112, Brahms 0-12 (F2 also on the two new windows).
+Results G (F2 + CONSOLIDATE + REST_HOLD) and **H** (G + `IDLE_SEP` 0.24 m + hands decided once on the whole piece when
+CONSOLIDATE is on; window splits had seen too little context and left the L hand 14 presses in Debussy 62-74):
+| window | hand overlap frames F2 / G / H | keys in time F2 / G / H | out of formation p90 F2 / H |
+|---|---|---|---|
+| Debussy 50-62 | 109 / 141 / **0** | 100 / 100 / 100 | 28 / 23 |
+| Debussy 62-74 | 106 / 99 / **0** | 92.9 / 96.4 / **100** | 35 / 25 |
+| Chopin 282-294 | 20 / 2 / 3 | 96.2 / 98.1 / 98.1 | 18 / 16 |
+| Chopin 266-278 | 14 / 14 / 14 | 100 all | 32 / 32 |
+| Rach 100-112, Brahms 0-12 | 0 | unchanged | unchanged |
+G alone made Debussy 50-62 worse (141): with all its notes given to R, the idle L hand sat at v18's default rest spot
+(piece centre - 15 cm, x ~ 0) right under R. IDLE_SEP (a hand with no note sounding and none within 0.6 s keeps >= 0.24 m
+from the other, eased over +-0.25 s) fixes it: L rests at x -0.10..-0.21 while R plays. Chopin: REST_HOLD keeps the
+idle R hand at x 0.15 through 286-292 s (v18 drifted it into the L hand's register and it took the over pose).
+Review (1 fps contact sheets, every video, before posting): Debussy wide 50-62 / 62-74, Debussy R close-up, Chopin
+282-294 wide / L / R close-ups, Chopin 266-278 R close-up — H hands apart, resting hand calm on its keys, nothing
+broken at 1 fps. Band site section `v18-hands`; files `v18tune_20261016/h/`. Current candidate: **H** (PIANO_OVR in
+`v18tune_20261016/variants.txt`).

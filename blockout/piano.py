@@ -825,6 +825,7 @@ def _smooth(u):
     return u * u * (3 - 2 * u)
 
 
+IDLE_SEP = None             # m: a hand with nothing to play keeps at least this far from the other hand (None: v18)
 REST_HOLD = None            # (gap s, travel s): a hand with longer than gap to its next note holds, then travels in the
                             # last travel s (None: v18, it drifts toward its next note across the whole gap)
 
@@ -1968,12 +1969,17 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     if speed != 1.0:
         notes = [type(n)(n.start / speed, n.end / speed, n.pitch, n.velocity, n.track) for n in notes]
     end = dur + start if dur else max(n.end for n in notes) + 1.0
+    whole = split_hands(notes) if CONSOLIDATE else None   # hands decided once for the whole piece (parts agree)
     notes = [n for n in notes if n.end > start - 0.5 and n.start < end + 0.5]
     # simulate from a little before the window so the springs are settled when it starts
     pre = 2.0
     times = (start - pre) + np.arange(int(round((end - start + pre) * fps))) / fps
     N = len(times)
-    rh, lh = split_hands(notes)
+    if whole is not None:
+        keep = {id(n) for n in notes}
+        rh, lh = [n for n in whole[0] if id(n) in keep], [n for n in whole[1] if id(n) in keep]
+    else:
+        rh, lh = split_hands(notes)
     allx = [key_x(n.pitch) for n in notes]
     cx = float(np.mean([min(allx), max(allx)]))
 
@@ -1994,6 +2000,21 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         H["xh"], H["nbh"] = hand_track(fing, name, times + LEAD_HAND, rest)
         H["xt"], H["nbt"] = hand_track(fing, name, times + LEAD_TIP, rest)
         hands[name] = H
+
+    if IDLE_SEP and "R" in hands and "L" in hands:   # a hand with nothing to play keeps clear of the other one
+        for name, other, sg in (("L", "R", -1.0), ("R", "L", 1.0)):
+            H, O = hands[name], hands[other]
+            for key, lead in (("xh", LEAD_HAND), ("xt", LEAD_TIP)):
+                t = times + lead
+                idle = np.ones(N, bool)
+                if len(H["on"]):
+                    i = np.searchsorted(H["on"], t, side="right") - 1
+                    sounding = (i >= 0) & (H["end"][np.clip(i, 0, None)] > t - 0.3)
+                    nxt = np.where(i + 1 < len(H["on"]), H["on"][np.clip(i + 1, 0, len(H["on"]) - 1)] - t, 1e9)
+                    idle = ~sounding & (nxt > 0.6)
+                want = O[key] + sg * IDLE_SEP
+                push = np.where(idle, (np.minimum(H[key], want) if sg < 0 else np.maximum(H[key], want)) - H[key], 0.0)
+                H[key] = H[key] + _box(push, int(0.25 * fps))      # eased in and out over half a second
 
     beats = np.asarray(beats if beats is not None else np.arange(0, end + 1, 0.5))
     downbeats = np.asarray(downbeats if downbeats is not None else beats[::4])
