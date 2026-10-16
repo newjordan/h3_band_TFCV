@@ -602,6 +602,7 @@ Results (12 s windows; `formation2.py`, `score.py`):
 F2 also lowers crossed tips (Rach 25 -> 19%, Chopin 23 -> 22%), raises idle-finger motion (frozen ~0-4%; speed +10%)
 and curl (PIP +4 deg: idle fingers now curl with working neighbours); Debussy hand overlap 92 -> 109 frames. F3's idle
 lift/lengthen/glide changes cost Debussy 10% keys: dropped. **Candidate: F2.** Frame check: Debussy 54.0 s (L over
-R) idle fingers curl in formation instead of standing up; Rach 101.3 s unchanged (the straight fingers there are
-mostly pressing fingers reaching for far chords: a reach issue, not formation). Footage C | F2: band site section
+R) idle fingers curl in formation instead of standing up; Rach 101.3 s unchanged, and NOT a reach issue (corrected after checking): no L finger presses
+at 101.33 s; ring (-11 deg) and pinky (-19) just released L4/L5 and stay straight while the middle is at 114. F2's
+formation pull loses to the release blend / pass-B path prior (FINGER_PRIOR 5e-3) during fast leaps. Next step there. Footage C | F2: band site section
 `v18-formation`, files `v18tune_20261016/form_*.mp4`.
