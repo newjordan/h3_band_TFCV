@@ -547,7 +547,44 @@ def split_hands(notes):
         R, L = [n for n in notes if n.track == hi], [n for n in notes if n.track != hi]
     else:
         R, L = [n for n in notes if n.pitch >= 60], [n for n in notes if n.pitch < 60]
-    return _reach_split(R, L) if REACH_SPLIT else (R, L)
+    R, L = _reach_split(R, L) if REACH_SPLIT else (R, L)
+    return _consolidate(R, L) if CONSOLIDATE else (R, L)
+
+
+CONSOLIDATE = False         # a note played right next to keys the other hand is sounding goes to that hand when it can
+CONS_NEAR = 0.12            # take it (one hand covers it with more fingers; the hands don't pile into each other).
+                            # m: "right next to" = this close to one of the other hand's sounding keys
+
+
+def _consolidate(R, L):
+    """Give a note to the other hand when that hand is sounding keys right beside it, is the busier hand while the note
+    sounds, and can take it: at every moment of the note, its keys plus this one are at most five within HAND_SPAN."""
+    hands = {"R": list(R), "L": list(L)}
+
+    def fits(ns, n):
+        for t in sorted({n.start} | {m.start for m in ns if n.start < m.start < n.end - 0.08}):   # (legato tails overlap)
+            ps = {m.pitch for m in ns if m.start <= t + 0.02 and m.end > t + 0.08} | {n.pitch}
+            if len(ps) > 5 or key_x(max(ps)) - key_x(min(ps)) > HAND_SPAN:
+                return False
+        return True
+
+    def onsets(ns, a, b):
+        return sum(1 for m in ns if a - 0.02 <= m.start < b)
+
+    for _ in range(4):
+        moved = False
+        for h, o in (("L", "R"), ("R", "L")):
+            for n in sorted(hands[h], key=lambda m: (m.start, m.pitch if h == "L" else -m.pitch), reverse=False):
+                so = [m for m in hands[o] if m.start < n.end - 0.02 and m.end > n.start + 0.02]
+                if not so or min(abs(key_x(m.pitch) - key_x(n.pitch)) for m in so) > CONS_NEAR:
+                    continue
+                if onsets(hands[o], n.start, n.end) <= onsets(hands[h], n.start, n.end):
+                    continue                        # the busier hand takes the other's notes, not the reverse
+                if fits(hands[o], n):
+                    hands[h].remove(n); hands[o].append(n); moved = True
+        if not moved:
+            break
+    return (sorted(hands["R"], key=lambda m: (m.start, m.pitch)), sorted(hands["L"], key=lambda m: (m.start, m.pitch)))
 
 
 def _reach_split(R, L, tol=None, near=0.30):
@@ -788,6 +825,10 @@ def _smooth(u):
     return u * u * (3 - 2 * u)
 
 
+REST_HOLD = None            # (gap s, travel s): a hand with longer than gap to its next note holds, then travels in the
+                            # last travel s (None: v18, it drifts toward its next note across the whole gap)
+
+
 def hand_track(fing, hand, times, rest_x):
     """Hand-centre x (and near-black flag) over frame times."""
     if not fing:
@@ -809,6 +850,8 @@ def hand_track(fing, hand, times, rest_x):
             t1 = t_on[i + 1] - 0.025
             g0 = max(t_end[i], t_on[i] + 0.05)
             dur = max(min(0.12, 0.7 * gap), t1 - g0)
+            if REST_HOLD and t1 - g0 > REST_HOLD[0]:   # a long rest: the hand stays where it was, then travels late
+                dur = REST_HOLD[1]
             x[j] = hx[i] + (hx[i + 1] - hx[i]) * _smooth((t - (t1 - dur)) / dur)
     idx = np.clip(np.searchsorted(t_on, times + 0.06, side="right") - 1, 0, len(fing) - 1)
     return x, nb[idx]

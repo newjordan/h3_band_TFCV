@@ -606,3 +606,24 @@ R) idle fingers curl in formation instead of standing up; Rach 101.3 s unchanged
 at 101.33 s; ring (-11 deg) and pinky (-19) just released L4/L5 and stay straight while the middle is at 114. F2's
 formation pull loses to the release blend / pass-B path prior (FINGER_PRIOR 5e-3) during fast leaps. Next step there. Footage C | F2: band site section
 `v18-formation`, files `v18tune_20261016/form_*.mp4`.
+
+### 2026-10-16 night: user review of F2 — Debussy hands pile into each other; Chopin close-up broken (not reviewed)
+User: "debussy has extreme overlap with right and left, use more fingers on one hand to cover those, not crossing
+hands, and then the chopin final close up he is not playing the piano at all ... very very broken shot, i dont think
+you reviewed it." Correct: I published after looking at two stills. **Rule from now: every video gets a 1 fps
+contact sheet (`v18tune_20261016/review_sheets.sh`) that I look at in full before it goes on the site.**
+- Chopin 282-294 s, R-hand close-up: 286-292 s is left hand only. v18's `hand_track` glides a resting hand toward its
+  next note across the whole gap, so the idle R hand drifts toward the L hand, `_close_roles` marks it "over", and it
+  takes the over-hand pose (lifted ~6 cm, OVER_YAW turned in, OVER_ROLL, free fingers curled): pinched, off the keys,
+  once hanging in front of them (287.6-292.6 s). Same in v18, T-C and F2.
+- Debussy opening: the L hand holds a third (F4-Ab4, ~5 s) right under the R hand's moving thirds (Bb4 and up); with the
+  full-size hand at both spots the hands overlap and the role system layers one over the other.
+- New switches (piano.py, default off = v18): `CONSOLIDATE` (`_consolidate`, after the staff split and
+  `_reach_split`): a note sounding within CONS_NEAR = 0.12 m of keys the other hand is sounding goes to that hand when
+  that hand is the busier one while it sounds and can take it (at every onset during the note, its keys plus this one
+  are <= 5 within HAND_SPAN; legato tails < 80 ms ignored). Suite: 38 of 2,046 notes move (Debussy 24, Rach 4, Chopin
+  10); all six L notes of Debussy 47-62 s go to the R hand (it holds the third with thumb and index while 3-5 play the
+  thirds). `REST_HOLD = (1.0, 0.6)`: a hand with more than 1 s to its next note stays where it was and travels in the
+  last 0.6 s (v18 drifted across the whole gap).
+- Running **G** = F2 + CONSOLIDATE + REST_HOLD on Debussy 50-62 and 62-74, Chopin 282-294 and 266-278 (R hand
+  playing), Rach 100-112, Brahms 0-12 (F2 also on the two new windows).
