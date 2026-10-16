@@ -567,3 +567,6 @@ Reading: deeper press works everywhere; comfort_abd 10 pulls the index in hard b
 while pressing: the pinky's key is reached by abduction because the other fingers pin the hand). Rach got a little
 busier on paper (pops 175 vs 152, broken 1.7 vs 1.0%). Next: footage (v18 | A | C side by side), then a pinky-
 specific step if the user agrees the flare is the remaining "turned out" look.
+Footage (v18 | T-A | T-C, same camera and moment, piano audio): band site section `v18-tune`; files in
+`~/h3/hands_loop/v18tune_20261016/*.mp4` (Rach close-up + wide, Chopin close-up + wide, Debussy close-up, Brahms
+close-up). Stills: T-C reads like v18 with the fingers held closer together; no new look. Awaiting the user's eye.
