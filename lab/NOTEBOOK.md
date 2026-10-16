@@ -592,3 +592,16 @@ fingers as you go across". **T-C is the new base** (PRESS_OVERSHOOT 0.006, EXT_O
   pulled toward the mean of its neighbours' (fingers 2-5), scaled by the human joint spread like comfort.
 - Running on top of T-C (exact PIANO_OVR in `v18tune_20261016/variants.txt`): **F1** formation 3e-5; **F2** 1e-4;
   **F3** F2 + EXT_FWD 0 + EXT_UP 0.004 + GLIDE_MAX 0.4.
+Results (12 s windows; `formation2.py`, `score.py`):
+| window | out of formation p90 C / F1 / F2 / F3 | pointing C / F2 | keys in time C / F1 / F2 / F3 | pops/min C / F2 |
+|---|---|---|---|---|
+| Debussy 50-62 | 48 / 31 / 28 / 33 | 4.1 / 0.0% | 100 / 100 / 100 / **90.5** | 2.5 / 0 |
+| Rach 100-112 | 110 / 90 / 78 / 74 | 15.5 / 5.4% | 92.1 / 92.1 / 92.1 / 93.9 | 175 / 165 |
+| Chopin 282-294 | 45 / 23 / 18 / 17 | 2.1 / 0.0% | 96.2 all | 12.5 / 12.5 |
+| Brahms 0-12 | 53 / 36 / 26 / 25 | 8.3 / 1.0% | 97.0 all | 10 / 10 |
+F2 also lowers crossed tips (Rach 25 -> 19%, Chopin 23 -> 22%), raises idle-finger motion (frozen ~0-4%; speed +10%)
+and curl (PIP +4 deg: idle fingers now curl with working neighbours); Debussy hand overlap 92 -> 109 frames. F3's idle
+lift/lengthen/glide changes cost Debussy 10% keys: dropped. **Candidate: F2.** Frame check: Debussy 54.0 s (L over
+R) idle fingers curl in formation instead of standing up; Rach 101.3 s unchanged (the straight fingers there are
+mostly pressing fingers reaching for far chords: a reach issue, not formation). Footage C | F2: band site section
+`v18-formation`, files `v18tune_20261016/form_*.mp4`.
