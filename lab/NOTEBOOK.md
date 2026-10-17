@@ -711,3 +711,17 @@ thumb and pinky play (Debussy ~52.6, 56.6, 58.6 s); I4 costs Rach keys (92.1 -> 
   travels (scaled by travel, full at 2 cm), finishes the sideways move with "lead" of the approach left, then drops; the
   strike starts from >= hmin; the approach takes >= amin. Running **J** = I4 + APPROACH_ARC {clear 0.010, lead 0.4,
   hmin 0.006, amin 0.16}.
+
+### 2026-10-17: key placement and posture — "curl the fingers and tilt the knuckles up"
+User on the Clair de Lune R close-up at 8 s (score 58.2): "touching the key literally at the joint where it starts, the
+key is almost impossible to even press down there ... not considering leverage on the key press at all ... the black key
+up should be off limits for the white keys", then: **"curl the fingers and tilt the knuckles up"**. At 58.2 s H's pinky
+presses C5 (white) 51 mm in, right at the narrowing where the black keys begin (55 mm); the hand is low and flat (I4
+lower still, palm almost on the keys). Placement never respected leverage: the calibrated FürElise strike bands put
+long fingers 40-80 mm in (90 mm near black keys), shifted 12 mm forward; the press target's y weight was 1 (x, z: 3), so
+pads drift deeper; key depth = pad drop / (travel x lever), so a key goes fully down from anywhere along it.
+New switch `WHITE_FRONT_MAX` (piano.hitpad: white keys struck at most this far in). Running **K** = I4 base +
+WHITE_FRONT_MAX 0.045 + PRESS_AXES [3, 3, 3] + PITCH0 -0.20 rad (palm up ~11 deg from wrist to knuckles) + RIG_W
+root_rot 2e-3 (the hand holds the planned tilt instead of flattening freely; was 1e-4) + RIG_CURL {mcp 20, pip 45,
+kdip 0.67}. Measure: `v18tune_20261016/posture.py` (knuckle tilt, knuckle height, white presses past 45 mm, fingertip
+angle). J (I4 + anticipation) running in parallel.

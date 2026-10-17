@@ -76,6 +76,7 @@ HITPAD_B = [(_BY0 + 0.004, _BY0 + 0.014), (_BY0 + 0.010, _BY0 + 0.025), (_BY0 + 
 # white keys when the hand is up among the black keys (e.g. D-flat major): the whole hand plays deeper
 HITPAD_WN = [(0.015, 0.030), (0.030, 0.045), (0.030, 0.045), (0.030, 0.045), (0.015, 0.030)]
 HITPAD = {"white": (0.010, 0.055), "black": (_BY0 + 0.004, _BY0 + 0.025)}     # union, for anything finger-blind
+WHITE_FRONT_MAX = None      # m: white keys only struck this far in at most (None: H; the black keys start at 0.055)
 
 
 def hitpad(p, f, near_black=False):
@@ -83,6 +84,9 @@ def hitpad(p, f, near_black=False):
     if HITPAD_SHIFT:                          # strike nearer the key fronts (negative = toward the player)
         floor = (WHITE_L - BLACK_L + 0.006) if is_black(p) else 0.006
         lo, hi = max(floor, lo + HITPAD_SHIFT), max(floor + 0.008, hi + HITPAD_SHIFT)
+    if WHITE_FRONT_MAX and not is_black(p):   # a white key is pressed on its wide front, never up between the black keys
+        hi = min(hi, WHITE_FRONT_MAX)         # (near the pivot it barely moves)
+        lo = min(lo, hi - 0.010)
     return lo, hi
 
 
