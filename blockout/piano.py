@@ -524,6 +524,8 @@ def set_hand_model(name):
         THUMB = {"seg": SEG[0], "n0": n0, "axis": axis, "dirs": _cone_dirs(n0, THUMB_CONE),
                  "swings": lambda m, n0=n0: _swings(n0, m)}
     TIP_R = FINGER_R[:, 3]
+    if "_apply_overrides" in globals():           # (a reload after import must not undo PIANO_OVR)
+        _apply_overrides(plain_only=True)
 
 
 _SEG0, _KNUCKLE0, _FINGER_R0, _HOME0 = SEG, KNUCKLE, FINGER_R, HOME
@@ -2339,13 +2341,20 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             "fingering": fing_out, "frames": frames}
 
 
-if os.environ.get("PIANO_OVR"):      # experiment hook: {"KNUCKLE_Z":0.07,"HOME_S":1.1,...}
-    _o = json.loads(os.environ["PIANO_OVR"])
-    for _k, _v in _o.items():
+def _apply_overrides(plain_only=False):
+    """PIANO_OVR experiment hook: {"KNUCKLE_Z": 0.07, "HOME_S": 1.1, ...} (NAME_S multiplies). set_hand_model() calls it
+    again for the plain values, since it reloads the calibration (PITCH0, KNUCKLE_Z, Y_KN, hit pads) after import."""
+    if not os.environ.get("PIANO_OVR"):
+        return
+    for _k, _v in json.loads(os.environ["PIANO_OVR"]).items():
         if _k.endswith("_S"):
-            globals()[_k[:-2]] = globals()[_k[:-2]] * _v
+            if not plain_only:
+                globals()[_k[:-2]] = globals()[_k[:-2]] * _v
         else:
             globals()[_k] = _v
+
+
+_apply_overrides()
 
 
 if __name__ == "__main__":

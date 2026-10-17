@@ -744,3 +744,12 @@ so tilting the knuckles up would leave the fingertips short of the keys and the 
 **K posted** (band site `v18-front`, files `v18tune_20261016/k/`, five videos reviewed; H's raised idle finger at
 Debussy 58.6 s is gone in K). Running **M** = K + PITCH0 -0.25 + tilt 1.0 (outweighs the wrist-height priors: the wrist
 may drop as the knuckles rise).
+**Bug found (2026-10-17): PIANO_OVR overrides of PITCH0, KNUCKLE_Z, Y_KN and the calibrated hit pads were silently
+undone in every CLI run.** `__main__` calls `set_hand_model()` after the module-level override block, and it reloads
+the FürElise calibration ("place", "hitpad"). Found because one pass-A frame solved directly held the tilt (+21.5 deg)
+and a full `_pass3_rig` on a cache kept +16 deg through every stage, while the CLI windows ended at +2. So **I6 (hand
+height) and L/M (knuckle tilt) never had their PITCH0/KNUCKLE_Z** (L/M held the hand to the calibrated near-flat plan;
+that is why the tilt went *down*). Any earlier lab experiment that overrode those names was affected the same way.
+Fix: `_apply_overrides()`; `set_hand_model` re-applies the plain overrides after loading. With no PIANO_OVR nothing
+changes (H defaults unchanged). Re-running **M2** = K + PITCH0 -0.25 + tilt 1.0 and **KH** = K + PITCH0 -0.20 +
+KNUCKLE_Z 0.0577 + WRIST_Z_SCALE (no tilt hold).
