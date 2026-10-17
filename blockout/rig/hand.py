@@ -208,6 +208,10 @@ class HandRig:
             r.append(math.sqrt(W["smooth"]) * 20.0 * (x[:3] - x_last[:3]))
         r.append(math.sqrt(W["root_pos"]) * (root_pos - ref_pos))
         r.append(math.sqrt(W["root_rot"]) * x[3:6])
+        if W.get("tilt", 0) > 0:                        # the hand keeps its planned tilt (knuckles over the wrist) only
+            fr_ = self.sk.R0["wrist"].T @ self.M_rest[1]  # turn and roll stay free to reach
+            f1, f0 = root_rot @ fr_, ref_rot @ fr_
+            r.append([math.sqrt(W["tilt"]) * (math.asin(float(np.clip(f1[2], -1, 1))) - math.asin(float(np.clip(f0[2], -1, 1))))])
         if forearm is not None:                          # wrist joint: the hand's forward axis against the forearm
             el, band = forearm
             fa = root_pos - np.asarray(el, float); fa /= np.linalg.norm(fa)

@@ -731,3 +731,10 @@ key front for index-ring" was WRONG: `case_strike.py` pooled white keys (measure
 43-47 mm, p90 51-74 mm, **44-55% of white presses deeper than 45 mm** (the black keys start at 55); I4: p50 30 mm, 26%
 past 45 mm. The user's observation was right. Knuckle tilt in H while playing: +1..+8 deg (knuckles barely above the
 wrist), knuckle height 56-63 mm.
+Results J / K (6 windows): **K** puts white-key presses in front (past 45 mm: H 35-55% -> K 0-11%; depth p50 29-37 mm) and
+curls the hand (idle straight 0-28%; PIP 38-54), keys in time ~I4 (Brahms 98.5, Chopin 98.6/96.2, Debussy 95.2/100, Rach
+89.6). But **the knuckles do not tilt up**: tilt +2..+10 deg (H +1..+8): PITCH0 and root_rot 2e-3 lose to the finger
+targets, the solver still sets the hand's attitude freely. **J's anticipation did not work** as measured: strikes still
+slide in (74-97%), because most of the sideways travel is the hand carrying the finger at key level; APPROACH_ARC only
+lifts the finger's own travel relative to its home spot. New: RIG_W `tilt` (rig/hand.py residuals: holds only the hand's
+pitch -- forward axis elevation -- to the plan's; turn and roll stay free). Running **L** = K + PITCH0 -0.25 + tilt 0.1.
