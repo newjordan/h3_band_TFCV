@@ -753,3 +753,11 @@ that is why the tilt went *down*). Any earlier lab experiment that overrode thos
 Fix: `_apply_overrides()`; `set_hand_model` re-applies the plain overrides after loading. With no PIANO_OVR nothing
 changes (H defaults unchanged). Re-running **M2** = K + PITCH0 -0.25 + tilt 1.0 and **KH** = K + PITCH0 -0.20 +
 KNUCKLE_Z 0.0577 + WRIST_Z_SCALE (no tilt hold).
+Results M2 / KH (after the fix): **M2 tilts the knuckles up +14..+16 deg in every window** (K +2..+10), knuckles 3-5 mm
+higher, white presses stay at the front (0-12% past 45 mm), fingertips a little steeper in Chopin/Brahms, broken lowest
+yet (Rach 0.09%). Keys vs K: Brahms 98.5 -> 95.5, Debussy 62-74 100 -> 96.4, Chopin 282-294 96.2 -> 94.3, Rach 89.6 ->
+89.0, Chopin 266-278 98.6 -> 100, Debussy 50-62 95.2 =. KH (hand raised to this hand's size, no tilt hold): tilt
+unchanged (+2..+9), idle hands frozen 38-45%: dropped. Side views (new `rside` camera) show the bridge: H flat with long
+fingers along the keys, K curled but flat-knuckled, M2 arched with fingers coming down. Review (M2 panel cropped, 1 fps,
+all six videos): nothing broken; the thumb hangs below the key fronts at Chopin ~274.6 / 277.6 s (thumb axis, unchanged),
+the pinky reaches out flat in the Rach leaps (~103.6 s). Posted: band site `v18-knuckles`, files `v18tune_20261016/m2/`.
