@@ -697,3 +697,9 @@ height.** `furelise_cal` knuckle_z 0.042 m is the FürElise pianists' (17.7 cm h
 pianists' wrist offsets by 24.3/17.7 in x and y but NOT z. Knuckles ~1.5 cm too low for this hand: a long finger can
 only reach its key flat, an idle finger cannot hang curled without entering the keys, so the collision straightens it.
 New switch `WRIST_Z_SCALE` (piano.py). Running **I6** = I4 + KNUCKLE_Z 0.0577 (0.042 x 24.3/17.7) + WRIST_Z_SCALE.
+Results I5 / I6: I5 (I4 + comfort_press 0.3) wins back part of the Rach keys (87.2 -> 89.6) but loses Brahms (100 -> 97).
+I6 (I4 + KNUCKLE_Z 0.0577 + WRIST_Z_SCALE) does not raise the hand much (pressing knuckle heights 41-71 mm vs H 39-62:
+the whole-hand solve pulls the root back to reach), makes the Debussy pressing middle finger flatter (tip p50 28 deg, 46%
+flat vs H 53 / 8%) and costs Debussy keys (95.2): dropped; the hand-height hypothesis is not confirmed. **I4 posted** (band
+site `v18-curl`, files `v18tune_20261016/i4/`), all six videos reviewed; open in H and I4: idle finger sticking up while
+thumb and pinky play (Debussy ~52.6, 56.6, 58.6 s); I4 costs Rach keys (92.1 -> 87.2) and Chopin 282-294 (98.1 -> 96.2).
