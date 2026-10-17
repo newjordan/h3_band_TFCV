@@ -435,6 +435,10 @@ SWIVEL_MOVE = 160.0     # cost per (rad per 1/24 s)^2 of turning the swivel: the
                         # strokes (high enough that the 5-degree candidate steps don't read as elbow pops)
 ELBOW_UP = 0.05         # m below the shoulder an elbow rises to before it costs (3 per m)
 ELBOW_SMOOTH_S = 0.05   # s: the elbow's swivel is smoothed over about this long
+ELBOW_RISE = {"R": 1.0, "L": 0.5}  # the elbow rises this fraction of its wrist's rise over the stroke's floor ...
+ELBOW_RISE_MAX = math.radians(25)   # ... by turning the swivel up, at most this far,
+RISE_CENTRE_S = 1.0     # less its mean over about this long, so the arm's posture stays where the swivel put it
+RISE_FLOOR_S = 0.4      # s: the floor is the wrist's lowest within about this long
 
 
 def spread(r, fps, s=SPREAD_S):
@@ -601,6 +605,56 @@ def swivel_path(cost, move):
     return path
 
 
+def _rise(frames, h, circ, th, fps, A, pen):
+    """(N,) swivel turns that lift each elbow ELBOW_RISE of its wrist's height over the stroke's floor (the
+    wrist's lowest within RISE_FLOOR_S, smoothed), up its circle and no higher than ELBOW_UP under the
+    shoulder, less their mean over RISE_CENTRE_S: the elbow leads each stroke up instead of hanging while the
+    wrist does the lifting, and drops a little between strokes. A turn is cut back where it would take the arm
+    deeper into the kit, the body or the other hand than the swivel's own pick (pen: place_elbows' depth per
+    candidate)."""
+    wz = np.array([fr["hands"][h]["wrist"][2] for fr in frames], float)
+    w = max(1, int(round(RISE_FLOOR_S * fps / 2)))
+    pad = np.concatenate([np.repeat(wz[:1], w), wz, np.repeat(wz[-1:], w)])
+    floor = np.array([pad[j:j + 2 * w + 1].min() for j in range(len(wz))])
+    k = np.ones(w) / w
+    floor = np.convolve(np.concatenate([np.repeat(floor[:1], w), floor, np.repeat(floor[-1:], w)]), k, "same")[w:-w]
+    want = ELBOW_RISE[h] * np.clip(wz - floor, 0, None)
+    out = np.zeros(len(wz))
+    for j, (c, r, e1, e2) in enumerate(circ):
+        if r < 1e-3 or want[j] <= 0:
+            continue
+        sh_z = frames[j]["hands"][h]["shoulder"][2]
+        z = lambda a: c[2] + r * (math.cos(a) * e1[2] + math.sin(a) * e2[2])
+        g = r * (-math.sin(th[j]) * e1[2] + math.cos(th[j]) * e2[2])
+        sg = 1.0 if g >= 0 else -1.0
+        room = max(0.0, sh_z - ELBOW_UP - z(th[j]))
+        dz = min(want[j], room)
+        d = sg * min(dz / max(abs(g), 0.3 * r), ELBOW_RISE_MAX)
+        while d and z(th[j] + d) > sh_z - ELBOW_UP:      # the circle bends over: keep under the shoulder
+            d *= 0.7
+            if abs(d) < 1e-3:
+                d = 0.0
+        out[j] = d
+    if RISE_CENTRE_S:
+        n = max(1, int(round(RISE_CENTRE_S * fps)))
+        pad = np.concatenate([np.repeat(out[:1], n), out, np.repeat(out[-1:], n)])
+        out = out - np.convolve(pad, np.ones(n) / n, "same")[n:-n]
+    Ax = np.concatenate([A, [A[0] + 2 * math.pi]])
+    depth = lambda j, a: float(np.interp(a % (2 * math.pi), Ax, np.append(pen[j], pen[j][0])))
+    for _ in range(2):      # cut back, smooth what the cuts leave, and cut back again
+        for j in range(len(out)):
+            ok = depth(j, th[j]) + 1e-4
+            for f in (1.0, 0.7, 0.45, 0.25, 0.1, 0.0):
+                if depth(j, th[j] + f * out[j]) <= ok:
+                    out[j] *= f
+                    break
+        if _ == 0:
+            w = max(1, int(round(ELBOW_SMOOTH_S * 2 * fps)))
+            pad = np.concatenate([np.repeat(out[:1], w), out, np.repeat(out[-1:], w)])
+            out = np.convolve(pad, np.ones(w) / w, "same")[w:-w]
+    return out
+
+
 def place_elbows(frames, kit, fps):
     """Each elbow, around its shoulder-wrist axis, where it keeps the arm out of the kit (a Kit), the body and
     the other hand's stick, fist and forearm, and is least awkward (drum_hands.arm_cost: the wrist's bend, the elbow's
@@ -623,6 +677,7 @@ def place_elbows(frames, kit, fps):
     out = {}
     for h, oh in (("R", "L"), ("L", "R")):
         cost = np.zeros((N, K))
+        pen = np.zeros((N, K))
         circ = []
         refs = _swivel_refs(*(np.array([fr["hands"][h][k] for fr in frames], float) for k in ("shoulder", "wrist")))
         for j, fr in enumerate(frames):
@@ -643,11 +698,13 @@ def place_elbows(frames, kit, fps):
             for part, a, b, r0, r1, _ in body_parts(fr["hands"][oh], oh):
                 if part in ("stick", "fist", "fore"):
                     sd = np.minimum(sd, _sd_capsule_pts(pts, a, b, r0, r1))
-            tot = np.clip(rad - sd, 0, None).reshape(K, 2, n).max(2).sum(1)
+            tot = pen[j] = np.clip(rad - sd, 0, None).reshape(K, 2, n).max(2).sum(1)
             cost[j] = (1000 * tot + drum_hands.arm_cost(d, h, sh, el, wr)
                        + 3 * np.maximum(0.0, el[:, 2] - sh[2] + ELBOW_UP))
         th = np.unwrap(A[swivel_path(cost, move)])
         th = np.convolve(np.concatenate([np.repeat(th[:1], W), th, np.repeat(th[-1:], W)]), ker, "valid")
+        if ELBOW_RISE[h]:
+            th = th + _rise(frames, h, circ, th, fps, A, pen)
         for j, fr in enumerate(frames):
             c, r, e1, e2 = circ[j]
             fr["hands"][h]["elbow"] = c + r * (math.cos(th[j]) * e1 + math.sin(th[j]) * e2)

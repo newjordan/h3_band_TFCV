@@ -30,7 +30,8 @@ import json, math
 
 import numpy as np
 
-from . import drum_collide, drum_hands, drum_kit, drum_mocap, drum_style, drum_teacher, drum_toss, dynamics, performer
+from . import (drum_blend, drum_collide, drum_hands, drum_kit, drum_mocap, drum_style, drum_teacher, drum_toss, dynamics,
+               performer)
 
 STICK, TIP = 0.41, 0.28          # stick length; grip -> tip
 # the hips sit 8 cm behind the seat point the kits are laid out around (drum_kit.SEAT): the rigged hand
@@ -326,10 +327,20 @@ def _bell(p, hand):
     return s.copy(), d.copy()
 
 
+FLAM_GAP = 0.05         # m right of the plain strike point the right stick of a flam lands (the left keeps it)
+
+
 def technique_pose(p, hand, tech):
     """(strike point, (grip, stick dir)) for a technique stroke, or None to use the plain strike.
-    rimshot: _rimshot. bell: _bell. cross_stick: _cross_stick."""
-    if tech == "rimshot" and KIT[p]["kind"] == "drum":
+    rimshot: _rimshot. bell: _bell. cross_stick: _cross_stick. flam or its grace note in the right hand: the
+    plain stroke moved FLAM_GAP to the right across the head, so the sticks land side by side, not on one spot
+    (at 24 fps the two strokes often fall on one frame); the left keeps the plain one, clear of the hi-hat."""
+    if tech in ("flam", "flam_grace") and KIT[p]["kind"] == "drum":
+        if hand == "L":
+            return None
+        n = NORMAL[p]
+        s, d = STRIKE[p] + FLAM_GAP * _unit(np.array([1.0, 0, 0]) - n[0] * n), grip_home(p, hand)[1]
+    elif tech == "rimshot" and KIT[p]["kind"] == "drum":
         s, d = _rimshot(p, hand)
     elif tech == "bell" and drum_kit.piece_type(p) == "ride":
         s, d = _bell(p, hand)
@@ -437,8 +448,11 @@ def _slices(hits):
     for h in hits:
         flam = h.get("tech") == "flam" or sl and sl[-1][0].get("tech") == "flam_grace"   # grace + main: two slices
         if sl and h["t"] - sl[-1][0]["t"] < SLICE_TOL and not flam:
-            if all(o["piece"] != h["piece"] for o in sl[-1]):
+            same = [i for i, o in enumerate(sl[-1]) if o["piece"] == h["piece"]]
+            if not same:
                 sl[-1].append(h)
+            elif h["vel"] > sl[-1][same[0]]["vel"]:    # one drum twice at once: the louder one is the stroke
+                sl[-1][same[0]] = h
         else:
             sl.append([h])
     for s in sl:
@@ -756,12 +770,14 @@ def use_kit(kit=None):
 
 
 REACH_EASY, REACH_COST = 0.85, 25.0     # m from a shoulder to a strike point; cost per m beyond it
+REACH_MAX, REACH_WALL = 0.88, 10.0      # beyond this the hand can't get there even with the torso turned
 
 
 def _pref(p, k):
     """(right, left) hand cost for piece p: the standard kit's table, as lines in x (the right hand takes the
     right side; the ride is the right hand's), and at least REACH_COST per m the strike point lies beyond
-    REACH_EASY from that hand's shoulder (on the standard kit this changes nothing)."""
+    REACH_EASY from that hand's shoulder, plus REACH_WALL beyond REACH_MAX, so a hand plays a piece it can't
+    reach only when the other can't either (on the standard kit this changes nothing)."""
     if p in STD_PREF["R"] and k == drum_kit.STANDARD.get(p):
         return STD_PREF["R"][p], STD_PREF["L"][p]
     t, x = drum_kit.piece_type(p), k["c"][0]
@@ -775,7 +791,8 @@ def _pref(p, k):
         r = float(np.clip(0.25 - 0.6 * x, 0, 0.6))
         l = float(np.clip(1.9 * (x + 0.42), 0, 1.6)) + (1.4 if t == "ride" else 0)
     s = drum_kit.strike_point(k, HIPS[:2], p)
-    far = [REACH_COST * max(0.0, float(np.linalg.norm(s - sh)) - REACH_EASY) for sh in drum_kit.SHOULDERS]
+    far = [REACH_COST * max(0.0, d - REACH_EASY) + REACH_WALL * (d > REACH_MAX)
+           for d in (float(np.linalg.norm(s - sh)) for sh in drum_kit.SHOULDERS)]
     return max(r, far[0]), max(l, far[1])
 
 
@@ -979,6 +996,33 @@ def _reach_twist(Ws, poses, fps):
     return drum_collide.spread(out, fps, TWIST_EASE_S)
 
 
+MOCAP_GIVE = np.linspace(0.0, 1.0, 11)  # shares of the recorded sway tried for taking back
+MOCAP_GIVE_S = 0.2                      # s: the sway gives way and comes back over about this long
+
+
+def _mocap_give(head, torso, dhead, dtorso, Ws, body, fps):
+    """Per frame (N,): the share of the mocap's motion (dhead, dtorso: what it added to head and torso) to take
+    back where it would leave a wrist (tracks Ws) out of its shoulder's reach, REACH_SPARE as in _reach_twist:
+    the least that does, eased in and out over MOCAP_GIVE_S. The clip leans back on beats where our drummer
+    plays a far tom or crash, and a stroke held at arm's length falls short of the head. Ws are the wrists the
+    stick solve leaves the hands at (_stick), not the planned ones: a tip held on a far head slides the stick
+    out through the hand, and the wrist goes with it, a few cm past the plan."""
+    arm = performer.UPPER_ARM + performer.FOREARM - REACH_SPARE
+    out = np.zeros(len(head))
+
+    def over(j, g):
+        b = body.pose(*(head[j] - g * dhead[j]), {}, torso=tuple(torso[j] - g * dtorso[j]))
+        return max(float(np.linalg.norm(Ws[h][j] - np.asarray(b["shoulders"][h], float))) - arm for h in ("R", "L"))
+
+    for j in range(len(head)):
+        if over(j, 0.0) <= 0:
+            continue
+        o = [over(j, g) for g in MOCAP_GIVE]
+        ok = [g for g, v in zip(MOCAP_GIVE, o) if v <= 0]
+        out[j] = ok[0] if ok else MOCAP_GIVE[int(np.argmin(o))]
+    return np.clip(drum_collide.spread(out, fps, MOCAP_GIVE_S), 0.0, 1.0)
+
+
 def _snap_curve(t, T, H, rest, fps):
     """Two poses: the tip is on the head on a hit's frame and at the next stroke's prep height on every other
     frame, with no easing. Returns (height, k, w) like stroke_curve; w jumps to the next piece after the hit."""
@@ -1168,6 +1212,9 @@ def _style_hit(h, hand, style, physics=False):
         h["lean"] = drum_style.lean_kick(hs, s)
     if tech in TECH_HEIGHT:
         h["H"] = min(h.get("H", base(h["vel"])), TECH_HEIGHT[tech])
+        if style:       # arm and body move for the stroke's height, not its loudness (a loud cross-stick)
+            hs = h["H"] / STYLE_SCALE if physics else h["H"]
+            h["lift"], h["lean"] = drum_style.arm_lift(hs), drum_style.lean_kick(hs, s)
     if tech == "cross_stick":
         h["lift"] = 0.0
     pose = technique_pose(p, hand, tech) if tech else None
@@ -1399,7 +1446,7 @@ def _lesson(hits, start, end, beats, downbeats):
 
 def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, schedule=((0.0, "groove"),), seed=0,
             motion="smooth", emotion=None, sliders=None, physics=True, kit=None, tosses=None, mocap=None,
-            mocap_gain=1.0):
+            mocap_gain=1.0, blend=None):
     """motion: "smooth" (the rules above), "snap" (hands jump between a prep pose and the hit pose, no easing,
     no springs), or "loose" (smooth, but every hand hit lands up to LOOSE_FRAMES early or late and up to
     LOOSE_AIM m off its strike point). snap and loose exist to test how exact a blockout has to be.
@@ -1414,18 +1461,20 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
     mocap: a drum_mocap.py style (path or loaded): a real drummer's head and trunk motion, cut into seeded random
     chunks on the beat grid, replaces the head style's nod and sway (its resting gaze, the look at the hands and the
     leans stay). Scaled by mocap_gain and, under an emotion, the body slider (_mocap_scale). The wrists, and so
-    the sticks, are planned without it.
+    the sticks, are planned without it, and it gives way where it would take a shoulder out of reach (_mocap_give).
+    A list of styles (or drummer names, drum_blend.DRUMMERS) blends the drummers: blend is a drum_blend.py matrix
+    ("groove=chad,fill=carey") over the notes' contexts, or a timeline ("0:chad,8:carey"); none = equal shares.
     The module is back on the standard kit when this returns, so a kit never carries over to later calls."""
     use_kit(kit)
     try:
         return _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, emotion, sliders, physics,
-                        kit, tosses, mocap, mocap_gain)
+                        kit, tosses, mocap, mocap_gain, blend)
     finally:
         use_kit(None)
 
 
 def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, emotion, sliders, physics, kit,
-             tosses, mocap=None, mocap_gain=1.0):
+             tosses, mocap=None, mocap_gain=1.0, blend=None):
     if motion not in MOTIONS:
         raise ValueError(f"motion must be one of {MOTIONS}")
     if kit is not None:
@@ -1547,10 +1596,19 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
     TORSO = np.zeros((N, 3))        # (pitch, yaw, roll) the torso adds to its share of the head's (performer.Body.pose)
     TORSO[:, 0] = -TRUNK_BACK
     mocap_info = None
+    body = performer.Body(hips=HIPS, base_gaze_pitch=0.75)
     if mocap is not None:   # a real drummer's motion: his head on his trunk, and the trunk's own sway and turn
-        mst = drum_mocap.load(mocap) if isinstance(mocap, str) else mocap
+        mocaps = list(mocap) if isinstance(mocap, (list, tuple)) else [mocap]
+        names = [drum_blend.drummer_name(m) if isinstance(m, str) else m.get("drummer", m["source"]) for m in mocaps]
+        styles = [drum_mocap.load(drum_blend.mocap_path(m)) if isinstance(m, str) else m for m in mocaps]
+        mst = styles[0]
         d0 = int(np.argmin(np.abs(beats - downbeats[0]))) if len(downbeats) else 0
-        MO, chunks = drum_mocap.tile(mst, beats, times, seed, parity=d0 % 2)
+        tp, hp = body.pitches(HEAD[:, 0], HEAD[:, 3], TORSO[:, 0])
+        if len(styles) == 1:
+            MO, chunks = drum_mocap.tile(mst, beats, times, seed, parity=d0 % 2, pitch=hp - tp)
+        else:               # drummers blended note by note (drum_blend.py)
+            BW, ctx = drum_blend.weights(times, hits, beats, names, blend)
+            MO, plans = drum_blend.tile(styles, BW, beats, times, seed, parity=d0 % 2, pitch=hp - tp)
         g = np.full(N, float(mocap_gain))
         if style:
             g *= np.array([_mocap_scale(drum_style.at(t, style)["body"]) for t in times])
@@ -1559,11 +1617,30 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
         HEAD[:, :3] += Tm + Hm                      # the world head = trunk + head on the trunk (small angles)
         TORSO += Tm - np.array(performer.TORSO_FOLLOW) * (Tm + Hm)
         bt = drum_mocap.beat_time
-        mocap_info = {"source": mst["source"], "gain": float(mocap_gain),
-                      "chunks": [{"t": round(bt(k, beats) - start, 3), "beats": L, "shot": mst["segments"][si]["shot"],
-                                  "from_beat": off} for k, L, si, off in chunks
-                                 if bt(k + L, beats) > start and bt(k, beats) < end]}
-    body = performer.Body(hips=HIPS, base_gaze_pitch=0.75)
+        plan = lambda st, cs: [{"t": round(bt(k, beats) - start, 3), "beats": L, "shot": st["segments"][si]["shot"],
+                                "from_beat": off} for k, L, si, off in cs if bt(k + L, beats) > start and bt(k, beats) < end]
+        if len(styles) == 1:
+            mocap_info = {"source": mst["source"], "gain": float(mocap_gain), "chunks": plan(mst, chunks)}
+        else:
+            cnt = {}
+            for t, c in ctx:
+                if start <= t < end:
+                    cnt[c] = cnt.get(c, 0) + 1
+            mocap_info = {"source": "+".join(names), "drummers": names, "blend": blend or "", "gain": float(mocap_gain),
+                          "contexts": dict(sorted(cnt.items())),
+                          "share_mean": {n: round(float(BW[:, j].mean()), 3) for j, n in enumerate(names)},
+                          "shares": np.round(BW, 3).tolist(),
+                          "chunks": {n: plan(st, cs) for n, st, cs in zip(names, styles, plans)}}
+    if physics and mocap is not None:   # the recorded sway gives way to a reach it would take out of range
+        dH = np.zeros((N, 4))
+        dH[:, :3] = Tm + Hm
+        dT = Tm - np.array(performer.TORSO_FOLLOW) * (Tm + Hm)
+        Wst = {h: np.array([_stick(Ws[h][j], tracks[h][1][j], tracks[h][3][j], h, tracks[h][7][j], TURN[h][j])[3]
+                            for j in range(N)]) for h in ("R", "L")}
+        give = _mocap_give(HEAD, TORSO, dH, dT, Wst, body, fps)
+        HEAD -= give[:, None] * dH
+        TORSO -= give[:, None] * dT
+        mocap_info["give_max"] = round(float(give.max()), 3)
     TY = np.zeros(N)
     tor = lambda j: (TORSO[j, 0], TORSO[j, 1] + TY[j], TORSO[j, 2])
     if physics:
@@ -1809,9 +1886,20 @@ if __name__ == "__main__":
     ap.add_argument("--kit", help=f"drum_kit.py preset ({', '.join(drum_kit.PRESETS)}) or kit spec JSON")
     ap.add_argument("--toss", help="stick tosses (drum_toss.py), 'HAND:release_s:catch_s[:spins],...'")
     ap.add_argument("--mocap", help="drum_mocap.py style JSON: a real drummer's head and trunk motion on the beat "
-                                    "(e.g. blockout/drum_mocap_chad.json)")
+                                    "(e.g. blockout/drum_mocap_chad.json), or a drummer's name (drum_blend.DRUMMERS: "
+                                    f"{', '.join(drum_blend.DRUMMERS)}); a comma list blends them (--blend)")
     ap.add_argument("--mocap-gain", type=float, default=1.0)
+    ap.add_argument("--blend", help="drum_blend.py: a blend matrix over note contexts, 'groove=chad,fill=carey:0.7+chad:0.3', "
+                                    "or a timeline '0:chad,8:carey' (default: equal shares)")
+    ap.add_argument("--drummer", choices=drum_blend.DRUMMERS, help=f"play as one drummer ({', '.join(drum_blend.DRUMMERS)}): their mocap, and their kit "
+                                      "unless --kit is given")
     a = ap.parse_args()
+    if a.drummer:
+        a.mocap = a.mocap or a.drummer
+        a.kit = a.kit or drum_blend.DRUMMERS[a.drummer]["kit"]
+    mocap = a.mocap.split(",") if a.mocap and "," in a.mocap else a.mocap
+    if isinstance(mocap, str) and mocap in drum_blend.DRUMMERS:
+        mocap = drum_blend.mocap_path(mocap)
     kit = None
     if a.kit:
         kit, notes = drum_kit.load(a.kit)
@@ -1834,8 +1922,8 @@ if __name__ == "__main__":
     sched = [(float(t), st) for t, st in (x.split(":") for x in a.schedule.split(","))]
     sliders = {k: getattr(a, k) for k in drum_style.SLIDERS if getattr(a, k) is not None}
     anim = animate(hits, a.fps, a.start, a.dur, bts, dbs, sched, a.seed, a.motion, a.emotion, sliders,
-                   physics=not a.no_physics, kit=kit, tosses=drum_toss.parse(a.toss), mocap=a.mocap,
-                   mocap_gain=a.mocap_gain)
+                   physics=not a.no_physics, kit=kit, tosses=drum_toss.parse(a.toss), mocap=mocap,
+                   mocap_gain=a.mocap_gain, blend=a.blend)
     json.dump(anim, open(a.out, "w"))
     for ts in anim.get("tosses", ()):
         print(f"toss {ts}")

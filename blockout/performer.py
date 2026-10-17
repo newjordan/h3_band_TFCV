@@ -213,16 +213,21 @@ class Body:
         self.gaze = base_gaze_pitch      # where the eyes look at rest (radians below horizontal)
         self.eye_ahead = eye_ahead
 
+    def pitches(self, pitch, lean, torso_pitch=0.0):
+        """(torso pitch, head pitch) in pose, radians down (arrays work): the torso takes its share of the head's
+        pitch and leans in; the head tilts part of the way to the gaze, the eyes do the rest."""
+        return TORSO_FOLLOW[0] * pitch + 0.06 + 0.6 * lean + torso_pitch, 0.55 * self.gaze + pitch
+
     def pose(self, pitch, yaw, roll, lean, wrists, hand_fwd=None, torso=(0.0, 0.0, 0.0)):
         # torso follows the head a little; the head carries the rest. torso = (pitch, yaw, roll) the reach adds:
         # it leans toward a far hand, then turns to open toward that end of the keyboard
         fp, fy, fr = TORSO_FOLLOW
-        Rt = rot(fp * pitch + 0.06 + 0.6 * lean + torso[0], fy * yaw + torso[1], fr * roll + torso[2])
+        tp, head_pitch = self.pitches(pitch, lean, torso[0])
+        Rt = rot(tp, fy * yaw + torso[1], fr * roll + torso[2])
         top = self.hips + Rt @ np.array([0, 0, self.th])
         shoulders = {"L": self.hips + Rt @ np.array([-self.sh, 0, self.th - 0.03]),
                      "R": self.hips + Rt @ np.array([self.sh, 0, self.th - 0.03])}
         neck_top = top + Rt @ np.array([0, 0.01, 0.09])
-        head_pitch = 0.55 * self.gaze + pitch          # head tilts part of the way; the eyes do the rest
         Rh = rot(head_pitch, yaw, roll)
         head = neck_top + Rh @ np.array([0, 0.02, 0.11])
         eye = head + Rh @ np.array([0, self.eye_ahead, 0.02])
