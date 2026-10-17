@@ -76,7 +76,7 @@ HITPAD_B = [(_BY0 + 0.004, _BY0 + 0.014), (_BY0 + 0.010, _BY0 + 0.025), (_BY0 + 
 # white keys when the hand is up among the black keys (e.g. D-flat major): the whole hand plays deeper
 HITPAD_WN = [(0.015, 0.030), (0.030, 0.045), (0.030, 0.045), (0.030, 0.045), (0.015, 0.030)]
 HITPAD = {"white": (0.010, 0.055), "black": (_BY0 + 0.004, _BY0 + 0.025)}     # union, for anything finger-blind
-WHITE_FRONT_MAX = None      # m: white keys only struck this far in at most (None: H; the black keys start at 0.055)
+WHITE_FRONT_MAX = 0.045     # m: white keys only struck this far in at most (K; None: H; the black keys start at 0.055)
 
 
 def hitpad(p, f, near_black=False):
@@ -243,6 +243,7 @@ FINGER_R = np.array([(0.0115, 0.0105, 0.0095, 0.0085), (0.0095, 0.0088, 0.0080, 
                      (0.0085, 0.0078, 0.0070, 0.0062)])
 HITPAD_SHIFT = -0.012       # m: every strike band moved toward the key fronts (the user: fingers further back on the keys)
 PITCH0 = 0.0               # rad: the palm's resting pitch (+ = wrist above the knuckles); calibrated from FürElise
+PALM_PITCH = -0.25         # rad: replaces the calibrated PITCH0 (-1.6 deg): knuckles tilted up (M2); None: H
 KNUCKLE_Z = 0.064          # knuckle line height over white key tops (mannequin; set_hand_model sets the real hand's)
 Y_KN = -0.006              # knuckle line's resting distance from the white key fronts
 HAND_MODEL = "mannequin"
@@ -512,6 +513,8 @@ def set_hand_model(name):
             if "place" in parts:
                 KNUCKLE_Z, Y_KN = cal["knuckle_z"], cal["knuckle_y"]
                 PITCH0 = math.radians(cal["pitch_deg"])
+            if PALM_PITCH is not None:
+                PITCH0 = PALM_PITCH
             if "hitpad" in parts:
                 HITPAD_W = [tuple(b) for b in cal["hitpad"]["white"]]
                 HITPAD_WN = [tuple(b) for b in cal["hitpad"]["white_near_black"]]
@@ -1384,8 +1387,8 @@ LEAD_HAND, LEAD_TIP, LEAD_HEAD = 0.07, 0.018, 0.06
 YOFF_NB = 0.018            # m: the hand moves in when black keys are in play
 PRONATE = 0.15             # rad: base roll toward the thumb (forearm pronation past flat)
 ROLL_MAX = 0.12            # rad: the hand rolls toward the fingers that are playing
-PINKY_ROLL = 0.0           # rad: on a pinky note (the thumb not playing) the hand turns this much further toward the pinky,
-                           # a forearm turn: the short pinky reaches its key with the palm back; eased by the roll spring; 0: H
+PINKY_ROLL = 0.30          # rad: on a pinky note (the thumb not playing) the hand turns this much further toward the pinky,
+                           # a forearm turn: the short pinky reaches its key with the palm back; eased by the roll spring; 0: H (R3: 0.30)
 
 
 def _centre(H, x, nb, t):
@@ -1474,11 +1477,12 @@ def _roll_offsets(off, roll):
 
 # ---------------------------------------------------------------- the hand rig (blockout/rig): one solve per hand
 THUMB_REST = 4.0                    # an idle thumb follows its resting spot by the keys this much harder
-PRESS_AXES = (3.0, 1.0, 3.0)  # v18 (lab E29): press depth weighted like position
+PRESS_AXES = (3.0, 3.0, 3.0)  # K: press depth weighted like position and depth (v18/H, lab E29: (3, 1, 3))
 PRESS_AXES_BLACK = (3.0, 3.0, 3.0)  # a black key starts 55 mm in: a pad short of it misses it, so depth counts too
 HAND_CLEAR, HAND_W = 0.003, 1.0    # m kept between the two hands' skin; weight of that against the targets
-RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=1e-4, env=20.0, comfort=9e-6, comfort_sigma=True, iters=12, smooth=2e-5,
-             comfort_abd=10.0, formation=1e-4)   # target weights and the plan prior (H: spread costs 10x, idle fingers keep formation)
+RIG_W = dict(press=1.0, free=0.15, root_pos=0.02, root_rot=0.002, env=20.0, comfort=9e-6, comfort_sigma=True, iters=12, smooth=2e-5,
+             comfort_abd=10.0, formation=1e-4, couple=0.001, tilt=1.0)   # target weights and the plan prior (H: spread costs 10x,
+             # idle fingers keep formation; K: root_rot 1e-4 -> 0.002, DIP coupled to PIP; M2: the planned knuckle tilt holds)
 _RIGS = {}
 
 
@@ -1593,7 +1597,7 @@ REPAIR_W = 4.0              # how much harder a missed note's finger pulls on ea
 OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) key's surface in the collision model
 THUMB_PRESS_GIVE = 0.004    # m a pressing thumb's distal and proximal phalanx may sink past key tops (its side
                             # rests over the neighbouring key's edge as it presses its own)
-CASE_COLLIDE = False        # skin above 2 cm also meets the fallboard (5.5 cm) instead of being skipped (False: v18/H)
+CASE_COLLIDE = True         # skin above 2 cm also meets the fallboard (5.5 cm) instead of being skipped (False: v18/H)
 THUMB_CLEAR = None          # (m, w): in front of the key fronts the thumb's skin (metacarpal, proximal, IP) stays this far
                             # above the white key tops, weight w against the key collisions: it arches onto its key from
                             # above instead of lying flat at key level in front of the keys; None: H
@@ -1619,8 +1623,8 @@ def _whittaker(Y, w, lam):
 WRIST_MODEL = os.environ.get("RIG_WRIST_MODEL", "1") == "1"   # the FürElise wrist model drives the wrist reference
 WRIST_Z_SCALE = False       # the pianists' wrist height scales with the hand too (False: v18/H, only x and y scale)
 WRIST_MODEL_PRIOR = 0.3     # its pull in the first whole-hand pass (our own plan only got 0.02)
-HAND_BACK = 0.0             # m: the wrist path from pass A moves this much further toward the player, so the fingers
-                            # reach out to their keys (less curl); the ease gives it back where a key needs it; 0: v18/H
+HAND_BACK = 0.030           # m: the wrist path from pass A moves this much further toward the player, so the fingers
+                            # reach out to their keys (less curl); the ease gives it back where a key needs it; 0: v18/H (N3: 0.030)
 REACH = None                # with HAND_BACK: the palm sits back on the settled path (after the ease) and the hand reaches
                             # in, to that path, around a note its finger misses from there: {lead: s before the onset,
                             # ease: s to reach in / settle back, hold: s gaps bridged (no back and forth), t: s after the

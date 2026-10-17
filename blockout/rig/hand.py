@@ -21,6 +21,9 @@ import numpy as np
 from .ik import Chain
 from .skeleton import Skeleton, _rot, D
 
+# fingers 2-5 rest rounded (K, default since 2026-10-17); env RIG_CURL replaces it, RIG_CURL=none gives v18/H
+RIG_CURL = '{"mcp": 20, "pip": 45, "kdip": 0.67}'
+
 
 def _furelise_cal():
     """blockout/rig/furelise_cal.json (blockout.furelise.calibrate), unless RIG_NO_FURELISE=1."""
@@ -76,8 +79,8 @@ class HandRig:
         if cal and "k_dip" in cal and "kdip" in _cal_parts():                 # measured on concert pianists (FürElise): the end joint stays
             for ch, k in zip(self.chains[1:], cal["k_dip"]):    # nearly straight while the PIP bends
                 ch.k_dip = max(float(k), 1e-3)
-        curl = os.environ.get("RIG_CURL")
-        if curl:             # a rounded playing hand for fingers 2-5: {"mcp": deg, "pip": deg, "kdip": DIP per PIP}
+        curl = os.environ.get("RIG_CURL", RIG_CURL)
+        if curl and curl != "none":   # a rounded playing hand for fingers 2-5: {"mcp": deg, "pip": deg, "kdip": DIP per PIP}
             cc = json.loads(curl)
             for ch, a in zip(self.chains[1:], self.sl[1:-1]):
                 for i, d in enumerate(ch.dofs):

@@ -874,3 +874,52 @@ notes, keep N3) -- the go-ahead for the thumb rig change. N3 is the base for all
   (the hanging digit is the pinky). Backup `manifest.backup_20261017_thumb.json`. Not default yet: T and R3 wait on
   the user's eye. Open: the Debussy/Brahms pinky stab (hand held deep by a thumb black key vs the 45 mm white-key cap);
   the flat thumb is the cost of palm-back on this hand's thumb reach.
+
+### 2026-10-17 (evening): R3 is the default; full-suite performance render with moving cameras
+
+- The user: "amazing work. we love it. pick what your favorite is, t looked great to me", then render the whole Knight's
+  Suite with several camera modes ("approved to have fun with camera now, but our goal is watching the fingers, the
+  steady cam that tracks the fingers is always good"), commit and push. Mid-render: "keep everything high contrast /
+  different colors to go into h3 well when its done ... dont worry about the H3 render work right now, you're just doing
+  the blender performance".
+- **Pick: R3** (T + PINKY_ROLL 0.30): T, which the user liked, plus the pinky roll, which was safe on every window
+  (Brahms +1 note) and only ever turns the hand a little toward the pinky.
+- **R3 is now the code default** (no PIANO_OVR or env needed): WHITE_FRONT_MAX 0.045, PRESS_AXES (3, 3, 3), new
+  `PALM_PITCH` -0.25 rad (replaces the FürElise-calibrated PITCH0 after the calibration loads, as PIANO_OVR PITCH0 did),
+  RIG_W root_rot 0.002 + couple 0.001 + tilt 1.0, CASE_COLLIDE, HAND_BACK 0.030, PINKY_ROLL 0.30, rig `RIG_CURL`
+  default `{"mcp": 20, "pip": 45, "kdip": 0.67}` (env RIG_CURL=none gives the old rest pose), `RIG_THUMB_AXIS` default
+  `x` (old takes still render with their stored axis; RIG_THUMB_AXIS=rest for v18/H). v18/H again: RIG_CURL=none
+  RIG_THUMB_AXIS=rest PIANO_OVR with the H values. **Check:** ks_deb and chop2 re-solved with no overrides are
+  byte-identical to the reviewed R3 windows (anim and notes).
+- **Full suite, R3** (`tools/v18/solve.sh`, 24 parts, ~60 min; `~/h3/hands_loop/suite_r3_20261017/solve/`), scored with
+  `tools/v18/review_metrics.py` against the v18 take (same notes, byte-identical notes.json):
+
+  | suite | v18 | R3 |
+  |---|---|---|
+  | keys in time | 93.2% | **94.1%** (Debussy 90.7 = 90.7, Rach 92.0 -> 93.6, Chopin 94.0 -> 94.6) |
+  | frozen joints | 12.4% | **7.2%** |
+  | broken frames | 0.46% | **0.07%** |
+  | pops / min | 21.0 | **14.1** (Rach 82.8 -> 63.0) |
+  | crossed tips | 11.9% | **2.3%** |
+  | PIP curl | 31 deg | 32 deg (Debussy 26 -> 44) |
+- **Camera edit, `blockout/cameras.py --style fingers`** (new): cuts on downbeats, ~8.5 s soft / ~5.5 s loud, a camera
+  that keeps being drawn runs at most 14 s. Every camera follows its hand through a spring (an operator a beat behind;
+  stiffer when the music is busy) with a 2.5 mm hand-held float, and backs off until the hand it watches stays inside
+  92% of the frame. Shots: steadicam (front three-quarter, high, the review handcam smoothed; on the busier hand),
+  steady_low (low from the hand's outer end: strikes in profile), both hands, overhead (one hand, turning slowly),
+  orbit (round one hand), across (from inside the piano, case hidden, looking back at the fingers), pov. Opens
+  top-down descending onto the hands, closes rising off them (height set by the hands' spread). The body is hidden
+  throughout. **Arm check:** no camera may come within 8 cm of either arm's axis (forearm, upper arm); a shot that
+  would is swung 18 deg further to the hand's outer side, then falls back to the steadicam (0, 25 deg), straight down,
+  both hands. The first plan hit this in the Debussy (the steadicam near an upper arm) and fell back to "both" twice
+  in a row (a jump cut, 35 s of one framing); fixed by the swing and by re-merging a fallback that lands on the camera
+  before it. Suite edit: 40 shots, steadicam 31% + low steadicam 14% of the runtime, closest arm 11.6 cm.
+- **Look, `blender_piano.py --look show`** (new; EEVEE, 1920x1080, 32 samples): high contrast, every element its own
+  colour for H3 later: orange hands and arms, pure white / black keys (black keys rough so they stay black), navy case,
+  grey room; soft key light, cool rim, fill, contact shadows, AO. No depth of field (`FINGER_DOF` off: every edge
+  sharp). Tried first: AgX with silver/clay hands on ivory keys -- hands and white keys too close in tone (the user's
+  note). The default grey Workbench look is unchanged.
+- `tools/v18/render_show.sh OUT [JOBS]`: edit + Salamander audio + parallel EEVEE render to `OUT/frames_show/` (clean, no
+  text: the H3 input) + `OUT/suite_show.mp4` (piece titles burned in for viewing: Debussy at 1.0 s, Rachmaninoff 37.6 s,
+  Chopin 120.6 s of video time). ffmpeg 8 drawtext drops one trailing character per multi-byte character (an em dash
+  cost "2" of "No. 2"), so the titles are ASCII.

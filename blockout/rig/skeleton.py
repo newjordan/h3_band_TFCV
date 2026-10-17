@@ -37,7 +37,7 @@ LIMITS = {
 # key can only extend, pulling back (v18/H, and every take before 2026-10-17). "x": the bones' own curl axis, local
 # X as for fingers 2-5 (MPFB's), signed palmar: flexion sends the tip across toward the fingers and down, along
 # the key. Old takes render with their own axis (the anim JSON stores it: "thumb_axis").
-THUMB_AXIS = os.environ.get("RIG_THUMB_AXIS", "rest")
+THUMB_AXIS = os.environ.get("RIG_THUMB_AXIS", "x")      # default since T (2026-10-17); "rest" for v18/H
 if __import__("os").environ.get("RIG_LIMITS"):       # experiment hook: {"mcp_edge": {"abd": [-40, 40]}, ...}
     for _k, _v in json.loads(__import__("os").environ["RIG_LIMITS"]).items():
         LIMITS.setdefault(_k, {}).update({a: tuple(b) for a, b in _v.items()})

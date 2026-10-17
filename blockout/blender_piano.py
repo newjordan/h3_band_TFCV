@@ -2,6 +2,7 @@
 
     blender -b --factory-startup -P blockout/blender_piano.py -- ANIM.json OUT_DIR [--res 1280x704]
            [--frames a:b] [--engine WORKBENCH|CYCLES] [--view pov|three4|side|handcam [--hand R|L --angle front3q|side|top|front --dist m]] [--lens mm]
+           [--look show [--samples n] [--exposure ev]]
 
 --hands mpfb|skin|capsule: mpfb (default) is a real rigged, skinned CC0 hand from MPFB2, driven bone by
 bone; skin is a Skin-modifier tube stopgap over the joint graph; capsule is the original mannequin.
@@ -625,6 +626,44 @@ if PASS == "chrome":                  # the plate in the look H3 should render (
         nt.links.new(lp.outputs["Is Camera Ray"], mx.inputs[0]); nt.links.new(es.outputs[0], mx.inputs[1])
         nt.links.new(tr.outputs[0], mx.inputs[2]); nt.links.new(mx.outputs[0], out.inputs[0])
         pl.data.materials.append(em)
+LOOK = opts.get("--look")          # show: a lit performance render (EEVEE) kept high contrast, every element its own colour
+if LOOK == "show":                  # (it goes into H3 later): orange hands, pure white / black keys, a navy case, a grey
+    scn.render.engine = "BLENDER_EEVEE"     # room; soft key light, a rim, contact shadows where the tips meet the keys
+    ee = scn.eevee
+    ee.taa_render_samples = int(opts.get("--samples", 32))
+    ee.use_gtao, ee.gtao_distance, ee.gtao_factor = True, 0.05, 1.0
+    ee.use_ssr, ee.use_ssr_halfres, ee.ssr_thickness = True, False, 0.02
+    ee.use_soft_shadows = True
+    ee.shadow_cube_size, ee.shadow_cascade_size = "2048", "4096"
+    scn.view_settings.view_transform = "Standard"
+    scn.view_settings.exposure = float(opts.get("--exposure", -1.6))
+
+    def _pbr(m, base, metal, rough, coat=0.0):
+        b = m.node_tree.nodes.get("Principled BSDF")
+        b.inputs["Base Color"].default_value = (*base, 1.0)
+        b.inputs["Metallic"].default_value = metal
+        b.inputs["Roughness"].default_value = rough
+        b.inputs["Coat Weight"].default_value = coat
+        b.inputs["Coat Roughness"].default_value = 0.05
+    _pbr(M_SKIN, (0.85, 0.20, 0.02), 0.0, 0.45)          # hands and arms: saturated orange, nothing else near it
+    _pbr(M_NAIL, (0.85, 0.20, 0.02), 0.0, 0.45)
+    _pbr(M_WHITE, (0.92, 0.92, 0.92), 0.0, 0.35)
+    _pbr(M_BLACK, (0.004, 0.004, 0.004), 0.0, 0.55)
+    _pbr(M_CASE, (0.012, 0.028, 0.10), 0.0, 0.45, coat=0.25)     # navy: apart from the black keys and the room
+    _pbr(M_FLOOR, (0.10, 0.10, 0.10), 0.0, 0.8)
+    world.use_nodes = True
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.25, 0.25, 0.25, 1.0)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 1.0
+    for nm, loc, aim, e, sz, col in (("key", (cx + 0.35, -0.75, 1.25), (cx, 0.0, 0.0), 170, 1.4, (1.0, 0.97, 0.92)),
+                                     ("rim", (cx - 0.5, 0.95, 0.75), (cx, -0.05, 0.05), 90, 1.0, (0.92, 0.95, 1.0)),
+                                     ("fill", (cx - 0.9, -0.9, 0.35), (cx, 0.0, 0.05), 30, 2.0, (1.0, 1.0, 1.0))):
+        L = bpy.data.objects.new(nm, bpy.data.lights.new(nm, "AREA"))
+        L.data.energy, L.data.size, L.data.color = e, sz, col
+        L.data.use_contact_shadow = True
+        L.data.contact_shadow_distance, L.data.contact_shadow_thickness = 0.03, 0.004
+        L.location = loc
+        L.rotation_euler = (Vector(aim) - L.location).to_track_quat("-Z", "Y").to_euler()
+        COL.objects.link(L)
 if PASS == "mask":
     scn.display.shading.light = "FLAT"
     scn.display.shading.color_type = "OBJECT"
@@ -787,16 +826,21 @@ for i in FRAME_IDS:
         fwd = Vector(c["look"]) - Vector(c["pos"])
         cam.matrix_world = look_matrix(c["pos"], fwd, c["up"])
         cam_d.lens = c["lens"]
+        if LOOK == "show" and c.get("fstop"):         # a touch of depth of field on the close shots, focused on the hand
+            cam_d.dof.use_dof, cam_d.dof.aperture_fstop = True, c["fstop"]
+            cam_d.dof.focus_distance = (Vector(c.get("focus", c["look"])) - Vector(c["pos"])).length
+        else:
+            cam_d.dof.use_dof = False
         for ob in HEAD_PARTS:
             ob.hide_render = c["hide_head"]
         if "hide_body" in c:                           # keyboard shots: only the arms, hands and piano render
             for ob in COL.objects:
                 if ob.name.split("_")[0].rstrip("-1") in ("torso", "head", "nose", "neck", "thigh", "shin", "bench"):
                     ob.hide_render = bool(c["hide_body"]) or (ob in HEAD_PARTS and c["hide_head"])
-    if "case" in opts.get("--hide", ""):              # debug: see the fingers from the far side of the piano
-        for ob in COL.objects:
-            if ob.name in ("fallboard", "lid_body", "music_desk", "cheek_l", "cheek_r"):
-                ob.hide_render = True
+    hide_case = "case" in opts.get("--hide", "") or (VIEW == "edit" and fr["cam"].get("hide_case"))
+    for ob in COL.objects:                           # see the fingers from the far side of the piano
+        if ob.name in ("fallboard", "lid_body", "music_desk", "cheek_l", "cheek_r"):
+            ob.hide_render = bool(hide_case) or (ob.name == "music_desk" and VIEW != "pov")
     if "body" in opts.get("--hide", ""):              # debug: see the hands from the player's side
         for ob in COL.objects:
             if ob.name.split("_")[0].rstrip("-1") in ("torso", "head", "nose", "neck", "thigh", "shin", "bench") \
