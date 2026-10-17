@@ -738,3 +738,9 @@ targets, the solver still sets the hand's attitude freely. **J's anticipation di
 slide in (74-97%), because most of the sideways travel is the hand carrying the finger at key level; APPROACH_ARC only
 lifts the finger's own travel relative to its home spot. New: RIG_W `tilt` (rig/hand.py residuals: holds only the hand's
 pitch -- forward axis elevation -- to the plan's; turn and roll stay free). Running **L** = K + PITCH0 -0.25 + tilt 0.1.
+L (K + PITCH0 -0.25 + RIG_W tilt 0.1): the plan asks +8..+22 deg (checked with `_plan_root`), the solved R hand stays at
++2 (L hand drops to +3 from H's +10): the wrist height is held to the pianists' path (root_pos priors 0.3 / EASE 2.0),
+so tilting the knuckles up would leave the fingertips short of the keys and the solver flattens the hand; tilt 0.1 loses.
+**K posted** (band site `v18-front`, files `v18tune_20261016/k/`, five videos reviewed; H's raised idle finger at
+Debussy 58.6 s is gone in K). Running **M** = K + PITCH0 -0.25 + tilt 1.0 (outweighs the wrist-height priors: the wrist
+may drop as the knuckles rise).
