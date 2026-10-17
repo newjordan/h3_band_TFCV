@@ -798,3 +798,19 @@ N4 review (N4 panel cropped at 1 fps, seven videos): nothing broken; thumb at Ch
 still reaches out straight in the leaps (100.6, 104.6 s). **Posted M2 | N3 | N4**: band site `v18-palm`, files
 `v18tune_20261016/n4/` (N3 vs H in `n3/`). N2 not shown (keys 40-71%). Waiting on the user's eye: N3 (keys held, palm
 3-19 mm back) or N4 (palm 6-26 mm back, a few keys lost in Brahms / Chopin 282-294).
+**User (2026-10-17): "its really close... add a 'reach' and test it out; careful not to lose ground; if it doesn't work we
+recollect our thoughts."** New: `REACH` (with HAND_BACK). The palm sits the full 30 mm back on the *settled* path (N2's
+placement, after pass A and the ease), and the hand **reaches in to the settled path (= M2's wrist) around any note a
+finger misses from there**: detection passes run pass B from the back path and mark each note whose key is not half
+down within `t` s of its onset, from `lead` s before the onset to its end; `_reach_curve` bridges gaps under `hold` s
+(no back and forth), is fully in over every marked frame and eases in before / out after over `ease` s; then
+FINGER_REFINE and the repair loop run as before on that path. Worst case per note = M2's wrist, so it can't lose keys
+to the palm shift. Running **P** (lead 0.1, ease 0.3, hold 1.0, t 0.1) and **P2** (t 0.06).
+Result **P / P2 (reach): keys held, but the palm stays in.** Keys = M2 in every window (Rach 89.6 P / 89.0 P2), nothing
+lost, but the hand reaches in 65-100% of the frames (detection marked 5-44 notes per window and the 1 s bridge joins
+them), so the palm nets only 0-6 mm back of M2 and the curl is unchanged. P2 ~ P. **Why** (N2's misses from the full
+30 mm back, by the finger M2 used): index / middle / ring miss 0-24% (only some index black keys), but the **thumb misses
+74-85%** and the **pinky 33-69%**. The short digits set where the hand must be; the long fingers curl to match. The
+thumb is also the digit with the known rig problem (its flex bends about the wrong axis, it hangs below the key fronts)
+-- a thumb that could reach forward along its key would let the palm sit further back. Stopped here to recollect with
+the user (as agreed). REACH stays in the code, off by default.

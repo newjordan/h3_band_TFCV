@@ -1593,6 +1593,10 @@ WRIST_Z_SCALE = False       # the pianists' wrist height scales with the hand to
 WRIST_MODEL_PRIOR = 0.3     # its pull in the first whole-hand pass (our own plan only got 0.02)
 HAND_BACK = 0.0             # m: the wrist path from pass A moves this much further toward the player, so the fingers
                             # reach out to their keys (less curl); the ease gives it back where a key needs it; 0: v18/H
+REACH = None                # with HAND_BACK: the palm sits back on the settled path (after the ease) and the hand reaches
+                            # in, to that path, around a note its finger misses from there: {lead: s before the onset,
+                            # ease: s to reach in / settle back, hold: s gaps bridged (no back and forth), t: s after the
+                            # onset the key must be half down, passes}; None: off (HAND_BACK applies before the ease)
 _WM = None
 
 
@@ -1817,7 +1821,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
             S_ = _whittaker(X_, PW[name], lam)
             S_[:, 2:3] = _whittaker(X_[:, 2:3], PW[name], lam * WRIST_LAMBDA_Z)
             REF[name] = [(rotvec(S_[i, 3:6]) @ REF[name][i][0], S_[i, :3]) for i in range(len(S_))]
-    if HAND_BACK:                                       # the wrist path set further toward the player: the fingers
+    if HAND_BACK and not REACH:                         # the wrist path set further toward the player: the fingers
         for name in hands:                              # reach out (less curl), and the ease below gives it back only
             REF[name] = [(r_, p_ - np.array([0.0, HAND_BACK, 0.0])) for r_, p_ in REF[name]]    # where a key needs it
     roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
@@ -1841,6 +1845,40 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
             for i in range(N - j0):
                 REF[name][i] = (REF[name][i][0], REF[name][i][1] + C[i])
         roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
+    if HAND_BACK and REACH:                             # the palm sits back; around a note a finger can't reach from
+        FULL = {name: list(REF[name]) for name in hands}    # there, the hand reaches in (to the settled path) for it
+        NEED = {name: np.zeros(N - j0, bool) for name in hands}
+
+        def _reach_paths():
+            for name in hands:
+                r_ = _reach_curve(NEED[name], fps)
+                REF[name] = [(FULL[name][i][0], FULL[name][i][1] - np.array([0.0, HAND_BACK * (1.0 - r_[i]), 0.0]))
+                             for i in range(N - j0)]
+            return {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
+        roots = _reach_paths()
+        for _r in range(REACH["passes"]):
+            for H in hands.values():
+                for k in ("tip_miss", "pen", "pen_info"):
+                    H.pop(k, None)
+            frames = _pass_b(hands, times, j0, N, start, energy, HEAD, body, T, roots, REF, None, TORSO, {})
+            new = 0
+            for name, H in hands.items():
+                for f in range(5):
+                    for e in H["ev"][f]:
+                        a, b = int(round((e[0] - times[j0]) * fps)), int(round((e[0] + REACH["t"] - times[j0]) * fps))
+                        if a < 0 or a >= len(frames):
+                            continue
+                        if max(frames[k]["keys"].get(str(e[2]), 0.0) for k in range(a, min(b + 1, len(frames)))) >= 0.5:
+                            continue
+                        a0 = max(0, int(round((e[0] - REACH["lead"] - times[j0]) * fps)))
+                        b0 = min(N - j0, int(round((e[1] - times[j0]) * fps)) + 1)
+                        new += int(not NEED[name][a0:b0].all())
+                        NEED[name][a0:b0] = True
+            print(f"reach pass {_r}: {new} notes reach in; frames reaching "
+                  + ", ".join(f"{n} {100 * float(np.mean(_reach_curve(NEED[n], fps) > 0.5)):.0f}%" for n in hands))
+            if not new:
+                break
+            roots = _reach_paths()
     QP = None
     if FINGER_REFINE:                                   # the fingers once, then their joint paths smoothed: in pass B
         XB = {name: [] for name in hands}               # each finger stays near its smoothed path (no shape it has
@@ -1939,6 +1977,23 @@ def _pass_b(hands, times, j0, N, start, energy, HEAD, body, T, roots, REF, QP, T
         fr["press"] = press
         frames.append(fr)
     return frames
+
+
+def _reach_curve(need, fps):
+    """0..1 per frame: how far the hand reaches in (REACH). Gaps shorter than REACH['hold'] are bridged so the hand
+    doesn't go back and forth; fully in over every needed frame, easing in before and out after over REACH['ease']."""
+    need = np.asarray(need, bool).copy()
+    idx = np.flatnonzero(need)
+    if not len(idx):
+        return np.zeros(len(need))
+    g = int(round(REACH["hold"] * fps))
+    for i0, i1 in zip(idx[:-1], idx[1:]):
+        if 1 < i1 - i0 <= g:
+            need[i0:i1] = True
+    n = max(1, int(round(REACH["ease"] * fps / 4)))
+    from scipy.ndimage import maximum_filter1d
+    r = maximum_filter1d(need.astype(float), size=4 * n + 1)
+    return np.clip(_box(_box(r, n), n), 0.0, 1.0)
 
 
 def _box(x, n):
