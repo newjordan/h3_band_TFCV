@@ -703,3 +703,11 @@ the whole-hand solve pulls the root back to reach), makes the Debussy pressing m
 flat vs H 53 / 8%) and costs Debussy keys (95.2): dropped; the hand-height hypothesis is not confirmed. **I4 posted** (band
 site `v18-curl`, files `v18tune_20261016/i4/`), all six videos reviewed; open in H and I4: idle finger sticking up while
 thumb and pinky play (Debussy ~52.6, 56.6, 58.6 s); I4 costs Rach keys (92.1 -> 87.2) and Chopin 282-294 (98.1 -> 96.2).
+- User: "is the problem then finger anticipation?" Measured (`v18tune_20261016/approach.py`; fingers 2-5, the pad's motion
+  over the ~170 ms before its key goes down): in H **81-94% of strikes slide in at key level** (descent angle p50 2-11 deg,
+  90 = straight down; pad at key-top height 170 ms before; sideways travel p50 21-27 mm, Rach 170 mm); I4 the same. v18's
+  approach is a 0.10-0.18 s straight blend to a point only h = 2-5 mm over the key for soft notes, so all the travel
+  happens at key level. New switch `APPROACH_ARC` (piano.finger_tip): the finger keeps "clear" over the keys while it
+  travels (scaled by travel, full at 2 cm), finishes the sideways move with "lead" of the approach left, then drops; the
+  strike starts from >= hmin; the approach takes >= amin. Running **J** = I4 + APPROACH_ARC {clear 0.010, lead 0.4,
+  hmin 0.006, amin 0.16}.

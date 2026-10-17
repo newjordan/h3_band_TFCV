@@ -902,6 +902,11 @@ def strike_time(touch):
     return 0.080 - 0.050 * touch
 
 
+APPROACH_ARC = None         # anticipation (None: v18/H): {"clear": m kept over the keys while travelling (full at 2 cm of
+                            # travel), "lead": share of the approach left for the drop, "hmin": m the strike starts from
+                            # at least, "amin": s the approach takes at least}
+
+
 def finger_tip(t, e, home_tip, r, f=2):
     """Fingertip (pad centre) target for one note event at time t, and the key depth it causes (or None if
     idle). The pad centre sits one pad radius r above the key surface it touches."""
@@ -909,15 +914,27 @@ def finger_tip(t, e, home_tip, r, f=2):
     S = strike_time(touch)
     rel = 0.10 - 0.05 * touch
     approach = 0.10 + 0.08 * touch
+    if APPROACH_ARC:
+        approach = max(approach, APPROACH_ARC["amin"])
     if t < t_on - S - approach or t > t_off + rel:
         return None, 0.0
     c = contact(p, nbk, f) + np.array([0, 0, r])
     down = c - np.array([0, 0, KEY_TRAVEL])
     # soft: the finger is already on (or a hair above) the key; strong: it pulls back and comes down
     h = (0.002 + 0.034 * touch ** 1.3 + 0.005 * vel / 127) * lift
+    if APPROACH_ARC:
+        h = max(h, APPROACH_ARC["hmin"])
     above = c + np.array([0, 0, h])
     if t < t_on - S:
         u = _smooth((t - (t_on - S - approach)) / approach)
+        if APPROACH_ARC:                    # anticipation: travel in the air, be over the key early, then drop onto it
+            sx = (t - (t_on - S - approach)) / approach
+            lead = APPROACH_ARC["lead"]
+            tip = home_tip + (above - home_tip) * u
+            tip[:2] = home_tip[:2] + (above[:2] - home_tip[:2]) * _smooth(sx / (1 - lead))
+            clear = APPROACH_ARC["clear"] * min(1.0, float(np.linalg.norm(above[:2] - home_tip[:2])) / 0.02)
+            tip[2] = max(tip[2], c[2] + clear * (1 - _smooth((sx - (1 - lead)) / lead)))
+            return tip, 0.0
         return home_tip + (above - home_tip) * u, 0.0
     if t < t_on:
         u = (t - (t_on - S)) / S
