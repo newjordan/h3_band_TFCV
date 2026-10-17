@@ -1,0 +1,1826 @@
+{
+ "version": 1,
+ "method": {
+  "extraction": "MediaPipe Hands, Tasks API HandLandmarker (mediapipe 1.1.0, hand_landmarker.task float16), IMAGE mode (every sampled frame independent, no tracking), num_hands=2, min detection/presence confidence 0.5. Frames sampled at 6 fps over the downloaded section. Per detection: handedness label+score, 21 image landmarks, 21 world landmarks (metres, hand-centred).",
+  "quality_gate": "kept if handedness score >= 0.8, image bbox diagonal >= 70 px, and the summed PIP+DIP flexion of fingers 2-5 under the reported handedness is >= -20 deg (all four fingers bent backwards = mirror/chirality garbage). Rejected counts per reason are in each source.",
+  "measures": "see blockout/human_score.py MEASURES; identical code runs on the MediaPipe world landmarks and on the anim joint chains",
+  "pooling": "finger measures (mcp/pip/dip/tip_pitch) pool fingers 2-5. Pooled percentiles weight each video by min(kept hand-frames, 300). per_video bands are unweighted. per_finger and splits bands are unweighted over all kept hand-frames.",
+  "pressing_vs_free": "MediaPipe cannot tell which finger is pressing. Split \"lowest\" = the finger (2-5) whose tip reaches furthest palmward of the palm plane in that hand-frame (contact proxy), \"others\" = the rest. Informational only.",
+  "reliability": [
+   "World landmarks are a learned 3D estimate; occluded fingers (far side of the hand in side views, fingers under the palm in overhead views) are inferred from the network prior, not seen.",
+   "Cross-check on side-view clips: unsigned PIP+DIP from world landmarks vs from 2D image landmarks correlate r=0.78 (6Yn39pyPK-Q) and 0.82 (GLIz7feMlvE); 2D is smaller as expected from projection, so world landmarks are not flattening the fingers relative to what the image shows. Correlation drops to 0.2-0.5 on overhead and three-quarter clips, where 2D angles are foreshortened and say little.",
+   "Motion blur in fast passages (hjwgza1-gF8 middle section, wevdC1YiN4c, RlCLUpaOluE) gives sliver/flat skeletons; most are dropped by the handedness-score gate (low score), not all.",
+   "Reflections in the fallboard/lid produced a few detections (jEuj-XD0MqM); they are mirror images and mostly fail the chirality gate.",
+   "Side views (6Yn, hjwg, GLIz, rZz) read systematically flatter (PIP p50 10-17 deg) than overhead/three-quarter views (gFPSH, jEuj, apxsca: 24-33 deg). Part is the players (GLIz and wevdC play with visibly flat, extended fingers), part may be view-dependent bias; the pooled band spans both.",
+   "Wrist height vs knuckles cannot be measured from world landmarks (no gravity direction); it is only in the qualitative notes.",
+   "Thumb landmarks are the least reliable: the thumb is hidden under the hand in most side views."
+  ],
+  "tip_definition": "MediaPipe tip = fingertip (skin end); anim tip = end of the distal bone. Only angles/ratios are compared.",
+  "extract_script": "\"\"\"Extract MediaPipe hand landmarks from videos at a fixed sample rate.\"\"\"\nimport sys, json, os, cv2, numpy as np\nimport mediapipe as mp\nfrom mediapipe.tasks import python as mpt\nfrom mediapipe.tasks.python import vision\n\nMODEL = '/tmp/claude-1000/humanref/model/hand_landmarker.task'\nFPS = float(os.environ.get('SFPS', '6'))\n\ndef main(video, out_json, frames_dir):\n    os.makedirs(frames_dir, exist_ok=True)\n    opts = vision.HandLandmarkerOptions(\n        base_options=mpt.BaseOptions(model_asset_path=MODEL),\n        running_mode=vision.RunningMode.IMAGE, num_hands=2,\n        min_hand_detection_confidence=0.5, min_hand_presence_confidence=0.5)\n    det = vision.HandLandmarker.create_from_options(opts)\n    cap = cv2.VideoCapture(video)\n    vfps = cap.get(cv2.CAP_PROP_FPS); n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))\n    step = vfps / FPS\n    recs = []; k = 0; nxt = 0.0; idx = 0; nsampled = 0\n    while True:\n        ok, fr = cap.read()\n        if not ok: break\n        if idx + 1e-6 >= nxt:\n            nxt += step; nsampled += 1\n            t = idx / vfps\n            rgb = cv2.cvtColor(fr, cv2.COLOR_BGR2RGB)\n            res = det.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb))\n            H, W = fr.shape[:2]\n            for h in range(len(res.hand_landmarks)):\n                im = np.array([[p.x * W, p.y * H, p.z * W] for p in res.hand_landmarks[h]])\n                wl = np.array([[p.x, p.y, p.z] for p in res.hand_world_landmarks[h]])\n                hd = res.handedness[h][0]\n                bb = [float(im[:, 0].min()), float(im[:, 1].min()), float(im[:, 0].max()), float(im[:, 1].max())]\n                recs.append(dict(t=round(t, 3), frame=idx, label=hd.category_name, score=round(hd.score, 4),\n                                 bbox=[round(b, 1) for b in bb], img=im.round(2).tolist(), world=wl.round(5).tolist()))\n            if res.hand_landmarks and k % 15 == 0:\n                vis = fr.copy()\n                for h in range(len(res.hand_landmarks)):\n                    pts = [(int(p.x * W), int(p.y * H)) for p in res.hand_landmarks[h]]\n                    for a, b in [(0,1),(1,2),(2,3),(3,4),(0,5),(5,6),(6,7),(7,8),(0,9),(9,10),(10,11),(11,12),(0,13),(13,14),(14,15),(15,16),(0,17),(17,18),(18,19),(19,20),(5,9),(9,13),(13,17)]:\n                        cv2.line(vis, pts[a], pts[b], (0, 255, 0), 1)\n                cv2.imwrite(os.path.join(frames_dir, f'{t:07.2f}.jpg'), vis)\n                cv2.imwrite(os.path.join(frames_dir, f'{t:07.2f}_raw.jpg'), fr)\n            if res.hand_landmarks: k += 1\n        idx += 1\n    json.dump(dict(video=os.path.basename(video), vfps=vfps, sample_fps=FPS, n_sampled=nsampled,\n                   size=[int(cap.get(3)), int(cap.get(4))], dets=recs), open(out_json, 'w'))\n    print(os.path.basename(video), 'sampled', nsampled, 'dets', len(recs))\n\nif __name__ == '__main__':\n    main(*sys.argv[1:4])\n",
+  "download": "yt-dlp -f \"bv*[height<=720][ext=mp4]/bv*[height<=720]\" --download-sections \"*0-300\"; footage kept local only (not committed)",
+  "visual_qa": "Annotated frames (every 15th frame with a detection, up to 30 per video) rated GOOD/PARTIAL/BAD per skeleton by Haiku reviewers; placement-level, generous; spot-checked at full resolution by the builder (overruled for wiLlFnWFNck)."
+ },
+ "qualitative": [
+  "Fingers are curved over the keys in most frames of the overhead and three-quarter clips (apxscaNxwuU, gFPSH8nBJyo, jEuj-XD0MqM); a minority of players (GLIz7feMlvE, wevdC1YiN4c) play with flat, extended fingers.",
+  "Wrist is about level with the knuckles in essentially every side-view frame inspected (6Yn39pyPK-Q, hjwgza1-gF8, GLIz7feMlvE, J56sx69a1VI, jEuj-XD0MqM); not dropped below the key line, not humped high.",
+  "Free fingers hover just above the keys; whole-hand lifts happen between chords (hjwgza1-gF8 chord section, hands raised with fingers arched).",
+  "Thumb, where visible (overhead RlCLUpaOluE, Pianote close-ups), lies extended along the keys, angled out from the hand, playing on its side; it is rarely tucked under.",
+  "Left-hand fingers often bunched together over neighbouring keys (gFPSH8nBJyo); on chords the hand opens with the thumb and pinky splayed (RlCLUpaOluE, hjwgza1-gF8).",
+  "Pianote lesson (rZznie6UU_o, qualitative only, excluded from the numbers) teaches rounded fingers, contact near the fingertip, wrist level with the knuckles, and shows flat fingers as the fault."
+ ],
+ "sources": [
+  {
+   "id": "6Yn39pyPK-Q",
+   "title": "Chopin Nocturne Close-Up",
+   "channel": "steroidpanda",
+   "view": "keyboard-level side close-up from the treble end, both hands",
+   "piece": "Chopin nocturne (slow)",
+   "range": [
+    0,
+    235
+   ],
+   "url": "https://www.youtube.com/watch?v=6Yn39pyPK-Q",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "visual_qa_good_partial_bad": "27/3/1",
+   "n_sampled_frames": 1411,
+   "sample_fps": 6.0,
+   "n_detections": 1459,
+   "n_kept": 1404,
+   "dropped": {
+    "low_handedness_score": 52,
+    "inconsistent_chirality": 3
+   },
+   "frames_with_kept_hand": 1334
+  },
+  {
+   "id": "hjwgza1-gF8",
+   "title": "Rachmaninoff Prelude in C-Sharp Minor (close up playing view) Owen Espinosa",
+   "channel": "Percy Espinosa",
+   "view": "low side close-up from the treble end",
+   "piece": "Rachmaninoff Prelude op.3 no.2 (chords, octaves, fast middle section)",
+   "range": [
+    0,
+    249
+   ],
+   "url": "https://www.youtube.com/watch?v=hjwgza1-gF8",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "visual_qa_good_partial_bad": "21/8/1",
+   "n_sampled_frames": 1495,
+   "sample_fps": 6.0,
+   "n_detections": 455,
+   "n_kept": 289,
+   "dropped": {
+    "inconsistent_chirality": 29,
+    "low_handedness_score": 136,
+    "outside_range": 1
+   },
+   "frames_with_kept_hand": 288
+  },
+  {
+   "id": "apxscaNxwuU",
+   "title": "Practicing Debussy's Clair de Lune (Piano Practice)",
+   "channel": "Bach to Bagels",
+   "view": "elevated three-quarter from the treble end / behind",
+   "piece": "Debussy Clair de Lune",
+   "range": [
+    0,
+    147
+   ],
+   "url": "https://www.youtube.com/watch?v=apxscaNxwuU",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "n_sampled_frames": 881,
+   "sample_fps": 6.0,
+   "n_detections": 646,
+   "n_kept": 449,
+   "dropped": {
+    "low_handedness_score": 185,
+    "inconsistent_chirality": 12
+   },
+   "frames_with_kept_hand": 385
+  },
+  {
+   "id": "J56sx69a1VI",
+   "title": "Chopin Nocturne Op. 9 No. 2 in Eb Major.wmv",
+   "channel": "Surfdaddyo1",
+   "view": "side view from the treble end, dim light",
+   "piece": "Chopin Nocturne op.9 no.2",
+   "range": [
+    0,
+    203
+   ],
+   "url": "https://www.youtube.com/watch?v=J56sx69a1VI",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "n_sampled_frames": 1221,
+   "sample_fps": 6.0,
+   "n_detections": 1114,
+   "n_kept": 1013,
+   "dropped": {
+    "inconsistent_chirality": 43,
+    "low_handedness_score": 54,
+    "small": 2,
+    "outside_range": 2
+   },
+   "frames_with_kept_hand": 1001
+  },
+  {
+   "id": "GLIz7feMlvE",
+   "title": "Classical Hands   Chopin's Nocturne in C# Minor",
+   "channel": "VideoFantomBoston",
+   "view": "keyboard-level side close-up from the treble end (upright)",
+   "piece": "Chopin Nocturne in C# minor (posth.)",
+   "range": [
+    0,
+    205
+   ],
+   "url": "https://www.youtube.com/watch?v=GLIz7feMlvE",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "visual_qa_good_partial_bad": "28/2/0",
+   "n_sampled_frames": 1231,
+   "sample_fps": 6.0,
+   "n_detections": 732,
+   "n_kept": 583,
+   "dropped": {
+    "low_handedness_score": 141,
+    "inconsistent_chirality": 8
+   },
+   "frames_with_kept_hand": 581
+  },
+  {
+   "id": "gFPSH8nBJyo",
+   "title": "Just enjoying playing piano. Nice overhead shot.",
+   "channel": "PIANOSTYLE100",
+   "view": "overhead, hands small in frame",
+   "piece": "popular/improv, mixed tempo",
+   "range": [
+    0,
+    179
+   ],
+   "url": "https://www.youtube.com/watch?v=gFPSH8nBJyo",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "visual_qa_good_partial_bad": "35/21/1",
+   "n_sampled_frames": 1075,
+   "sample_fps": 6.0,
+   "n_detections": 2019,
+   "n_kept": 1349,
+   "dropped": {
+    "small": 230,
+    "low_handedness_score": 228,
+    "inconsistent_chirality": 212
+   },
+   "frames_with_kept_hand": 1037
+  },
+  {
+   "id": "wiLlFnWFNck",
+   "title": "GoPro Piano | Prelude Op.32 No.5 (Rachmaninoff)",
+   "channel": "Kai Moohan-Shotan",
+   "view": "overhead GoPro from beyond the keyboard looking at the player, fisheye",
+   "piece": "Rachmaninoff Prelude op.32 no.5 (slow)",
+   "range": [
+    0,
+    184
+   ],
+   "url": "https://www.youtube.com/watch?v=wiLlFnWFNck",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "visual_qa_good_partial_bad": "35/2/0",
+   "exclude": true,
+   "exclude_reason": "camera looks back at the player from beyond the keyboard, so hands appear upside-down; 501 of 1198 detections had all four fingers bent backwards under MediaPipe's own handedness (mirror-confused 3D), and a full-res check of kept frames showed crossing finger chains. The haiku visual QA called it mostly GOOD at thumbnail scale; overruled.",
+   "n_sampled_frames": 1102,
+   "sample_fps": 6.0,
+   "n_detections": 1198,
+   "n_kept": 0
+  },
+  {
+   "id": "jEuj-XD0MqM",
+   "title": "Canon In D by Ray Mak (Shot with GoPro Hero 8 Black by Dennis Lim Ming)",
+   "channel": "Ray Mak",
+   "view": "mixed GoPro angles: over-shoulder, top-down, three-quarter",
+   "piece": "Pachelbel Canon arrangement",
+   "range": [
+    0,
+    134
+   ],
+   "url": "https://www.youtube.com/watch?v=jEuj-XD0MqM",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "visual_qa_good_partial_bad": "51/1/2",
+   "n_sampled_frames": 802,
+   "sample_fps": 6.0,
+   "n_detections": 1035,
+   "n_kept": 802,
+   "dropped": {
+    "low_handedness_score": 119,
+    "inconsistent_chirality": 113,
+    "small": 1
+   },
+   "frames_with_kept_hand": 577
+  },
+  {
+   "id": "rZznie6UU_o",
+   "title": "Proper Hand Posture At The Piano",
+   "channel": "Pianote",
+   "view": "lesson: side close-ups of a demonstrated playing hand plus wide shots",
+   "piece": "posture demonstration",
+   "range": [
+    0,
+    109
+   ],
+   "url": "https://www.youtube.com/watch?v=rZznie6UU_o",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "exclude": true,
+   "visual_qa_good_partial_bad": "24/2/12",
+   "exclude_reason": "posture lesson: includes deliberate flat-hand \"wrong\" demonstrations (about 0:20, 0:52-0:56), talking-head/gesturing and hands-in-lap shots (12 of 38 sampled skeletons not on a playing hand). Used for qualitative guidance only.",
+   "n_sampled_frames": 657,
+   "sample_fps": 6.0,
+   "n_detections": 614,
+   "n_kept": 0
+  },
+  {
+   "id": "RlCLUpaOluE",
+   "title": "Scott Holden - Butterfly Etude - GoPro Camera",
+   "channel": "Earl Cahill",
+   "view": "head-mounted GoPro looking down on the hands, fisheye, B&W; intercut with wide and pedal shots",
+   "piece": "Chopin Etude op.25 no.9 (fast)",
+   "range": [
+    0,
+    70
+   ],
+   "url": "https://www.youtube.com/watch?v=RlCLUpaOluE",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "visual_qa_good_partial_bad": "4/0/1",
+   "n_sampled_frames": 421,
+   "sample_fps": 6.0,
+   "n_detections": 65,
+   "n_kept": 50,
+   "dropped": {
+    "inconsistent_chirality": 12,
+    "low_handedness_score": 3
+   },
+   "frames_with_kept_hand": 49
+  },
+  {
+   "id": "wevdC1YiN4c",
+   "title": "ROYALTY FREE VIDEO FOOTAGE : Piano Playing Hands Close Up Fast Playing NO FEE",
+   "channel": "Royalty FREE Videos",
+   "view": "close three-quarter of both hands, heavy motion blur",
+   "piece": "fast passagework",
+   "range": [
+    0,
+    30
+   ],
+   "url": "https://www.youtube.com/watch?v=wevdC1YiN4c",
+   "section_downloaded": "first 300 s (or whole clip if shorter), <=720p",
+   "visual_qa_good_partial_bad": "15/1/0",
+   "n_sampled_frames": 181,
+   "sample_fps": 6.0,
+   "n_detections": 117,
+   "n_kept": 106,
+   "dropped": {
+    "low_handedness_score": 10,
+    "inconsistent_chirality": 1
+   },
+   "frames_with_kept_hand": 104
+  }
+ ],
+ "measures": {
+  "mcp_flex": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "fingers 2-5 MCP flexion: proximal phalanx off the metacarpal (wrist->MCP), + toward the palm",
+   "pooled": {
+    "p5": -0.068,
+    "p25": 17.638,
+    "p50": 26.792,
+    "p75": 36.111,
+    "p95": 51.13,
+    "n": 24180
+   },
+   "pooled_unweighted": {
+    "p5": 1.519,
+    "p25": 18.55,
+    "p50": 27.351,
+    "p75": 36.114,
+    "p95": 51.127,
+    "n": 24180
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": 9.06,
+     "p25": 17.601,
+     "p50": 23.813,
+     "p75": 29.898,
+     "p95": 38.6,
+     "n": 5616
+    },
+    "hjwgza1-gF8": {
+     "p5": -4.138,
+     "p25": 13.572,
+     "p50": 24.056,
+     "p75": 32.698,
+     "p95": 45.635,
+     "n": 1156
+    },
+    "apxscaNxwuU": {
+     "p5": 5.378,
+     "p25": 17.735,
+     "p50": 27.18,
+     "p75": 37.889,
+     "p95": 49.174,
+     "n": 1796
+    },
+    "J56sx69a1VI": {
+     "p5": 9.502,
+     "p25": 22.841,
+     "p50": 30.904,
+     "p75": 40.589,
+     "p95": 57.43,
+     "n": 4052
+    },
+    "GLIz7feMlvE": {
+     "p5": 6.887,
+     "p25": 17.682,
+     "p50": 25.3,
+     "p75": 33.164,
+     "p95": 48.03,
+     "n": 2332
+    },
+    "gFPSH8nBJyo": {
+     "p5": -7.57,
+     "p25": 23.138,
+     "p50": 31.957,
+     "p75": 39.08,
+     "p95": 53.966,
+     "n": 5396
+    },
+    "jEuj-XD0MqM": {
+     "p5": -8.741,
+     "p25": 13.895,
+     "p50": 26.021,
+     "p75": 36.988,
+     "p95": 55.557,
+     "n": 3208
+    },
+    "RlCLUpaOluE": {
+     "p5": -48.527,
+     "p25": -1.869,
+     "p50": 15.464,
+     "p75": 34.828,
+     "p95": 57.957,
+     "n": 200
+    },
+    "wevdC1YiN4c": {
+     "p5": 1.029,
+     "p25": 15.41,
+     "p50": 26.886,
+     "p75": 40.082,
+     "p95": 55.478,
+     "n": 424
+    }
+   }
+  },
+  "pip_flex": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "fingers 2-5 PIP flexion (+ toward the palm), about the finger plane's normal",
+   "pooled": {
+    "p5": -2.881,
+    "p25": 10.216,
+    "p50": 21.096,
+    "p75": 34.806,
+    "p95": 56.872,
+    "n": 24180
+   },
+   "pooled_unweighted": {
+    "p5": -1.875,
+    "p25": 10.52,
+    "p50": 21.801,
+    "p75": 35.733,
+    "p95": 57.885,
+    "n": 24180
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": -3.817,
+     "p25": 4.322,
+     "p50": 10.659,
+     "p75": 17.288,
+     "p95": 29.722,
+     "n": 5616
+    },
+    "hjwgza1-gF8": {
+     "p5": -10.259,
+     "p25": 1.668,
+     "p50": 10.376,
+     "p75": 18.93,
+     "p95": 37.46,
+     "n": 1156
+    },
+    "apxscaNxwuU": {
+     "p5": 3.803,
+     "p25": 16.029,
+     "p50": 24.506,
+     "p75": 35.252,
+     "p95": 50.885,
+     "n": 1796
+    },
+    "J56sx69a1VI": {
+     "p5": 1.58,
+     "p25": 13.265,
+     "p50": 24.107,
+     "p75": 38.835,
+     "p95": 67.197,
+     "n": 4052
+    },
+    "GLIz7feMlvE": {
+     "p5": -4.433,
+     "p25": 6.181,
+     "p50": 14.246,
+     "p75": 25.087,
+     "p95": 51.508,
+     "n": 2332
+    },
+    "gFPSH8nBJyo": {
+     "p5": 5.56,
+     "p25": 24.015,
+     "p50": 33.322,
+     "p75": 42.469,
+     "p95": 63.127,
+     "n": 5396
+    },
+    "jEuj-XD0MqM": {
+     "p5": 5.084,
+     "p25": 21.118,
+     "p50": 33.355,
+     "p75": 46.315,
+     "p95": 64.691,
+     "n": 3208
+    },
+    "RlCLUpaOluE": {
+     "p5": -3.412,
+     "p25": 14.816,
+     "p50": 26.798,
+     "p75": 39.749,
+     "p95": 61.051,
+     "n": 200
+    },
+    "wevdC1YiN4c": {
+     "p5": 5.893,
+     "p25": 17.409,
+     "p50": 26.964,
+     "p75": 36.504,
+     "p95": 53.263,
+     "n": 424
+    }
+   }
+  },
+  "dip_flex": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "fingers 2-5 DIP flexion (+ toward the palm; negative = collapsed/hyperextended)",
+   "pooled": {
+    "p5": -8.335,
+    "p25": 7.74,
+    "p50": 16.963,
+    "p75": 25.635,
+    "p95": 40.601,
+    "n": 24180
+   },
+   "pooled_unweighted": {
+    "p5": -7.784,
+    "p25": 8.771,
+    "p50": 18.109,
+    "p75": 26.978,
+    "p95": 41.601,
+    "n": 24180
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": -6.896,
+     "p25": 6.829,
+     "p50": 15.345,
+     "p75": 21.77,
+     "p95": 31.609,
+     "n": 5616
+    },
+    "hjwgza1-gF8": {
+     "p5": -13.233,
+     "p25": 0.526,
+     "p50": 9.107,
+     "p75": 18.753,
+     "p95": 30.71,
+     "n": 1156
+    },
+    "apxscaNxwuU": {
+     "p5": -2.366,
+     "p25": 11.531,
+     "p50": 18.27,
+     "p75": 25.177,
+     "p95": 38.822,
+     "n": 1796
+    },
+    "J56sx69a1VI": {
+     "p5": -19.076,
+     "p25": 10.021,
+     "p50": 20.927,
+     "p75": 30.532,
+     "p95": 45.515,
+     "n": 4052
+    },
+    "GLIz7feMlvE": {
+     "p5": -10.478,
+     "p25": 7.257,
+     "p50": 15.103,
+     "p75": 22.112,
+     "p95": 36.602,
+     "n": 2332
+    },
+    "gFPSH8nBJyo": {
+     "p5": -1.355,
+     "p25": 13.769,
+     "p50": 25.119,
+     "p75": 33.522,
+     "p95": 46.656,
+     "n": 5396
+    },
+    "jEuj-XD0MqM": {
+     "p5": -0.785,
+     "p25": 10.335,
+     "p50": 17.759,
+     "p75": 25.77,
+     "p95": 42.06,
+     "n": 3208
+    },
+    "RlCLUpaOluE": {
+     "p5": 4.107,
+     "p25": 14.918,
+     "p50": 23.706,
+     "p75": 33.232,
+     "p95": 53.85,
+     "n": 200
+    },
+    "wevdC1YiN4c": {
+     "p5": -4.424,
+     "p25": 3.961,
+     "p50": 10.101,
+     "p75": 17.78,
+     "p95": 29.538,
+     "n": 424
+    }
+   }
+  },
+  "tip_pitch": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "fingers 2-5 distal phalanx (DIP->tip) angle to the palm plane, + = pointing palmward",
+   "pooled": {
+    "p5": 9.601,
+    "p25": 36.187,
+    "p50": 52.656,
+    "p75": 66.537,
+    "p95": 80.335,
+    "n": 24180
+   },
+   "pooled_unweighted": {
+    "p5": 10.375,
+    "p25": 36.722,
+    "p50": 53.394,
+    "p75": 67.464,
+    "p95": 80.771,
+    "n": 24180
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": 16.797,
+     "p25": 33.285,
+     "p50": 46.042,
+     "p75": 60.367,
+     "p95": 78.206,
+     "n": 5616
+    },
+    "hjwgza1-gF8": {
+     "p5": 0.992,
+     "p25": 21.261,
+     "p50": 39.145,
+     "p75": 54.965,
+     "p95": 73.988,
+     "n": 1156
+    },
+    "apxscaNxwuU": {
+     "p5": 23.538,
+     "p25": 44.454,
+     "p50": 57.023,
+     "p75": 69.786,
+     "p95": 82.305,
+     "n": 1796
+    },
+    "J56sx69a1VI": {
+     "p5": 4.395,
+     "p25": 37.366,
+     "p50": 53.744,
+     "p75": 65.105,
+     "p95": 77.991,
+     "n": 4052
+    },
+    "GLIz7feMlvE": {
+     "p5": 7.695,
+     "p25": 32.576,
+     "p50": 46.951,
+     "p75": 59.15,
+     "p95": 73.965,
+     "n": 2332
+    },
+    "gFPSH8nBJyo": {
+     "p5": 7.366,
+     "p25": 40.437,
+     "p50": 62.403,
+     "p75": 73.838,
+     "p95": 83.545,
+     "n": 5396
+    },
+    "jEuj-XD0MqM": {
+     "p5": 18.342,
+     "p25": 46.026,
+     "p50": 60.373,
+     "p75": 71.359,
+     "p95": 82.099,
+     "n": 3208
+    },
+    "RlCLUpaOluE": {
+     "p5": 6.219,
+     "p25": 33.149,
+     "p50": 50.719,
+     "p75": 61.743,
+     "p95": 78.973,
+     "n": 200
+    },
+    "wevdC1YiN4c": {
+     "p5": 29.725,
+     "p25": 47.63,
+     "p50": 59.39,
+     "p75": 68.991,
+     "p95": 79.7,
+     "n": 424
+    }
+   }
+  },
+  "thumb_mcp_flex": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "thumb MCP: metacarpal (CMC->MCP) to proximal phalanx, + toward palm/fingers",
+   "pooled": {
+    "p5": -37.222,
+    "p25": -25.301,
+    "p50": -17.284,
+    "p75": -7.324,
+    "p95": 35.189,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": -37.363,
+    "p25": -25.447,
+    "p50": -18.486,
+    "p75": -9.686,
+    "p95": 31.195,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": -27.888,
+     "p25": -21.829,
+     "p50": -17.944,
+     "p75": -12.852,
+     "p95": 22.381,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": -37.618,
+     "p25": -29.261,
+     "p50": -21.144,
+     "p75": -12.074,
+     "p95": 29.014,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": -36.825,
+     "p25": -20.792,
+     "p50": -12.576,
+     "p75": -6.228,
+     "p95": 28.843,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": -41.158,
+     "p25": -31.534,
+     "p50": -25.305,
+     "p75": -18.065,
+     "p95": 23.408,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": -32.596,
+     "p25": -21.497,
+     "p50": -15.21,
+     "p75": -9.737,
+     "p95": 34.917,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": -41.124,
+     "p25": -28.923,
+     "p50": -21.894,
+     "p75": -13.556,
+     "p95": 11.095,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": -35.449,
+     "p25": -19.744,
+     "p50": -8.61,
+     "p75": 12.266,
+     "p95": 41.554,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": -37.758,
+     "p25": -26.753,
+     "p50": -21.571,
+     "p75": -15.88,
+     "p95": 26.193,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": -30.772,
+     "p25": 16.14,
+     "p50": 29.198,
+     "p75": 39.059,
+     "p95": 53.784,
+     "n": 106
+    }
+   }
+  },
+  "thumb_ip_flex": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "thumb IP: proximal to distal phalanx, + toward palm/fingers, - = tip bent back",
+   "pooled": {
+    "p5": -30.55,
+    "p25": -12.407,
+    "p50": 10.648,
+    "p75": 21.931,
+    "p95": 38.449,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": -30.683,
+    "p25": -12.776,
+    "p50": 9.53,
+    "p75": 21.08,
+    "p95": 38.056,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": -21.4,
+     "p25": -9.336,
+     "p50": 7.564,
+     "p75": 15.439,
+     "p95": 26.041,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": -26.759,
+     "p25": -13.295,
+     "p50": 6.728,
+     "p75": 16.468,
+     "p95": 27.818,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": -34.932,
+     "p25": -13.285,
+     "p50": 10.758,
+     "p75": 25.097,
+     "p95": 44.445,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": -30.168,
+     "p25": -11.786,
+     "p50": 15.54,
+     "p75": 24.95,
+     "p95": 41.318,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": -32.371,
+     "p25": -9.95,
+     "p50": 18.26,
+     "p75": 27.128,
+     "p95": 39.67,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": -35.322,
+     "p25": -19.552,
+     "p50": 2.514,
+     "p75": 18.317,
+     "p95": 40.333,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": -31.921,
+     "p25": -11.378,
+     "p50": 9.634,
+     "p75": 23.05,
+     "p95": 40.965,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": -14.169,
+     "p25": 8.058,
+     "p50": 15.542,
+     "p75": 21.912,
+     "p95": 35.746,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": -21.686,
+     "p25": -1.738,
+     "p50": 16.852,
+     "p75": 23.527,
+     "p95": 37.027,
+     "n": 106
+    }
+   }
+  },
+  "thumb_tip_pitch": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "thumb distal phalanx (IP->tip) angle to the palm plane, + = palmward",
+   "pooled": {
+    "p5": -10.984,
+    "p25": 2.585,
+    "p50": 11.792,
+    "p75": 22.185,
+    "p95": 37.889,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": -10.081,
+    "p25": 1.77,
+    "p50": 10.134,
+    "p75": 19.737,
+    "p95": 35.786,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": -7.713,
+     "p25": 0.94,
+     "p50": 6.997,
+     "p75": 13.595,
+     "p95": 22.987,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": -17.626,
+     "p25": -0.313,
+     "p50": 7.176,
+     "p75": 15.687,
+     "p95": 28.12,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": -13.268,
+     "p25": 7.433,
+     "p50": 20.737,
+     "p75": 29.787,
+     "p95": 42.446,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": -6.517,
+     "p25": 1.368,
+     "p50": 7.08,
+     "p75": 14.201,
+     "p95": 25.822,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": -13.541,
+     "p25": 7.301,
+     "p50": 15.24,
+     "p75": 22.427,
+     "p95": 33.358,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": -11.725,
+     "p25": -2.152,
+     "p50": 8.542,
+     "p75": 19.58,
+     "p95": 36.984,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": -9.581,
+     "p25": 7.798,
+     "p50": 18.368,
+     "p75": 29.035,
+     "p95": 44.494,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": 6.42,
+     "p25": 18.504,
+     "p50": 34.155,
+     "p75": 42.83,
+     "p95": 62.672,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": -3.088,
+     "p25": 7.599,
+     "p50": 15.931,
+     "p75": 25.957,
+     "p95": 39.557,
+     "n": 106
+    }
+   }
+  },
+  "thumb_abd": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "3D angle between the thumb metacarpal (CMC->MCP) and the index metacarpal (wrist->MCP)",
+   "pooled": {
+    "p5": 20.446,
+    "p25": 28.952,
+    "p50": 34.675,
+    "p75": 40.978,
+    "p95": 51.499,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": 20.121,
+    "p25": 28.335,
+    "p50": 33.912,
+    "p75": 40.248,
+    "p95": 51.021,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": 17.289,
+     "p25": 23.202,
+     "p50": 27.765,
+     "p75": 32.125,
+     "p95": 38.051,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": 18.461,
+     "p25": 26.972,
+     "p50": 32.642,
+     "p75": 37.909,
+     "p95": 45.597,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": 27.724,
+     "p25": 34.493,
+     "p50": 40.351,
+     "p75": 46.285,
+     "p95": 55.009,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": 23.941,
+     "p25": 30.345,
+     "p50": 34.742,
+     "p75": 39.908,
+     "p95": 47.072,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": 24.223,
+     "p25": 31.043,
+     "p50": 35.85,
+     "p75": 40.737,
+     "p95": 49.161,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": 26.109,
+     "p25": 31.949,
+     "p50": 37.278,
+     "p75": 43.984,
+     "p95": 55.127,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": 17.959,
+     "p25": 28.099,
+     "p50": 35.116,
+     "p75": 42.328,
+     "p95": 53.852,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": 24.192,
+     "p25": 35.371,
+     "p50": 43.339,
+     "p75": 48.786,
+     "p95": 61.067,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": 15.81,
+     "p25": 26.089,
+     "p50": 33.664,
+     "p75": 39.094,
+     "p95": 48.418,
+     "n": 106
+    }
+   }
+  },
+  "abd_im": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "index-middle spread: angle between proximal phalanges in the palm plane, + = apart",
+   "pooled": {
+    "p5": -5.592,
+    "p25": 2.135,
+    "p50": 7.239,
+    "p75": 15.848,
+    "p95": 37.995,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": -4.825,
+    "p25": 2.174,
+    "p50": 7.009,
+    "p75": 15.782,
+    "p95": 38.299,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": -3.383,
+     "p25": 0.76,
+     "p50": 3.304,
+     "p75": 5.839,
+     "p95": 10.342,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": -7.353,
+     "p25": 1.148,
+     "p50": 4.94,
+     "p75": 10.198,
+     "p95": 24.392,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": -7.163,
+     "p25": 4.946,
+     "p50": 11.649,
+     "p75": 18.453,
+     "p95": 36.171,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": -4.789,
+     "p25": 2.66,
+     "p50": 6.891,
+     "p75": 12.346,
+     "p95": 29.386,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": -3.42,
+     "p25": 1.752,
+     "p50": 4.623,
+     "p75": 8.58,
+     "p95": 17.845,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": -4.859,
+     "p25": 6.778,
+     "p50": 14.724,
+     "p75": 24.058,
+     "p95": 46.263,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": -5.836,
+     "p25": 5.613,
+     "p50": 15.993,
+     "p75": 27.313,
+     "p95": 47.326,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": -4.024,
+     "p25": 12.331,
+     "p50": 29.302,
+     "p75": 48.563,
+     "p95": 73.91,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": -11.554,
+     "p25": -3.895,
+     "p50": 4.556,
+     "p75": 11.5,
+     "p95": 23.51,
+     "n": 106
+    }
+   }
+  },
+  "abd_mr": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "middle-ring spread, as abd_im",
+   "pooled": {
+    "p5": -13.253,
+    "p25": -3.576,
+    "p50": 0.632,
+    "p75": 5.483,
+    "p95": 21.017,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": -13.684,
+    "p25": -3.307,
+    "p50": 0.764,
+    "p75": 5.592,
+    "p95": 21.676,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": -5.201,
+     "p25": -1.933,
+     "p50": 0.655,
+     "p75": 3.285,
+     "p95": 7.721,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": -12.956,
+     "p25": -5.015,
+     "p50": -0.692,
+     "p75": 3.561,
+     "p95": 12.087,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": -8.082,
+     "p25": -1.617,
+     "p50": 2.051,
+     "p75": 6.372,
+     "p95": 17.146,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": -22.247,
+     "p25": -8.105,
+     "p50": -2.951,
+     "p75": 1.694,
+     "p95": 13.695,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": -8.646,
+     "p25": -3.627,
+     "p50": -0.909,
+     "p75": 2.919,
+     "p95": 14.914,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": -19.766,
+     "p25": -1.684,
+     "p50": 4.252,
+     "p75": 11.481,
+     "p95": 35.059,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": -13.832,
+     "p25": -2.851,
+     "p50": 2.793,
+     "p75": 9.845,
+     "p95": 25.646,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": -6.386,
+     "p25": 4.625,
+     "p50": 12.534,
+     "p75": 18.799,
+     "p95": 32.906,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": -16.965,
+     "p25": -7.006,
+     "p50": -1.408,
+     "p75": 3.49,
+     "p95": 15.67,
+     "n": 106
+    }
+   }
+  },
+  "abd_rp": {
+   "unit": "deg",
+   "gated": true,
+   "desc": "ring-pinky spread, as abd_im",
+   "pooled": {
+    "p5": -17.39,
+    "p25": 0.734,
+    "p50": 10.803,
+    "p75": 23.759,
+    "p95": 47.556,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": -15.505,
+    "p25": 0.938,
+    "p50": 10.282,
+    "p75": 24.062,
+    "p95": 49.897,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": -7.917,
+     "p25": -0.145,
+     "p50": 3.705,
+     "p75": 7.626,
+     "p95": 16.338,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": -11.046,
+     "p25": 2.469,
+     "p50": 12.729,
+     "p75": 26.308,
+     "p95": 46.465,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": -23.463,
+     "p25": -2.003,
+     "p50": 12.217,
+     "p75": 24.174,
+     "p95": 38.258,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": -7.732,
+     "p25": 9.218,
+     "p50": 18.556,
+     "p75": 32.191,
+     "p95": 58.833,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": -22.013,
+     "p25": -1.636,
+     "p50": 6.215,
+     "p75": 12.243,
+     "p95": 24.464,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": -18.164,
+     "p25": 8.901,
+     "p50": 22.651,
+     "p75": 35.454,
+     "p95": 63.476,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": -21.751,
+     "p25": -3.125,
+     "p50": 9.841,
+     "p75": 22.817,
+     "p95": 47.52,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": -21.838,
+     "p25": -7.28,
+     "p50": -0.45,
+     "p75": 10.884,
+     "p95": 34.773,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": -6.481,
+     "p25": 13.197,
+     "p50": 20.35,
+     "p75": 27.577,
+     "p95": 53.371,
+     "n": 106
+    }
+   }
+  },
+  "span": {
+   "unit": "ratio",
+   "gated": true,
+   "desc": "thumb tip to pinky tip distance / hand length (wrist->middle MCP + middle phalanges)",
+   "pooled": {
+    "p5": 0.198,
+    "p25": 0.316,
+    "p50": 0.427,
+    "p75": 0.531,
+    "p95": 0.691,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": 0.199,
+    "p25": 0.318,
+    "p50": 0.426,
+    "p75": 0.534,
+    "p95": 0.683,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": 0.29,
+     "p25": 0.432,
+     "p50": 0.505,
+     "p75": 0.571,
+     "p95": 0.678,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": 0.151,
+     "p25": 0.268,
+     "p50": 0.378,
+     "p75": 0.468,
+     "p95": 0.669,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": 0.239,
+     "p25": 0.396,
+     "p50": 0.476,
+     "p75": 0.558,
+     "p95": 0.72,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": 0.147,
+     "p25": 0.224,
+     "p50": 0.28,
+     "p75": 0.347,
+     "p95": 0.468,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": 0.221,
+     "p25": 0.366,
+     "p50": 0.456,
+     "p75": 0.529,
+     "p95": 0.621,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": 0.249,
+     "p25": 0.326,
+     "p50": 0.401,
+     "p75": 0.544,
+     "p95": 0.714,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": 0.229,
+     "p25": 0.332,
+     "p50": 0.428,
+     "p75": 0.536,
+     "p95": 0.69,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": 0.416,
+     "p25": 0.626,
+     "p50": 0.698,
+     "p75": 0.804,
+     "p95": 0.918,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": 0.262,
+     "p25": 0.331,
+     "p50": 0.403,
+     "p75": 0.495,
+     "p95": 0.618,
+     "n": 106
+    }
+   }
+  },
+  "n_curled": {
+   "unit": "count",
+   "gated": true,
+   "desc": "fingers 2-5 with PIP+DIP > 60 deg, per hand-frame",
+   "pooled": {
+    "p5": 0.0,
+    "p25": 0.0,
+    "p50": 0.0,
+    "p75": 2.0,
+    "p95": 4.0,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": 0.0,
+    "p25": 0.0,
+    "p50": 0.0,
+    "p75": 2.0,
+    "p95": 4.0,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 0.0,
+     "p95": 1.0,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 0.0,
+     "p95": 0.6,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 2.0,
+     "p95": 4.0,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 1.0,
+     "p75": 2.0,
+     "p95": 4.0,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 0.0,
+     "p95": 4.0,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": 0.0,
+     "p25": 1.0,
+     "p50": 2.0,
+     "p75": 3.0,
+     "p95": 4.0,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 1.0,
+     "p75": 3.0,
+     "p95": 4.0,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 1.5,
+     "p75": 3.0,
+     "p95": 4.0,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 1.0,
+     "p95": 2.0,
+     "n": 106
+    }
+   },
+   "histogram": {
+    "0": 0.557,
+    "1": 0.134,
+    "2": 0.099,
+    "3": 0.121,
+    "4": 0.089
+   }
+  },
+  "n_straight": {
+   "unit": "count",
+   "gated": true,
+   "desc": "fingers 2-5 with PIP+DIP < 20 deg, per hand-frame",
+   "pooled": {
+    "p5": 0.0,
+    "p25": 0.0,
+    "p50": 0.0,
+    "p75": 1.0,
+    "p95": 4.0,
+    "n": 6045
+   },
+   "pooled_unweighted": {
+    "p5": 0.0,
+    "p25": 0.0,
+    "p50": 0.0,
+    "p75": 1.0,
+    "p95": 4.0,
+    "n": 6045
+   },
+   "per_video": {
+    "6Yn39pyPK-Q": {
+     "p5": 0.0,
+     "p25": 0.75,
+     "p50": 1.0,
+     "p75": 2.0,
+     "p95": 4.0,
+     "n": 1404
+    },
+    "hjwgza1-gF8": {
+     "p5": 0.0,
+     "p25": 1.0,
+     "p50": 2.0,
+     "p75": 3.0,
+     "p95": 4.0,
+     "n": 289
+    },
+    "apxscaNxwuU": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 1.0,
+     "p95": 2.0,
+     "n": 449
+    },
+    "J56sx69a1VI": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 1.0,
+     "p75": 1.0,
+     "p95": 2.0,
+     "n": 1013
+    },
+    "GLIz7feMlvE": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 1.0,
+     "p75": 2.0,
+     "p95": 4.0,
+     "n": 583
+    },
+    "gFPSH8nBJyo": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 0.0,
+     "p95": 2.0,
+     "n": 1349
+    },
+    "jEuj-XD0MqM": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 0.0,
+     "p95": 2.0,
+     "n": 802
+    },
+    "RlCLUpaOluE": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 0.0,
+     "p95": 1.0,
+     "n": 50
+    },
+    "wevdC1YiN4c": {
+     "p5": 0.0,
+     "p25": 0.0,
+     "p50": 0.0,
+     "p75": 1.0,
+     "p95": 3.0,
+     "n": 106
+    }
+   },
+   "histogram": {
+    "0": 0.52,
+    "1": 0.254,
+    "2": 0.112,
+    "3": 0.06,
+    "4": 0.054
+   }
+  }
+ },
+ "per_finger": {
+  "mcp_flex.index": {
+   "p5": 3.579,
+   "p25": 19.73,
+   "p50": 28.612,
+   "p75": 36.867,
+   "p95": 49.755,
+   "n": 6045
+  },
+  "mcp_flex.middle": {
+   "p5": 2.58,
+   "p25": 17.622,
+   "p50": 25.309,
+   "p75": 32.422,
+   "p95": 43.832,
+   "n": 6045
+  },
+  "mcp_flex.ring": {
+   "p5": -1.131,
+   "p25": 17.672,
+   "p50": 26.074,
+   "p75": 35.228,
+   "p95": 52.968,
+   "n": 6045
+  },
+  "mcp_flex.pinky": {
+   "p5": -0.75,
+   "p25": 19.806,
+   "p50": 30.016,
+   "p75": 40.164,
+   "p95": 55.957,
+   "n": 6045
+  },
+  "pip_flex.index": {
+   "p5": -2.023,
+   "p25": 8.56,
+   "p50": 18.614,
+   "p75": 34.16,
+   "p95": 54.975,
+   "n": 6045
+  },
+  "pip_flex.middle": {
+   "p5": -4.563,
+   "p25": 8.341,
+   "p50": 22.486,
+   "p75": 40.0,
+   "p95": 63.719,
+   "n": 6045
+  },
+  "pip_flex.ring": {
+   "p5": 3.983,
+   "p25": 17.187,
+   "p50": 28.927,
+   "p75": 40.82,
+   "p95": 62.821,
+   "n": 6045
+  },
+  "pip_flex.pinky": {
+   "p5": -1.888,
+   "p25": 9.307,
+   "p50": 17.75,
+   "p75": 27.317,
+   "p95": 44.42,
+   "n": 6045
+  },
+  "dip_flex.index": {
+   "p5": -18.404,
+   "p25": -1.75,
+   "p50": 9.982,
+   "p75": 24.837,
+   "p95": 46.319,
+   "n": 6045
+  },
+  "dip_flex.middle": {
+   "p5": 1.741,
+   "p25": 13.637,
+   "p50": 20.217,
+   "p75": 26.97,
+   "p95": 38.079,
+   "n": 6045
+  },
+  "dip_flex.ring": {
+   "p5": 0.99,
+   "p25": 12.206,
+   "p50": 19.379,
+   "p75": 26.897,
+   "p95": 37.512,
+   "n": 6045
+  },
+  "dip_flex.pinky": {
+   "p5": -2.823,
+   "p25": 10.072,
+   "p50": 18.51,
+   "p75": 28.649,
+   "p95": 45.759,
+   "n": 6045
+  },
+  "tip_pitch.index": {
+   "p5": 4.292,
+   "p25": 27.363,
+   "p50": 44.651,
+   "p75": 62.015,
+   "p95": 78.8,
+   "n": 6045
+  },
+  "tip_pitch.middle": {
+   "p5": 15.617,
+   "p25": 40.956,
+   "p50": 55.858,
+   "p75": 69.395,
+   "p95": 82.025,
+   "n": 6045
+  },
+  "tip_pitch.ring": {
+   "p5": 17.439,
+   "p25": 42.71,
+   "p50": 57.421,
+   "p75": 69.707,
+   "p95": 81.204,
+   "n": 6045
+  },
+  "tip_pitch.pinky": {
+   "p5": 8.487,
+   "p25": 37.629,
+   "p50": 53.617,
+   "p75": 66.773,
+   "p95": 80.263,
+   "n": 6045
+  }
+ },
+ "splits": {
+  "mcp_flex.lowest": {
+   "p5": 13.109,
+   "p25": 23.639,
+   "p50": 30.447,
+   "p75": 38.22,
+   "p95": 53.84,
+   "n": 6045
+  },
+  "mcp_flex.others": {
+   "p5": -1.867,
+   "p25": 16.752,
+   "p50": 26.055,
+   "p75": 35.208,
+   "p95": 50.112,
+   "n": 18135
+  },
+  "pip_flex.lowest": {
+   "p5": -2.549,
+   "p25": 12.137,
+   "p50": 25.324,
+   "p75": 40.089,
+   "p95": 62.565,
+   "n": 6045
+  },
+  "pip_flex.others": {
+   "p5": -1.733,
+   "p25": 10.024,
+   "p50": 20.753,
+   "p75": 34.229,
+   "p95": 56.275,
+   "n": 18135
+  },
+  "dip_flex.lowest": {
+   "p5": -0.849,
+   "p25": 11.998,
+   "p50": 19.565,
+   "p75": 26.7,
+   "p95": 38.65,
+   "n": 6045
+  },
+  "dip_flex.others": {
+   "p5": -9.649,
+   "p25": 7.712,
+   "p50": 17.389,
+   "p75": 27.094,
+   "p95": 42.814,
+   "n": 18135
+  },
+  "tip_pitch.lowest": {
+   "p5": 19.102,
+   "p25": 44.913,
+   "p50": 59.157,
+   "p75": 70.638,
+   "p95": 82.2,
+   "n": 6045
+  },
+  "tip_pitch.others": {
+   "p5": 8.562,
+   "p25": 34.365,
+   "p50": 50.936,
+   "p75": 65.967,
+   "p95": 80.179,
+   "n": 18135
+  }
+ },
+ "n_hand_frames": 6045
+}
