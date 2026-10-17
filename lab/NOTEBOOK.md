@@ -853,3 +853,17 @@ notes, keep N3) -- the go-ahead for the thumb rig change. N3 is the base for all
   (held black keys count as near-black, for the pad and the hand's y offset) -- running **TB** on T; **`THUMB_CLEAR`**
   ((m, w): in front of the key fronts the thumb's skin -- metacarpal, proximal, IP -- stays m above the white key tops,
   weight w) -- running **TC** (0.004, 0.5) on T.
+- Result **R / R3** (T + PINKY_ROLL 0.15 / 0.30 rad): **safe, small.** Keys = T except Brahms 94.0 -> 95.5 (both). On
+  pinky notes the hand turns toward the pinky: Chopin 266-278 4.9 -> 6.7 (R) / 12.3 deg (R3), Chopin 282-294 3.8 -> 7.8 /
+  11.0, Brahms 5.8 -> 6.2 / 7.0; Rach and Debussy unchanged (the thumb plays with the pinky 84-91% of those frames, and
+  the roll stays out of thumb+pinky shapes). Palm and pinky curl ~unchanged (curl there was already 16-23 deg).
+- Result **TB** (T + NB_HELD): rejected. It does move the Debussy 52.6 s pinky in (F5 under a held B-flat thumb: tip y
+  13 -> 29 mm) but the pinky still points back (knuckles at y ~43, held deep by the thumb's black key; the white pad is
+  capped at 45 mm by WHITE_FRONT_MAX = the user's K "white keys pressed at the front"), and Debussy 62-74 loses 2 notes
+  (96.4 -> 89.3).
+- Result **TC** (T + THUMB_CLEAR 0.004 / 0.5): rejected. The thumb does arch (pressing IP +12..+20 deg, not flat) but the
+  solver gets there by bringing the hand **forward** 7-13 mm in Chopin / Brahms (palm -54 -> -47, -53 -> -40, -59 -> -50:
+  most of N3's palm-back gain gone); Brahms 94.0 -> 92.5, Rach 92.7 -> 90.9. **Why:** from N3's palm-back placement the
+  thumb is at nearly full stretch to its key (CMC ~113 mm from the tip), so it can only lie flat; an arched thumb
+  needs the hand further in. Thumb shape and palm-back placement trade against each other on this hand.
+- Rendering **N3 | T | R3** (`v18tune_20261016/r3/`) for the band site.
