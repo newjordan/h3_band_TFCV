@@ -632,7 +632,7 @@ if LOOK == "show":                  # (it goes into H3 later): orange hands, pur
     ee = scn.eevee
     ee.taa_render_samples = int(opts.get("--samples", 32))
     ee.use_gtao, ee.gtao_distance, ee.gtao_factor = True, 0.05, 1.0
-    ee.use_ssr, ee.use_ssr_halfres, ee.ssr_thickness = True, False, 0.02
+    ee.use_ssr = False              # screen-space reflections leave grey blotches on the white keys and the keybed
     ee.use_soft_shadows = True
     ee.shadow_cube_size, ee.shadow_cascade_size = "2048", "4096"
     scn.view_settings.view_transform = "Standard"

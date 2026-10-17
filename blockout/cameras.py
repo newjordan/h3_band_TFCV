@@ -322,7 +322,8 @@ def _shot_track(name, frames, f0, f1, side, fps, seed, dscale=1.0, energy=0.3, c
         near = max(0.48, 0.20 + 0.85 * spread)              # m above the keys at the hands: both stay in frame
         h = max(0.95, near + 0.3) * (1 - k) + near * k
         x = cx + (tgt[:, 0] - cx) * k
-        y = 0.07 + (tgt[:, 1] - 0.045 - 0.07) * k
+        y = 0.07 + (tgt[:, 1] - 0.045 - 0.07) * k + 0.10 * (1 - k)    # high up, framed toward the keys so the elbows
+                                                                      # (where the skinned forearm ends) stay below frame
         yaw = np.radians(14.0) * (1 - k)
         pos = np.stack([x, y - 0.02, h], 1) + fl
         lk = np.stack([x, y, np.zeros(L)], 1)

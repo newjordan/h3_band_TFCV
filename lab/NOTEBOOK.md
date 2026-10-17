@@ -923,3 +923,15 @@ notes, keep N3) -- the go-ahead for the thumb rig change. N3 is the base for all
   text: the H3 input) + `OUT/suite_show.mp4` (piece titles burned in for viewing: Debussy at 1.0 s, Rachmaninoff 37.6 s,
   Chopin 120.6 s of video time). ffmpeg 8 drawtext drops one trailing character per multi-byte character (an em dash
   cost "2" of "No. 2"), so the titles are ASCII.
+- Render fixes found on the first frames: screen-space reflections left grey blotches on the white keys and keybed in
+  the low shots (SSR off fixed it; AO off or rougher keys did not), so `--look show` has no SSR. The top-down opener /
+  closer showed the gap between the skinned forearm's end and the elbow piece once the camera was high (closing rise,
+  339-350 s): those shots now frame toward the keys as they rise (+10 cm), so the elbows stay below frame; 527 frames
+  re-rendered. Render: ~4 frames/s with 6 Blender processes on the GB10 (8,415 frames in ~35 min).
+- **Review** (`suite_show.mp4`, every second of the 350 s at 1 fps, 30 sheets): no camera clipping, every tracked hand
+  in frame, fingers readable in every shot type; titles right. Notes: the upper arms' joint spheres show in the both-
+  hands and across shots (geometry, as built); the left forearm narrows in a fast Rachmaninoff leap at video 73 s (an
+  extreme wrist turn, the known ~0.8% mid-leap bends); the steadicam trails a Rachmaninoff leap for a moment at 106 s.
+  The old v18 left-hand swing-off at video 248-252 s is not there in R3.
+- **Posted:** band site section `suite-r3-show` (`media/suite_r3_show.mp4`, 1080p, 5 min 50 s, 225 MB). Backup
+  `manifest.backup_20261017_suite_show.json`. Clean frames for H3: `~/h3/hands_loop/suite_r3_20261017/solve/frames_show/`.
