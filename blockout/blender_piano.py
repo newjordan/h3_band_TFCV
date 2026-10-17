@@ -298,7 +298,7 @@ def pose_rig(arm, rest, s, hd):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from blockout.rig.skeleton import Skeleton
     if s not in _SK:
-        _SK[s] = Skeleton(s)
+        _SK[s] = Skeleton(s, thumb_axis=anim.get("thumb_axis", "rest"))   # the thumb hinge the take was solved with
     sk = _SK[s]
     B = rest[s]["bones"]
     wrist, elbow = Vector(hd["wrist"]), Vector(hd["elbow"])

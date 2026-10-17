@@ -32,6 +32,12 @@ LIMITS = {
     "tip": {"flex": (-20, 80)},                                  # thumb IP: hyperextends 10-20 deg normally
     "wrist": {"flex": (-70, 70), "abd": (-20, 30)},
 }
+# Thumb MCP/IP hinge. "rest": the axis of the rig's rest bend (metacarpal -> proximal); it comes out as the thumb
+# bones' local Z, so positive flexion swings the tip forward and up out of the palm and a thumb reaching down to its
+# key can only extend, pulling back (v18/H, and every take before 2026-10-17). "x": the bones' own curl axis, local
+# X as for fingers 2-5 (MPFB's), signed palmar: flexion sends the tip across toward the fingers and down, along
+# the key. Old takes render with their own axis (the anim JSON stores it: "thumb_axis").
+THUMB_AXIS = os.environ.get("RIG_THUMB_AXIS", "rest")
 if __import__("os").environ.get("RIG_LIMITS"):       # experiment hook: {"mcp_edge": {"abd": [-40, 40]}, ...}
     for _k, _v in json.loads(__import__("os").environ["RIG_LIMITS"]).items():
         LIMITS.setdefault(_k, {}).update({a: tuple(b) for a, b in _v.items()})
@@ -69,8 +75,9 @@ class Skeleton:
     """One hand. Bone rest data in world space; per joint the local axes of its DOFs and the sign that makes
     positive flexion curl toward the palm."""
 
-    def __init__(self, side, path=SKELETON_JSON):
+    def __init__(self, side, path=SKELETON_JSON, thumb_axis=None):
         self.side = side
+        self.thumb_axis = thumb_axis or THUMB_AXIS
         B = json.load(open(path))["hands"][side]
         self.names = [n for n in self._order(B) if n not in ("lowerarm01", "lowerarm02")]
         self.parent = {n: B[n]["parent"] for n in self.names}
@@ -101,7 +108,12 @@ class Skeleton:
             if k is None:
                 continue
             R = self.R0[n]
-            if k in ("cmc", "tmcp", "tip"):
+            palmar = k not in ("cmc", "tmcp", "tip")
+            if k in ("tmcp", "tip") and self.thumb_axis == "x":
+                flex_w = R[:, 0].copy()                  # the bone's own curl axis, signed palmar below
+                abd_w = R[:, 2].copy()
+                palmar = True
+            elif k in ("cmc", "tmcp", "tip"):
                 # thumb hinge: the axis of its rest bend (metacarpal -> proximal), expressed in the bone frame
                 d1 = self._dir("finger1-1"); d2 = self._dir("finger1-2")
                 hinge = np.cross(d1, d2); hinge /= np.linalg.norm(hinge)
@@ -116,7 +128,7 @@ class Skeleton:
             fl = R.T @ flex_w
             fl = self._snap(fl)
             y = self._dir(n)
-            if (np.cross(R @ fl, y) @ -up) < 0 and k not in ("cmc", "tmcp", "tip"):
+            if (np.cross(R @ fl, y) @ -up) < 0 and palmar:
                 fl = -fl
             dofs = {"flex": fl}
             if "abd" in LIMITS[k]:

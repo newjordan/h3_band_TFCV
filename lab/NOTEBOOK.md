@@ -814,3 +814,42 @@ them), so the palm nets only 0-6 mm back of M2 and the curl is unchanged. P2 ~ P
 thumb is also the digit with the known rig problem (its flex bends about the wrong axis, it hangs below the key fronts)
 -- a thumb that could reach forward along its key would let the palm sit further back. Stopped here to recollect with
 the user (as agreed). REACH stays in the code, off by default.
+
+### 2026-10-17: thumb axis (T), pinky roll (R), on N3
+**User: "love all 3"** (the three options after P: fix the thumb's rig axis, roll the hand toward the pinky on pinky
+notes, keep N3) -- the go-ahead for the thumb rig change. N3 is the base for all of these.
+- **`RIG_THUMB_AXIS=x`** (rig/skeleton.py, default `rest` = v18/H and every earlier take): the thumb MCP/IP flex about
+  the bones' own curl axis (local X, as for fingers 2-5), signed palmar, instead of the rest-bend hinge (local Z). Flexion
+  now sends the tip across toward the fingers and down. The CMC is unchanged (a +-30 deg cone either way). The planner's
+  thumb model (`THUMB["axis"]`, piano.py) follows the same switch (checked: planner and rig axes agree in both modes).
+  The anim JSON stores `thumb_axis`; `blender_piano.pose_rig` builds its Skeleton with it, so old takes still render
+  with the old hinge (checked: stored thumb joints = FK to 0.01 mm under each take's own axis, ~10 mm off under the
+  other). Relaxed thumb recalibrated on the new axis (`RIG_THUMB_AXIS=x python -m blockout.rig.calibrate` ->
+  `rig/comfort_thumbx.json`, only its thumb is used): it now hits the pianists' thumb medians (IP 10.6, tip pitch 11.8,
+  abduction 34.7 deg); on the old axis the fit sat pinned at the limits (MCP -10, IP -17.4).
+- Before: a pressing thumb sat **at its MCP limit 70-84%** and IP limit 46-82% of the time (it could only reach down by
+  extending, which pulls the tip back toward the player).
+- Result **T** (N3 + thumb axis): pressing thumb at its MCP limit 6-31%, IP 2-21%. Keys in time vs N3: Chopin 282-294
+  90.6 -> **96.2**, Chopin 266-278 98.6 -> **100**, Brahms 95.5 -> 94.0 (1 note), Debussy x2 and Rach equal. Pops/min:
+  Rach 137 -> 85, Brahms 7.5 -> 2.5, Chopin 266-278 7.5 -> 0. Palm 3-7 mm *less* back than N3 (knuckles forward
+  ~4 mm); pinky curl unchanged. **The thumb fix does not let the palm sit further back:** the thumb tip still lands only
+  ~12-16 mm ahead of the knuckle line -- the forward reach is set by the CMC cone around MPFB's rest metacarpal (which
+  points steeply down and out), not by the hinge axis.
+- **T4** (N4 + thumb): vs N4 Brahms 91.0 -> 94.0, Chopin 266-278 97.1 -> 98.6, Chopin 282-294 86.8 -> 88.7, Debussy
+  62-74 96.4 -> 92.9 (1 note), Rach 93.9 -> 91.5; palm 3-7 mm less back than N4. **TP** (P reach + thumb): reach still
+  marks 6-42 notes and reaches in 60-99% of frames; palm 0-10 mm back. The thumb does not rescue REACH.
+- T review (N3 | T, `v18tune_20261016/t/`, T panel at 1 fps, seven videos): nothing broken. **The Chopin thumb still
+  lies low in front of the keys at 274.6 / 277.6 s** (it presses middle C there: tip on the key at y 15 mm, IP joint
+  y -18 z 3 mm, MCP joint y -60 z 14 mm -- angles are now pianist-like, distal ~10 deg down, but the whole thumb is
+  so low that its underside sits below the key-top line in front of the key fronts).
+- **Correction to the N3/N4 reviews:** the digit "hanging" straight down at Debussy 52.6 / 56.6 s is the **pinky**, not
+  the thumb (rside looks from the pinky side). There the thumb holds a black key (B-flat / A-flat, y 67-76 mm), the long
+  fingers idle deep (y 118-145), and the pinky strikes a white key at its very front (tip y 13-28 mm, z -9) -- reaching
+  back and down from knuckles at y 35-45. Same pattern in Brahms rside (2.9, 3.9, 5.9 s). Cause: the white pad "near
+  the black keys" (FürElise: pinky 29-62 mm, capped at 45) is chosen per onset slice from the notes *struck* in it, so
+  a pinky note struck alone under a *held* black thumb key gets the front pad (15-36 mm).
+- New switches, all off by default: **`PINKY_ROLL`** (rad; on a pinky note with the thumb not playing, the plan's roll
+  turns further toward the pinky, eased by the roll spring) -- running **R** 0.15 and **R3** 0.30 on T; **`NB_HELD`**
+  (held black keys count as near-black, for the pad and the hand's y offset) -- running **TB** on T; **`THUMB_CLEAR`**
+  ((m, w): in front of the key fronts the thumb's skin -- metacarpal, proximal, IP -- stays m above the white key tops,
+  weight w) -- running **TC** (0.004, 0.5) on T.

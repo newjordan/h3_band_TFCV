@@ -521,6 +521,11 @@ def set_hand_model(name):
         d = [loc(f"finger1-{s}", "tail") - loc(f"finger1-{s}", "head") for s in (1, 2)]
         n0, d2 = d[0] / np.linalg.norm(d[0]), d[1] / np.linalg.norm(d[1])
         axis = np.cross(n0, d2); axis /= np.linalg.norm(axis)        # the rest MCP bend fixes the hinge axis
+        from .rig.skeleton import Skeleton, THUMB_AXIS
+        if THUMB_AXIS == "x":                    # ... or the thumb's own curl axis, as the rig bends it (rig/skeleton.py)
+            sk_ = Skeleton("R")
+            axis = mpfb_frame(B, "R")[1] @ (sk_.R0["finger1-2"] @ sk_.axes["finger1-2"]["flex"])
+            axis /= np.linalg.norm(axis)
         THUMB = {"seg": SEG[0], "n0": n0, "axis": axis, "dirs": _cone_dirs(n0, THUMB_CONE),
                  "swings": lambda m, n0=n0: _swings(n0, m)}
     TIP_R = FINGER_R[:, 3]
@@ -842,7 +847,7 @@ def hand_track(fing, hand, times, rest_x):
         return np.full(len(times), rest_x), np.zeros(len(times), bool)
     t_on = np.array([s[0][0].start for s in fing])
     hx = np.array([_place([(n.pitch, f) for n, f in s], any(is_black(n.pitch) for n, _ in s), hand) for s in fing])
-    nb = np.array([any(is_black(n.pitch) for n, _ in s) for s in fing])
+    nb = np.array(_near_black(fing))
     t_end = np.array([min(n.end for n, _ in s) for s in fing])   # the slice's first release frees the hand
     x = np.empty(len(times))
     for j, t in enumerate(times):
@@ -864,11 +869,25 @@ def hand_track(fing, hand, times, rest_x):
     return x, nb[idx]
 
 
+NB_HELD = False             # "among the black keys" also counts black keys the hand still holds at the onset (a pinky
+                            # white note under a held thumb B-flat plays in, on the white pad near the blacks); False: H
+
+
+def _near_black(fing):
+    """Per onset slice: black keys struck in it (or, with NB_HELD, still held by the hand at its onset)."""
+    nb = [any(is_black(n.pitch) for n, _ in s) for s in fing]
+    if NB_HELD:
+        held = [n for s in fing for n, _ in s if is_black(n.pitch)]
+        for i, s in enumerate(fing):
+            t = s[0][0].start
+            nb[i] = nb[i] or any(n.start < t - 0.02 and n.end > t + 0.02 for n in held)
+    return nb
+
+
 def finger_events(fing):
     """Per finger: list of [t_on, t_off_eff, pitch, velocity, near_black, touch, lift], sorted by t_on."""
     ev = {f: [] for f in range(5)}
-    for s in fing:
-        nb = any(is_black(n.pitch) for n, _ in s)
+    for s, nb in zip(fing, _near_black(fing)):
         for n, f in s:
             ev[f].append([n.start, n.end, n.pitch, n.velocity, nb, getattr(n, "touch", 0.3), getattr(n, "lift", 1.0)])
     for f in ev:
@@ -1365,6 +1384,8 @@ LEAD_HAND, LEAD_TIP, LEAD_HEAD = 0.07, 0.018, 0.06
 YOFF_NB = 0.018            # m: the hand moves in when black keys are in play
 PRONATE = 0.15             # rad: base roll toward the thumb (forearm pronation past flat)
 ROLL_MAX = 0.12            # rad: the hand rolls toward the fingers that are playing
+PINKY_ROLL = 0.0           # rad: on a pinky note (the thumb not playing) the hand turns this much further toward the pinky,
+                           # a forearm turn: the short pinky reaches its key with the palm back; eased by the roll spring; 0: H
 
 
 def _centre(H, x, nb, t):
@@ -1519,6 +1540,10 @@ def _key_env(keydepth, pressing, other=None, rig=None):
             if not CASE_COLLIDE:
                 d[low > 0.02] = 0.0                    # well above every key top (but not the fallboard: CASE_COLLIDE)
             out.extend(np.maximum(d, 0.0))             # (a pressing pad rests on its own lowered key, not a neighbour)
+            if THUMB_CLEAR:                            # the thumb crosses the key fronts from above, arched onto its key
+                th = np.array([f == 0 and (i <= 1 or u <= 0.2) for f, i, u, *_r in S_])
+                inf = th & (C[:, 1] < 0.0) & (C[:, 1] > -0.07)
+                out.extend(THUMB_CLEAR[1] * np.where(inf, np.maximum(THUMB_CLEAR[0] - low, 0.0), 0.0))
         return np.array(out)
 
     def _env_hard(samples, root_rot, root_pos):
@@ -1569,6 +1594,9 @@ OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) k
 THUMB_PRESS_GIVE = 0.004    # m a pressing thumb's distal and proximal phalanx may sink past key tops (its side
                             # rests over the neighbouring key's edge as it presses its own)
 CASE_COLLIDE = False        # skin above 2 cm also meets the fallboard (5.5 cm) instead of being skipped (False: v18/H)
+THUMB_CLEAR = None          # (m, w): in front of the key fronts the thumb's skin (metacarpal, proximal, IP) stays this far
+                            # above the white key tops, weight w against the key collisions: it arches onto its key from
+                            # above instead of lying flat at key level in front of the keys; None: H
 SOFT_ENV = True             # collisions as eased per-sample residuals (False: v16's single hard-edged penalty)
 FINGER_ITERS = 20           # finger solve iterations once the wrist is set
 FINGER_SMOOTH = 2e-5        # finger joints' frame-to-frame smoothness once the wrist is set
@@ -2215,6 +2243,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             ROLL[j] = sgn * PRONATE                           # the resting hand leans toward the thumb
             if playing:
                 ROLL[j] += sgn * ROLL_MAX * (2 - np.mean(playing)) / 2
+                if PINKY_ROLL and 4 in playing and 0 not in playing:
+                    ROLL[j] -= sgn * PINKY_ROLL
                 d = np.mean([TIP[j, f] for f in playing], axis=0) - C[j]
                 psi_reach = 0.5 * math.atan2(d[0] - sgn * np.mean([HOME[f] for f in playing]) * sgn, max(d[1] + 0.06, 0.03))
             else:
@@ -2392,6 +2422,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
     pens = np.concatenate([H.get("pen", [0.0]) for H in hands.values()])
     return {"fps": fps, "start": start, "speed": speed, "centre_x": cx, "keyboard": keyboard(),
             "finger_radii": FINGER_R.tolist(), "hand_model": HAND_MODEL,
+            "thumb_axis": __import__("blockout.rig.skeleton", fromlist=["THUMB_AXIS"]).THUMB_AXIS,
             "qa": {"finger_frames": int(len(pens)), "penetrating_over_1mm": int((pens > 0.001).sum()),
                    "max_penetration_mm": round(float(pens.max()) * 1000, 2),
                    "detail": _pen_detail([i for H in hands.values() for i in H.get("pen_info", [])]),

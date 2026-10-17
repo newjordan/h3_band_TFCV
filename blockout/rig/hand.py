@@ -63,6 +63,9 @@ class HandRig:
                                                               "comfort.json" if "comfort" in _cal_parts() else "comfort_mediapipe.json")
         if os.path.exists(cpath):                     # relaxed pose calibrated to measured pianists (calibrate.py)
             q = np.clip(np.array(json.load(open(cpath))[side]), self.lo, self.hi)
+            tpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "comfort_thumbx.json")
+            if self.sk.thumb_axis == "x" and os.path.exists(tpath):    # the thumb's relaxed pose on its own curl axis
+                q[:self.nq[0]] = np.clip(json.load(open(tpath))[side][:self.nq[0]], self.lo[:self.nq[0]], self.hi[:self.nq[0]])
             if len(q) == len(self.q_rest):
                 self.q_rest = q
                 for ch, a, b in zip(self.chains, self.sl[:-1], self.sl[1:]):
