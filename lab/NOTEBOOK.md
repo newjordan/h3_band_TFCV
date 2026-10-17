@@ -867,3 +867,10 @@ notes, keep N3) -- the go-ahead for the thumb rig change. N3 is the base for all
   thumb is at nearly full stretch to its key (CMC ~113 mm from the tip), so it can only lie flat; an arched thumb
   needs the hand further in. Thumb shape and palm-back placement trade against each other on this hand.
 - Rendering **N3 | T | R3** (`v18tune_20261016/r3/`) for the band site.
+- R3 review (N3 | T | R3, `v18tune_20261016/r3/`, R3 panel at 1 fps, seven videos): nothing broken; R3 looks like T
+  with a slight turn toward the pinky on Chopin / Brahms pinky notes. Unchanged: Chopin thumb flat at 274.6 / 277.6 s,
+  pinky stab at Debussy 52.6 / 56.6 / 58.6 s and Brahms 3.9 / 5.9 s, Rach pinky straight in the leaps (101.6, 104.6 s).
+  **Posted N3 | T | R3**: band site section `v18-thumb` (media `v18r3_*.mp4`); corrected the `v18-palm` Debussy note
+  (the hanging digit is the pinky). Backup `manifest.backup_20261017_thumb.json`. Not default yet: T and R3 wait on
+  the user's eye. Open: the Debussy/Brahms pinky stab (hand held deep by a thumb black key vs the 45 mm white-key cap);
+  the flat thumb is the cost of palm-back on this hand's thumb reach.
