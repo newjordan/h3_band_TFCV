@@ -19,8 +19,9 @@ Spec (JSON):
 Layout rules, around the seat (O, the drummer's hips seen from above) at azimuth theta (0 straight ahead,
 positive to the drummer's right) and distance d:
   kick, snare, hi-hat   where the standard kit has them (one each; a double pedal is "double_pedal": true).
-  rack toms             smallest to largest, left to right, on an arc 0.81 m out, centred 1 deg right (3.5 deg
-                        further per tom past two), 3 cm between rims: two toms land where the standard kit's do.
+  rack toms             smallest to largest, left to right, on an arc 0.85 m out with heads at 0.96 m, centred
+                        1 deg right (5 deg further per tom past two, so the smallest clears the hi-hat and the
+                        crash), 3 cm between rims: two toms land where the standard kit's do.
   floor toms            from 48 deg outward on an arc 0.60 m out, 3 cm between rims, heads at 0.57 m.
   cymbals               first crash, second crash and ride at the standard kit's spots; further cymbals take
                         SLOTS in order of preference for their type (centre above the toms, far left, right of
@@ -28,8 +29,11 @@ positive to the drummer's right) and distance d:
 Then every rule-placed piece that is not exactly a standard piece is nudged (azimuth, distance, height) until
 it clears the rest of the kit and its hardware (drum_collide.py hitboxes), the air above every head, the
 column a stroke rises through over each drum's strike point (no cymbal hangs there) and the path the stick
-takes to it, and pulled in until the stick's tip reaches its strike point from a shoulder. If
-that leaves the hi-hat, snare or ride clashing, they give way a little too (the ride further if it has to).
+takes to it (with the choking hand on a crash, splash or china, and on a snare a cross-stick's fist and stick
+at its clearest turn, so the pieces leave the drummer at least one turn free), and pulled in until the stick's
+tip reaches its strike point from a shoulder. If
+that leaves the hi-hat, snare or ride clashing, they give way a little too (the ride further if it has to,
+the snare never toward the seat).
 check() reports what is left.
 
     python -m blockout.drum_kit big [--out kit.json]       # build a preset or a spec file, print the check
@@ -52,15 +56,15 @@ def _toward(deg):
 # pitch: stick angle below horizontal at contact.
 STANDARD = {
     "kick":   {"kind": "kick", "c": (0.06, 0.41, 0.28), "r": 0.28, "n": (0, -1, 0), "depth": 0.40},
-    "snare":  {"kind": "drum", "c": (-0.08, 0.22, 0.68), "r": 0.178, "n": _toward(6), "depth": 0.13,
+    "snare":  {"kind": "drum", "c": (-0.08, 0.36, 0.70), "r": 0.178, "n": _toward(6), "depth": 0.13,
                "strike": 0.30, "pitch": 14},
-    "tom1":   {"kind": "drum", "c": (-0.14, 0.49, 0.84), "r": 0.127, "n": _toward(22), "depth": 0.20,
+    "tom1":   {"kind": "drum", "c": (-0.14, 0.53, 0.96), "r": 0.127, "n": _toward(22), "depth": 0.20,
                "strike": 0.30, "pitch": 20},
-    "tom2":   {"kind": "drum", "c": (0.17, 0.50, 0.84), "r": 0.152, "n": _toward(22), "depth": 0.22,
+    "tom2":   {"kind": "drum", "c": (0.17, 0.54, 0.96), "r": 0.152, "n": _toward(22), "depth": 0.22,
                "strike": 0.30, "pitch": 20},
     "floor":  {"kind": "drum", "c": (0.45, 0.10, 0.63), "r": 0.20, "n": _toward(3), "depth": 0.40,
                "strike": 0.35, "pitch": 16},
-    "hihat":  {"kind": "hihat", "c": (-0.40, 0.37, 0.92), "r": 0.178, "n": (0, 0, 1), "strike": 0.55, "pitch": 5},
+    "hihat":  {"kind": "hihat", "c": (-0.34, 0.29, 0.83), "r": 0.178, "n": (0, 0, 1), "strike": 0.55, "pitch": 5},
     "crash":  {"kind": "cymbal", "c": (-0.42, 0.60, 1.22), "r": 0.23, "n": _toward(14), "strike": 0.85, "pitch": 2},
     "crash2": {"kind": "cymbal", "c": (0.42, 0.66, 1.25), "r": 0.23, "n": _toward(14), "strike": 0.85, "pitch": 2},
     "ride":   {"kind": "cymbal", "c": (0.66, 0.36, 0.94), "r": 0.26, "n": _toward(10), "strike": 0.55, "pitch": 5},
@@ -87,12 +91,12 @@ SHOULDERS = (np.array([0.19, -0.25, 1.10]), np.array([-0.19, -0.25, 1.10]))
 # with its heel lifted for a kick): rule-placed pieces keep LEG_CLEAR off them, so the knees have room to swivel
 LEGS = (((0.12, -0.32, 0.60), (0.173, 0.117, 0.595), (0.08, 0.119, 0.185)),
         ((0.12, -0.32, 0.60), (0.18, 0.114, 0.643), (0.08, 0.119, 0.235)),
-        ((-0.12, -0.32, 0.60), (-0.329, 0.064, 0.548), (-0.347, 0.139, 0.135)))
+        ((-0.12, -0.32, 0.60), (-0.327, 0.067, 0.552), (-0.287, 0.059, 0.135)))
 LEG_CLEAR = 0.005
 RIM_CLEAR = 0.004                       # m two pieces' rims keep apart (real kits sit this tight)
 TIP_REACH = 0.80                        # m from a shoulder to a strike point the stick's tip can reach
 CHECK_TOL = 0.005                       # m of summed overlap check() lets pass (a few mm of stick airspace)
-TOM_ARC, TOM_MID, TOM_SHIFT, FLOOR_ARC, FLOOR_FROM, GAP = 0.81, 1.0, 3.5, 0.60, 48.0, 0.03
+TOM_ARC, TOM_Z, TOM_MID, TOM_SHIFT, FLOOR_ARC, FLOOR_FROM, GAP = 0.85, 0.96, 1.0, 5.0, 0.60, 48.0, 0.03
 TOM_MAX, FLOOR_MAX = 75.0, 100.0        # deg from straight ahead the rule layout goes; past it a drum is beside
                                         # or behind the drummer
 FLOOR_Z = 0.57                          # m: floor tom heads stay at least this high, about the top of the right
@@ -230,7 +234,7 @@ def build(spec):
     toms = sorted(by["tom"], key=lambda pc: pc["size"])
     mid = TOM_MID + TOM_SHIFT * max(0, len(toms) - 2)      # extra toms push the arc right, off the hi-hat
     for pc, th in zip(toms, _arc([pc["size"] for pc in toms], TOM_ARC, mid=mid)):
-        polar[pc["id"]] = (th, TOM_ARC, 0.84)
+        polar[pc["id"]] = (th, TOM_ARC, TOM_Z)
     floors = sorted(by["floor"], key=lambda pc: pc["size"])
     for pc, th in zip(floors, _arc([pc["size"] for pc in floors], FLOOR_ARC, start=FLOOR_FROM)):
         polar[pc["id"]] = (th, FLOOR_ARC, FLOOR_Z)
@@ -334,11 +338,15 @@ def _stick_path(p, k):
 CHOKE_ARM = 0.036              # m: the forearm behind a fist choking a cymbal
 
 
-def _stick_way(p, k):
-    """(points, radius around each) the stick takes landing on piece p (_stick_path, radius 0), and on a crash,
+def _stick_way(kit, K, p):
+    """(points, radius around each) the stick takes landing on piece p (_stick_path, radius 0); on a crash,
     splash or china the hand that chokes it at its near edge (drums.choke_pose, drum_hands.hitbox) and the
-    forearm reaching it from the nearer shoulder."""
+    forearm reaching it from the nearer shoulder; on a snare the left hand of a cross-stick (_cross_way)."""
+    k = kit[p]
     path = _stick_path(p, k)
+    if piece_type(p) == "snare":
+        pts, rad = _cross_way(kit, K, p)
+        return np.concatenate([path, pts]), np.concatenate([np.zeros(len(path)), rad])
     if piece_type(p) not in ("crash", "splash", "china"):
         return path, np.zeros(len(path))
     return _choke_way(tuple(k["c"]), tuple(k["n"]), k["r"], path)
@@ -367,6 +375,78 @@ def _choke_way(c, n, r, path):
         _CHOKE[key] = (np.concatenate(pts), np.concatenate(rad))
     pts, rad = _CHOKE[key]
     return np.concatenate([path, pts]), np.concatenate([np.zeros(len(path)), rad])
+
+
+CROSS_TIP, CROSS_STICK = 0.28, 0.41            # m grip to tip, stick length (drums.TIP, drums.STICK)
+CROSS_UP = (0.0135, 0.058)                      # m tip and grip above the head (drums.HOOP_TOP, CROSS_GRIP_H)
+CROSS_LIFT = 14.0                               # deg the stick lifts about the grip for the click (drums.TECH_HEIGHT)
+CROSS_LINE, CROSS_TURN = -11, range(-30, 31, 5)    # deg off the left shoulder's line to the snare where the arm
+                                                   # is least awkward (drums._arm_awkward, standard kit), and the
+                                                   # turns about it tried for a free spot on the hoop: inside the
+                                                   # drummer's own (drums.CROSS_YAW), where the arm stays easy
+CROSS_TURN_COST = 1e-4                          # m of overlap per deg turned: of turns as clear, the easier one
+CROSS_CLEAR = 0.003                             # m of air the fist and stick (their radii counted) keep off the kit:
+                                                # they rest on the head and click, they don't swing
+_CROSS = {}
+
+
+def _cross_poses(c, n, r):
+    """(points (turns, M, 3), radii (M,)) of the left fist and stick of a cross-stick on a snare (drums._cross_stick)
+    at each of CROSS_TURN: the stick across the head, its tip on the far hoop, the fist over the near half; as it
+    rests and lifted for the click."""
+    key = ("poses", c, n, r)
+    if key not in _CROSS:
+        c, n = np.array(c, float), _unit(n)
+        t = SHOULDERS[1] - c
+        u0 = _unit(t - (t @ n) * n)
+        a = math.atan2(CROSS_UP[1] - CROSS_UP[0], CROSS_TIP)
+        out = []
+        for turn in CROSS_TURN:
+            y = math.radians(CROSS_LINE + turn)
+            u = math.cos(y) * u0 + math.sin(y) * np.cross(n, u0)
+            tip = c - (r + 0.008) * u + CROSS_UP[0] * n
+            d = -_unit(math.cos(a) * u + math.sin(a) * n)
+            g = tip - CROSS_TIP * d
+            up = _unit(np.array([0.0, 0.0, 1.0]) - d[2] * d)
+            lift = math.radians(CROSS_LIFT)
+            pts, rad = [], []
+            for dd in (d, math.cos(lift) * d + math.sin(lift) * up):
+                segs = [(g - (CROSS_STICK - CROSS_TIP) * dd, g + CROSS_TIP * dd, *drum_collide.STICK_R, 10)]
+                for a0, b0, r0, r1 in drum_hands.hitbox(g, dd, "L"):
+                    segs.append((a0, b0, r0, r1, 5))
+                for a0, b0, r0, r1, m in segs:
+                    x, rr, _ = drum_collide.samples(a0, b0, r0, r1, m)
+                    pts.append(x), rad.append(rr)
+            out.append((np.concatenate(pts), np.concatenate(rad)))
+        _CROSS[key] = (np.stack([x for x, _ in out]), out[0][1])
+    return _CROSS[key]
+
+
+def _cross_over(K, kit, p, q, pts, rad):
+    """(turns,) how far a cross-stick on snare p (_cross_poses), at each turn, comes inside CROSS_CLEAR of piece q
+    and its hardware, summed like clash() sums a stick's way."""
+    rods = [x for x in K.rods if x[0] == q or x[0].startswith(q + "_")]
+    key = ("over", repr(sorted(kit[p].items())), q, repr(sorted(kit[q].items())),
+           tuple((nm, tuple(np.round(a, 5)), tuple(np.round(b, 5)), r) for nm, a, b, r in rods))
+    if key not in _CROSS:
+        flat, rr = pts.reshape(-1, 3), np.tile(rad, len(pts))
+        v = sum(np.clip(CROSS_CLEAR + rr - sd, 0, None) for sd in K.sd(flat, [q]).values())
+        for _, a, b, r in rods:
+            v = v + np.clip(r + CROSS_CLEAR + rr - drum_collide._sd_capsule_pts(flat, a, b, 0.0), 0, None)
+        _CROSS[key] = v.reshape(len(pts), -1).sum(axis=1)
+    return _CROSS[key]
+
+
+def _cross_way(kit, K, p):
+    """_stick_way's extra on a snare: the fist and stick of a cross-stick at the turn (CROSS_TURN) where they come
+    least inside the rest of the kit. A rack tom hangs over much of a snare's far rim and the hi-hat over its left
+    side, so a turn has to be free of both at once; clearing the pieces against this one turn is what leaves one.
+    The radii come less the difference to STICK_CLEAR, which clash() keeps around every stick's way."""
+    k = kit[p]
+    pts, rad = _cross_poses(tuple(k["c"]), tuple(k["n"]), k["r"])
+    over = sum(_cross_over(K, kit, p, q, pts, rad) for q in kit if q != p)
+    i = int(np.argmin(over + CROSS_TURN_COST * np.abs(np.array(CROSS_TURN))))
+    return pts[i], rad - (STICK_CLEAR - CROSS_CLEAR)
 
 
 STRIKE_RISE = np.arange(0.04, 0.301, 0.02)    # m above a drum's strike point its strokes' tip rises through ...
@@ -422,7 +502,7 @@ def clash(kit, p, detail=False):
         out["hardware in its air"] = _rods_over(others, air, 0.01)
     way = lambda pts, rad, pieces: _over({key: v - rad for key, v in K.sd(pts, pieces).items()}, STICK_CLEAR)
     if struck(p):
-        path, prad = _stick_way(p, kit[p])
+        path, prad = _stick_way(kit, K, p)
         out["hardware in its stick's way"] = _rods_over(others, path, STICK_CLEAR + prad)
     for q in kit:
         if q == p:
@@ -431,7 +511,7 @@ def clash(kit, p, detail=False):
             out[f"in air over {q}"] = _over(K.sd(_airspace(kit[q]), [p]), 0.01) + \
                 _rods_over(mine, _airspace(kit[q]), 0.01)
         if struck(q):
-            qpath, qrad = _stick_way(q, kit[q])
+            qpath, qrad = _stick_way(kit, K, q)
             out[f"in the way of {q}'s stick"] = way(qpath, qrad, [p]) + _rods_over(mine, qpath, STICK_CLEAR + qrad)
         if played(p):
             out[f"{q} in its air"] = _over(K.sd(air, [q]), 0.01)
@@ -516,7 +596,9 @@ def _too_low(p, z):
 
 
 def _settle(kit, movable, iters=40, scales=(3, 1)):
-    """Nudges each rule-placed piece until it clears the kit and its stick can reach it."""
+    """Nudges each rule-placed piece until it clears the kit and its stick can reach it. A snare gives way
+    around the seat and up or down, never toward it: its distance sets how far the arms reach, and nearer
+    folds the left forearm of a rimshot into the belly."""
     steps = [(s * dth, s * dd, s * dz) for s in scales for dth in (-3, 0, 3) for dd in (-0.03, 0, 0.03)
              for dz in (-0.03, 0, 0.03) if (dth, dd, dz) != (0, 0, 0)]
     for _ in range(iters):
@@ -531,7 +613,7 @@ def _settle(kit, movable, iters=40, scales=(3, 1)):
             d = math.hypot(x - SEAT[0], y - SEAT[1])
             best = (base, None)
             for dth, dd, dz in steps:
-                if _too_low(p, z + dz):
+                if _too_low(p, z + dz) or (piece_type(p) == "snare" and dd < 0):
                     continue
                 trial = dict(k, c=tuple(round(float(v), 4) for v in _polar(th + dth, d + dd, z + dz)))
                 kit[p] = trial

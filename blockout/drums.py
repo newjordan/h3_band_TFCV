@@ -36,6 +36,8 @@ STICK, TIP = 0.41, 0.28          # stick length; grip -> tip
 # the hips sit 8 cm behind the seat point the kits are laid out around (drum_kit.SEAT): the rigged hand
 # (drum_hands) holds the stick's fulcrum about 14 cm ahead of its wrist, and the arms need the room
 HIPS = np.array([0.0, -0.38, 0.58])
+TRUNK_BACK = 0.10               # rad the drummer sits more upright than performer.Body's default (the pianist's):
+                                # Chad Smith's trunk is about upright over the hips (drum_body_score trunk_flex)
 SLICE_TOL = 0.025                # hits closer than this are one slice (played together)
 
 
@@ -140,13 +142,13 @@ def _arm_awkward(hand, s, d, sh, torso):
     return best + 50 * max(0.0, reach)
 
 
-def _kit_clash(kit, p, hand, s, d):
+def _kit_clash(kit, p, hand, s, d, lift=LIFT_PITCH):
     """How far (m) the fist and stick come inside KIT_CLEAR of the pieces other than p (and their stands), with
-    the tip on s plus with the stick raised LIFT_PITCH about the grip: a hand turned in under a neighbouring
+    the tip on s plus with the stick raised `lift` deg about the grip: a hand turned in under a neighbouring
     cymbal would hit it on every stroke."""
     g = s - TIP * d
     up = _unit(np.array([0.0, 0.0, 1.0]) - d[2] * d)
-    a = math.radians(LIFT_PITCH)
+    a = math.radians(lift)
     out = 0.0
     for dd in (d, math.cos(a) * d + math.sin(a) * up):
         pts, rad = [], []
@@ -161,11 +163,16 @@ def _kit_clash(kit, p, hand, s, d):
     return out
 
 
+def _rest_pose():
+    """performer.Body pose of the drummer at rest: TRUNK_BACK upright, looking ahead, hands free."""
+    return performer.Body(hips=HIPS).pose(0.0, 0.0, 0.0, 0.0, {}, torso=(-TRUNK_BACK, 0.0, 0.0))
+
+
 def _rest_body():
     """Capsules (a, b, r0, r1) of the resting drummer's torso (drum_collide.TORSO_CAPS) and thighs (drum_kit.LEGS,
     the right one heel down and lifted for a kick, raised like drum_collide._body_obstacles)."""
     if "body" not in _HOME:
-        b = performer.Body(hips=HIPS).pose(0.0, 0.0, 0.0, 0.0, {})
+        b = _rest_pose()
         caps = [(a, c, r, r) for a, c, r in drum_collide.torso_caps(b)]
         (h0, r0), (h1, r1) = drum_collide.THIGH_TOP
         for hip, knee, _ in drum_kit.LEGS:
@@ -194,7 +201,7 @@ def _body_clash(hand, s, d):
 
 def _rest_arm(hand):
     """The resting drummer's shoulder and torso axis (for _arm_awkward)."""
-    b = performer.Body(hips=HIPS).pose(0.0, 0.0, 0.0, 0.0, {})
+    b = _rest_pose()
     return np.array(b["shoulders"][hand]), (np.array(b["hips"]) + np.array([0, 0, 0.12]), np.array(b["chest"]))
 
 
@@ -321,23 +328,48 @@ def _bell(p, hand):
 
 def technique_pose(p, hand, tech):
     """(strike point, (grip, stick dir)) for a technique stroke, or None to use the plain strike.
-    rimshot: _rimshot. bell: _bell. cross_stick: the stick lies across the snare, its tip clicks the far hoop
-    and the grip rests just above the near half of the head."""
-    c, n, r = np.array(KIT[p]["c"], float), NORMAL[p], KIT[p]["r"]
-    u = _in_plane_toward(p, _anchor(hand))
+    rimshot: _rimshot. bell: _bell. cross_stick: _cross_stick."""
     if tech == "rimshot" and KIT[p]["kind"] == "drum":
         s, d = _rimshot(p, hand)
-        return s, (s - TIP * d, d)
-    if tech == "bell" and drum_kit.piece_type(p) == "ride":
+    elif tech == "bell" and drum_kit.piece_type(p) == "ride":
         s, d = _bell(p, hand)
-        return s, (s - TIP * d, d)
-    if tech == "cross_stick" and drum_kit.piece_type(p) == "snare":
-        s = c - (r + 0.008) * u + HOOP_TOP * n
-        a = math.atan2(CROSS_GRIP_H - HOOP_TOP, TIP)
+    elif tech == "cross_stick" and drum_kit.piece_type(p) == "snare":
+        s, d = _cross_stick(p, hand)
     else:
         return None
-    back = _unit(math.cos(a) * u + math.sin(a) * n)
-    return s, (s + TIP * back, -back)
+    return s, (s - TIP * d, d)
+
+
+CROSS_YAW = range(-45, 46, 5)       # deg a cross-stick's stick turns off the hand's own line to the snare
+
+
+def _cross_stick(p, hand):
+    """(strike point, stick dir) for a cross-stick: the stick lies across the snare, its tip clicks the far hoop
+    and the grip rests just above the near half of the head. It lies along the hand's own line to the snare
+    (grip_home), turned (CROSS_YAW) where the arm is least awkward and the stick stays clear of the other
+    pieces as it lifts for the click: a rack tom hangs over much of a snare's far rim, so the click lands
+    where the rim is free, between the toms."""
+    key = ("cross", p, hand)
+    if key not in _HOME:
+        kit, (sh, torso) = _kit_boxes(), _rest_arm(hand)
+        c, n, r = np.array(KIT[p]["c"], float), NORMAL[p], KIT[p]["r"]
+        d0 = grip_home(p, hand)[1]
+        u0 = -_unit(d0 - (d0 @ n) * n)
+        a = math.atan2(CROSS_GRIP_H - HOOP_TOP, TIP)
+        lift = math.degrees(math.atan2(TECH_HEIGHT["cross_stick"], TIP))
+
+        def pose(yaw):
+            y = math.radians(yaw)
+            u = math.cos(y) * u0 + math.sin(y) * np.cross(n, u0)
+            return c - (r + 0.008) * u + HOOP_TOP * n, -_unit(math.cos(a) * u + math.sin(a) * n)
+
+        def cost(yaw):
+            s, d = pose(yaw)
+            return (_arm_awkward(hand, s, d, sh, torso) + KIT_COST * _kit_clash(kit, p, hand, s, d, lift)
+                    + YAW_COST * abs(math.radians(yaw)))
+        _HOME[key] = pose(min(CROSS_YAW, key=cost))
+    s, d = _HOME[key]
+    return s.copy(), d.copy()
 
 
 CHOKE_PITCH = range(15, 61, 5)      # deg below level choke_pose tries the stick at
@@ -372,7 +404,7 @@ def choke_pose(p, hand):
         grip = c + (r + CHOKE_RIM[0]) * u - CHOKE_RIM[1] * n
         _, d0 = grip_home(p, hand)
         y0 = math.atan2(d0[0], d0[1])
-        b = performer.Body(hips=HIPS).pose(0.0, 0.0, 0.0, 0.0, {})
+        b = _rest_pose()
         sh = np.array(b["shoulders"][hand])
         torso = (np.array(b["hips"]) + np.array([0, 0, 0.12]), np.array(b["chest"]))
         best = None
@@ -677,7 +709,7 @@ PEDAL_HEEL = np.array([KICK_X, 0.05, 0.03])        # kick footboard pivot
 BOARD_L = 0.27
 BEATER_PIVOT = np.array([KICK_X, 0.31, 0.13])
 BEATER_L = 0.165
-HAT_HEEL = np.array([-0.34, 0.07, 0.03])
+HAT_HEEL = np.array([-0.28, -0.01, 0.03])
 HAT_DIR = _unit([-0.10, 1.0, 0.0])
 THIGH, SHIN = 0.44, 0.42
 # hip joints from HIPS: at the throne top (blender_drums.py, 0.53 m) plus the thigh's radius, so the thighs sit
@@ -838,7 +870,8 @@ WRIST_EASE_S = 0.10                 # s: the hand eases out over about this long
 BELLY_CLEAR = 0.045                 # m the wrist keeps in front of the torso (drum_collide.TORSO_CAPS): forearm
                                     # radius and some air
 TWIST_MAX = 0.35                    # rad the torso turns at most to bring a shoulder toward a wrist out of reach
-REACH_SPARE = 0.01                  # m of arm's length the twist leaves over
+REACH_SPARE = 0.02                  # m of arm's length the twist leaves over: the belly room and the stick solve
+                                    # move the wrist up to about a centimetre further after it
 TWIST_EASE_S = 0.25                 # s: the torso turns in and back over about this long
 WRIST_LIFT = 0.5                    # the wrist rises this fraction of the hand target's lift: the stick turning
                                     # about the wrist does the rest
@@ -1512,6 +1545,7 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
         x = HEAD[:, 3] - cl
         HEAD[:, 3] = np.where(x > 0, LEAN_MAX * np.tanh(x / LEAN_MAX), x) + cl
     TORSO = np.zeros((N, 3))        # (pitch, yaw, roll) the torso adds to its share of the head's (performer.Body.pose)
+    TORSO[:, 0] = -TRUNK_BACK
     mocap_info = None
     if mocap is not None:   # a real drummer's motion: his head on his trunk, and the trunk's own sway and turn
         mst = drum_mocap.load(mocap) if isinstance(mocap, str) else mocap

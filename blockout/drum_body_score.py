@@ -15,6 +15,7 @@ In drum footage the hips and thighs are behind the kit, so SAM 3D Body guesses t
 reported but not gated.
 
     python -m blockout.drum_body_score ANIM.json [--ref blockout/drum_body_ref.json] [--json OUT.json] [--curves OUT.png]
+                                                 [--groove]
     python -m blockout.drum_body_score --build-ref SOURCES.json OUT_REF.json     # rebuild the reference
 
 SOURCES.json: {"sources": [{"id", "bvh", "content", "shots": [{"id", "t": [t0, t1], "view"}]}]}; BVH paths are
@@ -22,6 +23,10 @@ relative to the sources file. Shot edges lose TRIM seconds (the mocap smoother r
 
 Gate per measure, as blockout/human_score.py: OUT if our median is outside the reference 25-75% band, or our 5th / 95th
 percentile is outside the reference 5-95% range. Overall PASS = no gated measure OUT.
+
+The footage is a groove: the right hand on the hi-hat and the left on the snare (GROOVE), and no ride, toms or crashes.
+--groove compares like with like: posture on the frames where each hand's last and next strokes are on its GROOVE
+piece, and motion on the windows that fit inside those stretches. Without it, a take's fills and cymbals count too.
 """
 import argparse, json, math, os, sys
 
@@ -38,6 +43,7 @@ MHR = {"pelvis": 1, "hipL": 2, "kneeL": 3, "hipR": 18, "kneeR": 19, "neck": 110,
        "shR": 39, "elR": 40, "wrR": 42, "shL": 75, "elL": 76, "wrL": 78}
 
 ARM = ("elbow_flex", "ua_elev", "ua_abd", "ua_fwd")
+GROOVE = {"R": "hihat", "L": "snare"}   # what each hand plays in the reference footage (--groove)
 # name: (unit, gated, description)
 MEASURES = {
     "head_pitch": ("deg", True, "head forward axis below the trunk's forward, + = looking down"),
@@ -307,20 +313,46 @@ def build_ref(sources_json, out_json):
 
 # ---------------------------------------------------------------- scoring an anim
 
-def anim_measures(anim):
-    pts, hf, hu, fps = anim_points(anim)
+def groove_frames(anim):
+    """(F,) bool: frames where each hand's last and next strokes are on the piece it plays in the footage (GROOVE)."""
+    d = json.load(open(anim)) if isinstance(anim, str) else anim
+    t = np.array([f["t"] for f in d["frames"]])
+    ok = np.ones(len(t), bool)
+    for hand, piece in GROOVE.items():
+        hs = sorted((h["t"], h["piece"].split("_")[0].rstrip("0123456789")) for h in d["hits"] if h["hand"] == hand)
+        if not hs:
+            return np.zeros(len(t), bool)
+        on = np.array([p == piece for _, p in hs])
+        i = np.clip(np.searchsorted([x for x, _ in hs], t, "right") - 1, 0, len(hs) - 1)
+        ok &= on[i] & on[np.minimum(i + 1, len(hs) - 1)]
+    return ok
+
+
+def anim_measures(anim, groove=False):
+    """Posture {name: (F,)} and motion {name: [values]} of an anim; groove: posture on groove_frames only, and motion
+    on the windows inside them."""
+    d = json.load(open(anim)) if isinstance(anim, str) else anim
+    pts, hf, hu, fps = anim_points(d)
     m, axes = posture(pts, hf, hu)
-    return m, motion(m, axes, fps, [(0, len(m["head_pitch"]))]), fps
+    F = len(m["head_pitch"])
+    if not groove:
+        return m, motion(m, axes, fps, [(0, F)]), fps
+    k = groove_frames(d)
+    edges = np.flatnonzero(np.diff(np.r_[0, k.astype(int), 0]))
+    mo = motion(m, axes, fps, list(zip(edges[::2], edges[1::2])))
+    return {n: v[k] for n, v in m.items()}, mo, fps
 
 
-def score(anim, ref_path=REF, out_json=None, quiet=False):
+def score(anim, ref_path=REF, out_json=None, quiet=False, groove=False):
     ref = json.load(open(ref_path))
-    m, mo, fps = anim_measures(anim)
+    m, mo, fps = anim_measures(anim, groove)
+    if not len(m["head_pitch"]):
+        raise SystemExit(f"{anim}: no frames with the right hand on the hi-hat and the left on the snare (--groove)")
     ours = {k: m[k] for k in POSTURE} | mo
     res, fails = {}, []
     say = (lambda *a: None) if quiet else print
-    say(f"anim {anim}: {len(m['head_pitch'])} frames, {len(mo['nod'])} windows  |  reference: {ref['n_frames']} frames, "
-        f"{ref['n_windows']} windows from {len(ref['shots'])} shots")
+    say(f"anim {anim}: {len(m['head_pitch'])} {'groove ' if groove else ''}frames, {len(mo['nod'])} windows  |  "
+        f"reference: {ref['n_frames']} frames, {ref['n_windows']} windows from {len(ref['shots'])} shots")
     hdr = f"{'measure':14s} {'ours p5/p25/p50/p75/p95':>36s}   {'ref p5/p25/p50/p75/p95':>36s}  {'%out':>5s}  verdict"
     say(hdr); say("-" * len(hdr))
     for k, spec in ref["measures"].items():
@@ -356,7 +388,8 @@ def score(anim, ref_path=REF, out_json=None, quiet=False):
     verdict = "PASS" if not fails else "FAIL"
     say(f"\nOVERALL: {verdict}  ({len(fails)} of {len(gated)} gated measures OUT{': ' + ', '.join(fails) if fails else ''})")
     if out_json:
-        json.dump({"anim": anim, "verdict": verdict, "out": fails, "measures": res}, open(out_json, "w"), indent=1)
+        json.dump({"anim": anim, "groove": groove, "verdict": verdict, "out": fails, "measures": res},
+                  open(out_json, "w"), indent=1)
     return verdict, res
 
 
@@ -400,6 +433,8 @@ def main():
     ap.add_argument("--json")
     ap.add_argument("--curves", help="PNG of the reference curves next to each anim's")
     ap.add_argument("--build-ref", nargs=2, metavar=("SOURCES_JSON", "OUT_REF"))
+    ap.add_argument("--groove", action="store_true",
+                    help="only the frames where the hands play what the footage's do (right hi-hat, left snare)")
     a = ap.parse_args()
     if a.build_ref:
         build_ref(*a.build_ref)
@@ -408,7 +443,7 @@ def main():
             curves(a.anim, a.ref, a.curves)
         ok = True
         for an in a.anim:
-            v, _ = score(an, a.ref, a.json if len(a.anim) == 1 else None)
+            v, _ = score(an, a.ref, a.json if len(a.anim) == 1 else None, groove=a.groove)
             ok &= v == "PASS"
             print()
         sys.exit(0 if ok else 1)
