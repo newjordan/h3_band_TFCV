@@ -725,3 +725,9 @@ WHITE_FRONT_MAX 0.045 + PRESS_AXES [3, 3, 3] + PITCH0 -0.20 rad (palm up ~11 deg
 root_rot 2e-3 (the hand holds the planned tilt instead of flattening freely; was 1e-4) + RIG_CURL {mcp 20, pip 45,
 kdip 0.67}. Measure: `v18tune_20261016/posture.py` (knuckle tilt, knuckle height, white presses past 45 mm, fingertip
 angle). J (I4 + anticipation) running in parallel.
+**Correction (2026-10-17):** the earlier note "strike point is not the 'too high' ... pressing pads land 21-25 mm from the
+key front for index-ring" was WRONG: `case_strike.py` pooled white keys (measured from the white front) with black keys
+(measured from the black key's own front, which pulls the median down). White keys alone (`posture.py`), H: depth p50
+43-47 mm, p90 51-74 mm, **44-55% of white presses deeper than 45 mm** (the black keys start at 55); I4: p50 30 mm, 26%
+past 45 mm. The user's observation was right. Knuckle tilt in H while playing: +1..+8 deg (knuckles barely above the
+wrist), knuckle height 56-63 mm.
