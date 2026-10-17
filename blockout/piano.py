@@ -1591,6 +1591,8 @@ def _whittaker(Y, w, lam):
 WRIST_MODEL = os.environ.get("RIG_WRIST_MODEL", "1") == "1"   # the FürElise wrist model drives the wrist reference
 WRIST_Z_SCALE = False       # the pianists' wrist height scales with the hand too (False: v18/H, only x and y scale)
 WRIST_MODEL_PRIOR = 0.3     # its pull in the first whole-hand pass (our own plan only got 0.02)
+HAND_BACK = 0.0             # m: the wrist path from pass A moves this much further toward the player, so the fingers
+                            # reach out to their keys (less curl); the ease gives it back where a key needs it; 0: v18/H
 _WM = None
 
 
@@ -1815,6 +1817,9 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
             S_ = _whittaker(X_, PW[name], lam)
             S_[:, 2:3] = _whittaker(X_[:, 2:3], PW[name], lam * WRIST_LAMBDA_Z)
             REF[name] = [(rotvec(S_[i, 3:6]) @ REF[name][i][0], S_[i, :3]) for i in range(len(S_))]
+    if HAND_BACK:                                       # the wrist path set further toward the player: the fingers
+        for name in hands:                              # reach out (less curl), and the ease below gives it back only
+            REF[name] = [(r_, p_ - np.array([0.0, HAND_BACK, 0.0])) for r_, p_ in REF[name]]    # where a key needs it
     roots = {name: [np.concatenate([r[1], np.zeros(3)]) for r in REF[name]] for name in hands}
 
     for _e in range(EASE_ITERS):                        # ragdoll ease: the wrist hangs on a firm spring off its

@@ -761,3 +761,40 @@ unchanged (+2..+9), idle hands frozen 38-45%: dropped. Side views (new `rside` c
 fingers along the keys, K curled but flat-knuckled, M2 arched with fingers coming down. Review (M2 panel cropped, 1 fps,
 all six videos): nothing broken; the thumb hangs below the key fronts at Chopin ~274.6 / 277.6 s (thumb axis, unchanged),
 the pinky reaches out flat in the Rach leaps (~103.6 s). Posted: band site `v18-knuckles`, files `v18tune_20261016/m2/`.
+**User on M2 (2026-10-17): "its looking great"; bring the centre of the palm toward the player by 1/5 of the keys, to
+balance the intense back/down curl from the pinky.** 1/5 of a white key (150 mm) = 30 mm. Measure `palm.py` (palm centre
+= midpoint of wrist and knuckle line, y from the white key fronts; PIP+DIP bend of pressing fingers). M2 while playing:
+palm -13..-46 mm, knuckles +13..+47 mm in from the key fronts (Debussy/Rach +40..+47: pressing pads at ~30 mm are *behind*
+the knuckles, the fingers curl back under the hand), pressing curl index 63-119, middle 99-131, ring 71-103, pinky 39-54
+deg. New: `HAND_BACK` (m; `_pass3_rig` shifts the wrist reference toward the player before pass A; free fingers ride
+along through FREE_FOLLOW; 0 = H). Running **N** = M2 + HAND_BACK 0.030, and **N45** (0.045) as a hedge in case the
+whole-hand solve gives part of the shift back.
+Result N / N45 (shift before pass A): **the solve gives the shift back.** Palm moved only 2-3 mm in Debussy/Rach and
+9-15 mm in Chopin/Brahms (N45 barely more than N): the whole-hand passes hold the curled finger shape (RIG_CURL comfort +
+tilt hold) and pull the wrist forward again against its 0.3 prior. Keys: Debussy 50-62 95.2 -> 90.5, others ~M2. So
+HAND_BACK moved to the **settled** wrist path (after pass A and the ease, before FINGER_REFINE / pass B, where the wrist
+is fixed and only the fingers solve): the palm lands exactly 30 mm back and the fingers have to reach out. Running **N2**.
+Result N2 (shift on the settled path, wrist fixed in pass B): the palm sits exactly 30 mm back (palm y -43..-73 mm,
+knuckles -14..+17) and the curl opens right up (pressing pinky 39-54 -> 15 deg, ring 71-103 -> 13-88), knuckle tilt
+holds +14..+16, but **keys in time collapse to 40-71%**: from a fixed wrist 30 mm further back the short fingers
+(pinky first) cannot reach their keys; the repair loop cannot move the wrist. A pianist's wrist gives toward the hard
+key. So HAND_BACK moved again, to **after pass A and before the ease** (the ragdoll ease lets pressing fingers pull the
+wrist up to 25 mm per pass on a firm spring, eased over time): the palm sits back and comes in only where a key needs it.
+Running **N3** (EASE_PRIOR 2.0 as H) and **N3E** (EASE_PRIOR 1.0, a softer give).
+Result N3 / N3E (shift after pass A, ease gives back): **keys held** (N3 vs M2: Brahms 95.5 =, Chopin 266-278 100 ->
+98.6, Chopin 282-294 94.3 -> 90.6, Debussy 95.2 / 96.4 =, Rach 89.0 -> 92.7), but the palm nets only part of the 30 mm:
+Chopin/Brahms 15-16 mm back (knuckles -3..+4 mm from the key fronts; pressing pinky curl 42-54 -> 15-18 deg, ring 71-95 ->
+34-95), Rach 9 mm, Debussy 50-62 10 mm, Debussy 62-74 3 mm (black-key passages: the ease pulls the hand back in to reach
+them; curl there unchanged). N3E (EASE_PRIOR 1.0) ~ N3. Rendering H | M2 | N3 (`v18tune_20261016/n3/`, adds a Brahms side
+view); running **N4** = N3 placement with HAND_BACK 0.050 to see if Chopin/Brahms reach the full 30 mm with keys held.
+N3 review (H | M2 | N3, `v18tune_20261016/n3/`, N3 panel cropped at 1 fps, seven videos incl. a new Brahms side view):
+nothing broken; long fingers reach out instead of tucking under; the thumb hanging at the key fronts (Debussy 52.6 /
+56.6 s, Chopin 274.6 / 277.6 s) is the same in H, M2 and N3 (thumb axis, unchanged).
+Result **N4** (N3 placement, HAND_BACK 0.050): palm nets more -- Chopin/Brahms 22-26 mm back of M2 (knuckles -9..-4 mm),
+Rach 17, Debussy 6-12 -- curl opens further (Chopin 282-294 pressing middle 109 -> 67, Rach pinky 45 -> 25); keys: Rach
+93.9 (best yet), Debussy 95.2 / 96.4 =, Chopin 266-278 97.1, but Brahms 91.0 (M2/N3 95.5) and Chopin 282-294 86.8 (N3
+90.6, M2 94.3). Rendering M2 | N3 | N4 (`v18tune_20261016/n4/`) for the user to judge the amount by eye.
+N4 review (N4 panel cropped at 1 fps, seven videos): nothing broken; thumb at Chopin 274.6 / 277.6 s as in M2; Rach pinky
+still reaches out straight in the leaps (100.6, 104.6 s). **Posted M2 | N3 | N4**: band site `v18-palm`, files
+`v18tune_20261016/n4/` (N3 vs H in `n3/`). N2 not shown (keys 40-71%). Waiting on the user's eye: N3 (keys held, palm
+3-19 mm back) or N4 (palm 6-26 mm back, a few keys lost in Brahms / Chopin 282-294).
