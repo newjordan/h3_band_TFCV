@@ -685,3 +685,15 @@ hand (idle bend p50 21-48 -> 64-89 deg) and empties the fallboard, but hooked ti
 5e-5), so a PIP that straightens leaves the tip bent. Frames (H | I2, Chopin 270.6 s, Debussy 56.2 s): H's long fingers
 lie flat along the keys; I2's curl down onto them, perhaps a little far ("curl slightly"). Running **I3** = I2 + couple
 1e-3, and **I4** = gentler curl (MCP 15, PIP 35) + couple 1e-3, both with CASE_COLLIDE.
+Results I3 / I4 (vs H): tight DIP coupling removes the hooks (Rach broken 1.7% -> 0.5%). I4 (MCP 15, PIP 35) is the
+gentler curl: idle fingers straight 10-35% (H 41-89%), tips in fallboard 0-3 (H up to 115), keys in time 100% on
+Debussy x2, Chopin 266-278 and Brahms (H 97), but Chopin 282-294 96.2 (H 98.1) and **Rach 87.2 (H 92.1)**: 11 Rach notes
+lost, 3 gained, scattered, mostly never pressed -- reach, not the fallboard (a curled rest resists the stretch). I5 =
+I4 + RIG_W comfort_press 0.3 (pressing fingers pulled less to the rest pose) running on Rach/Chopin/Brahms/Debussy.
+**Review of the H | I4 sheets caught a new defect, in H as well:** Debussy 58.6 s (and ~52.6, 56.6 s), with the thumb and
+pinky playing, the idle index and middle stick straight out and up (total bend -9..-21 deg, tip level with its
+knuckle). Root cause of both this and the user's "long fingers flat, from very low": **the hand rides at a small hand's
+height.** `furelise_cal` knuckle_z 0.042 m is the FürElise pianists' (17.7 cm hands) and `_learned_wrist` scales the
+pianists' wrist offsets by 24.3/17.7 in x and y but NOT z. Knuckles ~1.5 cm too low for this hand: a long finger can
+only reach its key flat, an idle finger cannot hang curled without entering the keys, so the collision straightens it.
+New switch `WRIST_Z_SCALE` (piano.py). Running **I6** = I4 + KNUCKLE_Z 0.0577 (0.042 x 24.3/17.7) + WRIST_Z_SCALE.

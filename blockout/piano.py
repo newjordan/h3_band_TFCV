@@ -1566,6 +1566,7 @@ def _whittaker(Y, w, lam):
 
 
 WRIST_MODEL = os.environ.get("RIG_WRIST_MODEL", "1") == "1"   # the FürElise wrist model drives the wrist reference
+WRIST_Z_SCALE = False       # the pianists' wrist height scales with the hand too (False: v18/H, only x and y scale)
 WRIST_MODEL_PRIOR = 0.3     # its pull in the first whole-hand pass (our own plan only got 0.02)
 _WM = None
 
@@ -1593,7 +1594,7 @@ def _learned_wrist(H, name, ts):
         for n, f in sl:
             key = f"{name}{f}.{'black' if is_black(n.pitch) else 'white'}"
             o = M["offset"].get(key) or M["offset"].get(f"{name}{f}.white")
-            v.append(np.array([key_x(n.pitch), 0.0, 0.0]) + np.array(o["median"]) * np.array([k, k, 1.0]))  # offsets
+            v.append(np.array([key_x(n.pitch), 0.0, 0.0]) + np.array(o["median"]) * np.array([k, k, k if WRIST_Z_SCALE else 1.0]))  # offsets
             # scale with the hand (x and depth), so the knuckles land where a pianist's do whatever the hand's size
         on.append(sl[0][0].start); P.append(np.mean(v, 0))
     on, P = np.array(on), np.array(P)
