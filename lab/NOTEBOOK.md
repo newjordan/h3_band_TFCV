@@ -1137,3 +1137,17 @@ user's benchmarks); everything below is CPU.
 - **Ops:** ~30 solves at once with llama-server + ComfyUI resident ran toymaker out of memory at 01:27 (hydra-head
   SIGKILLed, systemd restarted it; one suite part died silently, the stitch came out 8,089 frames). Now <= 12 at once
   (`tools/solve_lim.sh`); part 16 of the H3 suite re-run alone; T1 suite solving at 11 parts at a time (`suite_t1/`).
+- **Cleanup, final shape** (`clean.py` defaults now): pressing fingers are left exactly as solved (`FIX_PRESSING` False:
+  applying their own re-solves made thumbs roll frame to frame, Rach pops 20 -> 49/min, broken 1.3%); press / landing
+  frames pinned hard (`W_PRESS` 1e4); a free finger's correction tapers to zero over 3 frames before a landing and after a
+  release (`TAPER`): no lift that then has to snap onto a strike. Windows (T1u / H3u vs base): Debussy 94.4 = 94.4%, wrong
+  23 -> 19; Rach 93.8 -> 93.1%, 202 -> 140, pops 20 = 20; Chopin 282 95.7 -> 97.9%, 134 -> 67; Chopin 266 91.2 = 91.2%,
+  116 -> 46; pops ~ base.
+- **H3 suite + cleanup (`suite_h3/cand2/`)** vs V3: wrong keys 3627 -> **1707**, struck twice 487 -> 227, sounded 90.1 ->
+  88.7% (Debussy 81.4 -> 85.6, Rach 93.5 -> 91.1, Chopin 89.0 -> 87.5), timing p90 43 -> 44 ms, pops 5.0 -> 5.8/min,
+  broken 0.05 -> 0.06%, crossed 0.57 -> 1.11%. (H3 suite before the cleanup: 89.7% / 2587 wrong / 316 twice.)
+  The first cleanup on this suite (before the taper) lost 124 notes: soft press pins let free-finger lifts bleed in.
+- **Left (cand2):** pressing thumbs 833 and pressing fingers 609 of the wrong keys; the thumb's shaft lies across the next
+  key toward the fingers (W->W, and B->W from a black key) in every piece, plus W->W outside. V3's solver lets a pressing
+  thumb sink `THUMB_PRESS_GIVE` 4 mm into other keys; G1 = T1 + give 0 running (Rach). Octave chords: rig span ~130-136 mm
+  thumb-to-pinky vs 165 needed (joint limits hit) -- the user's call.

@@ -31,15 +31,18 @@ CLEAR = 0.0010          # m the re-solve aims for past that
 GAIN_FREE, GAIN_PRESS = 400.0, 40.0     # key-collision weight (x RIG_W env) in the re-solve: free / pressing finger
 PRIOR = 2e-3            # how hard a re-solved pressing finger holds its own pose (finger_residuals "smooth" weight)
 PRIOR_FREE = 5e-4       # ... and a free one
-CENTRE = 1.0            # share of the way a pressing pad's target slides to its key's centre line
-PRESS_W = (10.0, 300.0, 1000.0)           # a pressing pad's target weights (x across, y along, z depth) in the re-solve
+CENTRE = 0.0            # share of the way a pressing pad's target slides to its key's centre line (0: stays put; >0 pushed thumbs off)
+PRESS_W = (100.0, 300.0, 1000.0)          # a pressing pad's target weights (x across, y along, z depth): it stays where the solve put it
 OWN_PRE, OWN_POST = 0.30, 0.15          # s: a finger owns a key this long before its onset and after its release
 BLACK_ZONE = 0.005      # m in front of the black keys from where a free finger keeps over their tops
 NEAR_OWN = 0.020        # m: a finger this close over a key it is about to play keeps its pad path like a pressing one
 SWEEP_U = (0.25, 0.5)   # shares of the way to the neighbouring frames at which the skin is also tested (None: off)
 SMOOTH_LAM, W_HI, W_LO = 200.0, 50.0, 1.0  # temporal blending of the corrections
 MAX_DQ = 0.3            # rad: the most a correction turns one joint (a bigger one flips the finger's pose and pops)
-W_PRESS = 50.0           # ... a frame where the finger presses (or lands) is held to its own correction: no lift bleeds in
+W_PRESS = 1e4            # ... a frame where the finger presses (or lands) is held to its own correction: no lift bleeds in
+FIX_PRESSING = False    # also apply a pressing finger's own re-solve (False: pressing fingers stay exactly as solved:
+                        # their re-solves pass through unsmoothed and jitter, Rach pops 20 -> 49/min)
+TAPER = 3.0             # frames over which a free finger's correction fades in after a release / out before a landing
 PASSES = 4
 ITERS = 20
 
@@ -245,6 +248,17 @@ def clean(anim, notes, jobs=1, t0=None, t1=None, log=print):
                 # pin the corrected frames, and the frames where this finger presses (a correction may not bleed
                 # into a strike or a hold); other frames are pulled to no change, the second difference smoothed
                 press = np.array([pinned[(j, h)][f] is not None for j in range(j0, j1)])
+                # next to a strike or a release a free finger is on its strike path: its correction tapers to nothing
+                # over TAPER frames (no lift right before a landing, so nothing has to snap down onto a pinned strike)
+                dist = np.full(len(press), 99)
+                idx = np.nonzero(press)[0]
+                if len(idx):
+                    k_ = np.searchsorted(idx, np.arange(len(press)))
+                    nxt = np.where(k_ < len(idx), idx[np.minimum(k_, len(idx) - 1)] - np.arange(len(press)), 99)
+                    prv = np.where(k_ > 0, np.arange(len(press)) - idx[np.maximum(k_ - 1, 0)], 99)
+                    dist = np.minimum(np.abs(nxt), np.abs(prv))
+                taper = np.clip((dist - 1) / TAPER, 0.0, 1.0)
+                Dl[:, a:b] *= np.where(press, 1.0 if FIX_PRESSING else 0.0, taper)[:, None]   # a pressing finger stays put
                 w = np.where(press, W_PRESS, np.where(moved, W_HI, W_LO))
                 Ds[:, a:b] = P._whittaker(Dl[:, a:b], w, SMOOTH_LAM)
             Ds[np.abs(Ds) < 1e-6] = 0.0
