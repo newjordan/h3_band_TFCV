@@ -7,7 +7,11 @@ each drummer plays that kind of note, and the weights move from note to note, so
 
 Drummers (DRUMMERS) are drum_mocap.py styles built from a drum cam each; --mocap takes their names or style paths.
 
-Classifier (rules on the hit list, no learned model), for each note, from the beat it falls in:
+Classifier: Jev (drum_jev.py, TypeSafe's decision model) when it can answer, else rules. Jev reads each bar of the
+part and gives every beat a probability for each context. Each note in the beat then aims for the mix of the matrix
+rows those probabilities weight, so a beat Jev isn't sure of lands between its rows. classifier="auto" (the default)
+uses Jev when TYPESAFE_API_KEY is set or the song's answers are cached, "jev" insists on it, and "rules" never
+asks. The rules (no learned model) label each note from the beat it falls in:
   accent  the note is a crash, splash or china at accent velocity (ACCENT_VEL)
   space   (beats with no hand notes: the weights hold over them)
   fill    two or more drum notes (snare and toms) in the beat and no timekeeping cymbal: the drums carry it
@@ -23,10 +27,11 @@ tiled on the song's beats on its own (drum_mocap.tile, its own chunk order) and 
 weights (the square roots of the shares): two drummers' unrelated motion keeps its size instead of averaging down.
 """
 import os
+import sys
 
 import numpy as np
 
-from . import drum_mocap
+from . import drum_jev, drum_mocap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DRUMMERS = {
@@ -46,6 +51,8 @@ ACCENT_VEL = 96
 SOFT_VEL = 64
 SMOOTH_BEATS = 0.5
 XFADE_S = 0.6
+CLASSIFIERS = ("auto", "jev", "rules")
+_told = set()
 
 
 def mocap_path(name):
@@ -149,8 +156,9 @@ def row(rows, context, names):
     return {n: 1.0 / len(names) for n in names}
 
 
-def weights(times, hits, beats, names, spec=None):
-    """(N, len(names)) shares at `times` (rows sum to 1), and the per-note contexts."""
+def weights(times, hits, beats, names, spec=None, downbeats=None, classifier="auto"):
+    """(N, len(names)) shares at `times` (rows sum to 1), the per-note contexts (Jev's likeliest, with Jev), and the
+    classifier that labelled them ("rules", or the Jev model id)."""
     times = np.asarray(times, float)
     k = len(names)
     kind, data = parse(spec, names)
@@ -160,12 +168,28 @@ def weights(times, hits, beats, names, spec=None):
             u = np.clip((times - t0) / XFADE_S, 0, 1)[:, None]
             u = u * u * (3 - 2 * u)
             W = W + (np.array([mix[n] for n in names])[None] - W) * u
-        return W, []
+        return W, [], "timeline"
     notes = classify(hits, beats)
     if not notes:
-        return np.tile(np.array([row(data, "groove", names)[n] for n in names]), (len(times), 1)), []
+        return np.tile(np.array([row(data, "groove", names)[n] for n in names]), (len(times), 1)), [], "rules"
     nt = np.array([t for t, _ in notes])
-    targets = np.array([[row(data, c, names)[n] for n in names] for _, c in notes])
+    P = np.array([[c == x for x in CONTEXTS] for _, c in notes], float)     # (notes, contexts)
+    used = "rules"
+    if classifier not in CLASSIFIERS:
+        raise ValueError(f"classifier must be one of {', '.join(CLASSIFIERS)}")
+    if classifier != "rules":
+        try:
+            probs, used = drum_jev.classify(hits, beats, downbeats, _kind, CONTEXTS)
+            kb = drum_jev.beat_index(nt, beats)
+            P = np.array([[probs[k][x] for x in CONTEXTS] for k in kb])
+            notes = [(t, CONTEXTS[int(np.argmax(p))]) for t, p in zip(nt, P)]
+        except drum_jev.Unavailable as e:
+            if classifier == "jev":
+                raise
+            if str(e) not in _told:
+                _told.add(str(e))
+                print(f"drum_blend: {e}; using the rule classifier", file=sys.stderr)
+    targets = P @ np.array([[row(data, c, names)[n] for n in names] for c in CONTEXTS])
     idx = np.clip(np.searchsorted(nt, times, side="right") - 1, 0, len(nt) - 1)
     W = targets[idx]
     if len(times) > 1:      # smooth the steps over SMOOTH_BEATS: a box twice (a triangle) as wide as that
@@ -177,7 +201,7 @@ def weights(times, hits, beats, names, spec=None):
             pad = np.concatenate([np.repeat(W[:1], n, 0), W, np.repeat(W[-1:], n, 0)])
             W = np.stack([np.convolve(pad[:, j], ker, "same") for j in range(k)], 1)[n:-n]
         W /= W.sum(1, keepdims=True)
-    return W, notes
+    return W, notes, used
 
 
 def tile(styles, W, beats, times, seed=0, parity=0, pitch=None):

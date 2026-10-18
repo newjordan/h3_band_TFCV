@@ -1,12 +1,14 @@
-"""Blender (bpy) renderer for a drum blockout JSON from blockout/drums.py. Grey matte, Workbench.
+"""Blender (bpy) renderer for a drum blockout JSON from blockout/drums.py. Grey matte, Workbench
+(--look real: a lit stage in EEVEE).
 
 The drummer is the CC0 MPFB2 man in blockout/hand_model/mpfb_body.blend (mpfb_make_body.py), dressed, posed bone by
 bone onto the solved joints; without that file (or with DRUM_BODY=prims) he is the older primitive mannequin with
 the MPFB2 hands.
 
     blender -b --factory-startup -P blockout/blender_drums.py -- ANIM.json OUT_DIR [--res 1280x704]
-           [--frames a:b] [--engine WORKBENCH|CYCLES] [--view front|three4|side|over|top] [--lens mm]
-           [--cam ex,ey,ez,lx,ly,lz]
+           [--frames a:b] [--engine WORKBENCH|CYCLES] [--depth NEAR,FAR] [--view front|three4|side|over|top] [--lens mm]
+           [--cam ex,ey,ez,lx,ly,lz] [--stick-scale K] [--stick-rgb R,G,B] [--look real] [--matte sticks]
+           [--grey NAME=G,...] [--hide sticks] [--mask sticks]
 
 front is the audience view, three4 a stage-left three-quarter, side a debug profile for checking strokes,
 over an over-the-shoulder view, top a debug plan view. --cam sets any eye and look-at point (kit metres:
@@ -46,6 +48,9 @@ def mat(name, g):
 
 M = {k: mat(k, g) for k, g in (("skin", 0.42), ("stick", 0.86), ("head", 0.80), ("shell", 0.20), ("hoop", 0.50),
                                ("metal", 0.58), ("hw", 0.33), ("floor", 0.06), ("rug", 0.13), ("seat", 0.12))}
+# --stick-rgb R,G,B paints the sticks one colour (e.g. 1,0.05,0.6 pink) so they stand out from the grey for H3
+if "--stick-rgb" in opts:
+    M["stick"].diffuse_color = (*map(float, opts["--stick-rgb"].split(",")), 1.0)
 
 
 def link(ob, m=None, parent=None):
@@ -557,7 +562,9 @@ if BODY:
     MPFB_BODY = MPFBBody(frames[0])
 elif HANDS:
     MPFB_ARM, MPFB_BONES, FULL_FOREARM, (SKIN_CUT, SKIN_CUT_R, SKIN_END_R) = load_mpfb()
-rig = {h: {"stick": Seg(f"{h}_stick", 0.0075, 0.0055, M["stick"])} for h in ("L", "R")}
+# --stick-scale K fattens the sticks K times (a control video for H3: real 15 mm sticks are under one 32 px video token)
+SS = float(opts.get("--stick-scale", 1.0))
+rig = {h: {"stick": Seg(f"{h}_stick", 0.0075 * SS, 0.0055 * SS, M["stick"])} for h in ("L", "R")}
 for h in ("L", "R") if not BODY else ():
     # a skinned forearm that runs to the elbow is cut off just short of it: a sleeve a little wider than the cut
     # covers the elbow end and the cut edge, its tapered end tucked into the skin so no open edge shows
@@ -617,6 +624,123 @@ else:
     scn.display.shadow_shift = 0.05
     scn.display.light_direction = (-0.35, 0.45, 0.82)
     scn.display.render_aa = "16"
+# --look real renders the blockout as a lit stage in EEVEE instead of grey: H3's starting video, so it only has to make
+# real what is already there (black sticks, coated heads, red lacquer, brass, skin, black T-shirt)
+REAL = {"skin": ((0.55, 0.33, 0.24), 0.45, 0, 0), "stick": ((0.015, 0.015, 0.015), 0.3, 0, 0),
+        "head": ((0.80, 0.78, 0.72), 0.55, 0, 0), "shell": ((0.30, 0.02, 0.02), 0.2, 0, 1),
+        "hoop": ((0.90, 0.90, 0.90), 0.12, 1, 0), "metal": ((0.78, 0.52, 0.22), 0.28, 1, 0),
+        "hw": ((0.80, 0.80, 0.80), 0.2, 1, 0), "floor": ((0.008, 0.007, 0.006), 0.6, 0, 0),
+        "rug": ((0.03, 0.012, 0.01), 0.9, 0, 0), "seat": ((0.01, 0.01, 0.01), 0.45, 0, 0),
+        "shirt": ((0.012, 0.012, 0.013), 0.85, 0, 0), "pants": ((0.02, 0.025, 0.045), 0.8, 0, 0),
+        "shoes": ((0.45, 0.45, 0.45), 0.5, 0, 0), "eyes": ((0.3, 0.3, 0.3), 0.2, 0, 0),
+        "hair": ((0.03, 0.02, 0.012), 0.5, 0, 0), "brows": ((0.03, 0.02, 0.012), 0.5, 0, 0)}
+if opts.get("--look") == "real":
+    scn.render.engine = "BLENDER_EEVEE"
+    scn.eevee.taa_render_samples = 32
+    looks = {i.identifier for i in scn.view_settings.bl_rna.properties["look"].enum_items}
+    scn.view_settings.look = next((k for k in looks if "Medium High Contrast" in k), "None")
+    for m in bpy.data.materials:
+        if m.name.split(".")[0] not in REAL:
+            continue
+        rgb, rough, metal, coat = REAL[m.name.split(".")[0]]
+        if m.name == "stick" and "--stick-rgb" in opts:
+            rgb = tuple(map(float, opts["--stick-rgb"].split(",")))
+        bsdf = next(nd for nd in m.node_tree.nodes if nd.type == "BSDF_PRINCIPLED")
+        bsdf.inputs["Base Color"].default_value = (*rgb, 1.0)
+        bsdf.inputs["Roughness"].default_value = rough
+        bsdf.inputs["Metallic"].default_value = metal
+        bsdf.inputs["Coat Weight"].default_value = coat
+        bsdf.inputs["Alpha"].default_value = 1.0
+    world.use_nodes = True
+    bg = next(nd for nd in world.node_tree.nodes if nd.type == "BACKGROUND")
+    bg.inputs["Color"].default_value, bg.inputs["Strength"].default_value = (0.01, 0.01, 0.012, 1), 1.0
+    for name, kind, at, energy, size, rgb in (
+            ("top", "AREA", (0.0, 0.6, 3.4), 900, 2.4, (1.0, 0.92, 0.80)),       # warm overhead wash on the heads
+            ("back", "SPOT", (-1.6, -1.8, 3.0), 1500, 0.3, (1.0, 0.85, 0.65)),   # behind the drummer: back and arms
+            ("rim", "SPOT", (1.8, 2.4, 2.6), 900, 0.3, (0.65, 0.75, 1.0))):     # cool from the audience side
+        L = bpy.data.lights.new(name, kind)
+        L.energy, L.color = energy, rgb
+        if kind == "AREA":
+            L.size = size
+        else:
+            L.shadow_soft_size, L.spot_size, L.spot_blend = size, math.radians(70), 0.5
+        ob = bpy.data.objects.new(name, L)
+        ob.location = at
+        ob.rotation_euler = (Vector((0.0, 0.25, 0.7)) - Vector(at)).to_track_quat("-Z", "Y").to_euler()
+        COL.objects.link(ob)
+# --depth NEAR,FAR renders a depth map instead (white at NEAR metres from the camera, black at FAR, sticks included):
+# the control video for H3's Fun ControlNet
+if "--depth" in opts:
+    near, far = map(float, opts["--depth"].split(","))
+    dm = bpy.data.materials.new("depth")
+    nt = dm.node_tree
+    nt.nodes.clear()
+    cd, mr = nt.nodes.new("ShaderNodeCameraData"), nt.nodes.new("ShaderNodeMapRange")
+    em, mo = nt.nodes.new("ShaderNodeEmission"), nt.nodes.new("ShaderNodeOutputMaterial")
+    for k, v in (("From Min", near), ("From Max", far), ("To Min", 1.0), ("To Max", 0.0)):
+        mr.inputs[k].default_value = v
+    nt.links.new(cd.outputs["View Z Depth"], mr.inputs["Value"])
+    nt.links.new(mr.outputs["Result"], em.inputs["Color"])
+    nt.links.new(em.outputs["Emission"], mo.inputs["Surface"])
+    scn.view_layers[0].material_override = dm
+    world.color = (0, 0, 0)
+    if world.node_tree:
+        for nd in world.node_tree.nodes:
+            if nd.type == "BACKGROUND":
+                nd.inputs["Color"].default_value = (0, 0, 0, 1)
+    scn.render.engine = "BLENDER_EEVEE" if "BLENDER_EEVEE" in {e.identifier for e in
+                                                               bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items} else "BLENDER_EEVEE_NEXT"
+    scn.eevee.taa_render_samples = 16
+    scn.view_settings.view_transform = "Standard"
+
+
+# --matte sticks renders just the two sticks over a transparent background (RGBA), everything else a holdout that still
+# hides them: a matte to lay the blockout's frame-exact sticks over an H3 take made from the same camera
+if opts.get("--matte") == "sticks":
+    hold = bpy.data.materials.new("holdout")
+    nt = hold.node_tree
+    nt.nodes.clear()
+    nt.links.new(nt.nodes.new("ShaderNodeHoldout").outputs[0], nt.nodes.new("ShaderNodeOutputMaterial").inputs["Surface"])
+    for ob in scn.objects:
+        if ob.type != "MESH" or ob.name.startswith(("L_stick", "R_stick")):
+            continue
+        if not ob.material_slots:
+            ob.data.materials.append(None)
+        for slot in ob.material_slots:
+            slot.link, slot.material = "OBJECT", hold
+    scn.render.film_transparent = True
+    scn.render.image_settings.color_mode = "RGBA"
+
+# --grey NAME=G,... sets Workbench greys by material name, world= the background (e.g. floor=0.35,rug=0.35,world=0.35)
+if "--grey" in opts:
+    for kv in opts["--grey"].split(","):
+        k, g = kv.split("=")
+        if k == "world":
+            world.color = (float(g),) * 3
+        for m in bpy.data.materials:
+            if m.name.split(".")[0] == k:
+                m.diffuse_color = (float(g),) * 3 + (1.0,)
+# --hide sticks renders without the sticks (and their shadows); --mask sticks renders flat ID colours, the left stick
+# red, the right green, everything else black: what of each stick the camera sees. With the normal render they measure
+# how much each stroke shows in a control video.
+STICKS = [ob for ob in scn.objects if ob.name.startswith(("L_stick", "R_stick"))]
+if opts.get("--hide") == "sticks":
+    for ob in STICKS:
+        ob.hide_render = True
+if opts.get("--mask") == "sticks":
+    ids = {"": bpy.data.materials.new("mask_none"), "L": bpy.data.materials.new("mask_L"), "R": bpy.data.materials.new("mask_R")}
+    for k, rgb in (("", (0, 0, 0, 1)), ("L", (1, 0, 0, 1)), ("R", (0, 1, 0, 1))):
+        ids[k].diffuse_color = rgb
+    for ob in scn.objects:
+        if ob.type != "MESH":
+            continue
+        if not ob.material_slots:
+            ob.data.materials.append(None)
+        for slot in ob.material_slots:
+            slot.link, slot.material = "OBJECT", ids[ob.name[0] if ob in STICKS else ""]
+    sh.light, sh.show_shadows, sh.show_cavity = "FLAT", False, False
+    world.color = (0, 0, 0)
+    scn.view_settings.view_transform = "Standard"
 
 
 def foot_pts(fd, side):

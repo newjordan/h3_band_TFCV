@@ -1,0 +1,1545 @@
+{
+"03e7879aa733b3d70b2171fc1d6d6d53a61a0b92045b0ca89a52a163a0a74cdb": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.05,
+"fill": 0.16,
+"groove": 0.77,
+"soft": 0.02
+},
+"beat2": {
+"accent": 0.02,
+"fill": 0.27,
+"groove": 0.7,
+"soft": 0.01
+},
+"beat3": {
+"accent": 0.04,
+"fill": 0.17,
+"groove": 0.79,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.4,
+"groove": 0.58,
+"soft": 0.01
+}
+}
+},
+"0d2cf67cf52ee032ce26efd22f63fd28f6d5b7a14b7fb477ef011485a5b639c6": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.99,
+"soft": 0.0
+}
+}
+},
+"0d978a38f048833d7bf0962e891f91b0bc74757d995c3e85c13fc3431452431a": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.82,
+"fill": 0.18,
+"groove": 0.0,
+"soft": 0.0
+}
+}
+},
+"1ae534d200668b2037ce340cc3ef986319c629599ce2cef10504cbd2f73bdfa5": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.02,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.99,
+"soft": 0.0
+}
+}
+},
+"293a9045720c2a62c0a9f7070ec6c7ab504e808bcfd76815baf74b51a89a6fa1": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.97,
+"fill": 0.0,
+"groove": 0.03,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 0.98,
+"soft": 0.02
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.12,
+"groove": 0.88,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.25,
+"groove": 0.72,
+"soft": 0.03
+}
+}
+},
+"2e2f7c467b7a2e0c41f4b594c0c34ad8e1b5f6c7d4ec2b5db3453c46564edc20": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.06,
+"fill": 0.02,
+"groove": 0.92,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.06,
+"groove": 0.93,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.9,
+"groove": 0.09,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.91,
+"groove": 0.08,
+"soft": 0.0
+}
+}
+},
+"307dd53ee8f369abe2e7b91a57ffea5260937a2f1b14d6dcfc77a9cea5bb051d": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.01,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.02,
+"fill": 0.06,
+"groove": 0.92,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.02,
+"fill": 0.1,
+"groove": 0.88,
+"soft": 0.0
+}
+}
+},
+"3b350ea68fb353a2fd021cf234cd983ca8b1b7f26187e657e6c87d4bcea699af": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 1.0,
+"fill": 0.0,
+"groove": 0.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.17,
+"groove": 0.82,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.02,
+"fill": 0.02,
+"groove": 0.96,
+"soft": 0.0
+}
+}
+},
+"3d4f6da364a4ff08bf607ec4bbf54cfc3b87becfa572359ad7bf0ede0d5682ca": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.02,
+"fill": 0.0,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.01,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.01,
+"groove": 0.99,
+"soft": 0.0
+}
+}
+},
+"405b8bd3de7e8f288693c4f0994d2c9b4e7e41301841b92df3e579b87027b0c8": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.03,
+"fill": 0.0,
+"groove": 0.97,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.07,
+"fill": 0.22,
+"groove": 0.71,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.06,
+"fill": 0.42,
+"groove": 0.46,
+"soft": 0.06
+}
+}
+},
+"4110f26a80b4e4a48e3c53c0b7500bdc46c09c600f18ecce9ded64cf181cd871": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.86,
+"groove": 0.11,
+"soft": 0.03
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.87,
+"groove": 0.13,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.91,
+"groove": 0.09,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.9,
+"groove": 0.09,
+"soft": 0.0
+}
+}
+},
+"4487ee714f31d68f8fde750cd23112371e25dc9357bb39bae5fce4e9c523e745": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.01,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.99,
+"groove": 0.01,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.92,
+"groove": 0.08,
+"soft": 0.0
+}
+}
+},
+"4df6eb94e1011fd405933ec9519158410138202f009e1d11af5d163430308701": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.31,
+"groove": 0.68,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.35,
+"groove": 0.64,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.38,
+"groove": 0.6,
+"soft": 0.01
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.89,
+"groove": 0.11,
+"soft": 0.0
+}
+}
+},
+"4f337a1f3817fb76e30e7107f4397a7f1961ed3a908f6e9c3df4a180cb63c7fa": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 1.0,
+"fill": 0.0,
+"groove": 0.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.7,
+"fill": 0.04,
+"groove": 0.26,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.04,
+"fill": 0.16,
+"groove": 0.79,
+"soft": 0.01
+},
+"beat4": {
+"accent": 0.96,
+"fill": 0.02,
+"groove": 0.02,
+"soft": 0.0
+}
+}
+},
+"509e65c1ecf8426cef6a05e7435e212e6aa55ae9fcd7a37255f18e6877984a59": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.99,
+"fill": 0.0,
+"groove": 0.01,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.62,
+"fill": 0.09,
+"groove": 0.29,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.02,
+"groove": 0.97,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.88,
+"fill": 0.06,
+"groove": 0.06,
+"soft": 0.0
+}
+}
+},
+"6679e7fca631c4d348d68cb7727cd05858c497e3a4bb0af606348e27731d2e9a": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.02,
+"fill": 0.4,
+"groove": 0.58,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.03,
+"fill": 0.26,
+"groove": 0.71,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.25,
+"fill": 0.52,
+"groove": 0.23,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.94,
+"groove": 0.05,
+"soft": 0.0
+}
+}
+},
+"679e44fba489cc9be54f27db25652a6c64b22a578543372911cf3059b13b4595": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.02,
+"fill": 0.72,
+"groove": 0.26,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.99,
+"groove": 0.01,
+"soft": 0.0
+}
+}
+},
+"67fb723076e0fc9f0a3afc1dc225ec2b16f40b4785efe26e3a45c087adfc8ef9": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.05,
+"fill": 0.25,
+"groove": 0.7,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.28,
+"groove": 0.71,
+"soft": 0.0
+}
+}
+},
+"6b8bcfc4419140aca763c754f3c54fac6c66064ba50a51e7e13f40ce231cc2e2": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 1.0,
+"fill": 0.0,
+"groove": 0.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.19,
+"groove": 0.8,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.01,
+"groove": 0.98,
+"soft": 0.0
+}
+}
+},
+"6db36a77d6a37c7d082c759ed09f9ac950a38cf7132a94a9dbaaef52f5477a7f": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.02,
+"fill": 0.19,
+"groove": 0.79,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.14,
+"groove": 0.85,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.13,
+"groove": 0.86,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.21,
+"groove": 0.79,
+"soft": 0.0
+}
+}
+},
+"778716d803fb71b5aa231d419f0dc560941e6e24d686f57db260d8c5b54e6ce6": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.05,
+"fill": 0.0,
+"groove": 0.95,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.01,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.01,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.04,
+"groove": 0.95,
+"soft": 0.0
+}
+}
+},
+"7dd95892bb94874a09ad760e89ee04af7cca47d740ec84a5a1184a5632c6223b": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.07,
+"fill": 0.52,
+"groove": 0.41,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.52,
+"groove": 0.41,
+"soft": 0.07
+},
+"beat3": {
+"accent": 0.02,
+"fill": 0.73,
+"groove": 0.25,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.38,
+"groove": 0.51,
+"soft": 0.1
+}
+}
+},
+"82a64647617534e015c85e6c28f108e887b655fef387d3d9317f5e1cf086bae1": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.04,
+"fill": 0.0,
+"groove": 0.96,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.03,
+"fill": 0.24,
+"groove": 0.73,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.04,
+"fill": 0.0,
+"groove": 0.96,
+"soft": 0.0
+}
+}
+},
+"82a661de8694107225b07e1aada3fbb3a339a492c297654f934209ac4a3daf6d": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.02,
+"fill": 0.01,
+"groove": 0.97,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.03,
+"groove": 0.97,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.07,
+"fill": 0.02,
+"groove": 0.91,
+"soft": 0.0
+}
+}
+},
+"89f29869b453efc5cb79bfb2ba555dba1913bb745c3f3542323ec08acf25b6d5": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.01,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.03,
+"fill": 0.07,
+"groove": 0.9,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.99,
+"groove": 0.01,
+"soft": 0.0
+}
+}
+},
+"8a5338143a0bac355936c3bc1724e1decbe5b9d5c02c94083ed455782df1c35c": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.92,
+"fill": 0.0,
+"groove": 0.08,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.28,
+"fill": 0.01,
+"groove": 0.71,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.42,
+"fill": 0.01,
+"groove": 0.57,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.31,
+"fill": 0.02,
+"groove": 0.67,
+"soft": 0.0
+}
+}
+},
+"8f3790d1699f6d7b7b75ff8bf08afc90f2987f7aa0d4d02ceb8c785a115e6752": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.93,
+"fill": 0.01,
+"groove": 0.06,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.05,
+"groove": 0.94,
+"soft": 0.01
+},
+"beat4": {
+"accent": 0.12,
+"fill": 0.04,
+"groove": 0.84,
+"soft": 0.0
+}
+}
+},
+"97f360930380ac59d568c3b06eb78d851b71b869020f51ef264bbb62c2fc1752": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.99,
+"fill": 0.0,
+"groove": 0.01,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.02,
+"fill": 0.05,
+"groove": 0.91,
+"soft": 0.02
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.03,
+"groove": 0.96,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.29,
+"groove": 0.69,
+"soft": 0.01
+}
+}
+},
+"a598c5b485eebb5d640327ea28643ddd149e49ab47f2f6e7e52d478c5bf6cb9c": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.91,
+"fill": 0.08,
+"groove": 0.01,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.05,
+"fill": 0.42,
+"groove": 0.53,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.46,
+"groove": 0.53,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.02,
+"fill": 0.51,
+"groove": 0.47,
+"soft": 0.0
+}
+}
+},
+"a7ad58705c62437cbea64937d280ccaddaccc00d4a2e1acaf39b906f10ba96eb": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.05,
+"groove": 0.13,
+"soft": 0.82
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.12,
+"groove": 0.79,
+"soft": 0.08
+},
+"beat3": {
+"accent": 0.03,
+"fill": 0.4,
+"groove": 0.56,
+"soft": 0.01
+},
+"beat4": {
+"accent": 0.12,
+"fill": 0.8,
+"groove": 0.08,
+"soft": 0.0
+}
+}
+},
+"aa479b20e96e2d232dbaae3e798ba0cab3d30d7dca7f967ea1ea260296209abb": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.27,
+"groove": 0.72,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.36,
+"groove": 0.63,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.38,
+"groove": 0.62,
+"soft": 0.0
+}
+}
+},
+"ae1690b87673f1de7a42b2794f5973848071e1b8914ff9a90e3f9be43184723a": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.05,
+"groove": 0.94,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.02,
+"fill": 0.52,
+"groove": 0.46,
+"soft": 0.0
+}
+}
+},
+"aefe4d562ae01aac781e3e915e052068a3da84de6074617c352a6999c5c507a2": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.95,
+"fill": 0.05,
+"groove": 0.0,
+"soft": 0.0
+}
+}
+},
+"b53572ac496c6868849bd0917585504f9f6da438778438a7881adecae78235a2": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 1.0,
+"fill": 0.0,
+"groove": 0.0,
+"soft": 0.0
+}
+}
+},
+"b6463dbc9ad155bcc446d8ee09b117ac6a416e26a06cc7819a5b1b291103f88c": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.88,
+"fill": 0.0,
+"groove": 0.12,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.02,
+"groove": 0.97,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.01,
+"groove": 0.99,
+"soft": 0.0
+}
+}
+},
+"b73e90a6f9186927eb8c4ffe12ed058f60c50f42e27903e3effa6f83f06c2fbf": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.7,
+"fill": 0.02,
+"groove": 0.28,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.01,
+"groove": 0.97,
+"soft": 0.01
+},
+"beat3": {
+"accent": 0.81,
+"fill": 0.07,
+"groove": 0.12,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.6,
+"fill": 0.06,
+"groove": 0.34,
+"soft": 0.0
+}
+}
+},
+"b7a804b9a9c1220af32f4cd0b5ce8560b350c275f9ece75f951baa7dbe3b2095": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.96,
+"groove": 0.04,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.91,
+"groove": 0.09,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.96,
+"fill": 0.04,
+"groove": 0.0,
+"soft": 0.0
+}
+}
+},
+"b8edb6d95ff94d01c31efa7e3ebbd76a09da050e3a47be0d94460005b502f2f5": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.03,
+"fill": 0.03,
+"groove": 0.92,
+"soft": 0.02
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.01,
+"groove": 0.98,
+"soft": 0.01
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.04,
+"groove": 0.95,
+"soft": 0.0
+}
+}
+},
+"c504dfb1497d3a8828f0c1f76a8fdc386807ab1d9f350f9786b65d6db3562c67": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.97,
+"fill": 0.01,
+"groove": 0.02,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.03,
+"fill": 0.03,
+"groove": 0.94,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.61,
+"fill": 0.08,
+"groove": 0.31,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.02,
+"groove": 0.98,
+"soft": 0.0
+}
+}
+},
+"d342008953265a79fc42257df8aebfd5e705e88164437907c12cceb3a9c91585": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.48,
+"fill": 0.02,
+"groove": 0.5,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.91,
+"groove": 0.09,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.99,
+"groove": 0.01,
+"soft": 0.0
+}
+}
+},
+"d52e91c57b8757dbada9d887ecc4644317f89c63695ba9182b24b346c3422dd4": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.05,
+"fill": 0.12,
+"groove": 0.83,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.05,
+"fill": 0.1,
+"groove": 0.85,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.13,
+"groove": 0.85,
+"soft": 0.01
+},
+"beat4": {
+"accent": 0.02,
+"fill": 0.33,
+"groove": 0.65,
+"soft": 0.0
+}
+}
+},
+"d538c158b6afd34cee81dbfd51b2dfb9c8fd51842395e27d81bffed7ceb66e0c": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.98,
+"fill": 0.02,
+"groove": 0.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.96,
+"fill": 0.04,
+"groove": 0.0,
+"soft": 0.0
+}
+}
+},
+"d637341e33626e6b7511d3800f88ad1086c262c92f70ee15cf2f606aced94d07": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.02,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.02,
+"fill": 0.11,
+"groove": 0.87,
+"soft": 0.0
+}
+}
+},
+"d7437685aead1f6ca93effb63fb759c6e691cc3919ef361bb09978c18472e8a1": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.96,
+"fill": 0.04,
+"groove": 0.0,
+"soft": 0.0
+}
+}
+},
+"d798c4b2070d48d4efabe79eba7d953ca0ed7c2c79ea55355749a8dce6e2c590": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.04,
+"fill": 0.03,
+"groove": 0.93,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.06,
+"fill": 0.05,
+"groove": 0.89,
+"soft": 0.0
+}
+}
+},
+"db9d02d9a70761478c397b42493bbefad73a9f9e146a8eb9795e32085550dcd8": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.04,
+"fill": 0.0,
+"groove": 0.96,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.01,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.05,
+"groove": 0.94,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.98,
+"groove": 0.01,
+"soft": 0.01
+}
+}
+},
+"dff58bfdeeb3a3c54bcf1bf02bda870956a79c22971e389e66ca89b95a6f1491": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.04,
+"fill": 0.07,
+"groove": 0.89,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.02,
+"fill": 0.08,
+"groove": 0.9,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.04,
+"fill": 0.08,
+"groove": 0.88,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.91,
+"groove": 0.09,
+"soft": 0.0
+}
+}
+},
+"e08526776c1d48497825ac3f9174390a9560724fe794a8d87148d92be0850593": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.03,
+"fill": 0.13,
+"groove": 0.03,
+"soft": 0.81
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.01,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.01,
+"fill": 0.03,
+"groove": 0.95,
+"soft": 0.01
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.01,
+"groove": 0.98,
+"soft": 0.0
+}
+}
+},
+"e1c579432559f71be7b9d0655bea3904e51787495799db15259f85cd9b3b0be8": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.96,
+"fill": 0.0,
+"groove": 0.04,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.01,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.99,
+"groove": 0.01,
+"soft": 0.0
+}
+}
+},
+"e32b32929ceaf2f271fd51eb391b8fda8c6b17f127e1b4ffa4b7e0788c8534cf": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.98,
+"fill": 0.01,
+"groove": 0.01,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.8,
+"fill": 0.05,
+"groove": 0.15,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.42,
+"fill": 0.06,
+"groove": 0.51,
+"soft": 0.01
+},
+"beat4": {
+"accent": 0.74,
+"fill": 0.05,
+"groove": 0.21,
+"soft": 0.0
+}
+}
+},
+"e3e72c5c4254594ef50ad7eb2d89b620c71519643be38b074a453f90ce01d497": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.03,
+"fill": 0.0,
+"groove": 0.97,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.02,
+"groove": 0.98,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.01,
+"fill": 0.03,
+"groove": 0.96,
+"soft": 0.0
+}
+}
+},
+"e53eab49696d668dd2cc4d4bffbf7ea21288f694ec6e9195d2dea39911002861": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.0,
+"groove": 0.98,
+"soft": 0.01
+},
+"beat2": {
+"accent": 0.9,
+"fill": 0.03,
+"groove": 0.07,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.57,
+"fill": 0.13,
+"groove": 0.3,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.03,
+"groove": 0.88,
+"soft": 0.09
+}
+}
+},
+"e5a818dff31f360a91526f529314f39ba8c44b593ebca457a720884370b024cc": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.23,
+"fill": 0.37,
+"groove": 0.4,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.16,
+"fill": 0.25,
+"groove": 0.59,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.07,
+"fill": 0.29,
+"groove": 0.64,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.02,
+"fill": 0.38,
+"groove": 0.59,
+"soft": 0.01
+}
+}
+},
+"e96e83793d98504c2ca82bc6022e2e52d3d1f1d3d5570a14da2ed0ee9ff3c193": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.03,
+"fill": 0.34,
+"groove": 0.61,
+"soft": 0.02
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.23,
+"groove": 0.52,
+"soft": 0.25
+},
+"beat3": {
+"accent": 0.04,
+"fill": 0.66,
+"groove": 0.3,
+"soft": 0.0
+}
+}
+},
+"f2e3121ca489733e942b5f421fed4daec1c19047440a6953744a12889ce86c13": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.0,
+"fill": 0.0,
+"groove": 1.0,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.03,
+"groove": 0.97,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.0,
+"fill": 0.01,
+"groove": 0.99,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.0,
+"fill": 0.01,
+"groove": 0.99,
+"soft": 0.0
+}
+}
+},
+"f73ae20a051cceaa7437f847f22ae2f9e51aa600d7346a8f098a6d9fc1f30e66": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.03,
+"fill": 0.34,
+"groove": 0.63,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.06,
+"fill": 0.27,
+"groove": 0.67,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.05,
+"fill": 0.54,
+"groove": 0.41,
+"soft": 0.0
+}
+}
+},
+"f77b6859c41f89679a180a811771de6df34bf946e97cb033a9021429864fb167": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.14,
+"fill": 0.17,
+"groove": 0.69,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.19,
+"fill": 0.21,
+"groove": 0.6,
+"soft": 0.0
+},
+"beat3": {
+"accent": 0.19,
+"fill": 0.14,
+"groove": 0.67,
+"soft": 0.0
+},
+"beat4": {
+"accent": 0.14,
+"fill": 0.28,
+"groove": 0.58,
+"soft": 0.0
+}
+}
+},
+"f7fce56d39d2f7363d4582a9af35e5c0f811f941186d1fc2aea4e13342029025": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.01,
+"fill": 0.21,
+"groove": 0.5,
+"soft": 0.28
+},
+"beat2": {
+"accent": 0.0,
+"fill": 0.41,
+"groove": 0.58,
+"soft": 0.01
+}
+}
+},
+"f80a406d227a1a62d888d1ed17b90f6d374f894bc23384fd4bb81d6319217a43": {
+"model": "jev-1.13.0",
+"probabilities": {
+"beat1": {
+"accent": 0.69,
+"fill": 0.2,
+"groove": 0.11,
+"soft": 0.0
+},
+"beat2": {
+"accent": 0.01,
+"fill": 0.67,
+"groove": 0.32,
+"soft": 0.0
+}
+}
+}
+}

@@ -38,7 +38,7 @@ from PIL import Image
 REPO = Path(os.environ.get("H3B_REPO") or Path(__file__).resolve().parent.parent)
 sys.path.append(str(REPO))
 sys.path.append(str(REPO / "h3band"))
-from blockout import drum_kit, drum_style, drum_teacher, drum_toss, drums, drumsynth, midi as midi_io  # noqa: E402
+from blockout import drum_blend, drum_kit, drum_style, drum_teacher, drum_toss, drums, drumsynth, midi as midi_io  # noqa: E402
 import drum_events  # noqa: E402
 
 BLENDER = os.environ.get("H3B_BLENDER", "blender")
@@ -179,6 +179,18 @@ class H3BandDrumBlockout:
                              "tosses": ("STRING", {"default": "", "tooltip": "stick tosses, HAND:release_s:catch_s"
                                                    "[:spins], e.g. R:4.85:5.55; strokes near one go to the other "
                                                    "hand"}),
+                             "drummer": (["none"] + list(drum_blend.DRUMMERS), {"default": "none", "tooltip":
+                                         "play as one mocap drummer: their head and trunk motion, and their kit "
+                                         "unless a DRUM_KIT is connected"}),
+                             "mocap": ("STRING", {"default": "", "tooltip": "mocap drummers to blend, e.g. "
+                                                  "chad,carey (replaces the drummer's own)"}),
+                             "blend": ("STRING", {"default": "", "tooltip": "blend matrix over note contexts, e.g. "
+                                                  "groove=chad,fill=carey, or a timeline 0:chad,4:carey "
+                                                  "(blockout/drum_blend.py)"}),
+                             "classifier": (list(drum_blend.CLASSIFIERS), {"default": "auto", "tooltip":
+                                            "what labels the notes for the blend matrix: Jev (TypeSafe's decision "
+                                            "model; TYPESAFE_API_KEY in the server's environment, or cached answers), "
+                                            "the rules, or auto (Jev when it can answer)"}),
                              **{k: ("FLOAT", {"default": -1.0, "min": -1.0, "max": 1.0, "step": 0.05,
                                               "tooltip": "0..1 on top of every emotion preset; -1 keeps the preset"})
                                 for k in drum_style.SLIDERS}}}
@@ -189,15 +201,21 @@ class H3BandDrumBlockout:
     CATEGORY = "h3band"
 
     def run(self, hits, start, frames, fps, width, height, view, head_schedule, seed, kit=None, camera="",
-            engine="WORKBENCH", motion="smooth", emotion="", tosses="", **sliders):
+            engine="WORKBENCH", motion="smooth", emotion="", tosses="", drummer="none", mocap="", blend="",
+            classifier="auto", **sliders):
         if view not in VIEWS or engine not in ENGINES:
             raise ValueError("view must be one of {} and engine one of {}".format(VIEWS, ENGINES))
         sched = [(float(t), st) for t, st in (x.split(":") for x in head_schedule.split(","))]
         sliders = {k: v for k, v in sliders.items() if k in drum_style.SLIDERS and v >= 0}
         if sliders and not emotion.strip():
             emotion = "0:groove"
+        mocap = mocap.strip() or (drummer if drummer in drum_blend.DRUMMERS else "")
+        if drummer in drum_blend.DRUMMERS and kit is None:
+            kit = drum_kit.load(drum_blend.DRUMMERS[drummer]["kit"])[0]
+        mocap = mocap.split(",") if "," in mocap else (drum_blend.mocap_path(mocap) if mocap else None)
         anim = drums.animate(hits["hits"], fps, start, frames / fps, hits["beats"], hits["downbeats"], sched, seed,
-                             motion, emotion.strip() or None, sliders, kit=kit, tosses=drum_toss.parse(tosses))
+                             motion, emotion.strip() or None, sliders, kit=kit, tosses=drum_toss.parse(tosses),
+                             mocap=mocap, blend=blend.strip() or None, classifier=classifier)
         report = json.dumps(drums.check(anim))
         if "tosses" in anim:
             report += "\ntosses " + json.dumps(anim["tosses"])

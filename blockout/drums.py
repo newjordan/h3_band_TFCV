@@ -1446,7 +1446,7 @@ def _lesson(hits, start, end, beats, downbeats):
 
 def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, schedule=((0.0, "groove"),), seed=0,
             motion="smooth", emotion=None, sliders=None, physics=True, kit=None, tosses=None, mocap=None,
-            mocap_gain=1.0, blend=None):
+            mocap_gain=1.0, blend=None, classifier="auto"):
     """motion: "smooth" (the rules above), "snap" (hands jump between a prep pose and the hit pose, no easing,
     no springs), or "loose" (smooth, but every hand hit lands up to LOOSE_FRAMES early or late and up to
     LOOSE_AIM m off its strike point). snap and loose exist to test how exact a blockout has to be.
@@ -1464,17 +1464,18 @@ def animate(hits, fps=24, start=0.0, dur=None, beats=None, downbeats=None, sched
     the sticks, are planned without it, and it gives way where it would take a shoulder out of reach (_mocap_give).
     A list of styles (or drummer names, drum_blend.DRUMMERS) blends the drummers: blend is a drum_blend.py matrix
     ("groove=chad,fill=carey") over the notes' contexts, or a timeline ("0:chad,8:carey"); none = equal shares.
+    classifier labels the contexts: "auto" (Jev when it can answer, else the rules), "jev" or "rules" (drum_blend.py).
     The module is back on the standard kit when this returns, so a kit never carries over to later calls."""
     use_kit(kit)
     try:
         return _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, emotion, sliders, physics,
-                        kit, tosses, mocap, mocap_gain, blend)
+                        kit, tosses, mocap, mocap_gain, blend, classifier)
     finally:
         use_kit(None)
 
 
 def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, emotion, sliders, physics, kit,
-             tosses, mocap=None, mocap_gain=1.0, blend=None):
+             tosses, mocap=None, mocap_gain=1.0, blend=None, classifier="auto"):
     if motion not in MOTIONS:
         raise ValueError(f"motion must be one of {MOTIONS}")
     if kit is not None:
@@ -1607,7 +1608,7 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
         if len(styles) == 1:
             MO, chunks = drum_mocap.tile(mst, beats, times, seed, parity=d0 % 2, pitch=hp - tp)
         else:               # drummers blended note by note (drum_blend.py)
-            BW, ctx = drum_blend.weights(times, hits, beats, names, blend)
+            BW, ctx, used = drum_blend.weights(times, hits, beats, names, blend, downbeats, classifier)
             MO, plans = drum_blend.tile(styles, BW, beats, times, seed, parity=d0 % 2, pitch=hp - tp)
         g = np.full(N, float(mocap_gain))
         if style:
@@ -1627,7 +1628,7 @@ def _animate(hits, fps, start, dur, beats, downbeats, schedule, seed, motion, em
                 if start <= t < end:
                     cnt[c] = cnt.get(c, 0) + 1
             mocap_info = {"source": "+".join(names), "drummers": names, "blend": blend or "", "gain": float(mocap_gain),
-                          "contexts": dict(sorted(cnt.items())),
+                          "classifier": used, "contexts": dict(sorted(cnt.items())),
                           "share_mean": {n: round(float(BW[:, j].mean()), 3) for j, n in enumerate(names)},
                           "shares": np.round(BW, 3).tolist(),
                           "chunks": {n: plan(st, cs) for n, st, cs in zip(names, styles, plans)}}
@@ -1893,6 +1894,9 @@ if __name__ == "__main__":
                                     "or a timeline '0:chad,8:carey' (default: equal shares)")
     ap.add_argument("--drummer", choices=drum_blend.DRUMMERS, help=f"play as one drummer ({', '.join(drum_blend.DRUMMERS)}): their mocap, and their kit "
                                       "unless --kit is given")
+    ap.add_argument("--classifier", choices=drum_blend.CLASSIFIERS, default="auto",
+                    help="what labels the notes for --blend: Jev (drum_jev.py, needs TYPESAFE_API_KEY or cached "
+                         "answers), the rules, or auto (Jev when it can answer)")
     a = ap.parse_args()
     if a.drummer:
         a.mocap = a.mocap or a.drummer
@@ -1923,7 +1927,7 @@ if __name__ == "__main__":
     sliders = {k: getattr(a, k) for k in drum_style.SLIDERS if getattr(a, k) is not None}
     anim = animate(hits, a.fps, a.start, a.dur, bts, dbs, sched, a.seed, a.motion, a.emotion, sliders,
                    physics=not a.no_physics, kit=kit, tosses=drum_toss.parse(a.toss), mocap=mocap,
-                   mocap_gain=a.mocap_gain, blend=a.blend)
+                   mocap_gain=a.mocap_gain, blend=a.blend, classifier=a.classifier)
     json.dump(anim, open(a.out, "w"))
     for ts in anim.get("tosses", ()):
         print(f"toss {ts}")
