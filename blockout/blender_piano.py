@@ -397,6 +397,8 @@ def pose_mpfb(arm, rest, s, hd):
                                @ want[pn].inverted() @ m)
 
 
+SLEEVE = float(os.environ.get("RIG_SLEEVE", "0.14"))   # m of primitive sleeve from the elbow over the skinned forearm's cut
+                                                        # (0.06 left it open when the camera looks along a raised forearm)
 if HANDS == "mpfb":
     MPFB_ARM, MPFB_REST = load_mpfb()
     _ys = [MPFB_MESH.matrix_world @ v.co for v in MPFB_MESH.data.vertices]
@@ -767,7 +769,7 @@ for i in FRAME_IDS:
             el, wr = Vector(hd["elbow"]), Vector(hd["wrist"])
             R["forearm"].set(el, wr - (wr - el).normalized() * 0.05)
             if "angles" in hd and MPFB_FULL_FOREARM:          # the skinned forearm runs (almost) to the elbow:
-                R["forearm"].set(el, el + (wr - el).normalized() * 0.06)   # a short sleeve covers its cut edge
+                R["forearm"].set(el, el + (wr - el).normalized() * SLEEVE)  # a short sleeve covers its cut edge
                 R["forearm"].j1.hide_render = True
             (pose_rig if "angles" in hd else pose_mpfb)(MPFB_ARM, MPFB_REST, h, hd)
             for o, t, r in globals().get("GBANDS", {}).get(h, []):

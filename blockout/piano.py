@@ -568,6 +568,7 @@ def split_hands(notes):
 CONSOLIDATE = True          # a note played right next to keys the other hand is sounding goes to that hand when it can
 CONS_NEAR = 0.12            # take it (one hand covers it with more fingers; the hands don't pile into each other).
                             # m: "right next to" = this close to one of the other hand's sounding keys
+CONS_CHORDS = True          # the notes a hand strikes together move together, or not at all (False: one by one, R3)
 
 
 def _consolidate(R, L):
@@ -589,13 +590,22 @@ def _consolidate(R, L):
         moved = False
         for h, o in (("L", "R"), ("R", "L")):
             for n in sorted(hands[h], key=lambda m: (m.start, m.pitch if h == "L" else -m.pitch), reverse=False):
+                if not any(m is n for m in hands[h]):    # already moved with its chord
+                    continue
                 so = [m for m in hands[o] if m.start < n.end - 0.02 and m.end > n.start + 0.02]
                 if not so or min(abs(key_x(m.pitch) - key_x(n.pitch)) for m in so) > CONS_NEAR:
                     continue
                 if onsets(hands[o], n.start, n.end) <= onsets(hands[h], n.start, n.end):
                     continue                        # the busier hand takes the other's notes, not the reverse
-                if fits(hands[o], n):
-                    hands[h].remove(n); hands[o].append(n); moved = True
+                grp = [m for m in hands[h] if abs(m.start - n.start) < 0.05] if CONS_CHORDS else [n]
+                took = list(hands[o])               # a chord moves whole or not at all (R3 split the opening third
+                for m in grp:                       # of Clair de Lune, one note to each hand)
+                    if not fits(took, m):
+                        break
+                    took.append(m)
+                else:
+                    hands[h] = [m for m in hands[h] if not any(m is g for g in grp)]
+                    hands[o].extend(grp); moved = True
         if not moved:
             break
     return (sorted(hands["R"], key=lambda m: (m.start, m.pitch)), sorted(hands["L"], key=lambda m: (m.start, m.pitch)))
@@ -918,11 +928,35 @@ def release_far(fing, ev, hand, D=None):
     for f, evs in ev.items():
         for e in evs:
             kx = contact(e[2], e[4], f)[0]
-            for i in np.nonzero((t_on > e[0] + 0.02) & (t_on < e[1]))[0]:
-                if abs(kx - (hx[i] + sgn * HOME[f])) > D:
-                    e[1] = max(e[0] + 0.05, min(e[1], t_on[i] - REACH_LEAD))
+            ahead = _leap_time(0.40) if LEAP_TIME else 0.0     # (with LEAP_TIME: also a far chord just after the note
+            for i in np.nonzero((t_on > e[0] + 0.02) & (t_on < e[1] + ahead))[0]:   # ends: the hand has to get there)
+                d = abs(kx - (hx[i] + sgn * HOME[f]))
+                if HOLD_REACH and t_on[i] < e[1]:   # held on while one hand covers it and the new chord (in order)
+                    xs = [contact(n.pitch, False, g)[0] for n, g in fing[i]]
+                    ok = max(xs + [kx]) - min(xs + [kx]) <= HOLD_REACH and all(g != f and (g - f) * sgn * (x - kx) > 0
+                                                                            for (n, g), x in zip(fing[i], xs))
+                    if ok:
+                        continue
+                    d = max(d, D + 1e-6)
+                if d > D:
+                    e[1] = max(e[0] + 0.05, min(e[1], t_on[i] - (_leap_time(d) if LEAP_TIME else REACH_LEAD)))
                     break
     return ev
+
+
+HOLD_REACH = None           # m: a held note stays down through a later chord while one hand spans both, fingers in order
+                            # (the wrist model then places the hand over both); None: R3 (released when the next chord's
+                            # placement puts that finger's home more than REACH_D from its key)
+LEAP_TIME = (0.12, 0.6)     # (s, s/m): a hand moving d metres needs s + k*d: it holds its keys until then, lets go, travels
+                            # (lifting, WRIST_LIFT) and lands (MODEL_HOLD); None: R3 (lets go REACH_LEAD before a far
+                            # chord that comes while the note is still written, and the wrist path travels while it holds)
+MODEL_HOLD = True           # the wrist model's path stays on a chord until its keys are let go (at least LEAP_TIME before
+                            # the next chord), then travels; False: R3 (it starts to travel up to 1 s before the next chord)
+
+
+def _leap_time(d):
+    t0, k = LEAP_TIME or (0.12, 0.6)
+    return t0 + k * d
 
 
 def strike_time(touch):
@@ -930,6 +964,10 @@ def strike_time(touch):
     return 0.080 - 0.050 * touch
 
 
+FORCE = {"touch": 0.35, "hmin": 0.010}
+                            # {"touch": the least touch a note's motion is played with, "hmin": m the finger lifts before a
+                            # strike at least}; None: R3 (soft notes press slowly from 2-6 mm above the key)
+ARM_DROP = 2.0              # scale of the arm's dip into each onset (1: R3, 1-5 mm by velocity)
 APPROACH_ARC = None         # anticipation (None: v18/H): {"clear": m kept over the keys while travelling (full at 2 cm of
                             # travel), "lead": share of the approach left for the drop, "hmin": m the strike starts from
                             # at least, "amin": s the approach takes at least}
@@ -939,6 +977,8 @@ def finger_tip(t, e, home_tip, r, f=2):
     """Fingertip (pad centre) target for one note event at time t, and the key depth it causes (or None if
     idle). The pad centre sits one pad radius r above the key surface it touches."""
     t_on, t_off, p, vel, nbk, touch, lift = e
+    if FORCE:                               # every note is struck, not caressed: the finger lifts and comes down faster
+        touch = max(touch, FORCE["touch"])
     S = strike_time(touch)
     rel = 0.10 - 0.05 * touch
     approach = 0.10 + 0.08 * touch
@@ -950,6 +990,8 @@ def finger_tip(t, e, home_tip, r, f=2):
     down = c - np.array([0, 0, KEY_TRAVEL])
     # soft: the finger is already on (or a hair above) the key; strong: it pulls back and comes down
     h = (0.002 + 0.034 * touch ** 1.3 + 0.005 * vel / 127) * lift
+    if FORCE:
+        h = max(h, FORCE["hmin"])
     if APPROACH_ARC:
         h = max(h, APPROACH_ARC["hmin"])
     above = c + np.array([0, 0, h])
@@ -1380,6 +1422,8 @@ ROLE_FORCE = None                   # experiment hook: 1.0 = right hand always u
 CLOSE = {}
 FREE_GAP = (0.25, 0.35)           # s after a release / before a strike in which a finger is still working
 GLIDE_MAX = 0.8                    # s: a free finger starts drifting toward its next key at most this early
+GLIDE_LOCAL = True                 # ... toward that key as it will sit against the hand when struck (True), not the key
+                                   # where it is now (False, R3: before a leap the finger points out along the keys)
 ENSLAVE = (0.45, 0.20)             # share of a pressing neighbour's dip a free finger follows (next, next-but-one)
 SPRING_ROLL = (3.0, 0.75, 1.0)
 SPRING_HEAD = (1.7, 0.50, 0.9)
@@ -1403,7 +1447,7 @@ def _centre(H, x, nb, t):
     lo, hi = np.searchsorted(on, t - 0.3), np.searchsorted(on, t + 0.3)
     for k in range(lo, hi):
         d = t - on[k]
-        c[2] -= (0.001 + 0.004 * H["vel"][k] / 127) * math.exp(-((d - 0.02) / 0.07) ** 2)
+        c[2] -= ARM_DROP * (0.001 + 0.004 * H["vel"][k] / 127) * math.exp(-((d - 0.02) / 0.07) ** 2)
         if H["size"][k] >= 3 and H["touch"][k] > 0.3:
             c[2] += 0.045 * (H["touch"][k] - 0.3) * _smooth((d + 0.28) / 0.2) * (1 - _smooth((d + 0.06) / 0.06))
     if 0 <= i < len(on) - 1:
@@ -1575,7 +1619,8 @@ WRIST_W = 0.05              # weight of the wrist joint past that band (a 10 deg
 WRIST_LAMBDA = 12.0         # smoothing of the wrist's path (Whittaker, 2nd differences; ~2 Hz at 24 fps)
 WRIST_IDLE_W = 0.15         # how much a frame with no pressing finger pulls the smoothed wrist to its solve
 WRIST_STRIKE_W = 8.0        # ... and how hard the frames where a finger is striking pin it (the arm lands on the chord)
-WRIST_HOLD_W = 0.6          # a held note pulls the wrist path less: between strikes the hand leans to the next one
+WRIST_HOLD_W = 3.0          # a held note pins the wrist path too, so the finger keeps its key (R3: 0.6, the hand leaned
+                            # on to the next chord between strikes and dragged held fingers off)
 WRIST_STRIKE_T = 0.12       # s: a strike lasts this long from the finger taking its key
 WRIST_LAMBDA_Z = 0.25       # the vertical path is this much less smoothed (an arm drop is quick)
 WRIST_PASSES = 2            # wrist path refinements: solve the whole hand around the path, smooth, repeat
@@ -1623,6 +1668,13 @@ def _whittaker(Y, w, lam):
 WRIST_MODEL = os.environ.get("RIG_WRIST_MODEL", "1") == "1"   # the FürElise wrist model drives the wrist reference
 WRIST_Z_SCALE = False       # the pianists' wrist height scales with the hand too (False: v18/H, only x and y scale)
 WRIST_MODEL_PRIOR = 0.3     # its pull in the first whole-hand pass (our own plan only got 0.02)
+MODEL_IDLE_PLAN = True      # a hand with no note sounding and none within 0.6 s follows our plan, not the model (False: R3,
+                            # the idle hand stays at its last note: the left hand under the right through Clair de Lune)
+WRIST_LIFT = {"rest": 0.035, "gap": 0.12, "travel_k": 0.35, "travel_max": 0.05}
+                            # {"rest": m the wrist rises in a break, "gap": s of break before it starts to, "travel_k": rise
+                            # per m the hand travels in the break, "travel_max": m}; None: R3 (the model's path stays low)
+MODEL_ROLES = True          # the over/under layering and sideways room of two close hands apply to the model's path too
+                            # (False: R3, only their turn and roll did, so the over hand turned into the other at its height)
 HAND_BACK = 0.030           # m: the wrist path from pass A moves this much further toward the player, so the fingers
                             # reach out to their keys (less curl); the ease gives it back where a key needs it; 0: v18/H (N3: 0.030)
 REACH = None                # with HAND_BACK: the palm sits back on the settled path (after the ease) and the hand reaches
@@ -1640,6 +1692,44 @@ def _wrist_model():
     return _WM
 
 
+def _wrist_lift(H, P, times, j0, N, fps):
+    """Per frame (j0..N): how far the wrist rises over the model's path. In every stretch with no finger on or coming
+    down to a key, it lifts and lands again on the next note: more the longer the break (WRIST_LIFT rest, full at
+    gap + 0.5 s) and the further the hand travels in it (travel_k x the distance, at most travel_max)."""
+    L_ = WRIST_LIFT
+    ts = times[j0:N]; n = N - j0; dz = np.zeros(n); i = 0
+    busy = np.zeros(n, bool)                            # a key held down by this hand (approaches don't count)
+    for evs in H["ev"].values():
+        for e in evs:
+            busy[np.searchsorted(ts, e[0] - 0.02):np.searchsorted(ts, e[1], side="right")] = True
+    while i < n:
+        if busy[i]:
+            i += 1
+            continue
+        k = i
+        while k < n and not busy[k]:
+            k += 1
+        dur = (k - i) / fps
+        d = float(np.linalg.norm(P[min(k, n - 1), :2] - P[i, :2]))
+        amp = max(L_["rest"] * float(np.clip((dur - L_["gap"]) / 0.5, 0, 1)),
+                  min(L_["travel_max"], L_["travel_k"] * d) * float(np.clip((dur - 0.06) / 0.2, 0, 1)))
+        tt = (np.arange(i, k) - i + 0.5) / fps
+        up, down = min(0.35, 0.4 * dur), min(0.30, 0.6 * dur)        # rise quickly, float, land on the next note
+        dz[i:k] = amp * _smooth(tt / up) * _smooth((dur - tt) / down)
+        i = k
+    return dz
+
+
+def _idle_share(H, ts, fps):
+    """0..1 per frame time: how much a hand is off duty (no note sounding, none within 0.6 s), eased over 0.25 s."""
+    if not len(H["on"]):
+        return np.ones(len(ts))
+    i = np.searchsorted(H["on"], ts, side="right") - 1
+    sounding = (i >= 0) & (H["end"][np.clip(i, 0, None)] > ts - 0.3)
+    nxt = np.where(i + 1 < len(H["on"]), H["on"][np.clip(i + 1, 0, len(H["on"]) - 1)] - ts, 1e9)
+    return np.clip(_smooth(_box((~sounding & (nxt > 0.6)).astype(float), int(0.25 * fps))), 0, 1)
+
+
 def _learned_wrist(H, name, ts):
     """Wrist position per frame time from the FürElise model: placement at each strike group from the struck keys
     and the fingers striking them, and the pianists' travel curve between groups (ballistic for big moves, landing
@@ -1649,10 +1739,16 @@ def _learned_wrist(H, name, ts):
         return None
     hs_ = __import__("blockout.rig.skeleton", fromlist=["hand_scale"]).hand_scale()
     k = hs_ / (17.7 / 24.3) if hs_ != 1.0 else 24.3 / 17.7   # model offsets are for a 17.7 cm hand
-    on, P = [], []
+    on, P, rel = [], [], []
+    off = {(e[0], e[2]): e[1] for evs in H["ev"].values() for e in evs} if (MODEL_HOLD or HOLD_REACH) else {}
+    held_ev = [(f, e) for f, evs in H["ev"].items() for e in evs] if HOLD_REACH else []
     for sl in H["fing"]:
+        rel.append(max((off.get((n.start, n.pitch), n.start) for n, _ in sl), default=sl[0][0].start))
         v = []
-        for n, f in sl:
+        t_s = sl[0][0].start
+        held = [(type(sl[0][0])(e[0], e[1], e[2], 64, 0), f) for f, e in held_ev       # keys still held at this chord
+                if e[0] < t_s - 0.02 and e[1] > t_s + 0.05 and all(f != g for _, g in sl)]
+        for n, f in list(sl) + held:
             key = f"{name}{f}.{'black' if is_black(n.pitch) else 'white'}"
             o = M["offset"].get(key) or M["offset"].get(f"{name}{f}.white")
             v.append(np.array([key_x(n.pitch), 0.0, 0.0]) + np.array(o["median"]) * np.array([k, k, k if WRIST_Z_SCALE else 1.0]))  # offsets
@@ -1669,9 +1765,12 @@ def _learned_wrist(H, name, ts):
         if g >= len(on) - 1:
             out[i] = P[-1]; continue
         t0, t1 = on[g], on[g + 1]
-        t0 = max(t0, t1 - 1.0)
-        u = float(np.clip((t - t0) / max(t1 - t0, 1e-6), 0, 1))
         d = P[g + 1] - P[g]
+        if MODEL_HOLD:                                  # on the chord until its keys are let go, then over to the next
+            t0 = max(t0, min(rel[g], t1 - _leap_time(float(np.linalg.norm(d[:2])))))
+        else:
+            t0 = max(t0, t1 - 1.0)
+        u = float(np.clip((t - t0) / max(t1 - t0, 1e-6), 0, 1))
         c = cl if np.linalg.norm(d[:2]) > 0.04 else cs
         out[i] = P[g] + d * float(np.interp(u, tau, c))
     return out
@@ -1742,6 +1841,8 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
                 if not pressing[f]:
                     v = dR @ (tg[f] - pp) + ref_pos
                     tg[f, :2] = v[:2]
+                    if "LIFT" in H:
+                        tg[f, 2] += H["LIFT"][j]
             targets = {**targets, name: tg}
         # a key is narrow across the keyboard and long along it: aim pressing pads hardest in x
         w = [np.array(PRESS_AXES_BLACK if is_black(H["act"][j][f][0]) else PRESS_AXES) * RIG_W["press"] if pressing[f]
@@ -1827,7 +1928,16 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
         for name, H in hands.items():
             P = _learned_wrist(H, name, times[j0:N])
             if P is not None:
-                REF[name] = [(r[0], p_) for r, p_ in zip(REF[name], P)]
+                if MODEL_ROLES and "ROFF" in H:         # two hands close keep their over/under layering and sideways
+                    P = P + dynamics.filter_track(H["ROFF"], fps, *SPRING_HAND)[j0:N]      # room on the model's path
+                a = _idle_share(H, times[j0:N], fps)[:, None] if MODEL_IDLE_PLAN else np.zeros((N - j0, 1))
+                if WRIST_LIFT:                          # the wrist comes up off the keys between notes and as it travels
+                    dz = _wrist_lift(H, P, times, j0, N, fps) * (1 - a[:, 0])
+                    P = P + np.stack([np.zeros_like(dz), np.zeros_like(dz), dz], 1)
+                    H["LIFT"] = np.concatenate([np.zeros(j0), dz])       # (free fingers ride up with it)
+                if MODEL_IDLE_PLAN:                     # the model only knows the hand's own notes: after its last one
+                    P = P * (1 - a) + np.array([r[1] for r in REF[name]]) * a        # it holds there. A hand with
+                REF[name] = [(r[0], p_) for r, p_ in zip(REF[name], P)]           # nothing to play follows our plan
         first_prior = WRIST_MODEL_PRIOR
     PW = {}
     ns = max(1, int(round(WRIST_STRIKE_T * fps)))
@@ -2201,6 +2311,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                         if g1 > g0 and t > g0:
                             w = _smooth(min(1.0, (t - g0) / (g1 - g0)))
                             goal = contact(en[2], en[4], f)
+                            if GLIDE_LOCAL:                   # shape for the key where it will be against the hand,
+                                js = int(np.clip(round((en[0] - LEAD_TIP - times[0]) * fps), 0, N - 1))  # not reach for
+                                goal[0] += H["xt"][j] - H["xt"][js]                             # it across a leap
                             tip = tip.copy()
                             tip[:2] += w * (goal[:2] - tip[:2])
                     idle = (1.0 - w) * (0.0 if f == 0 else 1.0)  # off duty, a finger eases out and up, very softly;
@@ -2265,12 +2378,14 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             H = hands[name]
             H["C"][:, 0] += sg * push
             H["TIP"][:, :, 0] += np.where(H["FREE"] > 0.5, sg * push[:, None], 0.0)
+            H["ROFF"] = np.zeros((N, 3)); H["ROFF"][:, 0] = sg * push
     for name, H in hands.items():
         o, u, lp = roles[name]["over"], roles[name]["under"], roles[name]["leap"]
         dy = o * OVER_DY + u * UNDER_DY
         dz = o * OVER_DZ + u * UNDER_DZ + lp * LEAP_DZ
         H["C"][:, 1] += dy
         H["C"][:, 2] += dz
+        H.setdefault("ROFF", np.zeros((N, 3)))[:, 1:] += np.stack([dy, dz], 1)   # (kept: the wrist model's path gets it too)
         free = H["FREE"] > 0.5
         H["TIP"][:, :, 1] += np.where(free, dy[:, None], 0.0)
         H["TIP"][:, :, 2] += np.where(free, dz[:, None], 0.0)

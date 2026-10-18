@@ -935,3 +935,81 @@ notes, keep N3) -- the go-ahead for the thumb rig change. N3 is the base for all
   The old v18 left-hand swing-off at video 248-252 s is not there in R3.
 - **Posted:** band site section `suite-r3-show` (`media/suite_r3_show.mp4`, 1080p, 5 min 50 s, 225 MB). Backup
   `manifest.backup_20261017_suite_show.json`. Clean frames for H3: `~/h3/hands_loop/suite_r3_20261017/solve/frames_show/`.
+
+### 2026-10-17 (late): user review of the suite render -> V3 (left hand, crossings, holds, strikes, wrist lift)
+User: "the left hand is bugged the entire first half, and the hand crossover/interactions are still really rough.
+also we aren't pressing the keys long enough/with force so it doesn't really feel like we are playing it", then
+"wrists lift up in y space on breaks and motions normally". Tools and every number below: `~/h3/hands_loop/lh_fix_20261017/`
+(`winrun.sh` suite test windows, `score.py`, `sbs_show.sh` show-look side by sides, `clips/`, `scores_round*.txt`).
+- **Left hand, Debussy (root cause):** the FürElise wrist model (`WRIST_MODEL`, on since v18) replaces our planned wrist
+  position, and it only knows the hand's own notes: after its last one it holds there ("long gaps hold"). The left hand
+  plays one third at 40.5 s and nothing until 75.7 s, so it sat under the right hand (wrist x ~0, thumb at +0.15 inside
+  the right hand) instead of where `IDLE_SEP` put it (-0.09..-0.12). Parts that started in the rest (part 1 on) began at
+  the plan, which is why it looked fine from 14 s. Same model also dropped the over/under layering of close hands
+  (`OVER_DY/DZ`, `UNDER_*`, `LEAP_DZ`, the `MIN_GAP` push): the over hand kept only its turn and roll, and turned into the
+  other hand at its height. And `_consolidate` moved notes one at a time: Clair de Lune's opening F4-Ab4 third was split,
+  one note to each hand. Fixes: `MODEL_IDLE_PLAN` (an off-duty hand follows the plan, eased over 0.25 s), `MODEL_ROLES`
+  (role offsets added to the model's path, through the hand spring), `CONS_CHORDS` (a chord moves whole or not at all).
+- **Left hand, Rachmaninoff:** the hand jumps 30-40 cm every half beat (bass octave <-> middle chord). A free finger
+  glided toward its next key where the key *is* (`finger_tip` glide), so before every leap the pinky/thumb pointed out
+  straight along the keys, at its spread and hyperextension stops (L pinky at the 20 deg stop 68% of frames, MCP at
+  -20 deg 24%). `GLIDE_LOCAL`: the finger pre-shapes for its key as it will sit against the hand when struck.
+- **Holds:** over each note's written length the key was fully down only 44-68% of the time (suite, R3). The solver
+  keeps 90-98% of the holds it *plans*; the loss was the wrist path travelling to the next chord while keys were still
+  held (fingers dragged off sideways), plus `release_far`. `MODEL_HOLD`: the model's path stays on a chord until its keys
+  are let go; `LEAP_TIME` (0.12 s + 0.6 s/m): a hand that must move lets go just early enough for the distance, also when
+  the far chord comes right after the note's written end; `WRIST_HOLD_W` 0.6 -> 3.0: held frames pin the wrist path.
+- **Strikes:** Debussy/Chopin touch is 0.08-0.13, so fingers started 4-6 mm above the key and pressed slowly (ease-out):
+  nothing read as a strike (pad stroke p50 4 mm in Debussy). `FORCE` {touch >= 0.35, lift >= 10 mm} for the motion only
+  (velocities and audio unchanged), `ARM_DROP` 2 (the arm's dip into each onset 2-10 mm).
+- **Wrist lift** (the user's note): the model's path stayed low between chords (wrist z flat, ~23 mm, pressing or not).
+  `WRIST_LIFT`: in every break with no key held the wrist rises and lands on the next note: up to 35 mm in a rest (full at
+  0.12 + 0.5 s), 0.35 x the distance travelled on a leap (at most 50 mm); free fingers ride up with it.
+- Tried, not taken: `HOLD_REACH` 0.17 m (keep a held note while one hand spans it and the next chord, the model placing
+  the hand over both): held +4-6 points in Debussy/Chopin, but keys in time Debussy end 92 -> 85, Chopin 99 -> 96 and
+  crossed / over-spread fingers back in Chopin. Off.
+
+Test windows (suite seconds; 12 s each; base = R3; held = share of written note length with the key fully down; stroke =
+pad travel into a key, p50; hand-hand = frames with the hands' skins > 3 mm into each other):
+| window | keys in time R3 / V3 | pops/min | held % | L pinky at stop % | stroke mm | hand-hand |
+|---|---|---|---|---|---|---|
+| Debussy 39.9 (opening) | 100 / 100 | 2.5 / 0 | 74 / 81 | 0 / 0 | 3 / 10 | 158 / 11 |
+| Debussy 50 | 95.2 / 95.2 | 2.5 / 0 | 62 / 61 | 0 / 0 | 4 / 11 | 0 / 0 |
+| Debussy 66 (end) | 80.8 / 92.3 | 7.5 / 0 | 66 / 71 | 10 / 1 | 1 / 9 | 188 / 2 |
+| Rach 100 | 92.7 / 89.0 | 85 / 20 | 45 / 28 | 68 / 45 | 15 / 37 | 0 / 0 |
+| Rach 122 | 92.7 / 92.0 | 75 / 20 | 51 / 43 | 72 / 62 | 13 / 28 | 7 / 37 |
+| Rach 136 | 78.8 / 93.9 | 12.5 / 2.5 | 46 / 50 | 64 / 63 | 12 / 13 | 46 / 10 |
+| Chopin 282 | 96.2 / 94.3 | 2.5 / 0 | 19 / 28 | 6 / 6 | 12 / 14 | 11 / 3 |
+| Chopin 266 | 100 / 98.6 | 2.5 / 2.5 | 58 / 60 | 5 / 6 | 10 / 13 | 3 / 2 |
+Also: crossed fingertips Rach 100 9.5 -> 0%, L MCP at its hyperextension stop Rach 24 -> 11%, hand turning > 300 deg/s
+L 5.2 -> 2.8%. Rach held % goes *down* by design: on the leaps the hand now lets go, lifts and travels (the stroke into
+the keys doubles). Wrist z in Rach 100: R3 ~23 mm pressing or not; V3 21-27 mm pressing, 41 mm between chords, max 63.
+By eye (`clips/`): Debussy opening -- R3 hands glued together for 11 s, V3 the left hand holds its third beside the
+right, then rests 12 cm to its left; Rach left hand -- R3 a finger pointing out along the keys on every bass leap
+(67.1, 68.1, 69.1 s), V3 a compact hand on its chord.
+- **V3 = the code defaults** (`CONS_CHORDS, MODEL_IDLE_PLAN, MODEL_ROLES, GLIDE_LOCAL, MODEL_HOLD` True; `WRIST_HOLD_W` 3.0;
+  `FORCE`, `ARM_DROP` 2, `LEAP_TIME` (0.12, 0.6), `WRIST_LIFT` as above). R3 = all of those off / back to their R3 values
+  (noted on each constant).
+- **Full suite, V3** (`~/h3/hands_loop/suite_v3_20261017/solve/`; `tools/v18/solve.sh`, defaults; a fresh window solve with
+  the defaults is byte-identical to the V3 window): `review_metrics.py` + `lh_fix_20261017/score.py`, R3 -> V3:
+  | | R3 | V3 |
+  |---|---|---|
+  | keys in time | 94.1% | 93.7% (Debussy 90.7 -> **95.9**, Rach 93.6 -> 92.0, Chopin 94.6 -> 94.7) |
+  | pops / min | 14.1 | **5.0** (Rach 63 -> 20) |
+  | crossed tips | 2.3% | **0.6%** |
+  | frozen joints | 7.2% | 6.1% |
+  | broken frames | 0.07% | 0.05% |
+  | hands overlapping > 2 cm | Debussy 39%, suite 11% | Debussy **1%**, suite 7% |
+  | L pinky at its spread stop / L MCP at hyperextension | 19 / 4.4% | 16 / 2.4% (Rach 60/14 -> 48/8) |
+  | pad stroke into a key, p50 | 12 mm (Debussy 4) | **16 mm** (Debussy 9, Rach 23) |
+  | key fully down over the written length | 51% | 48% (Debussy 71 -> 75, Rach 51 -> 42, Chopin 50 = 50) |
+  Held does not improve: the Rach leaps now let go to travel (by design), and in the Chopin 90% of the lost time is the
+  finger already gone to another key (`release_far`/fingering: pedalled arpeggios spread wider than one hand), not the
+  pad slipping. Holding those would need the pedal model or a different fingering; left for later.
+- **Render fix:** the steadicam on the left hand looks along the raised right forearm in Rachmaninoff (video 99-107 s)
+  and showed the open end of the skinned forearm mesh (a hollow cone; the 6 cm primitive sleeve from the elbow didn't
+  reach it). `blender_piano.py` `SLEEVE` (env `RIG_SLEEVE`) 0.06 -> 0.14 m covers it (tested 0.06 / 0.10 / 0.14 on the
+  three worst frames); the 3,381 suite frames with an elbow end in view were re-rendered.
+- **Review** (`suite_show.mp4`, V3, all 351 s at 1 fps): the left hand never parks under the right in the first half;
+  Rach left hand compact on its bass jumps; wrists visibly up between chords. Still seen: the right index lifted high
+  for a beat at 60 s and 64 s (same in R3), joint spheres on the upper arms in the across shots (as before).
