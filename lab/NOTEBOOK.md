@@ -1404,3 +1404,8 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   twice 111, holds cut 8.1%, **pops 5.48/min** (C8 10.0, V3 5.0; Rach 15.9). LAND 5: 90.1% / 673 / pops 8.0 (Rach 29):
   many pops are in the strike's fast approach. **C8d = C8 + depop (LAND 3) + S2**: vs V3 more notes (89.9 vs 86.5%),
   half the wrong keys (679 vs 1,334), about as smooth (5.5 vs 5.0 pops/min). Rendering C8 and C8d for the user.
+- **C8 render** (`suite_c8/render/suite_show.mp4`, 350.6 s, physics key depths, C8 hands' audio), reviewed at 1 fps
+  (12 contact sheets): plays through, no broken geometry, no missing frames, cuts only at the edit's camera changes.
+  Seen: a hooked right-hand finger (0:42, the claw from the knuckle line, C9 tests it); fanned pinky / thumb on the
+  right hand (1:07-1:14, 4:17-4:19); the hands crowd each other in one register (2:36-2:44, 5:32). C8d render queued
+  (lease piano-c8d).
