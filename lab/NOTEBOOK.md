@@ -1180,3 +1180,6 @@ user's benchmarks); everything below is CPU.
   93.0 cleaned, wrong 116 -> 39. Costs: Rach broken 0.05 -> 0.35% (9 frames of a tip hooked > 30 deg past its PIP, index
   and pinky), Rach timing p90 55 -> 69 ms. PX2 (x 4.5) and PX1 on ks_chop / ks_deb running. (Debussy's timing p90 on T1 is
   one note: A#4 sounded 77 ms late by the right thumb's shaft, not by its finger.)
+- **PX1 on all four windows (cleaned)** vs base: Debussy 94.4 = 94.4%, wrong 23 -> 22, timing p90 41 -> 38; Rach 93.8 ->
+  96.5%, 202 -> 104; Chopin 282 95.7 -> 97.9%, 134 -> 67; Chopin 266 91.2 -> 93.0%, 116 -> 39. PX2 (x 4.5): Rach 94.4%,
+  Chopin 266 94.7%: not better overall. **C3 = C2 + `PRESS_AXES` x 6** suite solving (`suite_c3/`).
