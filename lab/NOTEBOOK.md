@@ -1413,3 +1413,7 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   crossed 1.06% (0.80). But it did not move the knuckles back: pressing fingers' MCP y went 16 -> 26 mm (deeper),
   PIP 45 -> 55: the solve's reach pulls the hand in whatever `_centre`'s target says. Inconclusive for the hooked-finger
   idea (it needs a direct knuckle-depth control); not adopted.
+- **C8d render** (`suite_c8d/render/suite_show.mp4`), reviewed at 1 fps: identical to C8 at that rate (the de-pop
+  pass only eases idle-finger snaps); same notes (0:42 hook, fanned right pinky/thumb, 5:32 crossing). Posted: band
+  site top section `piano-c8-render` (C8d whole suite, C8 | C8d Rach 0:40-0:56 side by side, C8 whole suite,
+  V3 / C6 / C8 / C8d table). Not the default yet: the user's eye decides.
