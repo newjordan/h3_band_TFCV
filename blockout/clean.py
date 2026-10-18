@@ -254,32 +254,68 @@ def clean(anim, notes, jobs=1, t0=None, t1=None, log=print):
                 if hh == h:                         # a fix is a nudge: a joint never swings more than MAX_DQ
                     Dl[j - j0] = np.clip(q - Q[j - j0], -MAX_DQ, MAX_DQ)
             Ds = np.zeros_like(Q)
-            for f in range(5):
-                a, b = rig.sl[f], rig.sl[f + 1]
-                moved = np.abs(Dl[:, a:b]).max(1) > 1e-9
-                if not moved.any():
-                    continue
-                # pin the corrected frames, and the frames where this finger presses (a correction may not bleed
-                # into a strike or a hold); other frames are pulled to no change, the second difference smoothed
-                press = np.array([pinned[(j, h)][f] is not None for j in range(j0, j1)])
-                # next to a strike or a release a free finger is on its strike path: its correction tapers to nothing
-                # over TAPER frames (no lift right before a landing, so nothing has to snap down onto a pinned strike)
-                dist = np.full(len(press), 99)
-                idx = np.nonzero(press)[0]
-                if len(idx):
-                    k_ = np.searchsorted(idx, np.arange(len(press)))
-                    nxt = np.where(k_ < len(idx), idx[np.minimum(k_, len(idx) - 1)] - np.arange(len(press)), 99)
-                    prv = np.where(k_ > 0, np.arange(len(press)) - idx[np.maximum(k_ - 1, 0)], 99)
-                    dist = np.minimum(np.abs(nxt), np.abs(prv))
-                taper = np.clip((dist - 1) / TAPER, 0.0, 1.0)
-                Dl[:, a:b] *= np.where(press, 1.0 if FIX_PRESSING else 0.0, taper)[:, None]   # a pressing finger stays put
-                w = np.where(press, W_PRESS, np.where(moved, W_HI, W_LO))
-                Ds[:, a:b] = P._whittaker(Dl[:, a:b], w, SMOOTH_LAM)
+            hold0 = np.zeros((len(Q), 5), bool)     # (finger, frame) pinned to no change (crossing guard)
+            for _cg in range(2 if CROSS_GUARD else 1):
+                Ds = _blend(rig, h, Q, Dl, pinned, j0, j1, hold0)
+                if not CROSS_GUARD:
+                    break
+                bad_ = _new_crossings(rig, anim, h, j0, Q, Ds)
+                if not bad_.any():
+                    break
+                for k in np.nonzero(bad_.any(1))[0]:          # undo both crossing fingers' fixes around there
+                    for f in np.nonzero(bad_[k])[0]:
+                        hold0[max(0, k - 2):k + 3, f] = True
             Ds[np.abs(Ds) < 1e-6] = 0.0
             Qn = np.clip(Q + Ds, rig.lo, rig.hi)
             for k in np.nonzero(np.abs(Ds).max(1) > 0)[0]:
                 _rebuild(anim, h, j0 + k, Qn[k])
     return anim
+
+
+def _blend(rig, h, Q, Dl, pinned, j0, j1, hold0):
+    """Per finger, the corrections eased in time (Whittaker): corrected frames pinned to their fix, press / landing
+    frames and crossing-guard holds pinned to no change, a free finger's fix tapered around strikes."""
+    Dl = Dl.copy(); Ds = np.zeros_like(Q)
+    for f in range(5):
+        a, b = rig.sl[f], rig.sl[f + 1]
+        moved = np.abs(Dl[:, a:b]).max(1) > 1e-9
+        if not moved.any():
+            continue
+        # pin the corrected frames, and the frames where this finger presses (a correction may not bleed
+        # into a strike or a hold); other frames are pulled to no change, the second difference smoothed
+        press = np.array([pinned[(j, h)][f] is not None for j in range(j0, j1)])
+        # next to a strike or a release a free finger is on its strike path: its correction tapers to nothing
+        # over TAPER frames (no lift right before a landing, so nothing has to snap down onto a pinned strike)
+        dist = np.full(len(press), 99)
+        idx = np.nonzero(press)[0]
+        if len(idx):
+            k_ = np.searchsorted(idx, np.arange(len(press)))
+            nxt = np.where(k_ < len(idx), idx[np.minimum(k_, len(idx) - 1)] - np.arange(len(press)), 99)
+            prv = np.where(k_ > 0, np.arange(len(press)) - idx[np.maximum(k_ - 1, 0)], 99)
+            dist = np.minimum(np.abs(nxt), np.abs(prv))
+        taper = np.clip((dist - 1) / TAPER, 0.0, 1.0)
+        Dl[:, a:b] *= np.where(press, 1.0 if FIX_PRESSING else 0.0, taper)[:, None]   # a pressing finger stays put
+        Dl[hold0[:, f], a:b] = 0.0
+        w = np.where(press | hold0[:, f], W_PRESS, np.where(moved, W_HI, W_LO))
+        Ds[:, a:b] = P._whittaker(Dl[:, a:b], w, SMOOTH_LAM)
+    return Ds
+
+
+def _new_crossings(rig, anim, h, j0, Q, Ds):
+    """(frames, 5) bool: fingers whose tips cross (index..pinky, > 4 mm out of order) after the blend and didn't before."""
+    sgn = 1.0 if h == "R" else -1.0
+    out = np.zeros((len(Q), 5), bool)
+    for k in np.nonzero(np.abs(Ds).max(1) > 1e-6)[0]:
+        H = anim["frames"][j0 + k]["hands"][h]
+        R0, p0 = np.array(H["root"]["rot"]), np.array(H["root"]["pos"])
+        xs = []
+        for q in (Q[k], np.clip(Q[k] + Ds[k], rig.lo, rig.hi)):
+            _rr, _rp, pts = rig.points(np.concatenate([p0, np.zeros(3), q]), R0)
+            xs.append(np.array([pts[f][3][0] for f in range(1, 5)]) * sgn)
+        for f in range(3):
+            if xs[1][f + 1] - xs[1][f] < -0.004 and not xs[0][f + 1] - xs[0][f] < -0.004:
+                out[k, f + 1] = out[k, f + 2] = True
+    return out
 
 
 def main(argv=None):

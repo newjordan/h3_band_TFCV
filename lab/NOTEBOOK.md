@@ -1186,3 +1186,13 @@ user's benchmarks); everything below is CPU.
 - **C2 = T1 + `REPEAT_GAP` 0.09, suite + cleanup** (`suite_c2/cand/`) vs V3: sounded 90.1 -> **90.3%** (first whole-suite
   candidate above V3; Debussy 81.4 -> 89.7, Rach 93.5 -> 90.8, Chopin 89.0 -> 90.1), wrong 3627 -> **1593**, struck twice
   487 -> 235, pops 5.0 -> 6.1, broken 0.05 -> 0.06%, crossed 0.57 -> 1.30%. Raw C2 (no cleanup): 90.5% / 2344 wrong / 271.
+- **C3 = C2 + `PRESS_AXES` x 6, suite + cleanup** (`suite_c3/cand_g/`, cleanup with the crossing guard applied after the
+  time blend) vs V3: sounded 90.1 -> **92.1%** (Debussy 81.4 -> 88.7, Rach 93.5 -> 93.3, Chopin 89.0 -> 91.5), wrong keys
+  3627 -> **1542** (-57%), struck twice 487 -> 240, timing p90 43 -> 49 ms, pops 5.0 -> 6.7/min, broken 0.05 -> 0.15%
+  (tips hooked past the PIP in Rach chords), crossed tips 0.57 -> 1.17% (the raw C3 solve has 1.20: the plan's, mostly
+  Chopin). Before moving the crossing guard after the blend the cleanup added +0.6 (1.80%): the per-frame guard can't
+  see crossings made by easing corrections into neighbouring frames; now a finger's fix is pinned to zero for +-2 frames
+  wherever the blended result crosses tips the original didn't, and the blend is redone.
+- Posted: band site section `working-piano-c3` (A/B song | V3 | C3 over the V3 picture; V3 / C1 / C3 table; rolls), backup
+  `manifest.backup_20261018_action_c3.json`. `action.py --write-anim OUT` writes a take whose key depths come from the
+  working piano (for renders, once the GPU is ours again).

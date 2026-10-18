@@ -439,6 +439,8 @@ def main(argv=None):
     ap.add_argument("suite"); ap.add_argument("notes"); ap.add_argument("out")
     ap.add_argument("--sfz"); ap.add_argument("--t0", type=float); ap.add_argument("--t1", type=float)
     ap.add_argument("--no-audio", action="store_true")
+    ap.add_argument("--write-anim", help="also write the take with every frame's key depths from the working piano "
+                    "(what the fingers actually pushed down, wrong keys included) for the renderer")
     o = ap.parse_args(argv)
     os.makedirs(o.out, exist_ok=True)
     anim = json.load(open(o.suite))
@@ -480,6 +482,13 @@ def main(argv=None):
         for w in rep["wrong"]:
             f.write(f"  video {w['video_t']:8.2f} s  {w['key']:4s} by {w['who']:10s} vel {w['vel']}\n")
     print(open(os.path.join(o.out, "report.txt")).read())
+    if o.write_anim:                                # the renderer draws fr["keys"]; give it the physics' depths
+        for j, fr in enumerate(anim["frames"]):
+            fr["keys_plan"] = fr.get("keys", {})
+            fr["keys"] = {p: v[0] for p, v in frames.get(j, {}).items() if v[0] > 0.005}
+        anim["keys_from"] = "blockout.action (working piano)"
+        json.dump(anim, open(o.write_anim, "w"))
+        print("wrote", o.write_anim)
     if o.sfz and not o.no_audio:
         import soundfile as sf
         model = [[bl["t_on"] - t0, bl["t_off"] - t0, bl["pitch"], bl["vel"], 1] for bl in blows]
