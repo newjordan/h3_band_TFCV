@@ -46,5 +46,14 @@ base = dict(A[0]); base["start"] = T0; base["frames"] = frames
 bt = sorted({round(b + a["start"] - T0, 4) for a in A for b in a["beats"]}); db = sorted({round(b + a["start"] - T0, 4) for a in A for b in a["downbeats"]})
 base["beats"], base["downbeats"] = bt, db
 base["qa_parts"] = [a["qa"] for a in A]
+# the fingering of every part, each over its own stretch (cut at the middle of each overlap, as the frames hand over);
+# before 2026-10-18 the suite kept only part 0's (37-55 s), so tools reading it saw no fingering after that
+cut = [a["start"] + 0.5 for a in A[1:]] + [float("inf")]
+fing = {}
+for k, a in enumerate(A):
+    lo = cut[k - 1] if k else -float("inf")
+    for h, sl in a.get("fingering", {}).items():
+        fing.setdefault(h, []).extend(s for s in sl if s and lo <= s[0][0] < cut[k])
+base["fingering"] = {h: sorted(sl, key=lambda s: s[0][0]) for h, sl in fing.items()}
 json.dump(base, open(f"{O}/suite.json", "w"))
 print(len(frames), "frames")

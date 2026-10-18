@@ -1160,3 +1160,16 @@ user's benchmarks); everything below is CPU.
   *same* finger before a re-strike (`finger_events`); a finger change on a repeated note (common in the Chopin) leaves the
   old finger holding the key. `REPEAT_GAP` (s): any earlier hold on a pitch (any finger, either hand) ends strike_time +
   gap before its next onset. RG1 = T1 + 0.09 s running (4 windows), plus T1 on chop2 / ks_deb for a like-for-like base.
+- **Stitch bug (fixed, `tools/v18/stitch.py`):** the stitched suite copied part 0's header, so its `fingering` covered
+  only 37-55 s. Every whole-suite tool that read it was blind after that: `clean.py` didn't know which key a finger was
+  about to land on (outside a press) and lifted landing fingers -- that is why each whole-suite cleanup lost more notes
+  than the windows did. Now every part's fingering is merged, each over its own stretch (cut mid-overlap). V3's own
+  suite.json is unchanged (its frames are what they are); re-stitched suite_h3 and suite_t1.
+- **C1f** (T1 suite, re-stitched, + cleanup; `suite_t1/cand_f/`) vs V3: sounded 90.1 -> **89.7%** (Debussy 81.4 -> 84.5,
+  Rach 93.5 -> 93.3, Chopin 89.0 -> 88.0; raw T1 89.8: the cleanup costs nothing now), wrong keys 3627 -> **1635** (-55%),
+  struck twice 487 -> 256, pops 5.0 -> 5.9, broken 0.05 -> 0.07%, crossed tips 0.57 -> 1.47% (raw T1 0.97: the plan
+  raises it in the Chopin, the cleanup adds ~0.5). Band site post corrected to these (the first C1 numbers, 1,440 /
+  88.8%, came from the blind cleanup), with a dated correction note.
+- **RG1** (T1 + `REPEAT_GAP` 0.09 s, windows): Rach 95.1% (T1 94.4), struck twice 12 -> 8; Chopin 282 100% (T1 97.9);
+  cleaned: Rach 93.8% / 128 wrong, Chopin 282 100% / 72, Chopin 266 89.5% / 41, Debussy 94.4% / 12. C2 = T1 +
+  REPEAT_GAP suite solving (`suite_c2/`).
