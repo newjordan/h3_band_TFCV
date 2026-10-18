@@ -1409,3 +1409,7 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   Seen: a hooked right-hand finger (0:42, the claw from the knuckle line, C9 tests it); fanned pinky / thumb on the
   right hand (1:07-1:14, 4:17-4:19); the hands crowd each other in one register (2:36-2:44, 5:32). C8d render queued
   (lease piano-c8d).
+- **C9 = C8 + `Y_KN` -0.015 (suite, cleaned): 90.8%** (C8 90.3), wrong 690 (665), struck twice 126 (109), pops 9.7,
+  crossed 1.06% (0.80). But it did not move the knuckles back: pressing fingers' MCP y went 16 -> 26 mm (deeper),
+  PIP 45 -> 55: the solve's reach pulls the hand in whatever `_centre`'s target says. Inconclusive for the hooked-finger
+  idea (it needs a direct knuckle-depth control); not adopted.
