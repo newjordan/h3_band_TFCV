@@ -26,6 +26,9 @@ import numpy as np
 os.environ.setdefault("HAND_SCALE", "1")
 from . import piano as P
 
+MESH = False            # violations and the re-solve's collisions on the rendered skin (the MPFB mesh posed by linear blend
+                        # skinning, as blockout/action.py's judge); False: the rig's skin sections (the C3 cleanup)
+MESH_REACH = 0.015      # m over the black key tops: a finger's mesh points higher than this at the frame are left out
 TOL = 0.0003            # m of skin allowed inside a key the finger isn't playing
 CLEAR = 0.0010          # m the re-solve aims for past that
 GAIN_FREE, GAIN_PRESS = 400.0, 40.0     # key-collision weight (x RIG_W env) in the re-solve: free / pressing finger
@@ -46,6 +49,8 @@ CROSS_GUARD = True      # undo a finger's fix when it crosses index..pinky tips 
                         # took crossed tips 0.97 -> 1.47% on the T1 suite)
 PAD_GUARD = (0.0005, 0.002)    # m (up, across): with FIX_PRESSING "soft", a press / landing frame whose pad the blended
                         # correction lifts or slides more than this is held to no change there (and re-blended)
+PAD_GUARD_DIR = False   # True: only a slide *away* from the key's centre line (or off the key) counts (for CENTRE > 0;
+                        # tested S6 / M5 2026-10-18: centring didn't help on the mesh judge)
 TAPER = 3.0             # frames over which a free finger's correction fades in after a release / out before a landing
 PASSES = 4
 ITERS = 20
@@ -110,6 +115,110 @@ def _pen(S_, DW, DB, own, sweep=None):
     return pen
 
 
+class _MeshSkin:
+    """One hand's rendered skin, per finger: mesh vertices and triangle-edge midpoints (as the judge's), skinned from the
+    rig's posed bones. points(x, root_rot) -> per finger (n, 3); chain_points(f, P, Rs, const) -> finger f's points
+    with its own chain moved and every other bone held (const: their share, from const_part)."""
+
+    def __init__(self, h):
+        from .action import MESH_JSON, MESH_R
+        D = json.load(open(MESH_JSON))["hands"][h]
+        self.rig = rig = P._rig(h)
+        sk = rig.sk
+        self.r = MESH_R
+        V, T = np.array(D["verts"]), np.array(D["tris"])
+        E = np.unique(np.sort(np.concatenate([T[:, [0, 1]], T[:, [1, 2]], T[:, [2, 0]]]), axis=1), axis=0)
+        bones = sorted({b for w in D["weights"] for b in w})
+        Wv = np.zeros((len(V), len(bones)))
+        for i, w in enumerate(D["weights"]):
+            for b, x in w.items():
+                Wv[i, bones.index(b)] = x
+        P0 = np.concatenate([V, V[E].mean(1)])
+        W0 = np.concatenate([Wv, Wv[E].mean(1)])
+        dom = [bones[k] for k in W0.argmax(1)]
+        self.bones = bones
+        self.M0 = {b: sk.R0[b].T for b in bones}
+        self.h0 = {b: sk.h0[b] for b in bones}
+        self.fp = []
+        for f, ch in enumerate(rig.chains):
+            idx = np.array([i for i, b in enumerate(dom) if b in ch.bones])
+            Wf = W0[idx]
+            cols = [k for k in range(len(bones)) if Wf[:, k].max() > 1e-4]
+            self.fp.append((P0[idx], {bones[k]: Wf[:, k] for k in cols}, list(ch.bones)))
+
+    def frames(self, x, ref_rot):
+        rig = self.rig
+        root_rot = _rotvec(x[3:6]) @ ref_rot
+        root_pos = x[:3]
+        F = {"wrist": (root_rot, root_pos)}
+        for ch, (bR, bH) in zip(rig.chains, rig.bases(root_rot, root_pos)):
+            F[ch.base_bone] = (bR, bH)
+        _rr, _rp, pts = rig.points(x, ref_rot)
+        for f, ch in enumerate(rig.chains):
+            for i, b in enumerate(ch.bones):
+                F[b] = (rig._rots[f][i], pts[f][i])
+        return F
+
+    def _part(self, f, F, which):
+        P0, Wb, chain = self.fp[f]
+        acc = np.zeros_like(P0)
+        for b, w in Wb.items():
+            if (b in chain) != which:
+                continue
+            Wd, Hd = F[b]
+            acc += w[:, None] * ((P0 - self.h0[b]) @ (Wd @ self.M0[b]).T + Hd)
+        return acc
+
+    def points(self, x, ref_rot):
+        F = self.frames(x, ref_rot)
+        return [self._part(f, F, True) + self._part(f, F, False) for f in range(5)]
+
+    def const_part(self, x, ref_rot):
+        F = self.frames(x, ref_rot)
+        return [self._part(f, F, False) for f in range(5)]
+
+    def chain_points(self, f, Pc, Rs, const):
+        F = {b: (Rs[i], Pc[i]) for i, b in enumerate(self.fp[f][2])}
+        return const[f] + self._part(f, F, True)
+
+
+def _rotvec(v):
+    from .rig.hand import rotvec
+    return rotvec(v)
+
+
+_SKIN = {}
+
+
+def _skin(h):
+    if h not in _SKIN:
+        _SKIN[h] = _MeshSkin(h)
+    return _SKIN[h]
+
+
+def _pen_pts(Pt, r, DW, DB, own, sweep=None):
+    """Mesh points (n, 3) of one finger: how far each is inside a key top it doesn't own (m), with the black-zone floor
+    for a free finger (own empty); sweep = [points (n, 3) at the frame before, after]: also tested part way along."""
+    if sweep:
+        out = _pen_pts(Pt, r, DW, DB, own)
+        for Q in sweep:
+            for u in SWEEP_U:
+                out = np.maximum(out, _pen_pts(Pt + u * (Q - Pt), r, DW, DB, own))
+        return out
+    DW2, DB2 = DW.copy(), DB.copy()
+    for p in own:
+        if p in P._WHITE_IDX:
+            DW2[P._WHITE_IDX[p]] = 1e3
+        elif p in P._BLACK_IDX:
+            DB2[P._BLACK_IDX[p]] = 1e3
+    low = Pt[:, 2] - r
+    pen = P.key_pen_round_v(Pt[:, 0], Pt[:, 1], low, np.full(len(Pt), r), DW2, DB2, np.full(len(Pt), -1))
+    if not own:
+        bz = Pt[:, 1] >= P.WHITE_L - P.BLACK_L - BLACK_ZONE
+        pen = np.where(bz, np.maximum(pen, P.BLACK_H - low), pen)
+    return pen
+
+
 def _frame_fix(args):
     """Re-solve the violating fingers of one hand at one frame. Returns (j, h, q_new or None, worst before)."""
     j, h, root_rot, root_pos, q, keys, own, pads, press_f, sweep = args
@@ -119,15 +228,39 @@ def _frame_fix(args):
     rr, rp, pts = rig.points(x, root_rot)
     rots = rig._rots
     bad, worst = [], 0.0
-    for f, (ch, P_, R_) in enumerate(zip(rig.chains, pts, rots)):
-        m = float(_pen(ch.samples(P_, R_), DW, DB, own[f], sweep[f]).max())
-        worst = max(worst, m)
-        if m > TOL:
-            bad.append(f)
+    if MESH:
+        skin = _skin(h)
+        Pts = skin.points(x, root_rot)
+        keep = [Pt[:, 2] < P.BLACK_H + MESH_REACH for Pt in Pts]
+        for f in range(5):
+            if not keep[f].any():
+                continue
+            sw = [Q[keep[f]] for Q in sweep[f]] if sweep[f] else None
+            m = float(_pen_pts(Pts[f][keep[f]], skin.r, DW, DB, own[f], sw).max())
+            worst = max(worst, m)
+            if m > TOL:
+                bad.append(f)
+    else:
+        for f, (ch, P_, R_) in enumerate(zip(rig.chains, pts, rots)):
+            m = float(_pen(ch.samples(P_, R_), DW, DB, own[f], sweep[f]).max())
+            worst = max(worst, m)
+            if m > TOL:
+                bad.append(f)
     if not bad:
         return j, h, None, worst
 
     def env_for(f_own):
+        if MESH:
+            const = skin.const_part(xn, root_rot)            # every bone but the solving finger's chain, held
+
+            def menv(f, Pc, Rs):
+                Pt = skin.chain_points(f, Pc, Rs, const)[keep[f]]
+                sw = [Q[keep[f]] for Q in sweep[f]] if sweep[f] else None
+                g = GAIN_PRESS if f_own[f] else GAIN_FREE
+                return math.sqrt(P.RIG_W["env"] * g) * np.maximum(_pen_pts(Pt, skin.r, DW, DB, f_own[f], sw) + CLEAR, 0.0)
+            menv.chain_env = True
+            return menv
+
         def env(samples, root_rot_, root_pos_):
             out = []
             for f in range(5):
@@ -183,6 +316,14 @@ def _skin_xy(anim, h, j):
     return out
 
 
+def _mesh_pts(anim, h, j):
+    """Per finger: its mesh points (float32 (n, 3)) at frame j."""
+    rig = P._rig(h)
+    H = anim["frames"][j]["hands"][h]
+    x = np.concatenate([np.array(H["root"]["pos"]), np.zeros(3), _q_from_angles(rig, H["angles"])])
+    return [p.astype(np.float32) for p in _skin(h).points(x, np.array(H["root"]["rot"]))]
+
+
 def _rebuild(anim, h, j, q):
     """Write hand h's frame j from its root and joint angles q (points, pads, angles, its pressed keys' depths)."""
     rig = P._rig(h)
@@ -216,7 +357,11 @@ def clean(anim, notes, jobs=1, t0=None, t1=None, log=print):
     pads0 = {(j, h): [list(p) for p in anim["frames"][j]["hands"][h]["pads"]] for j in range(j0, j1) for h in hands}
     for rep in range(PASSES):                       # (pressing pads are pinned where the take had them, every pass)
         tasks, pinned = [], {}
-        skin = {h: [_skin_xy(anim, h, j) for j in range(T)] if SWEEP_U else None for h in hands}
+        if MESH:                                    # every finger's mesh points at every frame (the swept test)
+            skin = {h: [_mesh_pts(anim, h, j) if j0 - 1 <= j <= j1 else None for j in range(T)] if SWEEP_U else None
+                    for h in hands}
+        else:
+            skin = {h: [_skin_xy(anim, h, j) for j in range(T)] if SWEEP_U else None for h in hands}
         for j in range(j0, j1):
             fr = anim["frames"][j]
             for h in hands:
@@ -233,7 +378,8 @@ def clean(anim, notes, jobs=1, t0=None, t1=None, log=print):
                             if abs(pd[0] - P.key_x(p)) < 0.02 and pd[2] - top < NEAR_OWN:
                                 press_f[f] = p
                 pinned[(j, h)] = press_f
-                sweep = [[skin[h][k][f] for k in (j - 1, j + 1) if 0 <= k < T] if SWEEP_U and press_f[f] is None
+                sweep = [[skin[h][k][f] for k in (j - 1, j + 1) if 0 <= k < T and skin[h][k] is not None]
+                         if SWEEP_U and press_f[f] is None
                          else None for f in range(5)]     # (a pressing / landing finger's path is its strike)
                 tasks.append((j, h, np.array(H["root"]["rot"]), np.array(H["root"]["pos"]),
                               _q_from_angles(P._rig(h), H["angles"]), fr["keys"], own[h][j], pads0[(j, h)], press_f, sweep))
@@ -326,9 +472,16 @@ def _pad_moved(rig, anim, h, j0, Q, Ds, pinned):
         for q in (Q[k], np.clip(Q[k] + Ds[k], rig.lo, rig.hi)):
             _rr, _rp, pts = rig.points(np.concatenate([p0, np.zeros(3), q]), R0)
             pads.append(np.array(rig.effectors(pts, rig._rots)))
-        for f in range(5):
-            if pf[f] is not None and (pads[1][f][2] - pads[0][f][2] > PAD_GUARD[0] or
-                                      abs(pads[1][f][0] - pads[0][f][0]) > PAD_GUARD[1]):
+        for f in range(5):                          # (sliding toward its key's centre line is allowed)
+            if pf[f] is None:
+                continue
+            kx = P.key_x(pf[f])
+            if PAD_GUARD_DIR:
+                away = abs(pads[1][f][0] - kx) - abs(pads[0][f][0] - kx)
+                off = abs(pads[1][f][0] - kx) > (P.BLACK_W if P.is_black(pf[f]) else P.WHITE_W) / 2 - 0.002
+            else:
+                away, off = abs(pads[1][f][0] - pads[0][f][0]), False
+            if pads[1][f][2] - pads[0][f][2] > PAD_GUARD[0] or away > PAD_GUARD[1] or off:
                 out[k, f] = True
     return out
 

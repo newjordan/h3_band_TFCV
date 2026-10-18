@@ -85,14 +85,17 @@ def auto_pedal(notes, downbeats=()):
     return np.array(sorted(ch))
 
 
-def harmony_pedal(notes, delay=0.12, settle=0.10, k=2, win=0.03, gap=0.08):
+def harmony_pedal(notes, delay=0.12, settle=0.10, k=2, win=0.03, gap=0.08, transcribed=()):
     """A pianist's pedal for the working piano (blockout/action.py), from the written notes. Two sources of change:
     the bass really moving (the new lowest note of the lower track is at or below every lower-track note still written
     to sound, ignoring ones that end within `settle` s; broken-chord bass notes don't count), changed `delay` s after
     the onset so legato releases fall first (syncopated pedal); and clusters of >= k written note ends within `win` s,
     which in a transcription of a pedalled recording are the player's own pedal lifts. Changes closer than `gap` merge.
     Against auto_pedal on the Knight's Suite it halves the song's blur (sound past the written end, mean 0.48 -> 0.25 s)
-    and changes about a third as often. auto_pedal stays the default of render() (the H3 audio paths use it)."""
+    and changes about a third as often. auto_pedal stays the default of render() (the H3 audio paths use it).
+    transcribed: (t0, t1) spans whose written lengths are sound lengths (a transcription of a pedalled recording): there
+    only the end clusters change the pedal -- a note that sounds on past a bass move shows the player kept the pedal
+    down, so the bass rule would cut what the recording held (Knight's Suite Chopin: audible cuts 16 -> 9%).)"""
     low = max({n[4] for n in notes})
     L = [n for n in notes if n[4] == low]
     by = {}
@@ -100,7 +103,10 @@ def harmony_pedal(notes, delay=0.12, settle=0.10, k=2, win=0.03, gap=0.08):
         by.setdefault(round(n[0], 3), []).append(n[2])
     ts = sorted(by)
     ch = []
+    in_tr = lambda t: any(a <= t < b for a, b in transcribed)
     for i, t in enumerate(ts):
+        if in_tr(t):
+            continue
         live = [n[2] for n in L if n[0] < t - 1e-3 and n[1] > t + settle]
         if not live or min(by[t]) <= min(live):
             ch.append(min(t + delay, ts[i + 1] - 0.01) if i + 1 < len(ts) else t + delay)

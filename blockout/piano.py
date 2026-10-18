@@ -791,10 +791,19 @@ def fingering(sl, hand):
     INF = float("inf")
     cost = [c for _, c, _ in cands[0]]
     back = []
+    sgn_h = 1.0 if hand == "R" else -1.0
+    # HOLD_AWARE: each state also carries the notes still held from slices before the previous one, along its best path
+    # (pitch, finger, until, contact x); a transition that takes such a finger for another key, or puts the hand where
+    # that finger can't stay on its key, pays for it (the first-order Viterbi only saw the previous slice's holds)
+    olds = [[] for _ in cands[0]]
     for i in range(1, len(sl)):
         dt = max(sl[i][0].start - sl[i - 1][0].start, 0.03)
         held = {n.pitch for n in sl[i - 1] if _hold(n) > sl[i][0].start + 0.02}
         new_cost, bp = [], []
+        t_i = sl[i][0].start
+        if HOLD_AWARE:
+            ends_prev = {n.pitch: _hold(n) for n in sl[i - 1]}
+            nb_prev = any(is_black(n.pitch) for n in sl[i - 1])
         for b, cb, hb in cands[i]:
             best, arg = INF, 0
             fb = {f for _, f in b}
@@ -804,6 +813,15 @@ def fingering(sl, hand):
                 if any(f in fb and p in held and (p, f) not in b for p, f in a):
                     continue  # that finger is still holding a key
                 t = 0.0
+                if HOLD_AWARE:
+                    for p_, f_, e_, kx_ in olds[k]:
+                        if e_ <= t_i + 0.02:
+                            continue
+                        if f_ in fb and (p_, f_) not in b:
+                            t += HOLD_AWARE["reuse"]
+                        d_ = abs(kx_ - (hb + sgn_h * HOME[f_]))
+                        if d_ > HOLD_AWARE["reach"]:
+                            t += HOLD_AWARE["reach_w"] * (d_ - HOLD_AWARE["reach"]) / 0.01
                 for pa, fa in a:                      # keys still held fix the finger order around them
                     if pa not in held:
                         continue
@@ -830,6 +848,14 @@ def fingering(sl, hand):
                     best, arg = cost[k] + t, k
             new_cost.append(best + cb)
             bp.append(arg)
+        if HOLD_AWARE:
+            nolds = []
+            for (b, cb, hb), k in zip(cands[i], bp):
+                keep = [o for o in olds[k] if o[2] > t_i + 0.02]
+                keep += [(p, f, ends_prev[p], contact(p, nb_prev, f)[0]) for p, f in cands[i - 1][k][0]
+                         if ends_prev.get(p, 0) > t_i + 0.02]
+                nolds.append(keep)
+            olds = nolds
         cost, back = new_cost, back + [bp]
     k = int(np.argmin(cost))
     path = [k]
@@ -845,6 +871,10 @@ PEDAL_HOLD = None           # s: the working piano's pedal (sampler.harmony_peda
                             # after the last change before the note's written end (no change under it: through its
                             # strike); fingers on notes the pedal carries are free for the next ones. Keys still stay
                             # down to the written end unless their finger is needed (finger_events). None: V3
+
+
+HOLD_AWARE = None           # {"reuse": cost, "reach": m, "reach_w": cost per cm}: the fingering keeps fingers on notes
+                            # still to be held from older slices (see fingering); None: V3
 
 
 def _hold(n):
@@ -997,8 +1027,9 @@ def release_far(fing, ev, hand, D=None):
                                                                             for (n, g), x in zip(fing[i], xs))
                     if ok:
                         continue
-                    d = max(d, D + 1e-6)
-                if d > D:
+                    d = max(d, (max(D) if np.ndim(D) else D) + 1e-6)
+                Df = D[f] if np.ndim(D) else D          # (a 5-tuple: per finger, thumb .. pinky)
+                if d > Df:
                     e[1] = max(e[0] + 0.05, min(e[1], t_on[i] - (_leap_time(d) if LEAP_TIME else REACH_LEAD)))
                     break
     return ev
@@ -1020,6 +1051,11 @@ REPEAT_GAP = None           # s: before a key is struck again (by any finger of 
                             # a finger change on a repeated note held the key down and the repeat never sounded). None: V3
 
 
+REPEAT_MIN_HOLD = None      # s: REPEAT_GAP never shortens a hold below this (or the planned hold, if shorter): with 0.09
+                            # and nothing else, the Rach agitato's 0.1 s repeated chords were held ~50 ms, too short to
+                            # get the key past let-off (57 of 236 notes < 60 ms; C3 missed 46 there, V3 10). None: C3
+
+
 def _repeat_release(hands):
     by = {}
     for name, H in hands.items():
@@ -1031,7 +1067,8 @@ def _repeat_release(hands):
         for a, b in zip(evs[:-1], evs[1:]):
             if b[0] - a[0] < 1e-3:
                 continue
-            a[1] = max(a[0] + 0.05, min(a[1], b[0] - strike_time(b[5]) - REPEAT_GAP))
+            a[1] = max(a[0] + min(REPEAT_MIN_HOLD, a[1] - a[0]) if REPEAT_MIN_HOLD else a[0] + 0.05,
+                       min(a[1], b[0] - strike_time(b[5]) - REPEAT_GAP))
 
 
 def _leap_time(d):

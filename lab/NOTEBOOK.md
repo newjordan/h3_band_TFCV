@@ -1260,3 +1260,40 @@ user's benchmarks); everything below is CPU.
   25 mm in 83 ms, never above 12 mm), key down but silent 87 (53 slow: the strike profile eases out into the bed, 10 ->
   80% in 83 ms p50 / 167 p90; 34 off by > 120 ms), the plan never pressed it 110 (Rach agitato 0.1 s notes the solve
   doesn't get down: plan depth 0-0.6; octave chords). Wrong 845: pressing fingers 304, pressing thumbs 279, free 262.
+- **Pedal, transcribed spans:** in the Chopin (a transcription: written lengths are sound lengths) a bass note that keeps
+  sounding through a broken chord wider than a hand shows the player kept the pedal *down* there; the bass-move rule
+  changed it anyway and cut what the recording held. `harmony_pedal(transcribed=...)`: in those spans only the end
+  clusters (the recording's own lifts) change the pedal; `action.TRANSCRIBED = ("Chopin",)`. Cuts (C3, mesh judge)
+  12.4 -> **8.2%** (Chopin 16 -> 9%), song blur 0.26 -> 0.32 s (auto pedal: 0.48). k = 3 clusters would cut 6.5% but
+  blur the Chopin past the auto pedal: no.
+- **Key gap:** the physics' white keys were full pitch (23.5 mm); the renderer's are 22.3 mm with a 1.2 mm gap
+  (`action.KEY_GAP` 0.6 mm a side now). Barely matters (C3 wrong 845 -> 847).
+- **Final-judge baselines** (rendered mesh skin, key gap, transcribed pedal; `action_mesh2/`):
+
+  | suite | V3 | C3 raw | C3 cleaned |
+  |---|---|---|---|
+  | sounded | **86.5%** | 85.5 | 85.0 |
+  | missed | 259 | 278 | 288 |
+  | wrong | 1334 | 1164 | **847** |
+  | struck twice | 216 | 153 | 133 |
+  | cut (pedal) | 8.6% | -- | 8.3 |
+
+  C3's plan loses to V3 on sounded notes: all of it in the Rach agitato (video 40-50 s: V3 misses 10, C3 46).
+  **Cause: `REPEAT_GAP` 0.09** shortens the 0.1 s repeated chords to ~50 ms holds (57 of 236 notes < 60 ms vs 15),
+  too short to get a key past let-off. **`REPEAT_MIN_HOLD`** 0.08 (the gap never cuts a hold below 80 ms or its planned
+  length): back to 15. The first C5 suite (started with the 50 ms bug) was killed and restarted with it.
+- **Window results on the mesh judge** (raw solves; C3 = PX1): `APPROACH_ARC` (AA1) missed 20 -> 13 on four windows,
+  wrong -9 (it was a wash on the sphere judge, which hid side entries); AA2 (stronger) worse than AA1. `REPAIR_DEPTH` 0.9
+  (verify presses past let-off, not half way) missed 61 -> 49 on five windows, wrong +11. `THUMB_AIM` 2.5 mm (TA25):
+  thumb-pressing catches 50 -> 39, wrong 187 -> 172, notes equal; 0 mm loses notes. `STRIKE_LINEAR` (a press never eases
+  out into the bed): missed 52 -> 47, wrong -8. Wider joint limits (RL1, real-hand ranges via `RIG_LIMITS`): the
+  agitato window 41 -> 40 missed (its misses are speed, not reach). Cleanup: the mesh-skin cleanup (`clean.MESH`, M1-M5)
+  and pad centring (S4-S6) don't beat the soft section cleanup S2 (`FIX_PRESSING="soft"; GAIN_PRESS=400`, wrong 164 ->
+  120 on four windows, notes -1): pressing catches can't be fixed with the pad pinned; they need the plan.
+- **Why pressing fingers catch black keys:** in C3 the knuckles sit 18-50 mm into the keys, the PIP up to 86 mm over the
+  black keys, and the end phalanx hooks down and *back* to a pad at y ~40 (the bone's end at ~38): the DIP hangs at
+  y 55-68, z 15-25 over the black keys and its skin dips onto them. Pads land deeper than their targets (36-48 mm vs
+  13-38): `PRESS_AXES` y 3 vs x 6. PY1 (`PRESS_AXES` y 8) running. Finger yaw is not it (catch / clean presses both
+  ~15-19 deg). Holds (plan prediction, final pedal): 10.2%; per-finger `REACH_D` (0.07 / 0.045 / 0.04 / 0.045 / 0.06,
+  thumb..pinky; a 5-tuple now allowed) 9.8%; `HOLD_AWARE` fingering (path-carried holds in the Viterbi) no gain: the
+  remaining cuts are the Rach four-stave climax and Chopin hand moves no fingering of one hand avoids.

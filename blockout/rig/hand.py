@@ -311,7 +311,10 @@ class HandRig:
             nb = [g for g in (f - 1, f + 1) if 1 <= g <= 4]
             ref = np.mean([x[6 + self.sl[g] + 1:6 + self.sl[g + 1]] for g in nb], 0)
             r.append(math.sqrt(W["formation"]) * (qf[1:] - ref) / self.sigma[a + 1:b])
-        if env is not None:
+        if env is not None and getattr(env, "chain_env", False):   # the collision model wants the chain's posed bones
+            pen = env(f, P, Rs)                                        # (blockout/clean.py: the rendered mesh skin)
+            r.append(math.sqrt(W["env"]) * np.asarray(pen, float))
+        elif env is not None:
             smp = [[] for _ in range(5)]
             smp[f] = ch.samples(P, Rs)
             pen = env(smp, root_rot, x[:3])

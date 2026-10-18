@@ -55,12 +55,16 @@ REBOUND = 0.5
 U_RESET = 0.6 * KEY_TRAVEL      # the jack resets under the hammer when the key rises above this (repetition)
 U_DAMP_UP, U_DAMP_DN = 0.45 * KEY_TRAVEL, 0.35 * KEY_TRAVEL
 SECTIONS = {"Debussy": (39.9, 79.9), "Rach": (79.9, 127.0), "Chopin": (127.0, 390.5), "suite": (39.9, 390.5)}
+TRANSCRIBED = ("Chopin",)   # sections transcribed from a pedalled recording (examples/piano/README.md): the pedal there
+                            # follows the recording's own lifts (sampler.harmony_pedal transcribed=)
 
 PITCHES = np.arange(LOW, HIGH + 1)
 NK = len(PITCHES)
 BLK = np.array([is_black(p) for p in PITCHES])
 KX = np.array([key_x(p) for p in PITCHES])
-KW = np.where(BLK, BLACK_W, WHITE_W)
+KEY_GAP = 0.0006        # m: each white key's top is this much narrower on each side than its pitch (the renderer's
+                        # keys, blender_piano.py: 22.3 mm tops, a 1.2 mm gap); black keys are full-width boxes there
+KW = np.where(BLK, BLACK_W, WHITE_W - 2 * KEY_GAP)
 KY0 = np.where(BLK, WHITE_L - BLACK_L, 0.0)
 KTOP = np.where(BLK, BLACK_H, 0.0)
 KL = np.where(BLK, BLACK_L, WHITE_L)
@@ -598,7 +602,8 @@ def main(argv=None):
         bl["vel"] = int(np.clip(round(a + b * np.log(max(bl["hammer"], 1e-3))), 1, 127))
     from . import sampler
     win_notes = [n for n in notes if t0 - 0.05 <= n[0] < t1]
-    pedal = sampler.harmony_pedal(win_notes) if o.pedal == "harmony" else sampler.auto_pedal(win_notes)
+    pedal = (sampler.harmony_pedal(win_notes, transcribed=[SECTIONS[k] for k in TRANSCRIBED])
+             if o.pedal == "harmony" else sampler.auto_pedal(win_notes))
     rep = report(blows, notes, matches, pedal, a, b, r, frames, anim, [t0, t1])
     rep["window"] = [t0, t1]
     deep = [x for x in sides if x[3] > 0.002]          # skin more than 2 mm inside a key's side when it got there
