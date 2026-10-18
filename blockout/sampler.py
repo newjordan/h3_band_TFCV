@@ -96,16 +96,21 @@ def room_ir(seconds=2.2, seed=1):
     return ir / np.abs(ir).sum(0).max() * 6
 
 
-def render(notes, sfz, dur=None, downbeats=(), wet=0.16):
+def render(notes, sfz, dur=None, downbeats=(), wet=0.16, pedal=None, norm=True):
+    """pedal: None = auto_pedal(notes, downbeats); an array of pedal-change times; "off" = no pedal (each damper
+    falls at its note's end). norm=False returns the raw mix (to put two renders at one gain)."""
     pno = Piano(sfz)
-    pedal = auto_pedal(notes, downbeats)
+    if pedal is None:
+        pedal = auto_pedal(notes, downbeats)
+    elif isinstance(pedal, str):
+        pedal = np.zeros(0)
     end = dur or max(n[1] for n in notes) + 4.0
     out = np.zeros((int(end * SR) + SR, 2), np.float32)
     for s, e, p, v, trk in notes:
         if s >= end:
             continue
         k = np.searchsorted(pedal, e)                              # damper falls at the next pedal change
-        damp = pedal[k] + 0.04 if k < len(pedal) else e + 3.0
+        damp = e if not len(pedal) else pedal[k] + 0.04 if k < len(pedal) else e + 3.0
         y = pno.note(p, max(1, min(127, int(v))), max(damp, e) - s)
         i = int(s * SR)
         n = min(len(y), len(out) - i)
@@ -114,7 +119,7 @@ def render(notes, sfz, dur=None, downbeats=(), wet=0.16):
     if wet:
         rev = np.stack([fftconvolve(out[:, c], room_ir()[:, c])[: len(out)] for c in range(2)], 1)
         out = out + wet * rev
-    return out / max(1e-9, np.abs(out).max()) * 0.89
+    return out / max(1e-9, np.abs(out).max()) * 0.89 if norm else out
 
 
 if __name__ == "__main__":

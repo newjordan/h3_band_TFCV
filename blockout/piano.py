@@ -1587,7 +1587,12 @@ def _key_env(keydepth, pressing, other=None, rig=None):
                            else 0.0 for f, i, u, *_r in S_])   # a pressing thumb lies over the neighbour's edge
             if not CASE_COLLIDE:
                 d[low > 0.02] = 0.0                    # well above every key top (but not the fallboard: CASE_COLLIDE)
-            out.extend(np.maximum(d, 0.0))             # (a pressing pad rests on its own lowered key, not a neighbour)
+            g = 1.0
+            if FREE_CLEAR or FREE_ENV_GAIN != 1.0:     # a finger with no key to press keeps its skin clear of the key
+                fr_ = np.array([not pressing[f] for f, *_r in S_])     # tops (the working piano: skin a few mm
+                d = d + np.where(fr_, FREE_CLEAR or 0.0, 0.0)           # into a key top pushes it down, and a fast
+                g = np.where(fr_, math.sqrt(FREE_ENV_GAIN), 1.0)        # one sounds it; blockout/action.py)
+            out.extend(np.maximum(d, 0.0) * g)         # (a pressing pad rests on its own lowered key, not a neighbour)
             if THUMB_CLEAR:                            # the thumb crosses the key fronts from above, arched onto its key
                 th = np.array([f == 0 and (i <= 1 or u <= 0.2) for f, i, u, *_r in S_])
                 inf = th & (C[:, 1] < 0.0) & (C[:, 1] > -0.07)
@@ -1639,6 +1644,8 @@ FREE_FOLLOW = True          # free fingers' float targets move with the solved w
 PRESS_OVERSHOOT = 0.006     # m the pressing pad aims below the key bed (0: at the bed; v18: 0.003)
 REPAIR_ITERS = 2            # verify-and-repair passes: re-solve the fingers with missed notes' presses boosted
 REPAIR_W = 4.0              # how much harder a missed note's finger pulls on each repair pass
+FREE_CLEAR = None            # m: skin of a finger with nothing to press stays this far over the key tops (None: V3)
+FREE_ENV_GAIN = 1.0         # ... and its key collisions weigh this much more than RIG_W env (1: V3)
 OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) key's surface in the collision model
 THUMB_PRESS_GIVE = 0.004    # m a pressing thumb's distal and proximal phalanx may sink past key tops (its side
                             # rests over the neighbouring key's edge as it presses its own)

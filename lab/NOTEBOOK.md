@@ -1014,3 +1014,49 @@ right, then rests 12 cm to its left; Rach left hand -- R3 a finger pointing out 
 - **Review** (`suite_show.mp4`, V3, all 351 s at 1 fps): the left hand never parks under the right in the first half;
   Rach left hand compact on its bass jumps; wrists visibly up between chords. Still seen: the right index lifted high
   for a beat at 60 s and 64 s (same in R3), joint spheres on the upper arms in the across shots (as before).
+
+## 2026-10-17 (night): the working piano (`blockout/action.py`) -- what V3 actually plays
+
+The user: "make sure our final piano playing is perfected, holds the notes, etc, instead of just visual simulations,
+lets build out a working piano with pressures, and transition to song vs what it would sound like with our current
+model playing"; then `/loop until the hands actually play the song perfectly`. Renders held (the GPU is busy with the
+user's benchmarks); everything below is CPU.
+
+- **Why:** `fr["keys"]` comes from the finger the plan assigns to each note only (and a key "half down" counted as
+  played), and the audio has always been the written MIDI (`sampler.py` on `notes.json`). Nothing listened to the hands.
+- **The piano** (`blockout/action.py`, module docstring has the model): skin rebuilt per frame from the take's joint
+  angles with the rig (pads match the take to 0.006 mm), PCHIP between frames at 1 kHz; keys are weighted levers on a
+  balance rail 25 cm back (DW 50 g, UW 25 g, felt at 10 mm, free rise <= 6 m/s^2); fingertip pulp 1 N/mm, the bed
+  stops a finger past 3 mm of squash (it falls back <= 0.3 m/s); a finger presses a key only after coming down onto it
+  from above (sliding in below the top = "through key side", counted, not played); hammer rides at 5:1, lets off 2.5 mm
+  before the string, flies under gravity, sounds only if it gets there; repetition resets below 60% depth; damper
+  45%/35%. Velocity = one log curve on hammer speed fit over the matched notes (r reported). `sampler.render` got
+  `pedal=` (array / "off") and `norm=False` so song and model go through the same piano, pedal and gain.
+- **Bugs met on the way (fixed):** the sim loop span 0 steps forever when the window left < 1 ms (full suite never
+  ended); first contact model used capsules on the bone line (too fat, wrong); the bed lift teleported fingers 1-2 mm
+  when crossing a black/white bed edge (loud fake blows); the renderer's back-of-key pivot made any touch near the
+  fallboard throw the key front down.
+- **V3 on the working piano** (`~/h3/hands_loop/action_20261017/v3/`, 37 s for the suite without audio):
+  | | Debussy | Rach | Chopin | suite |
+  |---|---|---|---|---|
+  | written notes sounded | 81.4% | 93.5% | 89.0% | **90.1%** |
+  | never sounded | 18 | 45 | 124 | 189 |
+  | wrong keys sounded | 128 | 772 | 2718 | **3627 (621/min)** |
+  | struck twice | 29 | 125 | 330 | 487 |
+  | timing p50 / p90 ms | 13 / 37 | 27 / 48 | 14 / 38 | 18 / 43 |
+  | held >= 90% of written length | 52% | 24% | 34% | 31% |
+  | stops audibly early with the pedal | 28% | 30% | 56% | 45% |
+  Velocity curve r = 0.37 (vel = 77.8 + 16.3 ln(hammer m/s)).
+- **Faults by cause** (`tools/faults.py`): wrong keys: free finger (idle / travelling) skin in the key tops 2002, free
+  thumb 522, pressing thumb also on a neighbour 731, pressing finger also on a neighbour 365, same key re-struck 487
+  (mostly an arriving finger tapping its key 0.1-0.3 s before the real strike). Never sounded: blow > 120 ms early 93,
+  short of let-off 24, never touched 23, late 16, repeat not re-armed 13, key already down 10, too slow 10.
+  Checked by eye on the render: video 10.4 s the right thumb lies along the key fronts and slides 9 cm over G4-B4,
+  its skin 2-6 mm inside the key tops (the solver's key collision is a soft residual, env weight 20: a few mm of
+  sinking costs it almost nothing).
+- **Posted:** band site section `working-piano` (A/B player: song / hands / both without pedal, synced to the V3
+  video; table; three piano rolls). `band_site.py` got an `ab` item kind. Manifest backup
+  `manifest.backup_20261017_action_v3.json`.
+- **Next (C1/C2, running):** `FREE_CLEAR` (m of clearance for skin of a finger with nothing to press) and
+  `FREE_ENV_GAIN` (its key-collision weight) in `_key_env`; C2 adds `THUMB_PRESS_GIVE`/`OWN_KEY_GIVE` 0.5 mm. Windows
+  ks_deb, ks_rach, ks_chop, chop2 vs base, scored on the working piano. Tools: `~/h3/hands_loop/action_20261017/tools/`.
