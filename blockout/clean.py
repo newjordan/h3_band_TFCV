@@ -42,6 +42,8 @@ MAX_DQ = 0.3            # rad: the most a correction turns one joint (a bigger o
 W_PRESS = 1e4            # ... a frame where the finger presses (or lands) is held to its own correction: no lift bleeds in
 FIX_PRESSING = False    # also apply a pressing finger's own re-solve (False: pressing fingers stay exactly as solved:
                         # their re-solves pass through unsmoothed and jitter, Rach pops 20 -> 49/min)
+CROSS_GUARD = True      # undo a finger's fix when it crosses index..pinky tips that weren't crossed (the cleanup alone
+                        # took crossed tips 0.97 -> 1.47% on the T1 suite)
 TAPER = 3.0             # frames over which a free finger's correction fades in after a release / out before a landing
 PASSES = 4
 ITERS = 20
@@ -145,12 +147,24 @@ def _frame_fix(args):
             targets.append(pd)
             weights.append(P.RIG_W["free"] * (P.THUMB_REST if f == 0 else 1.0))
     W = {k: v for k, v in P.RIG_W.items() if k not in ("press", "free")}
+    sgn = 1.0 if h == "R" else -1.0
+
+    def crossed(xx):                                # index..pinky tips out of order across the keys by > 4 mm
+        _rr, _rp, pts_ = rig.points(xx, root_rot)
+        X = np.array([pts_[f][3][0] for f in range(1, 5)]) * sgn
+        return set(f + 1 for f in range(3) if X[f + 1] - X[f] < -0.004) | set(f + 2 for f in range(3) if X[f + 1] - X[f] < -0.004)
+    cross0 = crossed(x) if CROSS_GUARD else set()
     xn = x
     for grp, prior in (([f for f in bad if press_f[f] is not None], PRIOR),
                        ([f for f in bad if press_f[f] is None], PRIOR_FREE)):
         if grp:                                    # a free finger may move further than a pressing one
             xn = rig.solve_fingers(root_rot, xn, targets, weights, env=env_for(own), W={**W, "smooth": prior}, last=x,
                                    iters=ITERS, only=grp)
+    if CROSS_GUARD:                                 # a fix that crosses fingertips that weren't crossed is undone
+        new = crossed(xn) - cross0
+        for f in new & set(bad):
+            a, b = rig.sl[f], rig.sl[f + 1]
+            xn[6 + a:6 + b] = x[6 + a:6 + b]
     return j, h, xn[6:], worst
 
 

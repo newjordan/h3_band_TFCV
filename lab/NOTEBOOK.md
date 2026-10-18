@@ -1173,3 +1173,10 @@ user's benchmarks); everything below is CPU.
 - **RG1** (T1 + `REPEAT_GAP` 0.09 s, windows): Rach 95.1% (T1 94.4), struck twice 12 -> 8; Chopin 282 100% (T1 97.9);
   cleaned: Rach 93.8% / 128 wrong, Chopin 282 100% / 72, Chopin 266 89.5% / 41, Debussy 94.4% / 12. C2 = T1 +
   REPEAT_GAP suite solving (`suite_c2/`).
+- **`CROSS_GUARD`** (clean.py, on): a finger's fix is undone if it crosses index..pinky tips that weren't crossed. No change
+  on the four windows (the crossings appeared on the whole suite).
+- **PX1 = RG1 + `PRESS_AXES` x 6 (was 3, both colours)**: pressing pads pulled twice as hard to the key centre line across
+  the keyboard. Rach 93.8 -> **96.5%** sounded, wrong (cleaned) 202 -> 104, pops 20 -> 14; Chopin 266 91.2 -> 94.7% raw /
+  93.0 cleaned, wrong 116 -> 39. Costs: Rach broken 0.05 -> 0.35% (9 frames of a tip hooked > 30 deg past its PIP, index
+  and pinky), Rach timing p90 55 -> 69 ms. PX2 (x 4.5) and PX1 on ks_chop / ks_deb running. (Debussy's timing p90 on T1 is
+  one note: A#4 sounded 77 ms late by the right thumb's shaft, not by its finger.)
