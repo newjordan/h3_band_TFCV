@@ -1325,3 +1325,7 @@ user's benchmarks); everything below is CPU.
 - C6f (hover fade): 5 windows missed 40 -> 34, wrong +12; C6tc (gentle thumb arch): 3 windows wrong -9, missed +1;
   both in **C7** (suite solving). C6d2 (lift height by velocity only, 40-70 ms strikes): Chopin 266 missed 4 -> 12:
   dynamics shelved until the judge sees the plan's sub-frame strike.
+- **Pops vs deep repair (rach0 / ks_rach, pops/min):** C6 60 / 40; `REPAIR_RAMP` 0.12 s 63 / 52 (no help: the pops
+  are not the weight step); C6 without `REPAIR_DEPTH` 0.9 29 / 32 but missed 25 -> 35 and 7 -> 9. A pop is any finger
+  joint over 15 rad/s (36 deg in one frame); in the agitato's 0.1 s chords, fully pressing every key takes about that.
+  Middle settings running: `REPAIR_W` 2.5 (c6/C6w25), `REPAIR_DEPTH` 0.75 (c6/C6d75).
