@@ -1392,3 +1392,11 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   landing at ~40 mm with the tip under the black keys. A pianist's knuckles sit ~4-6 cm behind the tips. Side
   candidate **C9 = C8 + `Y_KN` -0.015** (knuckles 22 mm further toward the player) on the whole suite. It changes the
   look the user chose (M2 curled, palm back): not adoptable without their eye.
+- **C8 = C6 + `REPAIR_W` 2.5 (suite, cleaned): 90.3%** (C6 90.4), missed 186, wrong 665 (680), struck twice 109
+  (120), timing p90 52 ms, holds cut 8.4%; pops 10.0/min (C6 11.9; Rach 33.1 vs 37.6): the windows' halving didn't
+  carry. Rendering C8 for the user's eye (GPU lease piano-c8, `tools/render_after.sh`).
+- **Where the Rach pops are:** nearly all *free* fingers: the idle thumb's IP joint (31 of ~70 pop frames), the free
+  pinky's spread (13). **`blockout/depop.py`:** a free finger's joint over 12 rad/s gets its path Whittaker-smoothed
+  over +-4 frames; press frames (and 3 before) pinned. On C8 cleaned: pops 10.0 -> **5.05/min** (V3 5.0; Rach
+  33 -> 15), broken / crossed unchanged; but wrong 665 -> 739, sounded 90.3 -> 89.9 (smoothed free fingers dip into
+  keys). Order solve -> depop -> cleanup -> physics running.
