@@ -1010,6 +1010,7 @@ right, then rests 12 cm to its left; Rach left hand -- R3 a finger pointing out 
   and showed the open end of the skinned forearm mesh (a hollow cone; the 6 cm primitive sleeve from the elbow didn't
   reach it). `blender_piano.py` `SLEEVE` (env `RIG_SLEEVE`) 0.06 -> 0.14 m covers it (tested 0.06 / 0.10 / 0.14 on the
   three worst frames); the 3,381 suite frames with an elbow end in view were re-rendered.
+- **Posted:** band site section `suite-v3-show` (`media/suite_v3_show.mp4`, 1080p, 5:50; plus Debussy opening and Rach left-hand R3 | V3 clips); backup `manifest.backup_20261017_suite_v3.json`. The hands cross in the score at video 331-332 s (left arpeggio to C#4 over the right's F#3): the right hand lifts over (wrist 105-110 mm), closest 18 mm.
 - **Review** (`suite_show.mp4`, V3, all 351 s at 1 fps): the left hand never parks under the right in the first half;
   Rach left hand compact on its bass jumps; wrists visibly up between chords. Still seen: the right index lifted high
   for a beat at 60 s and 64 s (same in R3), joint spheres on the upper arms in the across shots (as before).
