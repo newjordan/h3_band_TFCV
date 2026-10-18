@@ -1082,6 +1082,26 @@ def strike_time(touch):
 
 
 FORCE = {"touch": 0.35, "hmin": 0.010}
+DYN_STRIKE = None           # {"hv0": m/s, "v0": vel, "k": vel per e-fold, "h": (m, m), "s": (s, s)}: each note's strike
+                            # from its written velocity: target hammer speed hv0 * exp((vel - v0) / k) at the string,
+                            # so the key front must pass let-off at hv / 5 (the action's ratio) and the pad at that times
+                            # the key's lever where it presses; the lift h runs from h[0] (pp, from the key surface) to
+                            # h[1] (ff); the strike time follows, clipped to s. None: V3 (h and S from touch; the written
+                            # velocity only added up to 5 mm of lift, and the working piano heard almost no dynamics:
+                            # written vs hammer r = 0.02 in the Chopin, 0.14 in the Rach)
+
+
+def _dyn_strike(p, vel, touch, y):
+    D_ = DYN_STRIKE
+    hv = D_["hv0"] * math.exp((vel - D_["v0"]) / D_["k"])
+    lev = float(np.clip((0.25 - y) / (0.25 - (WHITE_L - BLACK_L if is_black(p) else 0.0)), 0.05, 1.0))
+    v_pad = hv / 5.0 * lev
+    h = D_["h"][0] + (D_["h"][1] - D_["h"][0]) * float(np.clip((vel - 30) / 90, 0.0, 1.0))
+    if STRIKE_LINEAR:
+        S = (1 + touch) * (h + KEY_TRAVEL) / v_pad
+    else:
+        S = 2 * touch * (h + KEY_TRAVEL) / v_pad if touch > 0 else (h + KEY_TRAVEL) / v_pad
+    return h, float(np.clip(S, D_["s"][0], D_["s"][1]))
 STRIKE_LINEAR = False       # a press goes down at an even speed (soft) or speeding up (strong), never easing out into the
                             # key bed (False: V3; the working piano sounds a key only if the hammer escapes fast enough:
                             # an eased-out soft press slowed through let-off and went silent)
@@ -1100,6 +1120,8 @@ def finger_tip(t, e, home_tip, r, f=2):
     if FORCE:                               # every note is struck, not caressed: the finger lifts and comes down faster
         touch = max(touch, FORCE["touch"])
     S = strike_time(touch)
+    if DYN_STRIKE:                          # the strike's speed follows the written velocity (see DYN_STRIKE)
+        h_dyn, S = _dyn_strike(p, vel, touch, 0.5 * sum(hitpad(p, f, nbk)))
     rel = 0.10 - 0.05 * touch
     approach = 0.10 + 0.08 * touch
     if APPROACH_ARC:
@@ -1114,6 +1136,8 @@ def finger_tip(t, e, home_tip, r, f=2):
         h = max(h, FORCE["hmin"])
     if APPROACH_ARC:
         h = max(h, APPROACH_ARC["hmin"])
+    if DYN_STRIKE:
+        h = h_dyn
     above = c + np.array([0, 0, h])
     if t < t_on - S:
         u = _smooth((t - (t_on - S - approach)) / approach)
@@ -1511,6 +1535,8 @@ SPRING_HAND = (2.6, 0.72, 1.3)
 SPRING_TIP = (10.0, 0.80, 0.4)
 SPRING_FREE = (4.5, 0.45, 0.6)     # free fingers: soft and under-damped, the hand's subconscious ragdoll
 EXT_UP, EXT_FWD = 0.010, 0.008    # m: how far an idle finger lifts and lengthens
+FREE_HOVER_FAST = None             # (s, s): FREE_HOVER_ADD fades in with the time to the finger's next onset, from
+                                   # nothing at the first to all of it at the second (fast passages keep fingers low)
 FREE_HOVER_ADD = 0.0               # m added to a free finger's float over the keys (0: V3; the working piano: V3's free
                                    # fingers float 3-15 mm up and their skin brushes keys, blockout/action.py)
 FREE_BLACK_PLAN = None             # m: a free fingertip this far in front of the black keys or deeper floats over the black
@@ -1797,6 +1823,7 @@ FREE_FOLLOW = True          # free fingers' float targets move with the solved w
 PRESS_OVERSHOOT = 0.006     # m the pressing pad aims below the key bed (0: at the bed; v18: 0.003)
 REPAIR_ITERS = 2            # verify-and-repair passes: re-solve the fingers with missed notes' presses boosted
 REPAIR_W = 4.0              # how much harder a missed note's finger pulls on each repair pass
+REPAIR_RAMP = None          # s: a repair boost ramps in and out over this long (None: a step, R round / RD1)
 REPAIR_DEPTH = 0.5          # verify: a note whose key gets less than this far down is repaired (the working piano
                             # sounds a key only past let-off, ~0.9: 0.5 left notes pressed 50-85% unrepaired)
 FREE_CLEAR = None            # m: skin of a finger with nothing to press stays this far over the key tops (None: V3)
@@ -2262,8 +2289,15 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
                     if d >= REPAIR_DEPTH:
                         continue
                     nmiss += 1
-                    for k in range(max(0, a - int(0.15 * fps)), min(len(frames), b + 1)):
-                        BOOST[(name, j0 + k, f)] = BOOST.get((name, j0 + k, f), 1.0) * REPAIR_W
+                    k0, k1 = max(0, a - int(0.15 * fps)), min(len(frames), b + 1)
+                    rk = max(1, int(round(REPAIR_RAMP * fps))) if REPAIR_RAMP else 0
+                    for k in range(k0 - rk, k1 + rk):
+                        if not 0 <= k < len(frames):
+                            continue
+                        # (REPAIR_RAMP: the boost eases in and out over that long instead of switching on and off,
+                        # which snapped the finger: RD1 doubled the Rach pops)
+                        g = 1.0 if not rk else _smooth(min(k - (k0 - rk), (k1 + rk - 1) - k) / rk)
+                        BOOST[(name, j0 + k, f)] = BOOST.get((name, j0 + k, f), 1.0) * (1.0 + (REPAIR_W - 1.0) * g)
         if not nmiss:
             break
     return frames
@@ -2487,9 +2521,14 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             for f in range(5):
                 loc = np.array([sgn * HOME[f], 0.5 * sum(HITPAD_W[f]) + yoff - ct[1], 0.0])
                 home = ct + _yaw(loc, psi0)
-                home[2] = _free_floor(home[0], home[1], f) + TIP_R[f] + hover + FREE_HOVER_ADD
-                tip = home
                 eo = H["ev_on"][f]
+                hov_add = FREE_HOVER_ADD
+                if FREE_HOVER_FAST and FREE_HOVER_ADD:     # a finger with its next note close stays low (fast passages)
+                    k_n = int(np.searchsorted(eo, t))
+                    dtn = eo[k_n] - t if k_n < len(eo) else 9.0
+                    hov_add = FREE_HOVER_ADD * _smooth((dtn - FREE_HOVER_FAST[0]) / (FREE_HOVER_FAST[1] - FREE_HOVER_FAST[0]))
+                home[2] = _free_floor(home[0], home[1], f) + TIP_R[f] + hover + hov_add
+                tip = home
                 lo, hi = max(0, int(np.searchsorted(eo, t - 8.0))), int(np.searchsorted(eo, t + 0.3))
                 cand = H["ev"][f][lo:hi][::-1]
                 # a note that is sounding (or being struck) now outranks the next note's approach: with fast repeated
@@ -2530,7 +2569,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                     # the thumb doesn't: an idle thumb rests low along the key edge
                     tip = tip.copy() + _yaw(np.array([sgn * EXT_OUT[f], EXT_FWD, 0.0]), psi0) * idle
                     tip[2] = _free_floor(tip[0], tip[1], f) + TIP_R[f] + hover * (THUMB_HOVER if f == 0 else 1.0) \
-                        + FREE_HOVER_ADD + EXT_UP * idle
+                        + hov_add + EXT_UP * idle
                     uw, ow = float(CL["under"][j]), float(CL["over"][j])
                     idle_t = 1.0 - w                          # (the thumb's own off-duty share; `idle` is 0 for it)
                     if f == 0:                                # an idle thumb lies in along the hand, low and parallel

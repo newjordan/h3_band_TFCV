@@ -259,6 +259,8 @@ def _capsules(anim, kind="ellipse"):
     return np.stack(cols, 1), np.array(rad), ids
 
 
+TRACE = int(os.environ["ACTION_TRACE"]) if os.environ.get("ACTION_TRACE") else None
+TRACE_LOG = []
 SIDE_EPS = 0.0005       # m: a sphere that arrives over a key already this far below its top came in from the side
 SIDE_RULE = os.environ.get("ACTION_SIDE", "1") == "1"
 V_FALL = 0.3            # m/s: the fastest a finger the key bed held up comes back down
@@ -456,6 +458,10 @@ def simulate(anim, t0=None, t1=None, chunk=None):
             for k in np.nonzero(dd)[0]:
                 if k in opened:
                     blows[opened.pop(k)]["t_off"] = float(ts[i])
+            if TRACE is not None:                        # ACTION_TRACE=pitch: per-step state of one key
+                kk = TRACE - LOW
+                TRACE_LOG.append((float(ts[i]), float(u[kk]), float(v[kk]), float(h[kk]), float(hv[kk]), int(state[kk]),
+                                  float(a[kk]), int(SID[i, kk])))
             # one record per animation frame
             while nxt_frame < len(tf) and tf[nxt_frame] <= ts[i] + 1e-9:
                 frc = np.where(a > 0, K_PAD * np.maximum(a - u * lv, 0.0) * lv, 0.0)

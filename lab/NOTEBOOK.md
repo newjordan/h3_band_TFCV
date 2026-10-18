@@ -1314,3 +1314,14 @@ user's benchmarks); everything below is CPU.
 - **C6tc (gentle `THUMB_CLEAR` 0.003 / 0.3):** Chopin 282 100% (C6 95.7), wrong 32 -> 25; Chopin 266 91.2% (93.0),
   wrong 17 -> 15; pressing-thumb catches 7 -> 4. The hand comes forward only ~2 mm (knuckles -3.5 -> -1.3 mm, TC's
   full-strength run moved it 7-13 mm), so the palm-back placement mostly stays. Rach window pending.
+- **C6 suite (final judge), cleaned with S2:** sounded **90.4%** (V3 86.5, C3 85.0; raw C6 90.1), missed 184, wrong
+  **680** (V3 1,334), struck twice 120 (216), timing p90 52 ms (49), holds cut 8.4% (8.6). Debussy 77.3 (= V3), Rach
+  92.3 (91.6), Chopin 90.4 (84.1). Debussy misses: a resting left-hand finger lies on a right-hand key in the opening
+  and holds it (e.g. L2 on F#4 from video 4.61 to past the R1 onset at 4.79; traced with `ACTION_TRACE`, a new per-ms
+  key log in action.py). **Pops 11.9/min (V3 5.0, C3 6.7; Rach 37.6).** Source: `REPAIR_DEPTH` 0.9 (RD1 windows:
+  ks_rach 14 -> 32, rach0 37 -> 57 pops/min): the repair boost switches a missed note's finger weight on as a step.
+  `REPAIR_RAMP` (the boost eases in and out over 0.12 s) on rach0 / ks_rach running (c6/C6r), with C6 minus
+  REPAIR_DEPTH as the control (c6/C6n). Posted: band site `working-piano-real-skin` (C6 track + table).
+- C6f (hover fade): 5 windows missed 40 -> 34, wrong +12; C6tc (gentle thumb arch): 3 windows wrong -9, missed +1;
+  both in **C7** (suite solving). C6d2 (lift height by velocity only, 40-70 ms strikes): Chopin 266 missed 4 -> 12:
+  dynamics shelved until the judge sees the plan's sub-frame strike.

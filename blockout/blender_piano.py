@@ -3,6 +3,7 @@
     blender -b --factory-startup -P blockout/blender_piano.py -- ANIM.json OUT_DIR [--res 1280x704]
            [--frames a:b] [--engine WORKBENCH|CYCLES] [--view pov|three4|side|handcam [--hand R|L --angle front3q|side|top|front --dist m]] [--lens mm]
            [--look show [--samples n] [--exposure ev]]
+           [--hand-style skeleton|monster|robot|paw|real]  (MPFB only; default real)
 
 --hands mpfb|skin|capsule: mpfb (default) is a real rigged, skinned CC0 hand from MPFB2, driven bone by
 bone; skin is a Skin-modifier tube stopgap over the joint graph; capsule is the original mannequin.
@@ -32,6 +33,7 @@ if opts.get("--pass") == "chrome":     # target-material plate: Cycles, chrome h
     ENGINE = "CYCLES"
 MARK = opts.get("--mark", "none")
 HANDS = opts.get("--hands", "mpfb")   # mpfb: the rigged MPFB2 hand; skin: Skin-modifier tubes; capsule: mannequin
+HAND_STYLE = opts.get("--hand-style", "real")
 anim = json.load(open(anim_path))
 frames = anim["frames"]
 _fr = opts.get("--frames", f"0:{len(frames)}")
@@ -449,6 +451,10 @@ if HANDS == "mpfb":
                     GBANDS[s_].append((o, 0.2 + 0.15 * k, r * (1.0 - 0.12 * k / 4)))
         _gaunt()
 
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import hand_styles
+    hand_styles.build(HAND_STYLE, MPFB_ARM, MPFB_MESH, {"skin": M_SKIN}, COL)
+
 rig = {}
 for h in ("L", "R"):
     if HANDS == "mpfb":     # the primitive forearm stops short and swallows the cut edge of the hand's forearm stub
@@ -675,7 +681,7 @@ if PASS == "mask":
     scn.view_settings.view_transform = "Standard"
     world.color = (0, 0, 0)
     for ob in COL.objects:
-        ob.color = (0, 0, 0, 1)
+        ob.color = (1, 1, 1, 1) if "hand_style" in ob else (0, 0, 0, 1)
     if globals().get("MPFB_MESH") is not None:
         MPFB_MESH.color = (1, 1, 1, 1)
 
