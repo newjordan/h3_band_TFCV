@@ -1151,3 +1151,12 @@ user's benchmarks); everything below is CPU.
   key toward the fingers (W->W, and B->W from a black key) in every piece, plus W->W outside. V3's solver lets a pressing
   thumb sink `THUMB_PRESS_GIVE` 4 mm into other keys; G1 = T1 + give 0 running (Rach). Octave chords: rig span ~130-136 mm
   thumb-to-pinky vs 165 needed (joint limits hit) -- the user's call.
+- **C1 = T1 suite + cleanup** (`suite_t1/cand/`): wrong keys 3627 -> **1440** (-60%), struck twice 487 -> 220, sounded
+  90.1 -> 88.8% (Debussy 81.4 -> 85.6, Rach 93.5 -> 92.0, Chopin 89.0 -> 87.2), timing p90 43 -> 44 ms, pops 5.0 -> 5.7,
+  broken 0.05 -> 0.08%, crossed 0.57 -> 0.94%. Posted: band site section `working-piano-c1` (A/B: song | V3 hands | C1
+  hands over the V3 picture, one gain; table; rolls). G1 (pressing thumb give 0) on Rach: -15 wrong, -2 notes: not taken.
+- **"Blow early" is mostly repeats:** 94 of the never-sounded notes (V3 93) have a blow of their pitch 0.12-0.6 s early;
+  ~73 are a repeated note whose earlier blow is the previous note's: the key never rose to re-arm. V3 frees only the
+  *same* finger before a re-strike (`finger_events`); a finger change on a repeated note (common in the Chopin) leaves the
+  old finger holding the key. `REPEAT_GAP` (s): any earlier hold on a pitch (any finger, either hand) ends strike_time +
+  gap before its next onset. RG1 = T1 + 0.09 s running (4 windows), plus T1 on chop2 / ks_deb for a like-for-like base.

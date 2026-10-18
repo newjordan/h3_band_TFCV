@@ -992,6 +992,26 @@ MODEL_HOLD = True           # the wrist model's path stays on a chord until its 
                             # the next chord), then travels; False: R3 (it starts to travel up to 1 s before the next chord)
 
 
+REPEAT_GAP = None           # s: before a key is struck again (by any finger of either hand) the hold on it ends at least
+                            # strike_time + this before the new onset, so the key can rise past the repetition point
+                            # (the working piano re-strikes only a key that came up ~40%; V3 only freed the *same* finger:
+                            # a finger change on a repeated note held the key down and the repeat never sounded). None: V3
+
+
+def _repeat_release(hands):
+    by = {}
+    for name, H in hands.items():
+        for f, evs in H["ev"].items():
+            for e in evs:
+                by.setdefault(e[2], []).append(e)
+    for p, evs in by.items():
+        evs.sort(key=lambda e: e[0])
+        for a, b in zip(evs[:-1], evs[1:]):
+            if b[0] - a[0] < 1e-3:
+                continue
+            a[1] = max(a[0] + 0.05, min(a[1], b[0] - strike_time(b[5]) - REPEAT_GAP))
+
+
 def _leap_time(d):
     t0, k = LEAP_TIME or (0.12, 0.6)
     return t0 + k * d
@@ -2345,6 +2365,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         H["xt"], H["nbt"] = hand_track(fing, name, times + LEAD_TIP, rest)
         hands[name] = H
 
+    if REPEAT_GAP is not None:                       # a key struck again (by any finger, either hand) must come up first
+        _repeat_release(hands)
     if IDLE_SEP and "R" in hands and "L" in hands:   # a hand with nothing to play keeps clear of the other one
         for name, other, sg in (("L", "R", -1.0), ("R", "L", 1.0)):
             H, O = hands[name], hands[other]
