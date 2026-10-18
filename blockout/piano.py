@@ -90,11 +90,20 @@ def hitpad(p, f, near_black=False):
     return lo, hi
 
 
+BLACK_SHY = None            # m: see contact(); None: V3 (every white key struck on its centre line; a 15 mm fingertip
+                            # centred on F4 lies 3 mm over F#4 where the black keys start, and pushes it)
+
+
 def contact(p, near_black=False, f=2):
     """Fingertip strike point on key p for finger f (0 = thumb), inside that finger's pad; on a white key, at the
     back of the pad when the hand is up among the black keys."""
     lo, hi = hitpad(p, f, near_black)
-    return np.array([key_x(p), 0.5 * (lo + hi), BLACK_H if is_black(p) else 0.0])
+    x = key_x(p)
+    if BLACK_SHY and not is_black(p):       # a white key with a black key on one side only (C E F B): strike it a
+        bl, br = is_black(p - 1), is_black(p + 1)     # little toward its open side, so a finger's flank doesn't lie
+        if bl != br:                                  # over the black key's front
+            x += BLACK_SHY if bl else -BLACK_SHY
+    return np.array([x, 0.5 * (lo + hi), BLACK_H if is_black(p) else 0.0])
 
 
 def leverage(p, y):

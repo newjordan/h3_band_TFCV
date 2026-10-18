@@ -1417,3 +1417,9 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   pass only eases idle-finger snaps); same notes (0:42 hook, fanned right pinky/thumb, 5:32 crossing). Posted: band
   site top section `piano-c8-render` (C8d whole suite, C8 | C8d Rach 0:40-0:56 side by side, C8 whole suite,
   V3 / C6 / C8 / C8d table). Not the default yet: the user's eye decides.
+- **C8d faults (wrong 679 + struck twice 111):** pressing fingers 225 (white key catching a black key 110, pad ~1 mm
+  off centre; white key catching the next white 94, pad ~5 mm off), pressing thumbs 152 (next white key toward the
+  fingers 115: the flat thumb's shaft), free travel/idle 126 (C8 108: the de-pop's smoothing adds ~18), landing /
+  lifting ~110. Suites running (the C8d recipe, `after_suite.sh` DEPOP=1): **C10 = C8 + `BLACK_SHY` 3 mm** (a white
+  key with a black key on one side only, C E F B, is struck 3 mm toward its open side); **C11 = C8 + gentle
+  `THUMB_CLEAR`** (alone; C7 had it mixed with the hover fade).
