@@ -97,7 +97,8 @@ def read(path):
 
 def beats(path, speed=1.0):
     """Beat and downbeat times (s) from the time-signature map. Compound metres (6/8, 9/8, 12/8) beat in
-    dotted quarters. Returns (beats, downbeats) as lists, divided by speed like the notes."""
+    dotted quarters. Other odd /8 metres from 5/8 up beat in quarters with the leftover 8th on the last beat
+    (5/8 = 2+3, 7/8 = 2+2+3 eighths). Returns (beats, downbeats) as lists, divided by speed like the notes."""
     tracks, div, to_s = _parse(path)
     sigs = sorted((t, d[0], 2 ** d[1]) for trk in tracks for t, s, d in trk if s == (0xFF, 0x58)) or [(0, 4, 4)]
     if sigs[0][0] != 0:
@@ -107,13 +108,17 @@ def beats(path, speed=1.0):
     for k, (t0, num, den) in enumerate(sigs):
         t1 = sigs[k + 1][0] if k + 1 < len(sigs) else last
         unit = div * 4 // den
-        step = unit * 3 if (den == 8 and num % 3 == 0 and num > 3) else unit
         bar = unit * num
+        if den == 8 and num % 3 == 0 and num > 3:
+            offs = range(0, bar, unit * 3)
+        elif den == 8 and num % 2 and num > 3:
+            offs = range(0, bar - unit, unit * 2)
+        else:
+            offs = range(0, bar, unit)
         t = t0
         while t < t1:
             dbs.append(to_s(t) / speed)
-            for b in range(t, min(t + bar, t1), step):
-                bts.append(to_s(b) / speed)
+            bts += [to_s(t + o) / speed for o in offs if t + o < t1]
             t += bar
     return bts, dbs
 
