@@ -318,13 +318,16 @@ class HandRig:
             r.append(math.sqrt(W["env"]) * np.asarray(pen, float) if np.ndim(pen) else [math.sqrt(W["env"] * max(pen, 0.0))])
         return np.concatenate([np.ravel(v) for v in r])
 
-    def solve_fingers(self, ref_rot, x0, targets, weights, env=None, W=None, last=None, iters=20):
+    def solve_fingers(self, ref_rot, x0, targets, weights, env=None, W=None, last=None, iters=20, only=None):
         """The root is set (x0[:6]): each finger is its own small solve (one finger's trouble can't freeze the
-        others), from the previous pose and, if that stalls, from the relaxed pose too; the better one wins."""
+        others), from the previous pose and, if that stalls, from the relaxed pose too; the better one wins.
+        only: solve just these fingers (the others keep x0's joints)."""
         W = {**dict(comfort=4e-5, couple=5e-5, env=1.0), **(W or {})}
         x = np.array(x0, float)
         last = None if last is None else np.asarray(last, float)
         for f in range(5):
+            if only is not None and f not in only:
+                continue
             a, b = self.sl[f], self.sl[f + 1]
             lo, hi = self.lo[a:b], self.hi[a:b]
             args = (x, ref_rot, targets[f], weights[f], env, W, last)

@@ -1426,6 +1426,20 @@ SPRING_HAND = (2.6, 0.72, 1.3)
 SPRING_TIP = (10.0, 0.80, 0.4)
 SPRING_FREE = (4.5, 0.45, 0.6)     # free fingers: soft and under-damped, the hand's subconscious ragdoll
 EXT_UP, EXT_FWD = 0.010, 0.008    # m: how far an idle finger lifts and lengthens
+FREE_HOVER_ADD = 0.0               # m added to a free finger's float over the keys (0: V3; the working piano: V3's free
+                                   # fingers float 3-15 mm up and their skin brushes keys, blockout/action.py)
+FREE_BLACK_PLAN = None             # m: a free fingertip this far in front of the black keys or deeper floats over the black
+                                   # key tops, black key under it or not (None: V3)
+THUMB_HOVER = 0.4                  # share of the float an idle thumb keeps (0.4: V3, it rests low along the key edge)
+
+
+def _free_floor(x, y, f):
+    """The key surface a free fingertip floats over (surface_under; with FREE_BLACK_PLAN the black-key zone counts as
+    black-key height all across)."""
+    z = surface_under(x, y, TIP_R[f], {})
+    if FREE_BLACK_PLAN is not None and y >= WHITE_L - BLACK_L - FREE_BLACK_PLAN:
+        z = max(z, BLACK_H)
+    return z
 EXT_OUT = (0.0, 0.0, 0.0, 0.0, 0.0)  # m: idle fingers no longer fan out (H; v18: -0.006, -0.003, 0, 0.002, 0.005)
 # ---- two hands close, overlapping, crossing (from footage study; notes in the commit message). Two cases:
 #  * Overlap / shared register while both play: the hand that is TRAVELLING along the keys while it plays (the
@@ -1601,7 +1615,7 @@ def _hand_blobs(samples, root_rot, root_pos, rig):
     return np.array(C), np.array(R)
 
 
-def _key_env(keydepth, pressing, other=None, rig=None, own=None):
+def _key_env(keydepth, pressing, other=None, rig=None, own=None, round_=None, gain=None):
     """Collision penalty (m^2) of a posed hand against the keyboard heightfield, from the skin's real cross-
     sections (the lowest point of each bone's off-centre ellipse; a pressing finger's pad may rest on its key),
     and against the other hand's skin (other = its spheres)."""
@@ -1620,7 +1634,7 @@ def _key_env(keydepth, pressing, other=None, rig=None, own=None):
         if S_:
             C = np.array([s_[3] for s_ in S_]); low = np.array([s_[4] for s_ in S_])
             W_ = np.array([s_[5] for s_ in S_])
-            if KEY_ROUND:                              # rounded skin against each key top, its own key left out
+            if KEY_ROUND if round_ is None else round_:      # rounded skin against each key top, own key left out
                 own_s = np.array([own[f] if own is not None and pressing[f] else -1 for f, *_r in S_])
                 d = np.maximum(key_pen_round_v(C[:, 0], C[:, 1], low, W_, DW, DB, own_s),
                                surface_under_soft_v(C[:, 0], C[:, 1], 0.8 * W_, *_DEPTH_OFF) - low)
@@ -1630,7 +1644,9 @@ def _key_env(keydepth, pressing, other=None, rig=None, own=None):
                                else 0.0 for f, i, u, *_r in S_])   # a pressing thumb lies over the neighbour's edge
             if not CASE_COLLIDE:
                 d[low > 0.02] = 0.0                    # well above every key top (but not the fallboard: CASE_COLLIDE)
-            g = math.sqrt(ENV_GAIN)                    # key collisions weigh ENV_GAIN x RIG_W env
+            g = math.sqrt(ENV_GAIN) if gain is None else np.sqrt(np.array([gain[1] if pressing[f] else gain[0]
+                                                                            for f, *_r in S_]))
+            # key collisions weigh ENV_GAIN x RIG_W env (gain = (free, pressing) overrides, for the CLEAN pass)
             if FREE_CLEAR or FREE_ENV_GAIN != 1.0 or FREE_BLACK:   # a finger with no key to press keeps its skin clear
                 fr_ = np.array([not pressing[f] for f, *_r in S_])     # of the key tops (the working piano: skin a few
                 if FREE_BLACK:                         # mm into a key top pushes it down, and a fast one sounds it;
@@ -1695,6 +1711,27 @@ FREE_ENV_GAIN = 1.0         # ... and its key collisions weigh this much more th
 FREE_BLACK = None           # m: ... and over the black-key zone (from this far in front of it) it stays over the black
                             # key tops, whether or not one is under it (None: V3)
 ENV_GAIN = 1.0              # every key collision of the skin weighs this x RIG_W env (1: V3)
+CLEAN = None                # contact cleanup after each finger solve (None: V3): {"tol": m of skin allowed in a key the
+                            # finger isn't playing, "gain_free" / "gain_press": key-collision weight (x RIG_W env) for a
+                            # free / pressing finger in the re-solve, "prior": how hard it holds its first pose, "iters"}
+
+
+def _clean_fingers(rig, x, ref_rot, est_depth, own):
+    """Fingers (indices) with skin more than CLEAN tol inside a key top they are not playing (rounded skin,
+    key_pen_round_v: the working piano's contact model; pressed keys lowered by est_depth)."""
+    rr, rp, pts = rig.points(x, ref_rot)
+    DW, DB = _depth_arrays(est_depth)
+    bad = []
+    for f, (ch, P_, R_) in enumerate(zip(rig.chains, pts, rig._rots)):
+        S_ = ch.samples(P_, R_)
+        if not S_:
+            continue
+        C = np.array([s_[2] for s_ in S_]); low = np.array([s_[3] for s_ in S_]); W_ = np.array([s_[4] for s_ in S_])
+        if key_pen_round_v(C[:, 0], C[:, 1], low, W_, DW, DB, np.full(len(S_), own[f])).max() > CLEAN["tol"]:
+            bad.append(f)
+    return bad
+
+
 KEY_ROUND = False           # key collisions with rounded skin (key_pen_round_v, the working piano's contact model), a
                             # pressing finger's own key left out; False: V3 (flat discs, OWN_KEY_GIVE / THUMB_PRESS_GIVE)
 OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) key's surface in the collision model
@@ -1931,6 +1968,15 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
             x = rig.solve_fingers(ref_rot, x_init, list(targets[name]), w, env=env, W=W,
                                   last=prev.get(name) if qprior is None else qprior[name],
                                   iters=FINGER_ITERS)
+            if CLEAN:                                   # contact cleanup: a finger whose skin is in a key it isn't
+                own = [H["act"][j][f][0] if pressing[f] else -1 for f in range(5)]     # playing (what the working
+                bad = _clean_fingers(rig, x, ref_rot, est_depth, own)                  # piano would sound) is
+                if bad:                                 # nudged out, wrist fixed, held close to its own pose
+                    envc = _key_env(est_depth, pressing, None, rig, own=own, round_=True,
+                                    gain=(CLEAN["gain_free"], CLEAN["gain_press"]))
+                    Wc = {**W, "smooth": CLEAN["prior"]}
+                    x = rig.solve_fingers(ref_rot, x, list(targets[name]), w, env=envc, W=Wc, last=x,
+                                          iters=CLEAN["iters"], only=bad)
             rr, rp, pts = rig.points(x, ref_rot)
             pads = rig.effectors(pts, rig._rots)
             miss = [None if targets[name][f] is None else float(np.linalg.norm(pads[f] - targets[name][f])) for f in range(5)]
@@ -2339,7 +2385,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
             for f in range(5):
                 loc = np.array([sgn * HOME[f], 0.5 * sum(HITPAD_W[f]) + yoff - ct[1], 0.0])
                 home = ct + _yaw(loc, psi0)
-                home[2] = surface_under(home[0], home[1], TIP_R[f], {}) + TIP_R[f] + hover
+                home[2] = _free_floor(home[0], home[1], f) + TIP_R[f] + hover + FREE_HOVER_ADD
                 tip = home
                 eo = H["ev_on"][f]
                 lo, hi = max(0, int(np.searchsorted(eo, t - 8.0))), int(np.searchsorted(eo, t + 0.3))
@@ -2378,7 +2424,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                     idle = (1.0 - w) * (0.0 if f == 0 else 1.0)  # off duty, a finger eases out and up, very softly;
                     # the thumb doesn't: an idle thumb rests low along the key edge
                     tip = tip.copy() + _yaw(np.array([sgn * EXT_OUT[f], EXT_FWD, 0.0]), psi0) * idle
-                    tip[2] = surface_under(tip[0], tip[1], TIP_R[f], {}) + TIP_R[f] + hover * (0.4 if f == 0 else 1.0) + EXT_UP * idle
+                    tip[2] = _free_floor(tip[0], tip[1], f) + TIP_R[f] + hover * (THUMB_HOVER if f == 0 else 1.0) \
+                        + FREE_HOVER_ADD + EXT_UP * idle
                     uw, ow = float(CL["under"][j]), float(CL["over"][j])
                     idle_t = 1.0 - w                          # (the thumb's own off-duty share; `idle` is 0 for it)
                     if f == 0:                                # an idle thumb lies in along the hand, low and parallel

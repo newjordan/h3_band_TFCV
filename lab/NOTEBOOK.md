@@ -1084,3 +1084,28 @@ user's benchmarks); everything below is CPU.
   the solved finger leaves its key early 17. By piece and hand: Chopin L 348 (written notes run past the cutting bass change
   by p50 0.54 s: in our transcription of a recording these are mostly the pianist's pedal blur, an arpeggio no hand holds),
   Chopin R 209, Rach L 99, Rach R 92, Debussy 22. So holds are a fingering / pedal question more than a motion one.
+- **R round** (`KEY_ROUND` + `ENV_GAIN`): same tug of war. Rach wrong 202 -> 94-111 but sounded 93.8 -> 67-79%: the
+  octave chords' pinky lands 15-36 mm short. Any whole-hand collision rule costs the stretch (a thumb or inner finger
+  may no longer lie on a neighbour, so the hand rises / turns).
+- **K round** (`CLEAN` in `_solve_frame`: violating fingers re-solved alone, wrist fixed): wrong -30..-50%, pads move
+  ~2 mm, but finger pops double (Rach 20 -> 40-71/min): per-frame fixes flicker.
+- **Post-pass cleanup `blockout/clean.py`** (on a finished take; module docstring): per frame and finger, rounded skin
+  vs key tops (the working piano's contact model), own keys (held / landing within 0.3 s / leaving within 0.15 s, from the
+  take's fingering) excluded, free fingers also kept over the black tops in the black-key zone and checked half-way
+  along their path to the neighbouring frames (84 of the 106 wrong keys left after a frame-only cleanup happened
+  *between* frames: fast low travel across black keys); violating fingers re-solved alone (pressing / landing pads pinned
+  to the take's own pads, depth 1000 / along 300 / across 10 toward the key centre line), the joint corrections blended
+  per finger in time (Whittaker). Lessons: a pressing finger has no spare joints (any fix lifts it: P1 Rach sounded
+  61.8%); pins must be to the *original* pads (re-pinning each pass crept presses up 3-4 mm); the time blend must not
+  bleed a free finger's lift into its strike; the sweep check must skip pressing / landing fingers (their path is the
+  strike). Windows (wrong / sounded / pops-per-min): Rach base 202 / 93.8 / 20 -> S1 134 / 90.3 / 14; Chopin 282
+  134 / 95.7 / 0 -> 48 / 95.7 / 0; Chopin 266 116 / 91.2 / 0 -> 44 / 91.2 / 2.9.
+- **Whole suite with S1** (`~/h3/hands_loop/action_20261017/suite_clean/`, 3.7 min on 16 cores): wrong 3627 -> 1224,
+  struck twice 487 -> 202, but sounded 90.1 -> 83.7% and pops 5 -> 10.6/min, pads moved 10 mm mean. Not shippable: 108 of
+  the 178 notes lost had the pressing pad ~7 mm higher (the strong time blend pulled free-finger lifts into the strikes).
+  Hard-pinning strikes (S4, `W_PRESS` 1e4) keeps the notes and pops jump (Rach 63/min): a free finger lifted high just
+  before a pinned landing has to drop fast. Conclusion: the big corrections are free fingers V3 *plans* to float 3-15 mm
+  over the keys and low among the black keys; that belongs in the plan, not in a patch.
+- **H round (running):** plan knobs `FREE_HOVER_ADD` (m added to the free float), `FREE_BLACK_PLAN` (free tips over the
+  black-key zone float over the black tops), `THUMB_HOVER` (idle thumb's share of the float; V3 0.4 = rests low on the key
+  edge). H1 = +6 mm, black zone 5 mm, thumb 1.0; H2 = H1 + `FORCE` hmin 14 mm; H3 = H1 + `FREE_ENV_GAIN` 5 + `FREE_CLEAR` 1 mm.
