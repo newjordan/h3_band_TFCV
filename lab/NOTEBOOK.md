@@ -1297,3 +1297,13 @@ user's benchmarks); everything below is CPU.
   ~15-19 deg). Holds (plan prediction, final pedal): 10.2%; per-finger `REACH_D` (0.07 / 0.045 / 0.04 / 0.045 / 0.06,
   thumb..pinky; a 5-tuple now allowed) 9.8%; `HOLD_AWARE` fingering (path-carried holds in the Viterbi) no gain: the
   remaining cuts are the Rach four-stave climax and Chopin hand moves no fingering of one hand avoids.
+- **Agitato isolation (rach0, mesh judge, raw):** V3 17 missed; H1 (hover +6 mm, black-zone float, idle thumb float)
+  20; H3 (+ free collisions) 20; T1 (+ `THUMB_AIM` 5 mm) 25; RG1 (+ `REPEAT_GAP` 0.09) 42; C6 (thumb aim 2.5 mm,
+  `REPEAT_MIN_HOLD`) 25; **C6f = C6 + `FREE_HOVER_FAST` (0.12, 0.4)** (the extra hover fades out when the finger's next
+  note is within 0.12-0.4 s) 21. C6f on the other four windows running. PY1 (`PRESS_AXES` y 8): worse (50 missed / 215
+  wrong vs C4g 47 / 182): dropped. `DYN_STRIKE` (each note's strike from its written velocity; the hands' dynamics were
+  flat, written vs hammer r = 0.02 in the Chopin) and a gentle `THUMB_CLEAR` (0.003, 0.3) on windows (c6/C6d, c6/C6tc).
+- **12:00 the user re-prioritised:** H3 matching our video with five hand looks (skeleton, monster, robot, paw, real)
+  goes first (a subagent with Codex); the piano work runs as long-form background runners
+  (`~/h3/hands_loop/action_20261017/tools/after_suite.sh`, `score_loop.sh`; results in `suite_c6/SUMMARY.txt`,
+  `c6/RESULTS.txt`).
