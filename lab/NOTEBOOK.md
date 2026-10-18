@@ -1307,3 +1307,10 @@ user's benchmarks); everything below is CPU.
   goes first (a subagent with Codex); the piano work runs as long-form background runners
   (`~/h3/hands_loop/action_20261017/tools/after_suite.sh`, `score_loop.sh`; results in `suite_c6/SUMMARY.txt`,
   `c6/RESULTS.txt`).
+- **C6d (`DYN_STRIKE`, strike time from velocity 30-140 ms, lift 3-16 mm):** Chopin 266 missed 4 -> 20 (slow soft
+  presses don't sound), timing p90 29 -> 46 ms, velocity r still ~0: dropped. The judge reads hammer speed off a
+  24 fps take, where a 20-60 ms strike is under two frames: dynamics need the plan's sub-frame strike shape in the
+  judge, or a lift-height-only version a video can show (C6d2: lift 3-16 mm by velocity, strike 40-70 ms, running).
+- **C6tc (gentle `THUMB_CLEAR` 0.003 / 0.3):** Chopin 282 100% (C6 95.7), wrong 32 -> 25; Chopin 266 91.2% (93.0),
+  wrong 17 -> 15; pressing-thumb catches 7 -> 4. The hand comes forward only ~2 mm (knuckles -3.5 -> -1.3 mm, TC's
+  full-strength run moved it 7-13 mm), so the palm-back placement mostly stays. Rach window pending.
