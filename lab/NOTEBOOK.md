@@ -1183,3 +1183,6 @@ user's benchmarks); everything below is CPU.
 - **PX1 on all four windows (cleaned)** vs base: Debussy 94.4 = 94.4%, wrong 23 -> 22, timing p90 41 -> 38; Rach 93.8 ->
   96.5%, 202 -> 104; Chopin 282 95.7 -> 97.9%, 134 -> 67; Chopin 266 91.2 -> 93.0%, 116 -> 39. PX2 (x 4.5): Rach 94.4%,
   Chopin 266 94.7%: not better overall. **C3 = C2 + `PRESS_AXES` x 6** suite solving (`suite_c3/`).
+- **C2 = T1 + `REPEAT_GAP` 0.09, suite + cleanup** (`suite_c2/cand/`) vs V3: sounded 90.1 -> **90.3%** (first whole-suite
+  candidate above V3; Debussy 81.4 -> 89.7, Rach 93.5 -> 90.8, Chopin 89.0 -> 90.1), wrong 3627 -> **1593**, struck twice
+  487 -> 235, pops 5.0 -> 6.1, broken 0.05 -> 0.06%, crossed 0.57 -> 1.30%. Raw C2 (no cleanup): 90.5% / 2344 wrong / 271.
