@@ -1209,3 +1209,54 @@ user's benchmarks); everything below is CPU.
   C-round motion changes are metric-judged only). C3 render input ready: `~/h3/hands_loop/action_20261017/suite_c3/render/`
   (physics key depths via `action.py --write-anim`; ks.wav = 39.9 s silence + C3 hands). Handoff:
   `~/h3/HANDOFF_20261018_working_piano.md`.
+- **Loop resumed 2026-10-18 09:45** (the user: stopping at a decision point was wrong; the job isn't done). Open
+  decisions become side candidates; GPU renders stay held for their benchmarks.
+
+## 2026-10-18 (morning): the pedal, and the judge's skin
+
+- **Holds were mostly the pedal model.** `sampler.auto_pedal` changes the pedal at every new lowest note of the lower
+  track; in a broken-chord left hand every arpeggio note is "new", so it changed 3-5 times inside one written note
+  (120 changes/min). The Chopin is a transcription of a pedalled recording (no pedal data, README): its written lengths
+  are sound lengths, and its note ends cluster (68% have another end within 25 ms, 30% shuffled) about 0.1 s after a
+  bass onset: the player's own pedal lifts. **`sampler.harmony_pedal`** (now the working piano's pedal, `action.py
+  --pedal harmony`, default; `auto_pedal` stays the default of `render()`, the H3 audio paths use it): changes where the
+  bass really moves (the new lowest lower-track note at or below every lower-track note still written to sound,
+  ignoring ones ending within 0.10 s; broken-chord bass notes don't count) 0.12 s after the onset (syncopated: legato
+  releases fall first), plus clusters of >= 2 written ends within 30 ms; changes closer than 80 ms merge. Grid-searched
+  (`~/h3/hands_loop/holds_20261018/grid.py`) for cuts with the song's blur held at or under auto's:
+
+  | pedal | changes/min | song blur mean (s past written end) | notes sounding at once | C3 cut | V3 cut |
+  |---|---|---|---|---|---|
+  | auto (before) | 120 | 0.48 | 8.3 | 47.6% | 44.6% |
+  | harmony | 59 | **0.26** | 7.1 | **13.0%** | 13.0% |
+
+  The song is *less* blurred, not more. Rejected: a held-bass veto (cuts 2.6% but blur 3.9 s, 27 notes at once: mush);
+  splitting score / transcription sources (Rach cuts 8 -> 24%). What's left (229 C3 notes): the plan's fingering
+  (`holds_20261018/plan_why.py`: Chopin release_far 127, repair let go 76; Rach repair 52 = the four-stave climax, a
+  2 s bass chord under leaping hands, held by the pedal in any performance). `PEDAL_HOLD` (piano.py, off: the
+  fingering only protects a note until just after the last pedal change under it) and `HOLD_REACH` didn't help
+  (plan-level prediction 14.7 -> 15.0 / 15.8%).
+- **The judge's skin was wrong.** `action.spheres` put one sphere of radius w (the section's half-width) on each skin
+  section's lowest point. At the 2:1 flat fingertip that ball is too narrow near the bottom for a level finger, and once
+  the finger rolls the lowest point slides sideways and the ball reaches a key the real skin is clear of (R2 rolled 25
+  deg on E5: ball 3 mm into F5, skin 2.5 mm short). Tried in turn (C3 suite): capsule per section (radius h along the
+  width; too wide at the bottom, 2261 wrong), ellipse points (537 wrong, 85.0% sounded), ellipse + measured fingertip
+  cap (the rig holds the u 0.9 section to the bone's end; the mesh's index tip is 7.7 / 5.7 / 3.7 mm half-width at u 0.9
+  / 0.95 / 1.0, the middle finger's skin ends at u 0.96): 542 wrong, 83.1%. Then the real thing:
+- **`CONTACT = "mesh"` (action.py default now):** the MPFB hands mesh (`hand_model/mpfb_skin.json`,
+  `rig/export_mesh.py`: 1596 vertices per hand, weights, triangles) posed every frame by linear blend skinning with
+  `Skeleton.fk` -- the mesh has only an Armature modifier, so this is what the renderer draws: checked against Blender's
+  evaluated mesh on a C3 frame, mean 0.001 mm, max 0.68 mm (vertices with no forearm weight; the 55-61 wrist vertices
+  with some forearm weight sit far above the keys). Vertices + triangle-edge midpoints, 0.5 mm contact spheres, points
+  that never come within 8 mm of the black key tops dropped; PCHIP built per 4 s block (`_BlockPchip`); contacts in
+  20 ms chunks so a run start knows the keys' current depth (a point arriving over a key above its *current* surface came
+  from above). **C3 on the rendered skin: 84.8% sounded (sphere judge said 92.1), wrong 845 (1542), struck twice 135
+  (240), cut 12.4%.** The sphere judge's 92.1% was flattered by fat contacts pressing keys the skin never reaches, and
+  its wrong keys inflated (the "thumb shaft" fault was mostly the ball: pressing-thumb wrong 415 -> 51 with the ellipse,
+  279 on the mesh, nearly all toward the fingers with the pad 5-6 mm off centre: `THUMB_AIM` 5 mm overshoots).
+  All numbers from here on are on the mesh judge (`score_win.py` writes `action_mesh/`).
+- C3 on the mesh judge, faults: never sounded 291 = plan pressed but the key never went down 94 (side entries: a finger
+  sliding from a pressed white key straight onto a black key without rising over it, e.g. R3 onto A#4 at video 10.17,
+  25 mm in 83 ms, never above 12 mm), key down but silent 87 (53 slow: the strike profile eases out into the bed, 10 ->
+  80% in 83 ms p50 / 167 p90; 34 off by > 120 ms), the plan never pressed it 110 (Rach agitato 0.1 s notes the solve
+  doesn't get down: plan depth 0-0.6; octave chords). Wrong 845: pressing fingers 304, pressing thumbs 279, free 262.

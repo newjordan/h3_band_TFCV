@@ -44,6 +44,8 @@ FIX_PRESSING = False    # also apply a pressing finger's own re-solve (False: pr
                         # their re-solves pass through unsmoothed and jitter, Rach pops 20 -> 49/min)
 CROSS_GUARD = True      # undo a finger's fix when it crosses index..pinky tips that weren't crossed (the cleanup alone
                         # took crossed tips 0.97 -> 1.47% on the T1 suite)
+PAD_GUARD = (0.0005, 0.002)    # m (up, across): with FIX_PRESSING "soft", a press / landing frame whose pad the blended
+                        # correction lifts or slides more than this is held to no change there (and re-blended)
 TAPER = 3.0             # frames over which a free finger's correction fades in after a release / out before a landing
 PASSES = 4
 ITERS = 20
@@ -255,11 +257,14 @@ def clean(anim, notes, jobs=1, t0=None, t1=None, log=print):
                     Dl[j - j0] = np.clip(q - Q[j - j0], -MAX_DQ, MAX_DQ)
             Ds = np.zeros_like(Q)
             hold0 = np.zeros((len(Q), 5), bool)     # (finger, frame) pinned to no change (crossing guard)
-            for _cg in range(2 if CROSS_GUARD else 1):
+            soft = FIX_PRESSING == "soft"
+            for _cg in range((2 if CROSS_GUARD else 1) + (2 if soft else 0)):
                 Ds = _blend(rig, h, Q, Dl, pinned, j0, j1, hold0)
-                if not CROSS_GUARD:
+                if not CROSS_GUARD and not soft:
                     break
-                bad_ = _new_crossings(rig, anim, h, j0, Q, Ds)
+                bad_ = _new_crossings(rig, anim, h, j0, Q, Ds) if CROSS_GUARD else np.zeros((len(Q), 5), bool)
+                if soft:
+                    bad_ |= _pad_moved(rig, anim, h, j0, Q, Ds, {(j, h): pinned[(j, h)] for j in range(j0, j1)})
                 if not bad_.any():
                     break
                 for k in np.nonzero(bad_.any(1))[0]:          # undo both crossing fingers' fixes around there
@@ -294,11 +299,38 @@ def _blend(rig, h, Q, Dl, pinned, j0, j1, hold0):
             prv = np.where(k_ > 0, np.arange(len(press)) - idx[np.maximum(k_ - 1, 0)], 99)
             dist = np.minimum(np.abs(nxt), np.abs(prv))
         taper = np.clip((dist - 1) / TAPER, 0.0, 1.0)
+        if FIX_PRESSING == "soft":                  # a pressing / landing finger's own fix (pad pinned in its re-solve:
+            Dl[:, a:b] *= np.where(press, 1.0, taper)[:, None]     # it curls / rolls off the neighbour) is eased in
+            Dl[hold0[:, f], a:b] = 0.0                              # time like a free one; the pad guard holds any
+            w = np.where(hold0[:, f], W_PRESS, np.where(moved, W_HI, W_LO))   # frame where that loses the press
+            Ds[:, a:b] = P._whittaker(Dl[:, a:b], w, SMOOTH_LAM)
+            continue
         Dl[:, a:b] *= np.where(press, 1.0 if FIX_PRESSING else 0.0, taper)[:, None]   # a pressing finger stays put
         Dl[hold0[:, f], a:b] = 0.0
         w = np.where(press | hold0[:, f], W_PRESS, np.where(moved, W_HI, W_LO))
         Ds[:, a:b] = P._whittaker(Dl[:, a:b], w, SMOOTH_LAM)
     return Ds
+
+
+def _pad_moved(rig, anim, h, j0, Q, Ds, pinned):
+    """(frames, 5) bool: press / landing frames whose pad the blended correction lifts > PAD_GUARD[0] or slides across
+    the key > PAD_GUARD[1]."""
+    out = np.zeros((len(Q), 5), bool)
+    for k in np.nonzero(np.abs(Ds).max(1) > 1e-6)[0]:
+        pf = pinned[(j0 + k, h)]
+        if all(p is None for p in pf):
+            continue
+        H = anim["frames"][j0 + k]["hands"][h]
+        R0, p0 = np.array(H["root"]["rot"]), np.array(H["root"]["pos"])
+        pads = []
+        for q in (Q[k], np.clip(Q[k] + Ds[k], rig.lo, rig.hi)):
+            _rr, _rp, pts = rig.points(np.concatenate([p0, np.zeros(3), q]), R0)
+            pads.append(np.array(rig.effectors(pts, rig._rots)))
+        for f in range(5):
+            if pf[f] is not None and (pads[1][f][2] - pads[0][f][2] > PAD_GUARD[0] or
+                                      abs(pads[1][f][0] - pads[0][f][0]) > PAD_GUARD[1]):
+                out[k, f] = True
+    return out
 
 
 def _new_crossings(rig, anim, h, j0, Q, Ds):

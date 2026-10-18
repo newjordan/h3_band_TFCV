@@ -36,7 +36,7 @@ depth 0..1 and finger force N, for a renderer that should show the keys the phys
 report.txt (per piece: sounded, missed, wrong, timing, velocity, holds), and with --sfz the song and the model
 through the same sampler and pedal: song.wav, model.wav, song_dry.wav, model_dry.wav (no pedal).
 """
-import json, os, sys
+import json, math, os, sys
 
 import numpy as np
 from scipy.interpolate import PchipInterpolator
@@ -81,11 +81,41 @@ def name(p):
     return f"{NAMES[p % 12]}{p // 12 - 1}"
 
 
+CONTACT = os.environ.get("ACTION_CONTACT", "mesh")
+                        # skin model. "mesh" (default since 2026-10-18): the rendered skin itself -- the MPFB hands mesh
+                        # (hand_model/mpfb_skin.json, blockout/rig/export_mesh.py) posed every frame with the rig's FK
+                        # and its own bone weights (the mesh has only an Armature modifier: linear blend skinning, what
+                        # the renderer draws), vertices plus triangle-edge midpoints, each a MESH_R sphere; points that
+                        # never come within MESH_NEAR of the black key tops are dropped. The section models below were
+                        # stand-ins for it. "ellipse": each cross-section is the rig's own skin
+                        # section, an ellipse (half-width w across the finger along the bone's x axis, which rolls
+                        # with the finger; half-height h), sampled on its lower half by ELL_PTS small spheres set in
+                        # so their surface is the ellipse's; the end bone also at u = 0.55 / 0.7 / 0.85 (the pad's
+                        # range). "sphere": one sphere of radius w on each section's lowest point, plus the pad (the
+                        # reports up to C3): at the 2:1 flat fingertip it is too narrow near the bottom for a level
+                        # finger and, once the finger rolls and the lowest point slides sideways, too wide (R2 rolled
+                        # 25 deg on E5: ball 3 mm into F5, skin 2.5 mm short of it). "capsule": radius-h spheres at the
+                        # centre and +-(w - h): too wide near the bottom (a level tip +-6.6 mm at 1 mm up, skin +-5.1).
+MESH_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hand_model", "mpfb_skin.json")
+MESH_R = 0.0005                                    # m: contact radius of each skin point
+MESH_NEAR = 0.008                                  # m over the black key tops
+ELL_PTS = (200, 225, 250, 270, 290, 315, 340)     # deg around the section (270 = straight down in the bone's frame)
+TIP_CAP = 0.88                                     # the end bone's skin rounds off from here (share of its length) ...
+TIP_END = (1.06, 1.01, 0.97, 1.02, 1.04)           # ... to where it ends, thumb..pinky: measured on the MPFB mesh (vertices
+                                                   # dominated by the end bone; half-width at u 0.9 / 0.95 / 1.0: index
+                                                   # 7.7 / 5.7 / 3.7 mm, middle 7.1 / 4.6 / - (skin ends at 0.96)). The
+                                                   # rig's sections hold the u 0.9 band (0.75-1.05, 90th percentile) to
+                                                   # the end: its fingertip corners are 3-4 mm wider than the skin
+ELL_R = 0.001                                      # m: radius of each sample sphere
+
+
 def spheres(anim):
     """The hands' skin as contact spheres per frame, rebuilt from each frame's joint angles with the rig (the same
-    skin cross-sections the solver collides with): for every bone of every finger, the lowest skin point of its
-    cross-section at u = 0.2, 0.5, 0.8, 1.0, plus the fingertip pad (the effector). A sphere's radius is the
-    section's half-width and it sits on that lowest point. Returns (F, S, 3) centres, (S,) radii, S ids."""
+    skin cross-sections the solver collides with); see CONTACT. Returns (F, S, 3) centres, (S,) radii, S ids."""
+    if CONTACT == "mesh":
+        return _mesh_points(anim)
+    if CONTACT in ("capsule", "ellipse"):
+        return _capsules(anim, CONTACT)
     os.environ.setdefault("HAND_SCALE", "1")
     os.environ["RIG_THUMB_AXIS"] = anim.get("thumb_axis", "rest")
     from .rig.hand import HandRig
@@ -118,6 +148,113 @@ def spheres(anim):
     return np.stack(cols, 1), np.array(rad), ids
 
 
+def _mesh_points(anim):
+    """The rendered skin: mesh vertices and triangle-edge midpoints posed by linear blend skinning with the rig's FK
+    (rig/skeleton.py, the same bones and joint rotations the renderer sets). ids: (hand, finger 0-4 or 5 = palm, part)."""
+    os.environ.setdefault("HAND_SCALE", "1")
+    from .rig.skeleton import Skeleton
+    M = json.load(open(MESH_JSON))["hands"]
+    fr = anim["frames"]
+    cols, rad, ids = [], [], []
+    for h in "RL":
+        if h not in fr[0]["hands"]:
+            continue
+        sk = Skeleton(h, thumb_axis=anim.get("thumb_axis", "rest"))
+        D = M[h]
+        V, T = np.array(D["verts"]), np.array(D["tris"])
+        E = np.unique(np.sort(np.concatenate([T[:, [0, 1]], T[:, [1, 2]], T[:, [2, 0]]]), axis=1), axis=0)
+        bones = sorted({b for w in D["weights"] for b in w})
+        Wv = np.zeros((len(V), len(bones)))
+        for i, w in enumerate(D["weights"]):
+            for b, x in w.items():
+                Wv[i, bones.index(b)] = x
+        P0 = np.concatenate([V, V[E].mean(1)])
+        W0 = np.concatenate([Wv, Wv[E].mean(1)])
+        dom = [bones[k] for k in W0.argmax(1)]
+        fing = np.array([int(b[6]) - 1 if b.startswith("finger") else 5 for b in dom])
+        use = [(k, b, W0[:, k] > 1e-4) for k, b in enumerate(bones)]
+        out = np.zeros((len(fr), len(P0), 3), np.float32)
+        for j, f_ in enumerate(fr):
+            H = f_["hands"][h]
+            Wd, Hd, _t = sk.fk(np.array(H["root"]["rot"]), np.array(H["root"]["pos"]), H["angles"])
+            acc = np.zeros((len(P0), 3))
+            for k, b, m in use:
+                Mb = Wd[b] @ sk.R0[b].T
+                acc[m] += W0[m, k, None] * ((P0[m] - sk.h0[b]) @ Mb.T + Hd[b])
+            out[j] = acc
+        near = np.nonzero(out[..., 2].min(0) < BLACK_H + MESH_NEAR)[0]
+        cols.append(out[:, near]); rad += [MESH_R] * len(near)
+        ids += [(h, int(fing[i]), f"{dom[i]}:v{i}") for i in near]
+    return np.concatenate(cols, 1), np.array(rad), ids
+
+
+class _BlockPchip:
+    """PCHIP through the frames, built over a few seconds at a time (the mesh model has thousands of points; one
+    interpolant over the whole take would hold gigabytes). Nodes inside a block get the same derivatives as a global
+    PCHIP (it is local: each node's slope depends on its neighbours), so the result is the same."""
+
+    def __init__(self, tf, C, block=96, margin=3):
+        self.tf, self.C, self.block, self.margin = tf, C, block, margin
+        self.k0 = self.k1 = -1
+        self.ip = None
+
+    def __call__(self, ts):
+        a = int(np.searchsorted(self.tf, ts[0], side="right")) - 1
+        b = int(np.searchsorted(self.tf, ts[-1], side="left"))
+        if self.ip is None or a < self.k0 + self.margin or b > self.k1 - self.margin:
+            self.k0 = max(0, a - self.margin)
+            self.k1 = min(len(self.tf) - 1, max(b, a + self.block) + self.margin)
+            self.ip = PchipInterpolator(self.tf[self.k0:self.k1 + 1], self.C[self.k0:self.k1 + 1], axis=0)
+        return self.ip(ts)
+
+
+def _capsules(anim, kind="ellipse"):
+    os.environ.setdefault("HAND_SCALE", "1")
+    os.environ["RIG_THUMB_AXIS"] = anim.get("thumb_axis", "rest")
+    from .rig.hand import HandRig
+    fr = anim["frames"]
+    US = {0: (0.2, 0.5, 0.8, 1.0), 1: (0.2, 0.5, 0.8, 1.0), 2: (0.2, 0.5, 0.55, 0.7, 0.85, 0.92, 0.96, 1.0, 1.04)}
+    cols, rad, ids = [], [], []
+    for h in "RL":
+        if h not in fr[0]["hands"]:
+            continue
+        rig = HandRig(h)
+        rig.sk.thumb_axis = anim.get("thumb_axis", "rest")
+        pos, rr = {}, {}
+        for j, f_ in enumerate(fr):
+            H = f_["hands"][h]
+            R0, P0 = np.array(H["root"]["rot"]), np.array(H["root"]["pos"])
+            A = H["angles"]
+            for f, (ch, (bR, bH)) in enumerate(zip(rig.chains, rig.bases(R0, P0))):
+                q = np.array([A[b][n] for b, n, *_r in ch.dofs])
+                P, Rs = ch.fk(bR, bH, q)
+                for i in range(3):
+                    R = Rs[i]
+                    for u in US[i]:
+                        w, zp, zm = (float(v) for v in ch._sect_at(i, min(u, 0.95)))
+                        if i == 2 and kind == "ellipse" and u > TIP_CAP:       # the rounded fingertip
+                            if u >= TIP_END[f]:
+                                continue
+                            cap = math.sqrt(1.0 - ((u - TIP_CAP) / (TIP_END[f] - TIP_CAP)) ** 2)
+                            w, zp, zm = w * cap, zp * cap, zm * cap
+                        hh = (zp + zm) / 2
+                        c = P[i] + R[:, 1] * ch.L[i] * u + R[:, 2] * (zp - zm) / 2
+                        if kind == "capsule":
+                            half = max(w - hh, 0.0)
+                            for side, k in ((-1, "a"), (0, "m"), (1, "b")):
+                                pos.setdefault((f, f"b{i}u{u}{k}"), []).append(c + R[:, 0] * side * half)
+                                rr[(f, f"b{i}u{u}{k}")] = min(hh, w)
+                            continue
+                        for ph in ELL_PTS:
+                            a_ = math.radians(ph)
+                            pt = c + R[:, 0] * (w - ELL_R) * math.cos(a_) + R[:, 2] * (hh - ELL_R) * math.sin(a_)
+                            pos.setdefault((f, f"b{i}u{u}@{ph}"), []).append(pt)
+                            rr[(f, f"b{i}u{u}@{ph}")] = ELL_R
+        for (f, part), pts in pos.items():
+            cols.append(np.array(pts)); rad.append(rr[(f, part)]); ids.append((h, f, part))
+    return np.stack(cols, 1), np.array(rad), ids
+
+
 SIDE_EPS = 0.0005       # m: a sphere that arrives over a key already this far below its top came in from the side
 SIDE_RULE = os.environ.get("ACTION_SIDE", "1") == "1"
 V_FALL = 0.3            # m/s: the fastest a finger the key bed held up comes back down
@@ -125,13 +262,15 @@ PULP_MAX = 0.003        # m: the most a fingertip squashes against a bottomed ke
                         # (the take aims pressing pads PRESS_OVERSHOOT below the bed; a real finger can't go there)
 
 
-def _contacts(C, r, carry, fid=None):
+def _contacts(C, r, carry, fid=None, u_now=None):
     """For sphere centres C (n, S, 3) and radii r (S,): per (step, key) the contact that pushes the key front
     deepest: a = how far below the key's rest top the sphere reaches (m), lev = key_lever there, sid = sphere.
     A sphere only pushes a key it came down onto from above: one that slides onto a key while already below its
     top went in through the key's side (an animation fault, not a key press); it is counted, not played, until it
     has been above the key again. carry = {(s, k): came-from-above} for pairs in reach at the previous step;
-    updated in place. Returns dense (n, NK) a, lev, sid and a list of side entries (step, s, k, depth m)."""
+    updated in place. u_now (NK,): the keys' current front depths (m): a sphere that arrives over a key that is already
+    down, above its current surface, came from above. Returns dense (n, NK) a, lev, sid and a list of side entries
+    (step, s, k, depth m)."""
     n, S, _ = C.shape
     A = np.zeros((n, NK)); LV = np.ones((n, NK)); SID = -np.ones((n, NK), int)
     near = (C[..., 2] - r[None]) < BLACK_H + 1e-3
@@ -187,7 +326,7 @@ def _contacts(C, r, carry, fid=None):
     T, Sx, K, Aa, L, pair = T[o], Sx[o], K[o], Aa[o], L[o], pair[o]
     new_run = np.ones(len(T), bool)
     new_run[1:] = (pair[1:] != pair[:-1]) | (T[1:] != T[:-1] + 1)
-    above = Aa <= SIDE_EPS if SIDE_RULE else np.ones(len(Aa), bool)
+    above = (Aa <= SIDE_EPS + (u_now[K] * L if u_now is not None else 0.0)) if SIDE_RULE else np.ones(len(Aa), bool)
     start = carry.pop("start", False)                         # the take's first step: whatever touches, holds
     init = np.array([(start or carry.get((int(s_), int(k_)), False)) if t_ == 0 else False
                      for t_, s_, k_ in zip(T[new_run], Sx[new_run], K[new_run])], bool)
@@ -216,16 +355,18 @@ def _contacts(C, r, carry, fid=None):
     return A, LV, SID, side
 
 
-def simulate(anim, t0=None, t1=None, chunk=8.0):
+def simulate(anim, t0=None, t1=None, chunk=None):
     """Run the action over the take. Returns (blows, frames) where blows = list of dicts and frames = per anim
     frame {pitch: (depth 0..1, force N)} for keys that are down or touched."""
     fps, st = anim["fps"], anim["start"]
     C, r, ids = spheres(anim)
-    fid = np.array([("RL".index(h)) * 5 + f for h, f, _p in ids])
+    if chunk is None:                    # small samples need the keys' current depth at each run start (see _contacts)
+        chunk = 0.02 if CONTACT in ("ellipse", "mesh") else 8.0
+    fid = np.array([("RL".index(h)) * 6 + f for h, f, _p in ids])
     tf = st + np.array([f["t"] for f in anim["frames"]])
     t0 = tf[0] if t0 is None else max(t0, tf[0])
     t1 = tf[-1] if t1 is None else min(t1, tf[-1])
-    ip = PchipInterpolator(tf, C, axis=0)
+    ip = _BlockPchip(tf, C) if CONTACT == "mesh" else PchipInterpolator(tf, C, axis=0)
     dt = 1.0 / SIM_HZ
     u = np.zeros(NK); v = np.zeros(NK)
     h = np.zeros(NK); hv = np.zeros(NK)
@@ -245,7 +386,7 @@ def simulate(anim, t0=None, t1=None, chunk=8.0):
         if n <= 0:
             break
         ts = t + np.arange(n) * dt
-        A, LV, SID, side = _contacts(ip(ts), r, carry, fid)
+        A, LV, SID, side = _contacts(ip(ts), r, carry, fid, u_now=u if CONTACT in ("ellipse", "mesh") else None)
         sides += [(float(ts[i_]), ids[s_], int(PITCHES[k_]), d_) for i_, s_, k_, d_ in side]
         for i in range(n):
             a, lv = A[i], LV[i]
@@ -439,6 +580,8 @@ def main(argv=None):
     ap.add_argument("suite"); ap.add_argument("notes"); ap.add_argument("out")
     ap.add_argument("--sfz"); ap.add_argument("--t0", type=float); ap.add_argument("--t1", type=float)
     ap.add_argument("--no-audio", action="store_true")
+    ap.add_argument("--pedal", choices=("harmony", "auto"), default="harmony", help="sustain pedal for song and hands: "
+                    "harmony = sampler.harmony_pedal (default since 2026-10-18), auto = sampler.auto_pedal (the earlier reports)")
     ap.add_argument("--write-anim", help="also write the take with every frame's key depths from the working piano "
                     "(what the fingers actually pushed down, wrong keys included) for the renderer")
     o = ap.parse_args(argv)
@@ -455,7 +598,7 @@ def main(argv=None):
         bl["vel"] = int(np.clip(round(a + b * np.log(max(bl["hammer"], 1e-3))), 1, 127))
     from . import sampler
     win_notes = [n for n in notes if t0 - 0.05 <= n[0] < t1]
-    pedal = sampler.auto_pedal(win_notes)
+    pedal = sampler.harmony_pedal(win_notes) if o.pedal == "harmony" else sampler.auto_pedal(win_notes)
     rep = report(blows, notes, matches, pedal, a, b, r, frames, anim, [t0, t1])
     rep["window"] = [t0, t1]
     deep = [x for x in sides if x[3] > 0.002]          # skin more than 2 mm inside a key's side when it got there

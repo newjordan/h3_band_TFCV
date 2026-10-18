@@ -793,7 +793,7 @@ def fingering(sl, hand):
     back = []
     for i in range(1, len(sl)):
         dt = max(sl[i][0].start - sl[i - 1][0].start, 0.03)
-        held = {n.pitch for n in sl[i - 1] if n.end > sl[i][0].start + 0.02}
+        held = {n.pitch for n in sl[i - 1] if _hold(n) > sl[i][0].start + 0.02}
         new_cost, bp = [], []
         for b, cb, hb in cands[i]:
             best, arg = INF, 0
@@ -840,6 +840,28 @@ def fingering(sl, hand):
     return _repair(sl, cands, path, hand)
 
 
+PEDAL_HOLD = None           # s: the working piano's pedal (sampler.harmony_pedal over the whole piece) carries a note
+                            # past its last pedal change, so the fingering only has to keep a key down until this long
+                            # after the last change before the note's written end (no change under it: through its
+                            # strike); fingers on notes the pedal carries are free for the next ones. Keys still stay
+                            # down to the written end unless their finger is needed (finger_events). None: V3
+
+
+def _hold(n):
+    """Until when the fingering must keep this note's key down (PEDAL_HOLD; else its written end)."""
+    return min(getattr(n, "hold", n.end), n.end)
+
+
+def _pedal_holds(ns, all_notes):
+    from .sampler import harmony_pedal
+    ped = harmony_pedal([(n.start, n.end, n.pitch, n.velocity, n.track) for n in all_notes])
+    for n in ns:
+        k = np.searchsorted(ped, n.end) - 1
+        c = ped[k] if k >= 0 else -1e9
+        n.hold = (min(n.end, c + PEDAL_HOLD) if c > n.start + 0.02
+                  else min(n.end, n.start + strike_time(getattr(n, "touch", 0.3)) + 0.05))
+
+
 def _conflicts(assign, held, hand):
     """Does this chord fingering clash with keys still held (finger reuse, or order across a held key)?"""
     bad = 0
@@ -861,7 +883,7 @@ def _repair(sl, cands, path, hand):
     out, held, prev = [], [], None                    # held: [pitch, finger, note]
     for i, (s, k) in enumerate(zip(sl, path)):
         t0 = s[0].start
-        held = [h for h in held if h[2].end > t0 + 0.02]
+        held = [h for h in held if _hold(h[2]) > t0 + 0.02]
         hv = [(p, f, n) for p, f, n in held]
         choice = cands[i][k][0]
         if _conflicts(choice, hv, hand):
@@ -872,7 +894,7 @@ def _repair(sl, cands, path, hand):
                 for h in held:
                     if _conflicts(choice, [h], hand):
                         h[2].end = max(h[2].start + 0.05, t0 - 0.03)
-                held = [h for h in held if h[2].end > t0 + 0.02]
+                held = [h for h in held if _hold(h[2]) > t0 + 0.02]
         by_pitch = dict(choice)
         row = [(n, by_pitch.get(n.pitch, 2)) for n in s]
         out.append(row)
@@ -1023,6 +1045,9 @@ def strike_time(touch):
 
 
 FORCE = {"touch": 0.35, "hmin": 0.010}
+STRIKE_LINEAR = False       # a press goes down at an even speed (soft) or speeding up (strong), never easing out into the
+                            # key bed (False: V3; the working piano sounds a key only if the hammer escapes fast enough:
+                            # an eased-out soft press slowed through let-off and went silent)
                             # {"touch": the least touch a note's motion is played with, "hmin": m the finger lifts before a
                             # strike at least}; None: R3 (soft notes press slowly from 2-6 mm above the key)
 ARM_DROP = 2.0              # scale of the arm's dip into each onset (1: R3, 1-5 mm by velocity)
@@ -1066,7 +1091,10 @@ def finger_tip(t, e, home_tip, r, f=2):
         return home_tip + (above - home_tip) * u, 0.0
     if t < t_on:
         u = (t - (t_on - S)) / S
-        u = (1 - touch) * (1 - (1 - u) ** 2) + touch * u * u      # press (ease-out) .. strike (ease-in)
+        if STRIKE_LINEAR:                   # never slows into the key bed: a soft note goes down evenly, a strong one
+            u = (1 - touch) * u + touch * u * u                    # speeds up (the hammer escapes at speed)
+        else:
+            u = (1 - touch) * (1 - (1 - u) ** 2) + touch * u * u      # press (ease-out) .. strike (ease-in)
         tip = above + (down - above) * u
         return tip, float(np.clip((c[2] - tip[2]) / KEY_TRAVEL, 0, 1))
     if t <= t_off:
@@ -1732,6 +1760,8 @@ FREE_FOLLOW = True          # free fingers' float targets move with the solved w
 PRESS_OVERSHOOT = 0.006     # m the pressing pad aims below the key bed (0: at the bed; v18: 0.003)
 REPAIR_ITERS = 2            # verify-and-repair passes: re-solve the fingers with missed notes' presses boosted
 REPAIR_W = 4.0              # how much harder a missed note's finger pulls on each repair pass
+REPAIR_DEPTH = 0.5          # verify: a note whose key gets less than this far down is repaired (the working piano
+                            # sounds a key only past let-off, ~0.9: 0.5 left notes pressed 50-85% unrepaired)
 FREE_CLEAR = None            # m: skin of a finger with nothing to press stays this far over the key tops (None: V3)
 FREE_ENV_GAIN = 1.0         # ... and its key collisions weigh this much more than RIG_W env (1: V3)
 FREE_BLACK = None           # m: ... and over the black-key zone (from this far in front of it) it stays over the black
@@ -2192,7 +2222,7 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
                     if a < 0 or a >= len(frames):
                         continue
                     d = max(frames[k]["keys"].get(str(e[2]), 0.0) for k in range(a, min(b + 1, len(frames))))
-                    if d >= 0.5:
+                    if d >= REPAIR_DEPTH:
                         continue
                     nmiss += 1
                     for k in range(max(0, a - int(0.15 * fps)), min(len(frames), b + 1)):
@@ -2334,6 +2364,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         notes = [type(n)(n.start / speed, n.end / speed, n.pitch, n.velocity, n.track) for n in notes]
     end = dur + start if dur else max(n.end for n in notes) + 1.0
     whole = split_hands(notes) if CONSOLIDATE else None   # hands decided once for the whole piece (parts agree)
+    all_notes = notes                                     # (the pedal is decided once for the whole piece too)
     notes = [n for n in notes if n.end > start - 0.5 and n.start < end + 0.5]
     # simulate from a little before the window so the springs are settled when it starts
     pre = 2.0
@@ -2352,6 +2383,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         ns = [type(n)(n.start, n.end, n.pitch, n.velocity, n.track) for n in ns]   # motion copies (repair may shorten holds)
         for n, o in zip(ns, [m for m in (rh if name == "R" else lh)]):
             n.touch, n.lift = getattr(o, "touch", 0.3), getattr(o, "lift", 1.0)
+        if PEDAL_HOLD is not None:
+            _pedal_holds(ns, all_notes)
         fing = fingering(slices(ns, hand=name), name) if ns else []
         ev = release_far(fing, finger_events(fing), name)
         sl_end = np.array([max(n.end for n, _ in s) for s in fing]) if fing else np.zeros(0)
