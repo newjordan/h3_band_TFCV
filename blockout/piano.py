@@ -1430,6 +1430,9 @@ FREE_HOVER_ADD = 0.0               # m added to a free finger's float over the k
                                    # fingers float 3-15 mm up and their skin brushes keys, blockout/action.py)
 FREE_BLACK_PLAN = None             # m: a free fingertip this far in front of the black keys or deeper floats over the black
                                    # key tops, black key under it or not (None: V3)
+WIDE_ABD = None                    # (m, gain): while a hand presses keys this far apart, spreading costs only gain x
+                                   # (RIG_W comfort_abd 10 since H keeps hands from fanning out; it also stops octave
+                                   # chords: the pinky lands 15-38 mm short); None: V3
 THUMB_AIM = None                   # m: a pressing thumb aims its contact corner this far off the key centre toward the
                                    # fingers, so its 2 cm wide tip sits on its own key (None: V3, the corner on the centre
                                    # line and the thumb overhangs the outside neighbour ~4.6 mm: the working piano sounds it)
@@ -1949,6 +1952,10 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
             w = [w[f] * boost.get((name, j, f), 1.0) if pressing[f] else w[f] for f in range(5)]
         x_init = solved[name][0] if name in solved else prev.get(name)
         W = {k: v for k, v in RIG_W.items() if k not in ("press", "free")}
+        if WIDE_ABD:                                    # a chord wider than WIDE_ABD[0] (an octave and more): the hand
+            xs = [H["act"][j][f][1] for f in range(5) if pressing[f]]     # spreads for it like a pianist's
+            if len(xs) >= 2 and max(xs) - min(xs) >= WIDE_ABD[0]:
+                W["comfort_abd"] = WIDE_ABD[1]
         tk = float(H["WF"][j][0]) if "WF" in H else 0.0
         if not pressing[0] and tk > 0.05:               # off duty: the thumb's relaxed pose tucks, easing in and out
             W["rest_override"] = {0: np.clip(rig.q_rest[:rig.sl[1]] + tk * np.array(THUMB_TUCK)[:rig.sl[1]],

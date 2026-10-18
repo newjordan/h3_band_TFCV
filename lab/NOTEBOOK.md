@@ -1124,3 +1124,16 @@ user's benchmarks); everything below is CPU.
   The thumb's contact point is the corner of its tip facing the fingers (rig `eff_local` side 0.45 w), aimed at the key
   centre: the 2 cm thumb overhangs its outside neighbour by ~4.6 mm every time. `THUMB_AIM` (m, toward the fingers)
   added; T1 = H3 + THUMB_AIM 5 mm, T2 = T1 + `HITPAD_SHIFT` -18 mm (strikes 6 mm nearer the key fronts) running.
+- **T round** (windows): T1 = H3 + `THUMB_AIM` 5 mm: Rach sounded 94.4% (base 93.8, H3 91.0), wrong 159; Chopin 282
+  97.9%, wrong 94. T2 (+ `HITPAD_SHIFT` -18 mm) no better: dropped. Cleanup on T1: with pressing pads slid to the key
+  centre (x weight 10) it pushed *thumbs* off their keys (L1 on B4 17-26 mm off, lifted: lost); `CENTRE` 0 and
+  `PRESS_W` (100, 300, 1000) (= T1p: pressing pads stay exactly where the solve put them; the cleanup only moves free
+  fingers) -> Rach wrong 132 / 91.7%, Chopin 282 44 / 97.9%, no new pops. The 4 Rach notes T1p "loses" were never played:
+  in T1 they sounded by accident (a free finger brushing the right key); their assigned fingers never pressed them.
+- **Rach misses are octave chords**: every remaining never-sounded Rach note is in a 4-note chord spanning 12 semitones
+  (165 mm); the pinky (or middle) lands 15-38 mm short. `RIG_W` comfort_abd 10 (H: hands fanned too much) also keeps
+  octave chords from spreading. `WIDE_ABD` (m, gain) relaxes it only while a hand presses keys >= m apart; W1 = T1 +
+  (0.14, 1.0) running on ks_rach + rach2.
+- **Ops:** ~30 solves at once with llama-server + ComfyUI resident ran toymaker out of memory at 01:27 (hydra-head
+  SIGKILLed, systemd restarted it; one suite part died silently, the stitch came out 8,089 frames). Now <= 12 at once
+  (`tools/solve_lim.sh`); part 16 of the H3 suite re-run alone; T1 suite solving at 11 parts at a time (`suite_t1/`).
