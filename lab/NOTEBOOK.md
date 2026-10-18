@@ -1060,3 +1060,27 @@ user's benchmarks); everything below is CPU.
 - **Next (C1/C2, running):** `FREE_CLEAR` (m of clearance for skin of a finger with nothing to press) and
   `FREE_ENV_GAIN` (its key-collision weight) in `_key_env`; C2 adds `THUMB_PRESS_GIVE`/`OWN_KEY_GIVE` 0.5 mm. Windows
   ks_deb, ks_rach, ks_chop, chop2 vs base, scored on the working piano. Tools: `~/h3/hands_loop/action_20261017/tools/`.
+- **C/E rounds** (windows, `~/h3/hands_loop/action_20261017/clear/`, `tools/score_win.py`; 12 s windows, counts for the
+  window): C1 = `FREE_CLEAR` 1.5 mm + `FREE_ENV_GAIN` 25; C2 = C1 + `THUMB_PRESS_GIVE`/`OWN_KEY_GIVE` 0.5 mm; E1/E2 = C2 +
+  `FREE_BLACK` 5 mm (a free finger rides over the black tops anywhere in the black-key zone: a leap can skip a whole black
+  key between frames) + `ENV_GAIN` 5 / 25; E3 = C2 + `FREE_BLACK`.
+  | window | base wrong / sounded | C2 | E3 | E1 | E2 |
+  |---|---|---|---|---|---|
+  | ks_rach | 202 / 93.8% | 157 / 89.6 | 118 / 84.0 | 97 / 71.5 | 95 / 65.3 |
+  | ks_chop | 134 / 95.7% | 107 / 97.9 | 75 / 91.5 | 75 / 83.0 | 66 / 70.2 |
+  | chop2 | 116 / 91.2% | 77 / 89.5 | 56 / 78.9 | 46 / 63.2 | 50 / 66.7 |
+  Stronger collisions halve the wrong keys and lose a third of the written notes: a tug of war. Cause: the solver's skin is
+  flat discs (`surface_under_soft_v`, any overlap counts full depth) and a pressing finger's *own* key counts as well (only
+  `OWN_KEY_GIVE` of slack), so a pad on a black key "crushes" both white neighbours; a heavy weight then stops the press.
+  Frame traces (Rach 100-112): pads landing 8.5 mm off a key centre catch the neighbour (both sound, vel ~115); a pressing
+  finger's middle of the distal bone reaching into the black-key zone; a pressing thumb across the next white key; free
+  fingers resting among the black keys. In Chopin the left hand's leaps travel 0.5-1 m/s with the lowest skin 5-13 mm up
+  over the black-key zone: it brushes black tops (a glissando) -- all physically real.
+- **R round (running):** `KEY_ROUND` = the solver collides rounded skin against each key top with the working piano's own
+  contact model (`key_pen_round_v`), the pressing finger's own key left out (rail and fallboard as before); then strong
+  weights only block what the piano would sound.
+- **Holds** (`tools/holds.py`, V3 suite): 770 of 1727 notes (>= 80 ms) stop audibly early with the pedal: the plan's
+  fingering gives the finger to another note first 486 (654 s lost), the hand travels on (`release_far`/`LEAP_TIME`) 259,
+  the solved finger leaves its key early 17. By piece and hand: Chopin L 348 (written notes run past the cutting bass change
+  by p50 0.54 s: in our transcription of a recording these are mostly the pianist's pedal blur, an arpeggio no hand holds),
+  Chopin R 209, Rach L 99, Rach R 92, Debussy 22. So holds are a fingering / pedal question more than a motion one.

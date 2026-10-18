@@ -217,6 +217,44 @@ def surface_under_soft_v(X, Y, R, DW, DB):
     return surface_soft_v(Xs.ravel(), Ys.ravel(), DW, DB).reshape(Xs.shape).max(1)
 
 
+_WHITES_A = np.array(_WHITES)
+_DEPTH_OFF = (np.full(len(_WHITES), 1e3), np.full(len(_BLACKS), 1e3))     # keys sunk out of the way: rail + fallboard
+
+
+def key_pen_round_v(X, Y, LOW, R, DW, DB, own):
+    """How far rounded skin is inside the key tops (m, < 0 = clear): each sample is a ball of radius R resting on its
+    lowest point LOW at (X, Y), tested against every key top it can reach (two neighbours each side), keys lowered by
+    their depths, the sample's own key (own: pitch per sample, -1 none) left out. Matches blockout/action.py's
+    contact model, so the solver keeps out of the neighbours the working piano would sound."""
+    zc, R2 = LOW + R, R * R
+    nw, nb = len(_WHITES), len(_BLACKS)
+    wi = np.floor((X + _MID_C) / WHITE_W).astype(int)
+    k = np.searchsorted(_BLACK_X, X)
+    over_black = np.zeros(len(X), bool)
+    for kk in (k - 1, k):
+        kc = np.clip(kk, 0, nb - 1)
+        over_black |= (np.abs(X - _BLACK_X[kc]) < BLACK_W / 2) & (Y >= WHITE_L - BLACK_L) & (Y <= WHITE_L)
+    pen = np.full(len(X), -1.0)
+    yc = np.clip(Y, 0.0, WHITE_L)
+    for dd in (-1, 0, 1):
+        i = np.clip(wi + dd, 0, nw - 1)
+        dx = np.maximum(np.abs(X - (i * WHITE_W + WHITE_W / 2 - _MID_C)) - WHITE_W / 2, 0.0)
+        dy = np.maximum(np.maximum(-Y, Y - WHITE_L), 0.0)
+        d2 = dx * dx + dy * dy
+        top = -DW[i] * KEY_TRAVEL * (WHITE_L - yc) / WHITE_L
+        ok = (d2 < R2) & ~over_black & (_WHITES_A[i] != own)
+        pen = np.where(ok, np.maximum(pen, top - (zc - np.sqrt(np.maximum(R2 - d2, 0.0)))), pen)
+    for kk in (k - 1, k):
+        kc = np.clip(kk, 0, nb - 1)
+        dx = np.maximum(np.abs(X - _BLACK_X[kc]) - BLACK_W / 2, 0.0)
+        dy = np.maximum(np.maximum(WHITE_L - BLACK_L - Y, Y - WHITE_L), 0.0)
+        d2 = dx * dx + dy * dy
+        top = BLACK_H - DB[kc] * KEY_TRAVEL * np.maximum(WHITE_L - yc, 0.0) / BLACK_L
+        ok = (d2 < R2) & (_BLACKS[kc] != own)
+        pen = np.where(ok, np.maximum(pen, top - (zc - np.sqrt(np.maximum(R2 - d2, 0.0)))), pen)
+    return pen
+
+
 def surface_under(x, y, r, depth):
     """Highest surface under a disc of radius r (a finger pad seen from above)."""
     return max(surface(x + dx, y + dy, depth) for dx, dy in ((0, 0), (0.8 * r, 0), (-0.8 * r, 0), (0, 0.8 * r), (0, -0.8 * r)))
@@ -1563,7 +1601,7 @@ def _hand_blobs(samples, root_rot, root_pos, rig):
     return np.array(C), np.array(R)
 
 
-def _key_env(keydepth, pressing, other=None, rig=None):
+def _key_env(keydepth, pressing, other=None, rig=None, own=None):
     """Collision penalty (m^2) of a posed hand against the keyboard heightfield, from the skin's real cross-
     sections (the lowest point of each bone's off-centre ellipse; a pressing finger's pad may rest on its key),
     and against the other hand's skin (other = its spheres)."""
@@ -1582,16 +1620,24 @@ def _key_env(keydepth, pressing, other=None, rig=None):
         if S_:
             C = np.array([s_[3] for s_ in S_]); low = np.array([s_[4] for s_ in S_])
             W_ = np.array([s_[5] for s_ in S_])
-            d = surface_under_soft_v(C[:, 0], C[:, 1], 0.8 * W_, DW, DB) - low
-            d -= np.array([(THUMB_PRESS_GIVE if f == 0 and i >= 1 else OWN_KEY_GIVE) if pressing[f] and (i == 2 and u >= 0.5 or f == 0 and i >= 1)
-                           else 0.0 for f, i, u, *_r in S_])   # a pressing thumb lies over the neighbour's edge
+            if KEY_ROUND:                              # rounded skin against each key top, its own key left out
+                own_s = np.array([own[f] if own is not None and pressing[f] else -1 for f, *_r in S_])
+                d = np.maximum(key_pen_round_v(C[:, 0], C[:, 1], low, W_, DW, DB, own_s),
+                               surface_under_soft_v(C[:, 0], C[:, 1], 0.8 * W_, *_DEPTH_OFF) - low)
+            else:
+                d = surface_under_soft_v(C[:, 0], C[:, 1], 0.8 * W_, DW, DB) - low
+                d -= np.array([(THUMB_PRESS_GIVE if f == 0 and i >= 1 else OWN_KEY_GIVE) if pressing[f] and (i == 2 and u >= 0.5 or f == 0 and i >= 1)
+                               else 0.0 for f, i, u, *_r in S_])   # a pressing thumb lies over the neighbour's edge
             if not CASE_COLLIDE:
                 d[low > 0.02] = 0.0                    # well above every key top (but not the fallboard: CASE_COLLIDE)
-            g = 1.0
-            if FREE_CLEAR or FREE_ENV_GAIN != 1.0:     # a finger with no key to press keeps its skin clear of the key
-                fr_ = np.array([not pressing[f] for f, *_r in S_])     # tops (the working piano: skin a few mm
-                d = d + np.where(fr_, FREE_CLEAR or 0.0, 0.0)           # into a key top pushes it down, and a fast
-                g = np.where(fr_, math.sqrt(FREE_ENV_GAIN), 1.0)        # one sounds it; blockout/action.py)
+            g = math.sqrt(ENV_GAIN)                    # key collisions weigh ENV_GAIN x RIG_W env
+            if FREE_CLEAR or FREE_ENV_GAIN != 1.0 or FREE_BLACK:   # a finger with no key to press keeps its skin clear
+                fr_ = np.array([not pressing[f] for f, *_r in S_])     # of the key tops (the working piano: skin a few
+                if FREE_BLACK:                         # mm into a key top pushes it down, and a fast one sounds it;
+                    bz = fr_ & (C[:, 1] >= WHITE_L - BLACK_L - FREE_BLACK)   # blockout/action.py); over the black-key
+                    d = np.where(bz, np.maximum(d, BLACK_H - low), d)       # zone it rides over the black tops (a leap
+                d = d + np.where(fr_, FREE_CLEAR or 0.0, 0.0)           # can skip a whole black key between frames)
+                g = g * np.where(fr_, math.sqrt(FREE_ENV_GAIN), 1.0)
             out.extend(np.maximum(d, 0.0) * g)         # (a pressing pad rests on its own lowered key, not a neighbour)
             if THUMB_CLEAR:                            # the thumb crosses the key fronts from above, arched onto its key
                 th = np.array([f == 0 and (i <= 1 or u <= 0.2) for f, i, u, *_r in S_])
@@ -1646,6 +1692,11 @@ REPAIR_ITERS = 2            # verify-and-repair passes: re-solve the fingers wit
 REPAIR_W = 4.0              # how much harder a missed note's finger pulls on each repair pass
 FREE_CLEAR = None            # m: skin of a finger with nothing to press stays this far over the key tops (None: V3)
 FREE_ENV_GAIN = 1.0         # ... and its key collisions weigh this much more than RIG_W env (1: V3)
+FREE_BLACK = None           # m: ... and over the black-key zone (from this far in front of it) it stays over the black
+                            # key tops, whether or not one is under it (None: V3)
+ENV_GAIN = 1.0              # every key collision of the skin weighs this x RIG_W env (1: V3)
+KEY_ROUND = False           # key collisions with rounded skin (key_pen_round_v, the working piano's contact model), a
+                            # pressing finger's own key left out; False: V3 (flat discs, OWN_KEY_GIVE / THUMB_PRESS_GIVE)
 OWN_KEY_GIVE = 0.001        # m a pressing pad may sink past its own (lowered) key's surface in the collision model
 THUMB_PRESS_GIVE = 0.004    # m a pressing thumb's distal and proximal phalanx may sink past key tops (its side
                             # rests over the neighbouring key's edge as it presses its own)
@@ -1874,7 +1925,8 @@ def _solve_frame(hands, j, targets, est_depth, prev, roots=None, forearms=None, 
             W["wrist"] = WRIST_W
             if prior is not None:
                 W["root_pos"] = prior
-        env = _key_env(est_depth, pressing, blobs.get("L" if name == "R" else "R"), rig)
+        env = _key_env(est_depth, pressing, blobs.get("L" if name == "R" else "R"), rig,
+                       own=[H["act"][j][f][0] if pressing[f] else -1 for f in range(5)])
         if roots is not None and FINGER_SPLIT:          # the wrist is set: five independent finger solves
             x = rig.solve_fingers(ref_rot, x_init, list(targets[name]), w, env=env, W=W,
                                   last=prev.get(name) if qprior is None else qprior[name],
