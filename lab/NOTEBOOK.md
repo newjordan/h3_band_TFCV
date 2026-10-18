@@ -1400,3 +1400,7 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   over +-4 frames; press frames (and 3 before) pinned. On C8 cleaned: pops 10.0 -> **5.05/min** (V3 5.0; Rach
   33 -> 15), broken / crossed unchanged; but wrong 665 -> 739, sounded 90.3 -> 89.9 (smoothed free fingers dip into
   keys). Order solve -> depop -> cleanup -> physics running.
+- **Order solve -> depop -> cleanup S2 (C8):** LAND 3 frames: sounded 89.9% (C8 90.3), wrong 679 (665), struck
+  twice 111, holds cut 8.1%, **pops 5.48/min** (C8 10.0, V3 5.0; Rach 15.9). LAND 5: 90.1% / 673 / pops 8.0 (Rach 29):
+  many pops are in the strike's fast approach. **C8d = C8 + depop (LAND 3) + S2**: vs V3 more notes (89.9 vs 86.5%),
+  half the wrong keys (679 vs 1,334), about as smooth (5.5 vs 5.0 pops/min). Rendering C8 and C8d for the user.
