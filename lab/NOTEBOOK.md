@@ -1383,3 +1383,12 @@ lower although they sit on the plate in the review.
 the motion comes from the Blender hand. Posted as the band-site section `h3-hand-looks` (cycle videos, 5-up grids, plate |
 control | H3 trios, scores, recipe). Renders: `~/comfyui-h3-audio/output/ks_lipsync/hl_<shot>_<look>_00001_.mp4`; passes,
 jobs, scores and videos under `~/h3/results/hand_looks/`.
+- **C6 misses, what's left (cleaned suite, 184):** key down but silent 69 (45 stall at 76-91% depth, short of let-off
+  at 89%: the finger is stopped because its skin runs under a black key's body; 15 blows > 120 ms off; 9 keys held
+  by other skin), plan pressed but the key never went down 55, plan never pressed 60.
+- **Why fingers hook:** with the MPFB hand the plan's knuckle line is `Y_KN` 7 mm into the keys (+18 mm `YOFF_NB`
+  near black keys) while white-key pads aim at 20-33 mm: the knuckles sit almost over the pads, so a 9-10 cm finger
+  folds into a claw: PIP out over the black keys (y 50-86 mm), the end phalanx hooked back toward the player, the pad
+  landing at ~40 mm with the tip under the black keys. A pianist's knuckles sit ~4-6 cm behind the tips. Side
+  candidate **C9 = C8 + `Y_KN` -0.015** (knuckles 22 mm further toward the player) on the whole suite. It changes the
+  look the user chose (M2 curled, palm back): not adoptable without their eye.
