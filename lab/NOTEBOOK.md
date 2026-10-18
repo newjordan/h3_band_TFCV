@@ -1329,3 +1329,6 @@ user's benchmarks); everything below is CPU.
   are not the weight step); C6 without `REPAIR_DEPTH` 0.9 29 / 32 but missed 25 -> 35 and 7 -> 9. A pop is any finger
   joint over 15 rad/s (36 deg in one frame); in the agitato's 0.1 s chords, fully pressing every key takes about that.
   Middle settings running: `REPAIR_W` 2.5 (c6/C6w25), `REPAIR_DEPTH` 0.75 (c6/C6d75).
+- **Repair strength:** `REPAIR_W` 2.5 (was 4) keeps the deep repair's notes (rach0 25 missed = C6, ks_rach 6 vs 7)
+  and halves the Rach pops (rach0 60 -> 32, ks_rach 40 -> 29 /min, = no deep repair at all). `REPAIR_DEPTH` 0.75:
+  in between (27 / 8 missed, 46 / 32 pops). **C8 = C7 + `REPAIR_W` 2.5**, suite solving.
