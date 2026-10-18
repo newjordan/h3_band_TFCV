@@ -38,7 +38,8 @@ BLACK_ZONE = 0.005      # m in front of the black keys from where a free finger 
 NEAR_OWN = 0.020        # m: a finger this close over a key it is about to play keeps its pad path like a pressing one
 SWEEP_U = (0.25, 0.5)   # shares of the way to the neighbouring frames at which the skin is also tested (None: off)
 SMOOTH_LAM, W_HI, W_LO = 200.0, 50.0, 1.0  # temporal blending of the corrections
-W_PRESS = 1e4           # ... a frame where the finger presses (or lands) is held to its own correction: no lift bleeds in
+MAX_DQ = 0.3            # rad: the most a correction turns one joint (a bigger one flips the finger's pose and pops)
+W_PRESS = 50.0           # ... a frame where the finger presses (or lands) is held to its own correction: no lift bleeds in
 PASSES = 4
 ITERS = 20
 
@@ -233,8 +234,8 @@ def clean(anim, notes, jobs=1, t0=None, t1=None, log=print):
             Q = np.array([_q_from_angles(rig, anim["frames"][j]["hands"][h]["angles"]) for j in range(j0, j1)])
             Dl = np.zeros_like(Q)
             for (j, hh), q in fixed.items():
-                if hh == h:
-                    Dl[j - j0] = q - Q[j - j0]
+                if hh == h:                         # a fix is a nudge: a joint never swings more than MAX_DQ
+                    Dl[j - j0] = np.clip(q - Q[j - j0], -MAX_DQ, MAX_DQ)
             Ds = np.zeros_like(Q)
             for f in range(5):
                 a, b = rig.sl[f], rig.sl[f + 1]

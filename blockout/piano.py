@@ -1430,6 +1430,9 @@ FREE_HOVER_ADD = 0.0               # m added to a free finger's float over the k
                                    # fingers float 3-15 mm up and their skin brushes keys, blockout/action.py)
 FREE_BLACK_PLAN = None             # m: a free fingertip this far in front of the black keys or deeper floats over the black
                                    # key tops, black key under it or not (None: V3)
+THUMB_AIM = None                   # m: a pressing thumb aims its contact corner this far off the key centre toward the
+                                   # fingers, so its 2 cm wide tip sits on its own key (None: V3, the corner on the centre
+                                   # line and the thumb overhangs the outside neighbour ~4.6 mm: the working piano sounds it)
 THUMB_HOVER = 0.4                  # share of the float an idle thumb keeps (0.4: V3, it rests low along the key edge)
 
 
@@ -2398,6 +2401,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                     if tp is not None:
                         tip = tp
                         c = contact(e[2], e[4], f) + np.array([0, 0, TIP_R[f]])
+                        if f == 0 and THUMB_AIM:              # the thumb presses with its tip's corner toward the
+                            tip = tip.copy(); tip[0] += sgn * THUMB_AIM     # fingers: aim that corner off the key
+                            c = c.copy(); c[0] += sgn * THUMB_AIM           # centre so the thumb itself sits on its key
                         if CL["over"][j] > 0 and not is_black(e[2]):     # over hand: in deep, past the under hand
                             tip = tip.copy()
                             tip[1] += CL["over"][j] * max(0.0, hitpad(e[2], f)[1] - 0.002 - c[1])

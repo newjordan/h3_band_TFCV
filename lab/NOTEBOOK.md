@@ -1109,3 +1109,18 @@ user's benchmarks); everything below is CPU.
 - **H round (running):** plan knobs `FREE_HOVER_ADD` (m added to the free float), `FREE_BLACK_PLAN` (free tips over the
   black-key zone float over the black tops), `THUMB_HOVER` (idle thumb's share of the float; V3 0.4 = rests low on the key
   edge). H1 = +6 mm, black zone 5 mm, thumb 1.0; H2 = H1 + `FORCE` hmin 14 mm; H3 = H1 + `FREE_ENV_GAIN` 5 + `FREE_CLEAR` 1 mm.
+- **H round** (windows; `plan/`): H3 (plan: free float +6 mm, over the black tops in the black-key zone, idle thumb floats
+  like the fingers; solver: free-finger key collisions x5 with 1 mm clearance) alone adds no pops (Rach 20 = base, Chopin
+  0) and moves pads 4-5 mm (Debussy 20 mm: idle fingers and thumb float higher). With the cleanup on top (`clean.py`
+  gentle pins `W_PRESS` 50, corrections capped at `MAX_DQ` 0.3 rad per joint = H3m):
+  | window | base wrong / sounded / pops | H3 | H3m |
+  |---|---|---|---|
+  | ks_deb | 23 / 94.4 / 0 | 28 / 94.4 / 2.9 | 18 / 88.9 / 5.7 |
+  | ks_rach | 202 / 93.8 / 20 | 178 / 91.0 / 20 | 126 / 89.6 / 11.4 |
+  | ks_chop | 134 / 95.7 / 0 | 93 / **100** / 0 | 39 / 97.9 / 2.9 |
+  | chop2 | 116 / 91.2 / 0 | 76 / 91.2 / 0 | 33 / 91.2 / 0 |
+  H3 is being solved for the whole suite (`suite_h3/`). Rach residue (H3m): pressing thumbs catching the next white key 55,
+  pressing long fingers' distal ends catching the black key behind 17 (W->B) / the next white 23, free fingers 10.
+  The thumb's contact point is the corner of its tip facing the fingers (rig `eff_local` side 0.45 w), aimed at the key
+  centre: the 2 cm thumb overhangs its outside neighbour by ~4.6 mm every time. `THUMB_AIM` (m, toward the fingers)
+  added; T1 = H3 + THUMB_AIM 5 mm, T2 = T1 + `HITPAD_SHIFT` -18 mm (strikes 6 mm nearer the key fronts) running.
