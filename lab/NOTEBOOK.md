@@ -1332,3 +1332,10 @@ user's benchmarks); everything below is CPU.
 - **Repair strength:** `REPAIR_W` 2.5 (was 4) keeps the deep repair's notes (rach0 25 missed = C6, ks_rach 6 vs 7)
   and halves the Rach pops (rach0 60 -> 32, ks_rach 40 -> 29 /min, = no deep repair at all). `REPAIR_DEPTH` 0.75:
   in between (27 / 8 missed, 46 / 32 pops). **C8 = C7 + `REPAIR_W` 2.5**, suite solving.
+- **C7 = C6 + `FREE_HOVER_FAST` + gentle `THUMB_CLEAR` (suite, cleaned): 88.3%** (C6 90.4), missed 224 (184), wrong
+  692 (680); every piece down (Debussy 75.3, Rach 91.0, Chopin 87.8). The window gains (C6f +6 notes / 5 windows,
+  C6tc -9 wrong / 3 windows) did not carry to the suite. **Lesson: a 12 s window moves by several notes on a
+  re-solve; small window gains need a suite run before they count.** C6 stays the best candidate.
+- `WHITE_FRONT_MAX` 0.035 (C6front, 5 windows): missed 40 -> 36, wrong 186 -> 190, pressing-finger catches 44 -> 49:
+  the pads don't reach their targets anyway (white-key black-side catches: pads at 38-49 mm in C6). Not adopted.
+- **C8 (relaunched) = C6 + `REPAIR_W` 2.5** only (the first C8 carried C7's knobs; killed at 2/24 parts).
