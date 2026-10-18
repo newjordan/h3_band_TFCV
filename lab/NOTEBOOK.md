@@ -1339,3 +1339,47 @@ user's benchmarks); everything below is CPU.
 - `WHITE_FRONT_MAX` 0.035 (C6front, 5 windows): missed 40 -> 36, wrong 186 -> 190, pressing-finger catches 44 -> 49:
   the pads don't reach their targets anyway (white-key black-side catches: pads at 38-49 mm in C6). Not adopted.
 - **C8 (relaunched) = C6 + `REPAIR_W` 2.5** only (the first C8 carried C7's knobs; killed at 2/24 parts).
+
+## 2026-10-18: H3 hand looks (the leg-K recipe with five hand looks)
+
+**Why.** The team reported that H3 does not match our blockout video. Leg K (K22/K23, 10 Oct) had shown that it does when the
+job is set up right, but only with one look (chrome armour).
+**Hypothesis.** The ControlNet control's *geometry* sets the category of hand H3 draws (K20/K21). So any look carried by
+bone-parented geometry on the stock MPFB2 hand (scale 1.0, rig and motion untouched), with a grey plate of the same
+geometry, the Canny of its normal pass as the control and a matching prompt, will follow the plate as well as the armour did.
+**Setup.** Codex wrote `blockout/hand_styles.py` (`blender_piano.py --hand-style skeleton|monster|robot|paw|real`): bones
+with the skin hidden; warts, ridges, talons, scales and spines; bevelled shells, hinge pins, panels and pistons; fur volumes,
+toes, tufts, small claws and beans; nothing. Codex also wrote the skeleton/monster/robot/paw prompts
+(`h3_tools/hand_look_prompts.json`). I wrote the real prompt (rendered while Codex was still working, to use a free GPU window).
+Pipeline `h3_tools/hand_looks.py`. Shots kh111 (frames 2664-2787) and ov125 (3000-3123) of the v17 still edit, rebuilt
+from `/tmp/claude-1000/suite_v17/edit_c.json` with `cameras.direct_still`. The original edit.json is gone; the rebuild matches
+the K22 plates to a mean 0.1/255. kh111's first 7 frames are pinned to the shot's camera: the K22 plate had a camera cut at
+frame 7. RIG_SLEEVE=0.06 as in the v17 plates. Job = K22 (fl2va, mode B, grey plate 0.88, Fun ControlNet 1.0 on the Canny
+20/60 of the normal pass, 20 steps, res_multistep/beta, seed 7, audio frozen); only the plate, control and hand sentence change.
+**Runs.** 10 H3 renders, one per look per shot, same seed; ~16 min each (28 min for the first, under memory contention).
+**Results** (motionmatch.py inside each look's own Blender mask; flow vs the look's normal pass / vs its grey plate; fidelity.py
+whole-frame edge r vs the plate):
+
+| shot | look | H3 drew | flow_cos / err vs normal | flow_cos / err vs plate | frame r |
+|---|---|---|---|---|---|
+| kh111 | skeleton | skeleton hands | 0.87 / 0.66 | 0.83 / 0.68 | 0.67 |
+| kh111 | monster | scaly clawed creature hands | 0.95 / 0.48 | 0.95 / 0.55 | 0.58 |
+| kh111 | robot | metal robot hands | 0.94 / 0.53 | 0.93 / 0.57 | 0.60 |
+| kh111 | paw | grey fluffy cat paws | 0.96 / 0.45 | 0.96 / 0.46 | 0.59 |
+| kh111 | real | human hands | 0.70 / 0.70 | 0.80 / 0.68 | 0.64 |
+| ov125 | skeleton | skeleton hands | 0.80 / 0.70 | 0.76 / 0.72 | 0.66 |
+| ov125 | monster | scaly clawed creature hands | 0.87 / 0.64 | 0.87 / 0.64 | 0.61 |
+| ov125 | robot | metal robot hands | 0.92 / 0.54 | 0.91 / 0.58 | 0.66 |
+| ov125 | paw | cat paws, pink pads toward the camera | 0.91 / 0.58 | 0.92 / 0.56 | 0.58 |
+| ov125 | real | human hands, dimmer, softer fingers | 0.61 / 0.79 | 0.78 / 0.77 | 0.66 |
+| ref | K22 / K23 armour | steel gauntlets | 0.95 / 0.51, 0.92 / 0.56 | 0.95 / 0.49, 0.93 / 0.52 | 0.76, 0.60 |
+
+All 10 drew the requested look on the plate's hands, with no cuts or drift (reviewed at 1 fps; no frame shifted >8 px).
+None needed a second iteration. Weak spots: H3 adds motion blur on the fastest moves. On ov125 the paws turn their pink pads
+toward the camera: the prompt names the beans, and the Blender beans are on the palm side, out of view. Flow agreement
+tracks the geometry's texture: smooth skin (real) and thin bones (skeleton) give Farneback less to lock onto, so they score
+lower although they sit on the plate in the review.
+**Conclusion.** Hypothesis supported: the recipe is look-agnostic. The look comes from the control geometry + the prompt,
+the motion comes from the Blender hand. Posted as the band-site section `h3-hand-looks` (cycle videos, 5-up grids, plate |
+control | H3 trios, scores, recipe). Renders: `~/comfyui-h3-audio/output/ks_lipsync/hl_<shot>_<look>_00001_.mp4`; passes,
+jobs, scores and videos under `~/h3/results/hand_looks/`.
