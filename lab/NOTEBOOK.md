@@ -1202,3 +1202,10 @@ user's benchmarks); everything below is CPU.
   and never pressed (the octave-span limit again), ~23 are genuinely fast repeated chords (0.17 s apart).
 - **AA1** = C3 + `APPROACH_ARC` {clear 20 mm, lead 0.4, hmin 12 mm, amin 0.10 s} (travel high, over the key early, then
   drop): running on ks_chop / chop2 / ks_rach against PX1 (= C3 settings).
+- **AA1** (C3 + `APPROACH_ARC`) vs PX1 (= C3 settings), cleaned, three windows: notes +2 (Rach 96.5 -> 98.6%, Chopin 282
+  97.9 -> 100, Chopin 266 94.7 -> 91.2), wrong +20 (210 -> 230), struck twice 23 -> 14. Not a clear win: off.
+- **Loop stopped (2026-10-18 07:05)** at a decision point, not at perfect: what's left needs the user's calls (octave
+  reach = rig joint limits; arched thumb, rejected before as TC; holds = fingering / pedal) and their eye on a render (all
+  C-round motion changes are metric-judged only). C3 render input ready: `~/h3/hands_loop/action_20261017/suite_c3/render/`
+  (physics key depths via `action.py --write-anim`; ks.wav = 39.9 s silence + C3 hands). Handoff:
+  `~/h3/HANDOFF_20261018_working_piano.md`.
