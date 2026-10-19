@@ -194,6 +194,8 @@ def run_all(run, need=int(os.environ.get("H3_NEED_GB", 30)), poll=180, upto=None
             subprocess.run(["python3", str(RUNNER), str(p)], check=True)
         finally:
             subprocess.run(["bash", str(LEASE), "release", "h3-skeleton"], capture_output=True)
+        if not out_mp4(run, k).exists():                # the runner exits 0 when the container goes down mid-clip
+            sys.exit(f"{time.strftime('%H:%M:%S')} no output for {tag(run, k)} (container down?); stopping the chain")
         score(run, k)
 
 

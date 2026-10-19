@@ -1658,3 +1658,10 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   (`RUNS[...]["ref"]`, tolerance `tol`), and a Blender | H3 | overlay triptych. `lockcheck.py --tol PX --every K`
   (reproduces T5 84 / 87 / 89, worst 82 and T7 74 / 81 / 85, worst 67 at 4.35 px). Next: **T6b** = the same dense take
   at 1920x1088, clip 0 (31 original frames), against the production run's clip 0 on the same frames.
+- **12:39 production clip 0 lost:** a shadow-eval run (`~/models/shadow-eval/run_eval_toymaker.sh gemma4`, Gemma 4
+  26B Q6 llama-server, ~25 GB, not ours) started 12:29; H3's steady MemAvailable fell 47 -> 22 GB, the clip's late peak
+  took it to 13 GB and the watchdog killed h3audio-comfy at 990 s. The runner exits 0 when the container goes down;
+  `run_all` now stops the chain when a clip has no output (it crashed in the scorer). H3 + a ~25 GB resident model don't
+  fit under the 15 GB floor: `after_eval.sh` waits for the eval server to exit, restarts the container (stock matmul)
+  and reruns the production run, then `after_x4_full.sh` (final, 1920 passes, T6b). The 1920 passes render meanwhile
+  (one Blender part crashed in the GL driver next to the running H3 at 12:29; rerun with the GPU idle).
