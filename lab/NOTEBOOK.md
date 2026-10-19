@@ -1513,3 +1513,9 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   Pressing-thumb catches 120 -> 75, free thumb 42 -> 29: with the tip pad the 2.5 mm aim toward the fingers only
   pushed the thumb onto the next key. Best wrong-key count yet; notes level (Debussy +3, Rach -7: re-solve noise
   scale).
+- **C16 = C14 + `RELEASE_ARC` {lead 0.5, hold 0.25} (C8d recipe): 90.8%** (C14 91.1), missed 177, wrong **548**
+  (604), struck twice 112, timing p90 50 ms, pops 5.30, crossed 1.12% (1.01). Free-finger catches 225 -> 188
+  (lifting 54 -> 44, travel 113 -> 98, landing 58 -> 47), pressing fingers 214 -> 200; thumbs unchanged (122). The
+  same -56 as C15 but on other faults (C15: thumbs), so they should stack: **C20 = C15 + `RELEASE_ARC`**. Rebased
+  C17 (leap lift), C19 (strike keep) and C18 (press x 12) on C15; C17/C19 solving, then C20 + C18 (6 parts each,
+  `tools/queue_c20_18.sh`).
