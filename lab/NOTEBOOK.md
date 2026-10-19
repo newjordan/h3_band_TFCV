@@ -1460,3 +1460,14 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   thumb-tip press (`RIG_THUMB_EFF_US`) is a rig decision.
 - **Stricter de-pop on C14** (`LIMIT` 10 rad/s, `HALF` 5 frames; was 12 / 4): 91.1%, wrong 604 (602), struck twice
   113, pops 6.07 -> **5.65**, crossed 1.01%. Free smoothness: now the depop defaults.
+- **C14 fault picture** (de-popped, `tools/faults.py`, `wrong_detail.py`, `wrong_geom.py`, new `pad_bias.py`): wrong
+  601 = pressing fingers 214 (thumb-side 149 vs pinky-side 61), free fingers 225 (travel/idle 113, landing 58, lifting
+  54), pressing thumbs 118 (91 the next white key toward the fingers), struck twice 113 (early touch 44, timing 36).
+  558 of the wrong blows have skin > 1 mm in the key at the take's own frames (not between frames). Pressing thumbs'
+  pads sit 1.3-2.8 mm toward the fingers (p50; black keys 2.3-2.8): `THUMB_AIM` 2.5 mm was tuned for the old
+  corner pad; with the tip pad (`RIG_THUMB_EFF_US`) it moves the whole thumb toward the fingers.
+- New plan switch `RELEASE_ARC` {"lead", "hold"} (piano.finger_tip): a released finger rises to its hover height in
+  the first `lead` share of the release and starts sideways only after `hold` (default None = one straight line from
+  the key bed to the hover spot, which drags a low finger across its neighbours when the hand shifts). Suites
+  running (6 parts at once each, C8d recipe + new depop): **C15 = C14 + `THUMB_AIM` 0**; **C16 = C14 +
+  `RELEASE_ARC` {lead 0.5, hold 0.25}**.

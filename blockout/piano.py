@@ -1117,6 +1117,9 @@ STRIKE_LINEAR = False       # a press goes down at an even speed (soft) or speed
                             # {"touch": the least touch a note's motion is played with, "hmin": m the finger lifts before a
                             # strike at least}; None: R3 (soft notes press slowly from 2-6 mm above the key)
 ARM_DROP = 2.0              # scale of the arm's dip into each onset (1: R3, 1-5 mm by velocity)
+RELEASE_ARC = None          # {"lead": share of the release in which the finger rises to its hover height, "hold": share
+                            # before it starts to move sideways}; None: C14 (one straight line from the key bed to the
+                            # finger's hover spot, so a hand shift drags a low finger across its neighbours)
 APPROACH_ARC = None         # anticipation (None: v18/H): {"clear": m kept over the keys while travelling (full at 2 cm of
                             # travel), "lead": share of the approach left for the drop, "hmin": m the strike starts from
                             # at least, "amin": s the approach takes at least}
@@ -1170,6 +1173,13 @@ def finger_tip(t, e, home_tip, r, f=2):
     if t <= t_off:
         return down, 1.0
     u = _smooth((t - t_off) / rel)
+    if RELEASE_ARC:                         # lift, then travel: up off the key first, sideways only once clear of it
+        sx = (t - t_off) / rel
+        uz = _smooth(min(1.0, sx / RELEASE_ARC["lead"]))
+        uxy = _smooth(max(0.0, sx - RELEASE_ARC["hold"]) / (1.0 - RELEASE_ARC["hold"]))
+        tip = down + (home_tip - down) * uxy
+        tip[2] = down[2] + (home_tip[2] - down[2]) * uz
+        return tip, 1.0 - uz
     return down + (home_tip - down) * u, 1.0 - u
 
 
