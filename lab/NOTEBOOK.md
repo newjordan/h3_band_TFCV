@@ -1449,3 +1449,8 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
 - **Stronger cleanup on C8d's de-popped take** (S2 + `CLEAR` 2 mm, `GAIN_FREE` 1000, 6 passes): 90.0%, wrong 688
   (C8d 679), struck twice 120 (111), pops 6.4 (5.5). The cleanup is saturated: bigger corrections add pops and don't
   remove catches.
+- **C14 = C8 + `KEY_ROUND` + thumb pad at the tip (`RIG_THUMB_EFF_US=0.85,1.0`), C8d recipe: 91.1%** (best; C8d
+  89.9, V3 86.5), missed 170, wrong **602** (best; C8d 679, V3 1,334), struck twice 110, timing p90 50 ms, holds cut
+  8.6%, broken 0.09%, pops 6.1 (C8d 5.5), crossed 0.99% (0.77). The two changes complement: KEY_ROUND's fewer
+  catches, the tip press's notes and fewer crossings. New best candidate; rendering it (lease piano-c14). The thumb
+  change is a rig decision for the user.
