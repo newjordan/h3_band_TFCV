@@ -4,7 +4,8 @@
   h3_run.py JOB.json [--dump]
 
 JOB = {tag, mode: A|A_ref|A_guide|B, image, audio, [video], prompt, seed, steps, width, height, length,
-       [video_denoise], [zone_box_start, zone_box_end, zone_denoise], [scheduler], [sampler], [model]}
+       [video_denoise | video_strength], [zone_box_start, zone_box_end, zone_denoise], [scheduler], [sampler], [model],
+       [control: {video, strength, start, end, patch}], [no_first]}
 Paths in image/audio/video are relative to the ComfyUI input dir.
 
 A       = first frame (fl2va keyframe) + the track frozen INTO the target audio stream (mask 0), video generated.
@@ -30,6 +31,21 @@ def api(path, data=None):
         return json.loads(r.read())
 
 
+H3_VIDEO_SHIFT = 12.0       # MiniMax H3's sampling shift
+
+
+def video_mask(j):
+    """The video stream's mask value. "video_denoise" is the mask itself, a start sigma in H3's SHIFTED sigma space
+    (shift 12), which is compressed near 1: 0.92 re-runs only the late half of the flow. "video_strength" s is the
+    fraction of (unshifted) flow time to regenerate, converted with sigma = S*s / (1 + (S-1)*s) and rounded up to the
+    1/256 token grid. Band Aid's lock: video_strength 0.88 (the blockout plate) + the Fun ControlNet at 1.0."""
+    if "video_strength" in j:
+        s = float(j["video_strength"])
+        sig = H3_VIDEO_SHIFT * s / (1.0 + (H3_VIDEO_SHIFT - 1.0) * s)
+        return min(1.0, -(-round(sig * 256.0, 6) // 1) / 256.0)
+    return float(j.get("video_denoise", 1.0))
+
+
 def build(j):
     g = {}
 
@@ -40,6 +56,16 @@ def build(j):
     model = n(1, "UNETLoader", unet_name=j.get("model", config.H3_UNET), weight_dtype="default")
     clip = n(2, "CLIPLoader", clip_name=j.get("clip", config.H3_CLIP), type="minimax", device="default")
     vae = n(3, "VAELoader", vae_name=j.get("vae", config.H3_VAE))
+    if j.get("control"):
+        # Band Aid lock: H3 Fun ControlNet Union 2.0 on a control video (the Canny of the blockout's normal pass,
+        # Blockout Reference Edges), injected into the DiT blocks at every step in [start, end]
+        c = j["control"]
+        patch = n(40, "ModelPatchLoader", name=c.get("patch", config.H3_FUN_CONTROLNET))
+        cv = n(41, "LoadVideo", file=c["video"])
+        g["42"] = {"class_type": "GetVideoComponents", "inputs": {"video": cv}}
+        model = n(43, "MiniMaxH3FunControlNetApply", model=model, model_patch=patch, vae=vae,
+                  strength=float(c.get("strength", 1.0)), start_percent=float(c.get("start", 0.0)),
+                  end_percent=float(c.get("end", 1.0)), control_video=["42", 0])
     avae = n(4, "VAELoader", vae_name=j.get("audio_vae", config.H3_AUDIO_VAE))
     aud = n(6, "LoadAudio", audio=j["audio"])
     mode = j["mode"]
@@ -48,6 +74,8 @@ def build(j):
         g["21"] = {"class_type": "GetVideoComponents", "inputs": {"video": vid}}
         frames = ["21", 0]
         first = n(22, "ImageFromBatch", image=frames, batch_index=0, length=1)
+        if j.get("image"):                         # a styled first frame (e.g. the previous clip's last frame)
+            first = n(5, "LoadImage", image=j["image"])
         venc = n(23, "VAEEncode", pixels=frames, vae=vae)
     else:
         first = n(5, "LoadImage", image=j["image"])
@@ -59,7 +87,9 @@ def build(j):
     else:
         g["7"] = {"class_type": "MiniMaxH3ImageToVideo", "inputs": {
             "clip": clip, "vae": vae, "prompt": j["prompt"], "width": j["width"], "height": j["height"],
-            "length": j["length"], "first_frame": first}}
+            "length": j["length"]}}
+        if not j.get("no_first"):                  # no_first: the plate + control only, no grey frame 0 pinned
+            g["7"]["inputs"]["first_frame"] = first
     pos, lat = ["7", 0], ["7", 1]
     if mode == "A_guide":
         pos = n(8, "MiniMaxH3AddGuide", positive=pos, audio_vae=avae, latent=lat, audio=aud, frame_idx=0)
@@ -69,7 +99,7 @@ def build(j):
             if k in j:
                 extra[k] = j[k]
         lat = n(8, "H3BandZoneLatent", latent=lat, audio_vae=avae, audio=aud,
-                video_denoise=float(j.get("video_denoise", 1.0)), audio_denoise=0.0, **extra)
+                video_denoise=video_mask(j), audio_denoise=0.0, **extra)
     smp = n(9, "KSamplerSelect", sampler_name=j.get("sampler", "res_multistep"))
     sig = n(10, "BasicScheduler", model=model, scheduler=j.get("scheduler", "simple"), steps=j["steps"], denoise=1.0)
     noise = n(11, "RandomNoise", noise_seed=j["seed"])

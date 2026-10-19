@@ -26,6 +26,7 @@ COMFY_OUTPUT = _p("H3B_COMFY_OUTPUT", REPO / "ComfyUI" / "output")
 OUTPUT_PREFIX = os.environ.get("H3B_OUTPUT_PREFIX", "h3band")  # subfolder of COMFY_OUTPUT for takes
 
 # MiniMax H3 file names as ComfyUI sees them (weights are not part of this repo)
+H3_FUN_CONTROLNET = os.environ.get("H3B_FUN_CONTROLNET", "minimax_h3_fun_controlnet_union_2.0_pruned_bf16.safetensors")
 H3_UNET = os.environ.get("H3B_UNET", "minimax_h3_fl2va_pruned_nvfp4.safetensors")
 H3_CLIP = os.environ.get("H3B_CLIP", "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors")
 H3_VAE = os.environ.get("H3B_VAE", "minimax_h3_video_vae_fp16.safetensors")
