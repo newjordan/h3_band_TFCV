@@ -1842,6 +1842,11 @@ FINGER_REFINE = True        # solve the fingers, smooth their joint paths, solve
 FINGER_LAMBDA = 6.0         # finger joint path smoothing (Whittaker, 2nd differences)
 FINGER_PRESS_W = 8.0        # ... pinned this hard on the frames the finger is on its key
 FINGER_PRIOR = 5e-3         # how hard a finger holds its smoothed path in the second solve
+STRIKE_KEEP = None          # {"raw": share of the plan's unsprung fingertip height used during a strike, "pin": the joint
+                            # path smoothing's weight on strike frames}; None: C14 (the tip spring, the path smoothing at
+                            # FINGER_PRESS_W and the held prior stretch a 60 ms strike over 4-5 frames: keys go down at
+                            # 0.04-0.12 m/s, soft notes don't sound or sound > 120 ms late, hammer vs written velocity
+                            # r ~0.1 within a piece)
 FINGER_SPLIT = True         # with the wrist set, each finger solves on its own
 FREE_FOLLOW = True          # free fingers' float targets move with the solved wrist (across/along the keys)
 PRESS_OVERSHOOT = 0.006     # m the pressing pad aims below the key bed (0: at the bed; v18: 0.003)
@@ -2291,6 +2296,8 @@ def _pass3_rig(hands, times, j0, N, start, energy, HEAD, body, fps, TORSO=None):
             for f in range(5):
                 a, b = 6 + rig.sl[f], 6 + rig.sl[f + 1]
                 w = np.array([FINGER_PRESS_W if H["act"][j][f] is not None else 1.0 for j in range(j0, N)])
+                if STRIKE_KEEP:                         # a strike is pinned hard: the smoothing doesn't slow it
+                    w = np.where(H["STRK"][j0:N, f] > 0, STRIKE_KEEP["pin"], w)
                 X_[:, a:b] = np.clip(_whittaker(X_[:, a:b], w, FINGER_LAMBDA), rig.lo[a - 6:b - 6], rig.hi[a - 6:b - 6])
             QP[name] = X_
 
@@ -2557,7 +2564,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         sgn = 1 if name == "R" else -1
         CL = roles[name]
         C = np.zeros((N, 3)); ROLL = np.zeros(N); TIP = np.zeros((N, 5, 3)); act = [[None] * 5 for _ in range(N)]
-        TCH = np.zeros(N); YAW = np.zeros(N); FREE = np.zeros((N, 5))
+        TCH = np.zeros(N); YAW = np.zeros(N); FREE = np.zeros((N, 5)); STRK = np.zeros((N, 5))
         shoulder = np.array([cx + sgn * 0.19, -0.45])
         for j in range(N):
             C[j], _, _ = _centre(H, H["xh"][j], H["nbh"][j], times[j] + LEAD_HAND)
@@ -2596,6 +2603,10 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                             tip = tip.copy()
                             tip[1] += CL["over"][j] * max(0.0, hitpad(e[2], f)[1] - 0.002 - c[1])
                         act[j][f] = (e[2], float(c[0]), float(c[2]))
+                        if STRIKE_KEEP:                       # the strike itself (from its lift to the key bed)
+                            S_ = strike_time(max(e[5], FORCE["touch"]) if FORCE else e[5])
+                            if e[0] - S_ - 1.0 / fps <= t <= e[0] + 1.0 / fps:
+                                STRK[j][f] = 1.0
                         if e[0] - 0.15 <= t <= e[1]:
                             playing.append(f)
                         break
@@ -2668,6 +2679,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                 psi_reach = 0.0
             YAW[j] = float(np.clip(0.6 * psi_arm + 0.4 * psi_reach, -YAW_MAX, YAW_MAX))
         H["C"], H["ROLL"], H["TIP"], H["act"], H["TCH"], H["YAW"], H["FREE"] = C, ROLL, TIP, act, TCH, YAW, FREE
+        H["STRK"] = STRK
 
     # ---- two hands close: the over hand rises, goes deeper and pitches down (wrist up); the under hand drops a
     # little, flattens, comes to the key fronts and turns its fingers away; a leaping over hand arcs higher.
@@ -2708,6 +2720,9 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         soft = dynamics.filter_track(H["TIP"].reshape(N, 15), fps, *SPRING_FREE).reshape(N, 5, 3)
         wf = np.clip(dynamics.filter_track(H["FREE"], fps, 6.0, 1.0, 1.0), 0, 1)[:, :, None]
         H["Tf"] = wf * soft + (1 - wf) * firm          # a finger off duty goes limp: it trails, floats and settles
+        if STRIKE_KEEP:                                # a strike keeps the plan's own height curve (the tip spring
+            m = np.clip(np.maximum(H["STRK"], 0.5 * (np.roll(H["STRK"], 1, 0) + np.roll(H["STRK"], -1, 0))), 0, 1)
+            H["Tf"][:, :, 2] += STRIKE_KEEP["raw"] * m * (H["TIP"][:, :, 2] - H["Tf"][:, :, 2])    # rounds it off)
         H["WF"] = wf[:, :, 0]                          # (the eased off-duty share, per finger)
     TORSO = _torso_drive(hands, body, N, fps)
     HEAD = np.array([performer.head_angles(t, beats, downbeats, float(energy[j]), sched) for j, t in enumerate(th)])

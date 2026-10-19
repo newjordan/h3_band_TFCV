@@ -1493,3 +1493,18 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
 - Pad guard variants on C14's take (whole suite): `PAD_GUARD` (0.5, 4 mm) 91.1%, wrong 599 (604), struck twice 111
   (113), pops 5.56 (5.65), crossed 0.99%, pressing-thumb catches 118 (120): a hair better, inside what a recipe change
   is worth; `PAD_GUARD_DIR` (slides toward the centre line free) wrong 618: worse. The cleanup stays S2.
+- **Missed notes on C14 (171, `tools/missed.py`):** key fully down but no matched blow 59 (Chopin 46), plan pressed
+  but the physics key not down 46, no finger assigned 41 (Rach climax), the solve never pressed 25. Traces
+  (`ACTION_TRACE`): B4 at 131.54 (written vel 88) goes down over ~140 ms decelerating, blows 144 ms late (unmatched:
+  missed + a wrong blow); A4 at 44.70 (pp) passes let-off at 31 mm/s, too slow to throw the hammer to the string.
+  **Cause: the solve slows every strike.** The plan strikes from 12-25 mm in ~60 ms (~0.5 m/s at the bed); the tip
+  spring (`SPRING_TIP`), the joint-path smoothing (`FINGER_REFINE`: strike frames weighted `FINGER_PRESS_W` 8 against
+  `FINGER_LAMBDA` 6) and the second solve's prior to that path stretch it over 4-5 frames: key speeds 0.04-0.12 m/s,
+  hammer vs written velocity r 0.07 (Chopin) / 0.10 (Rach) within a piece. (So the C6d note that 24 fps can't show
+  a strike was wrong: one frame can, the solve smooths it away.)
+- New plan switch **`STRIKE_KEEP`** {"raw", "pin"}: frames of a strike (lift to key bed, +-1 frame) take the plan's
+  unsprung fingertip height and are pinned at "pin" in the joint-path smoothing. Window 130.6-132.2 with {1.0, 100}:
+  R5's B4 fully down one frame after its onset (C14: 140 ms later), blow at -10 ms, hammer 2.0 m/s. A crisper
+  strike on screen: a look call for the user. **C19 = C14 + `STRIKE_KEEP` {1.0, 100}** queued with C17 (6 parts
+  each), then C18 = C14 + `PRESS_AXES` x 12 (pressing fingers lean toward the thumb side: 149 vs 61 catches)
+  (`tools/queue_c17_19_18.sh`).
