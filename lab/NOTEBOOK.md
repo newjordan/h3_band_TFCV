@@ -1543,3 +1543,9 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   -36%). From here: both judges reported, the massless one as the pessimistic bound and 0.2 kg (the published model)
   as the realistic one; skin in wrong key tops stays a visual fault either way. Re-judging V3 / C8d / C14 / C16 at
   0.2 kg for one table (`tools/rejudge_km.sh`).
+- **One table, both judges** (sounded / missed / wrong / struck twice / timing p90; massless | key mass 0.2 kg):
+  V3 86.5% / - / 1,334 / 216 | 91.8% / 158 / 964 / 123 / 57 ms; C8d 89.9% / 194 / 679 / 111 | 94.5% / 105 / 552 / 93 /
+  61; C14 (de-popped) 91.1% / 171 / 604 / 113 | 94.7% / 101 / 429 / 79 / 57; **C15 90.8% / 176 / 548 / 119 | 94.3% /
+  110 / 373 / 76 / 59**; C16 90.8% / 177 / 548 / 112 | 94.3% / 110 / 410 / 83 / 58. C15's thumb fix holds whole
+  under inertia (its catches were real presses); C16's free-finger gain halves (many were grazes a real key would not
+  sound). C15 is the best candidate on both.
