@@ -1600,3 +1600,12 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   1.74%, broken 0.48%: worse everywhere; dropped. **C23 = C20 + `STRIKE_KEEP`** queued after C21/C22 (12 parts).
   Key mass 0.2 kg: C20 94.3% / missed 110 / wrong **349** (best; C15 373) / struck twice 96 (76) / p90 58 ms; C18 92.2%
   / 149 / 374 / 117 / 57.
+- The user (09:00): go slowly; "if we don't end up matching our hands perfect, we are losing the battle"; the playing
+  work now moves to the ComfyUI workflow: a lock on our reference. Chain stopped after clip 0 (no clip runs before the
+  previous one is checked). New `h3_tools/lockcheck.py`: per frame inside the Blender hand mask, the distance from each
+  reference edge (Canny of the normal pass, the ControlNet's own input) to the nearest H3 edge and back, plus an
+  overlay video (reference edges red over H3). Calibration (reference edges within 3 px): Blender grey plate vs normal
+  97% (ceiling); yesterday's H3 skeleton ov125 82% (p10 72%), kh111 86%. Overlays: arms, wrist bones and most finger
+  bones sit on the lines; the misses are fingers in fast moves (a ghost finger beside the real one, a thin extended
+  thumb dropped). A finger is ~10 px wide there, under one 32 px H3 token: next tests a closer locked-off camera,
+  control strength, anchors; one change per short clip.
