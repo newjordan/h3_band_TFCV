@@ -1609,3 +1609,10 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   bones sit on the lines; the misses are fingers in fast moves (a ghost finger beside the real one, a thin extended
   thumb dropped). A finger is ~10 px wide there, under one 32 px H3 token: next tests a closer locked-off camera,
   control strength, anchors; one change per short clip.
+- **rach_open clip 0** (C19 take, wide overhead still, 124 frames, recipe as hand looks; H3 990 s): reference edges
+  within 3 px p10/50/90 70 / 78 / 82% (ceiling 97%), flow_err 0.71, flow_cos 0.80. Overlay (frames 49-54, worst
+  61%): arms and wrist bones on the lines; two failure types: temporal ghosts (faint bones where fingers were 1-2 frames
+  earlier; H3's latent frames are 4 video frames, a 60 ms strike falls inside one) and the crowded spot where the two
+  hands' thumbs cross. One change per test on the same 124 frames: **T1** plate held harder (`video_strength` 0.75,
+  a grey bony plate is close to the skeleton look); **T2** a locked-off overhead camera fitted to the hands only
+  (`edit_c19_close.json`, ~1.45x closer: fingers ~2x wider in px; run `rach_open_close`).

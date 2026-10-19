@@ -30,6 +30,10 @@ RUNS = {
     "rach_open": {"edit": ROOT / "edit_c19_still.json", "f0": 993, "clips": [124, 124, 73],
                   "view": "Seen from directly above the keyboard",
                   "sound": HOME / "h3/hands_loop/action_20261017/suite_c19/cand/action_km02_audio/model.wav"},
+    # the same first clip with a locked-off overhead camera fitted to the hands only (~1.45x closer): lock test
+    "rach_open_close": {"edit": ROOT / "edit_c19_close.json", "f0": 993, "clips": [124],
+                        "view": "Seen from directly above the keyboard",
+                        "sound": HOME / "h3/hands_loop/action_20261017/suite_c19/cand/action_km02_audio/model.wav"},
 }
 
 
