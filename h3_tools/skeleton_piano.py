@@ -34,6 +34,9 @@ RUNS = {
     # frame, originals kept), the sound slowed to half speed: H3's 4-frame latent spans half the motion. Lock test.
     "rach_open_x2": {"edit": ROOT / "edit_c19_x2.json", "f0": 0, "clips": [124],
                      "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x2_c0.wav"},
+    # both: the close camera at twice the frame density (T4)
+    "rach_open_close_x2": {"edit": ROOT / "edit_c19_close_x2.json", "f0": 0, "clips": [124],
+                           "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x2_c0.wav"},
     # the same first clip with a locked-off overhead camera fitted to the hands only (~1.45x closer): lock test
     "rach_open_close": {"edit": ROOT / "edit_c19_close.json", "f0": 993, "clips": [124],
                         "view": "Seen from directly above the keyboard",
