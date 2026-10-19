@@ -1441,3 +1441,8 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   "corner" is unused). `rig/ik.py RIG_THUMB_EFF_US` (env) restricts the thumb's to the tip end; **C13 = C8 +
   `RIG_THUMB_EFF_US=0.85,1.0`** (C8d recipe) solving: aimed at the 152 pressing-thumb catches (a flat thumb's ~27 mm
   base over both neighbours). A rig / pose change: the user's call even if it wins.
+- **C13 = C8 + thumb pad at the tip (`RIG_THUMB_EFF_US=0.85,1.0`; C8d recipe): 90.8%** (C8d 89.9; Debussy 80.4,
+  Rach 92.7), wrong 713 (679), struck twice 121, pops 5.1 (5.5), crossed 0.69% (0.77), broken 0.21 (0.13). Pressing-
+  thumb catches 184 (152): worse, so the flat wide base was not the whole story (the tilted thumb still lands on its
+  neighbours). More notes and smoother but more wrong keys. **C14 = C13 + `KEY_ROUND`** (C12 cut wrong keys 47 but
+  crossed more; C13 crosses less) on the suite.
