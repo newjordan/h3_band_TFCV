@@ -1598,3 +1598,5 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   struck twice 124 (119), timing p90 53 ms, pops **4.71** (5.22; smoothest), crossed 1.33% (1.03). The release arc
   stacks on the thumb fix. **C18 = C15 + `PRESS_AXES` x 12:** 89.4%, wrong 574, struck twice 164, pops 8.9, crossed
   1.74%, broken 0.48%: worse everywhere; dropped. **C23 = C20 + `STRIKE_KEEP`** queued after C21/C22 (12 parts).
+  Key mass 0.2 kg: C20 94.3% / missed 110 / wrong **349** (best; C15 373) / struck twice 96 (76) / p90 58 ms; C18 92.2%
+  / 149 / 374 / 117 / 57.
