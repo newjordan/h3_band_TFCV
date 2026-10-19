@@ -1594,3 +1594,7 @@ with the view words of the shot; clip k > 0 opens on clip k-1's last H3 frame (`
 the cuts between clips; sound = the C19 hands on the key-weight piano. First run `rach_open`: the Rachmaninoff opening,
 overhead still shot, frames 993-1313 (song 81.3-94.7 s), clips 124 + 124 + 73 (~28 min of H3 per 124 frames).
 Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and vs the plate.
+- **C20 = C15 + `RELEASE_ARC`** (weightless): 91.4% (C15 90.8), missed 164 (176), wrong **488** (548; best weightless),
+  struck twice 124 (119), timing p90 53 ms, pops **4.71** (5.22; smoothest), crossed 1.33% (1.03). The release arc
+  stacks on the thumb fix. **C18 = C15 + `PRESS_AXES` x 12:** 89.4%, wrong 574, struck twice 164, pops 8.9, crossed
+  1.74%, broken 0.48%: worse everywhere; dropped. **C23 = C20 + `STRIKE_KEEP`** queued after C21/C22 (12 parts).
