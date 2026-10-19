@@ -1490,3 +1490,6 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   landing. **C17 = C14 + `LEAP_LIFT` 25 mm** queued after C15/C16.
 - Rach climax (~120.5 s, ~128.4 s): a few notes go to a thumb 20-36 cm from its key (missed anyway, their
   neighbours caught on the way): fingering, not motion.
+- Pad guard variants on C14's take (whole suite): `PAD_GUARD` (0.5, 4 mm) 91.1%, wrong 599 (604), struck twice 111
+  (113), pops 5.56 (5.65), crossed 0.99%, pressing-thumb catches 118 (120): a hair better, inside what a recipe change
+  is worth; `PAD_GUARD_DIR` (slides toward the centre line free) wrong 618: worse. The cleanup stays S2.
