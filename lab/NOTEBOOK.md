@@ -1458,3 +1458,5 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   0:42 hook is milder than C8d's; 5:32 crossing and the 4:17 fan unchanged. Posted: band site top section
   `piano-c14-render` (whole suite, C8d | C14 Rach side by side, V3 / C8d / C14 table). Awaiting the user's eye; the
   thumb-tip press (`RIG_THUMB_EFF_US`) is a rig decision.
+- **Stricter de-pop on C14** (`LIMIT` 10 rad/s, `HALF` 5 frames; was 12 / 4): 91.1%, wrong 604 (602), struck twice
+  113, pops 6.07 -> **5.65**, crossed 1.01%. Free smoothness: now the depop defaults.

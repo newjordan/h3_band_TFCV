@@ -13,8 +13,8 @@ os.environ.setdefault("HAND_SCALE", "1")
 from . import piano as P
 from .clean import _q_from_angles, _rebuild
 
-LIMIT = 12.0            # rad/s: target ceiling for a free finger's joints (the metric's pop line is 15)
-HALF = 4                # frames each side of a pop that the smoothing may move
+LIMIT = 10.0            # rad/s: target ceiling for a free finger's joints (the metric's pop line is 15; 12 on C8d; 10 on C14: pops 6.1 -> 5.65, notes and wrong keys unchanged)
+HALF = 5                # frames each side of a pop that the smoothing may move (4 on C8d)
 LAND = 3                # frames before a press that count as the press (the strike path stays)
 LAM = 30.0              # Whittaker smoothing strength inside a pop window
 ROUNDS = 4
