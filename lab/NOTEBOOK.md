@@ -1427,3 +1427,8 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   twice 126 (111), pops 4.5/min, but crossed tips 1.54% and white-key-on-black catches 116 (110): the shift didn't
   reach the catches it aimed at (the solve doesn't land pads to a few mm) and it crowds neighbouring fingers. Not
   adopted. C8d stays the candidate.
+- **C11 = C8 + gentle `THUMB_CLEAR` (C8d recipe): 89.4%** (C8d 89.9), wrong 650 (679), struck twice 122 (111), pops
+  4.45. Pressing-thumb catches 154 (C8d 152): the arch does not reach them (the drop is free fingers, noise). The
+  MPFB thumb's end phalanx is ~27 mm wide near its base (half-width 13.5 mm at u 0.6), wider than a 22.3 mm key top:
+  a flat pressing thumb overlaps both neighbours. Fixing it means pressing with the narrower tip (more IP flex, a
+  thumb effector nearer the tip): a pose / rig decision (the hand stays the stock MPFB at scale 1.0). Not adopted.
