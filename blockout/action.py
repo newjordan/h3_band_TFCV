@@ -48,6 +48,16 @@ K_PAD = 1000.0          # N/m: fingertip pulp stiffness (~1 N/mm)
 DW, UW = 0.49, 0.245    # N at the key front: down-weight 50 g, up-weight 25 g (a regulated grand)
 A_RETURN = 6.0          # m/s^2: fastest free rise of a let-go key (~58 ms from the key bed to the top)
 RATIO = 5.0             # hammer travel per key-front travel
+KEY_MASS = float(os.environ["ACTION_KEY_MASS"]) if os.environ.get("ACTION_KEY_MASS") else None
+                        # kg: the key + action's mass at the key front, pushed through the pulp spring (K_PAD) on the way
+                        # down (~0.21 kg in Dijksterhuis's model, ~0.4 kg from the parts' inertias, both dominated by
+                        # the hammer at the action's ratio squared); None: the key goes straight to where the finger's
+                        # force balances its weight (no inertia: a fast 1-2 mm graze of a passing finger throws the hammer
+                        # at 1-2 m/s and sounds; 295 of C15's 667 unmatched blows come from keys that never went half
+                        # down at a frame)
+KEY_MASS_KEY = 0.05     # kg: the key (and wippen) alone at its front, once the hammer has left the jack: a key the
+                        # finger stops pushing doesn't coast on the hammer's inertia (with one lumped mass a pp press that
+                        # stopped 4 mm in coasted to the key bed)
 BLOW = 0.047            # m: hammer rest to string
 LETOFF = 0.0025         # m: the jack escapes this far before the string
 G_HAMMER = 9.81         # m/s^2: a free hammer falls back like a weight
@@ -403,14 +413,28 @@ def simulate(anim, t0=None, t1=None, chunk=None):
                 damper_up = u > U_DAMP_UP; armed = u < U_RESET; state = np.where(armed, 0, 2)
                 h = np.minimum(RATIO * u, BLOW - LETOFF - 0.002); hv = np.zeros(NK)
                 first = False
-            un = u.copy()
-            dn = ud > u
-            un[dn] = np.minimum(ud[dn], KEY_TRAVEL)
-            up = ~dn & (uu < u)
-            vf = np.minimum(v, 0.0) - A_RETURN * dt
-            un[up] = np.maximum(np.maximum(uu[up], u[up] + vf[up] * dt), 0.0)
-            vn = (un - u) / dt
-            u, v = un, vn
+            if KEY_MASS:                                 # the key and action have mass: the fingertip's pulp pushes it
+                F = np.where(a > 0, K_PAD * np.maximum(a - u * lv, 0.0) * lv, 0.0)     # (force at the key front)
+                dn = (F > DW) | (v > 0)                  # being pushed down, or still moving down under its momentum
+                m_ = np.where(state == 0, KEY_MASS, KEY_MASS_KEY)     # the hammer's inertia only while it rides the
+                vd = np.maximum(v + (F - DW) / m_ * dt, 0.0)          # jack (thrown or escaped, it flies on its own)
+                un = u.copy(); vn = np.zeros(NK)
+                un[dn] = np.minimum(u[dn] + vd[dn] * dt, KEY_TRAVEL)
+                vn[dn] = np.where(un[dn] >= KEY_TRAVEL, 0.0, vd[dn])                    # the key bed stops it
+                up = ~dn & (uu < u)                      # let go: it rises as before (on its own weight, A_RETURN)
+                vf = np.minimum(v, 0.0) - A_RETURN * dt
+                un[up] = np.maximum(np.maximum(uu[up], u[up] + vf[up] * dt), 0.0)
+                vn[up] = (un[up] - u[up]) / dt
+                u, v = un, vn
+            else:
+                un = u.copy()
+                dn = ud > u
+                un[dn] = np.minimum(ud[dn], KEY_TRAVEL)
+                up = ~dn & (uu < u)
+                vf = np.minimum(v, 0.0) - A_RETURN * dt
+                un[up] = np.maximum(np.maximum(uu[up], u[up] + vf[up] * dt), 0.0)
+                vn = (un - u) / dt
+                u, v = un, vn
             # hammer
             on = state == 0
             he, hve = RATIO * u, RATIO * v

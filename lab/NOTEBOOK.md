@@ -1525,3 +1525,15 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   finger share is the same (C14 / C15 / C16 / C8d: middle 21.8 / 22.6 / 20.7 / 20.6% of hand-frames, PIP + DIP <
   25 deg, `tools/straight.py`). Unchanged from C14: 3:45 the hands stacked in one register, 5:33 the over/under
   crossing, straight right finger at 1:11.
+- **The judge's keys have no mass.** `action.simulate` puts a key where the finger's force balances its weight at once,
+  so a passing finger's fast 1-2 mm graze moves the key at the skin's speed (0.3-0.4 m/s) and throws the hammer at
+  1-2 m/s: it sounds (trace: C4 at 67.27, R2's approach graze 1.5 mm, hammer 1.9 m/s, a mf blow 160 ms early). On C15
+  295 of the 667 unmatched blows (wrong + struck twice) come from keys that never went half down at a frame (206 under
+  3 mm); matched notes: 23 of 1,742. New judge option **`ACTION_KEY_MASS`** (kg at the key front; ~0.21 kg in
+  Dijksterhuis's model, ~0.4 kg from the parts' inertias, dominated by the hammer): on the way down the key is pushed
+  through the pulp spring (K_PAD) and carries the hammer's inertia only while the hammer rides the jack; once it is
+  thrown or escaped the key alone (`KEY_MASS_KEY` 0.05 kg) coasts. (A single lumped mass let a pp press that stopped
+  4.4 mm in coast to the key bed; fixed.) Release / return unchanged. Default None = the massless judge (all numbers
+  above). **C15 under 0.2 kg: 94.3%** (massless 90.8), missed 110 (176), silent presses 27 (66), wrong **373** (548),
+  struck twice 76 (119), timing p90 59 ms (54; the Rach 44 ms late on average, 34), velocity r 0.21 (0.42), holds cut
+  8.3% (8.2). Bracketing 0.1 / 0.4 kg running.
