@@ -1578,3 +1578,7 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   C16: plays through, nothing broken or missing; at the edit's camera distances the crisper strikes are not jarring
   (the 24 fps strips look alike; pose differences frame to frame, no snaps). Same known spots as C14/C16 (3:45 stacked
   hands, 5:33 crossing, straight fingers at 1:11 / 4:18). Posting it (sound from the key-mass piano) with both judges.
+- **Posted** band site top section `piano-c19-render` (manifest backup `manifest.backup_20261019_c19.json`): C19 whole
+  suite as an A/B player (C19 hands on the key-weight piano | the song | C19 on the weightless piano, one sampler and
+  pedal), the both-judges table (V3 / C14 / C15 / C19), the user's calls (thumb-tip press; crisper strikes), the 22
+  unplayable notes, and what's running (C20, C18, C21, C22).
