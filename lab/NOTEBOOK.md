@@ -1435,3 +1435,9 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
 - **C12 = C8 + `KEY_ROUND` (solver collisions with the judge's rounded skin, normal weight; C8d recipe): 90.3%**,
   wrong **632** (C8d 679), struck twice 131 (111), pops 6.4 (5.5; Rach 21 vs 16), crossed 1.33% (0.77). Fewer wrong
   keys at the cost of visibly worse motion (crossings, pops): not adopted. C8d stays the candidate.
+- **Early touches (C8d, 70):** another finger brushing the key before its striker 32; the striker itself grazing its
+  key 0.12-0.37 s early on the way in 25; same finger / same key quick repeats 13. No single knob.
+- **Thumb at the tip:** the rig's pad is the soft-min lowest skin over u 0.55-1.0 of the end bone (the `eff_local`
+  "corner" is unused). `rig/ik.py RIG_THUMB_EFF_US` (env) restricts the thumb's to the tip end; **C13 = C8 +
+  `RIG_THUMB_EFF_US=0.85,1.0`** (C8d recipe) solving: aimed at the 152 pressing-thumb catches (a flat thumb's ~27 mm
+  base over both neighbours). A rig / pose change: the user's call even if it wins.
