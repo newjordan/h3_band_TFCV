@@ -1423,3 +1423,7 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   lifting ~110. Suites running (the C8d recipe, `after_suite.sh` DEPOP=1): **C10 = C8 + `BLACK_SHY` 3 mm** (a white
   key with a black key on one side only, C E F B, is struck 3 mm toward its open side); **C11 = C8 + gentle
   `THUMB_CLEAR`** (alone; C7 had it mixed with the hover fade).
+- **C10 = C8 + `BLACK_SHY` 3 mm (C8d recipe): 90.1%** (C8d 89.9; Debussy 76.3 -> 79.4), wrong 692 (679), struck
+  twice 126 (111), pops 4.5/min, but crossed tips 1.54% and white-key-on-black catches 116 (110): the shift didn't
+  reach the catches it aimed at (the solve doesn't land pads to a few mm) and it crowds neighbouring fingers. Not
+  adopted. C8d stays the candidate.
