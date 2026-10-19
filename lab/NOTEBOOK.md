@@ -1616,3 +1616,7 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   hands' thumbs cross. One change per test on the same 124 frames: **T1** plate held harder (`video_strength` 0.75,
   a grey bony plate is close to the skeleton look); **T2** a locked-off overhead camera fitted to the hands only
   (`edit_c19_close.json`, ~1.45x closer: fingers ~2x wider in px; run `rach_open_close`).
+- **T2 (close locked-off overhead camera, ~1.45x closer):** at a fixed 3 px 65 / 72 / 77% (p10/50/90) but that is
+  stricter here (the same physical error is 1.45x more px); at the scale-matched 4.35 px **73 / 80 / 85%** (wide clip
+  0 at 3 px: 70 / 78 / 82%), render edges on the reference 77% (75%). A small gain; most bones sit on the lines; the
+  remaining misses are temporal ghosts (a faint finger where it was a frame earlier). T3 (2x frame density) rendering.
