@@ -1673,3 +1673,11 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   lower within 4-8 frames; it compounds. Fixes: chain from the PNG (`last_frame` now copies the runner's last PNG);
   **T9a** = every clip on its own (`chain: False`, no keyframe; clip 0 is the shared no-keyframe render) to see whether
   the no-keyframe exposure holds across clips and how the seam looks. The 1920 test (T6b) waits for that call.
+- **Production (chained, 4 clips) final:** 124 frames, 84 / 87 / 89, worst 82% (T2 on the same frames 73 / 80 / 85,
+  worst 65). Lock is good, the look is not: whole-frame grey 26 -> 22 -> 20 -> 18 clip by clip, and by clips 2-3 the keys
+  turn grimy and green with mottled texture. Chained H3 accumulates error; not for the page.
+- **T9a (clip 1 on its own, no keyframe):** 62 frames 83 / 87 / 89, worst 81; grey holds (26 / 25). But the seam pops:
+  frame diff 30 -> 31 is 9.7 (median 5.3; the chained seam 3.5): clip 0 draws chunkier, brighter bones, clip 1 thinner,
+  greyer ones. Chained = smooth seams, decaying look; unchained = clean look, a pop every 1.3 s of music.
+- **T10 (running 14:32):** one 362-frame clip (H3's trained range is ~124-362 frames, per the node's tooltip) of the
+  same 4x take = 90 original frames, 3.8 s, no seam and no chain; ~80 min at 1280x704.

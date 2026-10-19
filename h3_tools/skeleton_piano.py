@@ -58,6 +58,12 @@ RUNS = {
                                  "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x4_full.wav",
                                  "densify": 4, "ref": "rach_open_close", "tol": 4.35, "chain": False,
                                  "inputs_from": "rach_open_close_x4_full"},
+    # T10: one 362-frame clip (the top of H3's trained 124-362 range) of the same dense take: 90 original frames
+    # (3.8 s) with no seam and no chain. Unchained clips keep the look (T9a) but pop at every seam (frame diff 9.7 vs
+    # 5.3 typical); chained clips darken ~3 grey levels a link. Plate/normal/mask frames are the x4_full ones.
+    "rach_open_close_x4_long": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [362],
+                                "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x4_full.wav",
+                                "densify": 4, "ref": "rach_open_close", "tol": 4.35},
     # the same at 1920x1088 (2.25x the H3 tokens, ~57 min a clip): super size on top of the density (T6b = its clip 0)
     "rach_open_close_x4_hd": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [124, 124, 124, 124],
                               "size": (1920, 1088), "view": "Seen from directly above the keyboard",
