@@ -1471,3 +1471,22 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   the key bed to the hover spot, which drags a low finger across its neighbours when the hand shifts). Suites
   running (6 parts at once each, C8d recipe + new depop): **C15 = C14 + `THUMB_AIM` 0**; **C16 = C14 +
   `RELEASE_ARC` {lead 0.5, hold 0.25}**.
+- **The cleanup is saturated (C14's de-popped take, whole suite, `tools/cl_suite.sh`; base 604 wrong, pops 5.65,
+  crossed 1.01%):** `CROSS_GUARD` off 599 / 5.73 / **1.68%**; `TAPER` 1 frame 602 / 5.73 / 1.01; `W_HI` 500 (blend
+  holds the fix) 602 / **9.07** / 0.99; `SMOOTH_LAM` 40 596 / 7.36 / 1.02. ~6,000 of 16,830 hand-frames still have
+  skin in a key after 4 passes whatever the blend. `tools/fix_probe.py`: the per-frame re-solve clears 43/49 free-
+  finger and 116/176 pressing-thumb violations but only 41/90 pressing-finger ones; and `tools/model_vs_mesh.py`: at
+  the wrong blows the rig's skin model sees the same penetration as the mesh (free fingers p50 4.2 vs 4.7 mm), so the
+  model is not blind. What stays is pinned: pressing / landing fingers (the cleanup keeps their pad paths to keep
+  the strikes).
+- **Landing catches are leaps (`tools/landing.py`):** a free finger's catch < 0.15 s before its own note has its pad
+  26 mm (p50) off its key and 7.6 mm below the key-top line 80 ms before the onset: the hand is still travelling
+  low. 95 of 263 free-finger catches happen with the wrist moving > 0.3 m/s. Two finds: (1) **`LEAP_V` is defined
+  twice in piano.py** (0.80 m/s for the hand roles, then 1e9 for the wrist smoothing), so `leap` is always 0 and the
+  over-hand leap arc `LEAP_DZ` / `LEAP_BUNCH` have never fired; left as is (V3/C14 are tuned on it), noted in the code.
+  (2) New plan switch **`LEAP_LIFT`** (m; `LEAP_LIFT_MIN` 4 cm, `LEAP_LIFT_FULL` 20 cm): across each gap between a
+  hand's last let-go (as played, release_far's early lets-go) and its next note, a hand that travels far arcs up
+  (sine, peak mid-gap), free fingers with it; probe on the 154.4 s left-hand leap: +25 mm mid-way, back by the
+  landing. **C17 = C14 + `LEAP_LIFT` 25 mm** queued after C15/C16.
+- Rach climax (~120.5 s, ~128.4 s): a few notes go to a thumb 20-36 cm from its key (missed anyway, their
+  neighbours caught on the way): fingering, not motion.

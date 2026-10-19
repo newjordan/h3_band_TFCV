@@ -1596,6 +1596,11 @@ OVER_YAW = 0.35                     # rad: the over hand turns its fingers in, a
 OVER_ROLL, UNDER_ROLL = 0.30, 0.15  # rad: the over hand rolls its side facing the other hand up; the under hand, down
 LEAP_BUNCH = 0.4                    # share by which a leaping hand's free fingertips close toward the middle finger
 LEAP_DZ, LEAP_V = 0.060, 0.80       # m: extra arc of a hand leaping over the other; sideways speed (m/s) that is a leap
+LEAP_LIFT_MIN, LEAP_LIFT_FULL = 0.04, 0.20   # m of travel across a gap that starts a LEAP_LIFT arc .. gives the full one
+LEAP_LIFT = None                    # m: a hand that lets go and travels far before its next note arcs up this much mid-way
+                                    # (less for a shorter move), its free fingers with it; None: C14 (only a hand leaping over the other
+                                    # arcs: a leap along the keys travels at playing height, fingers 4-7 mm over the
+                                    # white tops, through the black keys; 95 of C14's 263 free-finger catches)
 OVER_FREE_UP = 0.015                # m: the over hand's free fingers lift clear of the under hand ...
 OVER_FREE_BACK = 0.0                # m: ... (curling them in as well runs the PIPs into their stops)
 TUCK = (-0.050, -0.014, -0.038)     # under hand's free thumb tip, hand-local (x: + toward the little finger): under the index/middle metacarpals, below the knuckles
@@ -2412,7 +2417,7 @@ def _close_roles(hands, times, fps):
     pad = np.pad(raw, (a, b), mode="edge")
     near = np.array([pad[j:j + a + b + 1].max() for j in range(N)])     # look ahead (anticipate) and linger
     near = _smooth(_box(near, int(0.15 * fps)))
-    score, leap = {}, {}
+    score, leap, leap_any = {}, {}, {}
     for n, H in hands.items():
         v = np.abs(np.gradient(H["xh"])) * fps
         th = times + LEAD_HAND                                     # the clock xh runs on
@@ -2420,10 +2425,35 @@ def _close_roles(hands, times, fps):
         if len(H["on"]):
             i = np.searchsorted(H["on"], th, side="right") - 1
             held = (i >= 0) & (H["end"][np.clip(i, 0, None)] >= th - 0.05)
+        held0 = held.copy()
         held &= v < LEAP_V                                        # this fast, the hand is in the air whatever rings on
         rate = (np.searchsorted(H["on"], times + 0.5) - np.searchsorted(H["on"], times - 0.5)).astype(float)
         score[n] = _box(np.where(held, v, -1.5 * v), int(0.3 * fps)) + 0.008 * rate
         leap[n] = np.clip(_box(np.where(held, 0.0, v), int(0.2 * fps)) / LEAP_V, 0, 1)
+        # (LEAP_V is redefined as 1e9 further down, the wrist smoothing's knob, so leap[n] is 0 and the over-hand leap
+        # arc LEAP_DZ / LEAP_BUNCH never fire: found 2026-10-19, left as is, V3/C14 are tuned on it)
+        leap_any[n] = np.zeros(N)
+        if LEAP_LIFT:                              # each gap between letting go and the next note: if the hand travels
+            hk = np.zeros(N, bool)                 # far across it, it arcs up over the whole gap (sine, peak mid-way);
+            for f_, evs in H["ev"].items():        # held = a finger on a key as played (release_far's early lets-go),
+                for e in evs:                      # not as written (pedalled legato is never let go)
+                    hk |= (th >= e[0] - 0.05) & (th <= e[1])
+            j = 0
+            while j < N:
+                if hk[j]:
+                    j += 1
+                    continue
+                a = j
+                while j < N and not hk[j]:
+                    j += 1
+                if a == 0 or j >= N:
+                    continue
+                d = abs(H["xh"][j] - H["xh"][a - 1])
+                if d > LEAP_LIFT_MIN:
+                    s_ = (np.arange(a, j) - a + 0.5) / (j - a)
+                    leap_any[n][a:j] = min(1.0, d / LEAP_LIFT_FULL) * np.sin(np.pi * s_)
+        else:
+            leap_any[n] = np.zeros(N)
     d = score["R"] - score["L"]
     r = 1.0 if float((d * near).sum()) >= 0 else 0.0            # 1: the right hand is under
     role = np.empty(N)
@@ -2444,6 +2474,7 @@ def _close_roles(hands, times, fps):
            "L": {"under": near * (1 - role), "over": near * role, "tclose": tc}}
     for n in out:
         out[n]["leap"] = out[n]["over"] * leap[n]
+        out[n]["leap_any"] = leap_any[n]
         out[n]["away"] = np.sign(hands[n]["xh"] - hands["L" if n == "R" else "R"]["xh"] + 1e-9)
     return out, near, role
 
@@ -2519,7 +2550,7 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         roles, near, role = _close_roles(hands, times, fps)
         CLOSE.update(near=near, role=role, times=times)
     else:
-        roles = {n: {k: np.zeros(N) for k in ("under", "over", "leap", "tclose")} | {"away": np.ones(N)} for n in hands}
+        roles = {n: {k: np.zeros(N) for k in ("under", "over", "leap", "leap_any", "tclose")} | {"away": np.ones(N)} for n in hands}
 
     # ---- pass 1: raw targets (read slightly ahead to cancel spring lag)
     for name, H in hands.items():
@@ -2652,6 +2683,8 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
         o, u, lp = roles[name]["over"], roles[name]["under"], roles[name]["leap"]
         dy = o * OVER_DY + u * UNDER_DY
         dz = o * OVER_DZ + u * UNDER_DZ + lp * LEAP_DZ
+        if LEAP_LIFT:                                # any hand moving fast with nothing held is in the air
+            dz = dz + LEAP_LIFT * roles[name]["leap_any"]
         H["C"][:, 1] += dy
         H["C"][:, 2] += dz
         H.setdefault("ROFF", np.zeros((N, 3)))[:, 1:] += np.stack([dy, dz], 1)   # (kept: the wrist model's path gets it too)
