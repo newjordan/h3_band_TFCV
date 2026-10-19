@@ -1,0 +1,5 @@
+# Band Aid custom nodes, inside ComfyUI's own environment (numpy, torch and Pillow ship with ComfyUI)
+numpy
+scipy
+soundfile
+opencv-python-headless

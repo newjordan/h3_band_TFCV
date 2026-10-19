@@ -19,3 +19,8 @@ ComfyUI/
 .venv*/
 __pycache__/
 *.log
+# project page media (small web encodes only)
+!docs/media/*.mp4
+!docs/media/*.jpg
+!docs/media/*.png
+!docs/drums/*.jpg

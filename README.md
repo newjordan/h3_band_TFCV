@@ -1,12 +1,149 @@
-# h3_band_TFCV
+<p align="center"><img src="docs/media/icon.png" width="96" alt="Band Aid icon"></p>
+
+# Band Aid
+
+**Timing for MiniMax H3 music videos.** H3 can paint a pianist or a drummer, but it can't land a key press or a drum hit on the beat from the audio alone. Band Aid animates a simple 3D performer on the real notes in Blender, then has H3 paint the final look over it, so the timing is in the pixels before H3 starts.
+
+ComfyUI custom nodes plus Comfy API and Comfy SDK drivers. An entry for the **Comfy Developer Platform Challenge**.
+
+**Project page:** [`docs/index.html`](docs/index.html) (GitHub Pages from `/docs`: <https://newjordan.github.io/h3_band_TFCV/>)
+
+[![Five H3 hand looks over one Blender blockout](docs/media/kh111_grid_still.jpg)](docs/media/kh111_grid.mp4)
+
+*H3 renders: skeleton, monster, robot, kitty-cat paw and real hands, all following the same Blender blockout (bottom right, the Blender grey plate). Click for the video. More clips: [five looks cycling](docs/media/kh111_cycle.mp4), [plate | ControlNet input | H3](docs/media/kh111_skeleton_trio.mp4), and the [Blender blockout of take C19](docs/media/piano_c19_rach_blender.mp4) with the hands' own sound.*
+
+## How it works
+
+```mermaid
+flowchart LR
+  N[Notes / MIDI<br>or drum onsets] --> P[Blockout Performer<br>Blender]
+  P -->|grey plate| E1[VAE Encode]
+  P -->|normal pass| R[Blockout Reference Edges<br>Canny 20/60]
+  P -->|hand mask| L
+  R -->|control video| C[H3 Fun ControlNet<br>Union 2.0, strength 1.0]
+  E1 -->|video latent, plate 0.88| Z[H3 Band Zone Latent<br>stem frozen in audio]
+  A[Stem audio] --> Z
+  C --> H[MiniMax H3 fl2va<br>mode B]
+  Z --> H
+  H -->|render| L[Blockout Lock Check<br>edges within 3 px]
+```
+
+1. **Notes to motion.** `blockout/piano.py` picks a fingering and moves rigged MPFB2 hands so each finger reaches its key on the note. `blockout/drums.py` does the same for a drummer from drum onsets or a GM drum MIDI.
+2. **Judge on a working piano.** `blockout/action.py` plays a simulated grand action with the animated hands: weighted keys, a hammer with let-off, dampers and pedal. A key sounds only when a finger really presses it, so the audio is what the hands play.
+3. **Render the reference.** Blender renders three passes of the same motion: a grey plate with the look's geometry (skeleton, robot, paw...), a normal pass, and a hand mask.
+4. **Edges from the normal pass.** *Blockout Reference Edges*: Canny 20/60 after a 3 px blur. The normal pass has an edge at every finger and joint; a grey beauty pass has almost none on the fingers.
+5. **H3 paints the look.** fl2va mode B: the grey plate in the video stream at `video_strength` 0.88, H3 Fun ControlNet Union 2.0 at strength 1.0 on the edges, and the stem frozen in H3's audio stream by *H3 Band Zone Latent* (`audio_denoise` 0). The look comes from the geometry in the control and the prompt.
+6. **Measure the lock.** *Blockout Lock Check*: the share of reference edges inside the hand mask that have an H3 edge within 3 px, plus an overlay with the reference edges in red over the render.
+
+## Nodes
+
+| node | class | in | out | needs |
+|---|---|---|---|---|
+| **Blockout Reference Edges** | `BandAidBlockoutReferenceEdges` | `normal_pass` IMAGE, `mask` MASK (optional) | `control` IMAGE | opencv-python |
+| **Blockout Lock Check** | `BandAidBlockoutLockCheck` | `render` IMAGE, `normal_pass` IMAGE, `mask` MASK | `lock_recall` FLOAT, `lock_precision` FLOAT, `report` STRING, `overlay` IMAGE | opencv-python |
+| **H3 Band Zone Latent** | `H3BandZoneLatent` | `latent` LATENT, `audio_vae` VAE, `audio` AUDIO, `video_latent` LATENT (optional) | LATENT | a ComfyUI with MiniMax H3 |
+| **H3 Band Drum Events** | `H3BandDrumEvents` | `audio` AUDIO (a drum stem) | DRUM_HITS | soundfile, scipy |
+| **H3 Band Drum Hits (MIDI)** | `H3BandDrumHitsMIDI` | a GM drum `.mid` in the input folder | DRUM_HITS | |
+| **H3 Band Drum Blockout** | `H3BandDrumBlockout` | `hits` DRUM_HITS | IMAGE (grey kit frames) | Blender |
+
+Each node module loads on its own (`comfy_nodes/__init__.py`), so a ComfyUI without MiniMax H3 still gets the lock and drum nodes.
+
+## Install
+
+The nodes import the repo's `blockout/` and `h3band/` code, so the whole repo is the node package. Clone it into `custom_nodes`; the top-level `__init__.py` loads `comfy_nodes/`.
+
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/newjordan/h3_band_TFCV band-aid
+pip install -r band-aid/requirements.txt          # in ComfyUI's Python environment
+export H3B_BLENDER=/path/to/blender                # for the blockout renders; default: blender on PATH
+```
+
+Or link only the node folder: `ln -s "$PWD/comfy_nodes" ComfyUI/custom_nodes/band_aid` (Windows: `mklink /J`). Use one layout, not both, or the nodes register twice. `pyproject.toml` carries the Comfy Registry metadata (publisher `newjordan`, display name Band Aid).
+
+H3 renders need a ComfyUI with MiniMax H3 and the models from `Comfy-Org/MiniMax-H3` on Hugging Face: `minimax_h3_fl2va_pruned_nvfp4` and `model_patches/minimax_h3_fun_controlnet_union_2.0_pruned_bf16.safetensors`. The tightest audio lock also needs per-token noise masks on nested AV latents (upstream ComfyUI PR #15375); see [How the lock works](#how-the-lock-works-per-token-noise-masks).
+
+## Quickstart through the Comfy API and the Comfy SDK
+
+**H3 over a blockout, through the Comfy API.** `h3band/h3_run.py` turns a small job file into an API-format graph and posts it to `/prompt`. The job's `video` (grey plate), `control.video` (reference edges) and `audio` are paths in ComfyUI's input folder.
+
+```bash
+export H3B_COMFY_URL=http://127.0.0.1:8188
+python h3band/h3_run.py examples/workflows/band_aid_skeleton_job.json --dump   # print the API graph
+python h3band/h3_run.py examples/workflows/band_aid_skeleton_job.json          # queue it
+
+# or post the exported graph yourself
+curl -X POST $H3B_COMFY_URL/prompt -H 'Content-Type: application/json' \
+  -d "{\"prompt\": $(cat examples/workflows/band_aid_h3_lock_api.json)}"
+```
+
+| file | what |
+|---|---|
+| [`examples/workflows/band_aid_h3_lock_api.json`](examples/workflows/band_aid_h3_lock_api.json) | The lock graph in API format (24 nodes): plate and edge control in, H3 fl2va mode B with the Fun ControlNet, the stem frozen by H3 Band Zone Latent, video out. Every node is stock on an H3 ComfyUI except H3 Band Zone Latent. |
+| [`examples/workflows/band_aid_skeleton_job.json`](examples/workflows/band_aid_skeleton_job.json) | The job it was exported from: mode B, `video_strength` 0.88, control strength 1.0, `no_first`, 124 frames at 1280x704, seed 7. |
+| [`examples/workflows/drum_blockout_api.json`](examples/workflows/drum_blockout_api.json) | Drum stem → hits → blockout → MP4. |
+
+**The drum blockout, through the Comfy SDK** (stepupgaming's drivers; details in [Drum blockout in ComfyUI](#drum-blockout-in-comfyui-driven-by-the-comfy-sdk)):
+
+```bash
+python3 -m venv .venv_sdk && .venv_sdk/bin/pip install -r requirements-sdk.txt
+.venv_sdk/bin/comfy-api-proxy run --comfyui http://127.0.0.1:8188 --port 8189 &
+cd h3band
+../.venv_sdk/bin/python sdk_drum_blockout.py ../examples/drums/rock_groove.mid ../work/groove.mp4 --audio ../work/drums.wav
+../.venv_sdk/bin/python sdk_drum_h3.py ../work/C.mp4 --midi ../examples/drums/rock_groove.mid --audio ../work/drums.wav \
+    --blockout --denoise 0.8 --start 13
+```
+
+## Results
+
+**Piano take C19, Blender blockout on the working piano** (`blockout/action.py`):
+
+| measure | realistic judge | strict judge |
+|---|---|---|
+| written notes that sound | **95.0%** | **94.6%** |
+| wrong keys sounded | 398 | 652 |
+
+The realistic judge gives the keys 0.2 kg of action mass; the strict judge uses weightless keys, so any brush of a finger sounds. Timing: 90% within 35 ms. 22 notes are unplayable as transcribed.
+
+**How well H3 holds the blockout** (`h3_tools/lockcheck.py`, the same measure as the Blockout Lock Check node: the share of the reference geometry's edges with an H3 edge within 3 px, inside the hand mask):
+
+| render | edges within 3 px |
+|---|---|
+| Blender grey plate (the ceiling) | 97% |
+| H3 skeleton hands, three clips | 78–86% |
+
+Arms and wrists lock. Fast fingers ghost: H3 sometimes draws a faint finger where it was a frame or two earlier. This is the open problem.
+
+**Drums** (stepupgaming): from the audio alone H3 paints a drummer whose sticks don't follow the hits; over the drum blockout the sticks keep the blockout's timing. The stick-sync table is in [H3 over the drum blockout](#h3-over-the-drum-blockout).
+
+## Limitations
+
+- Fast fingers ghost in H3. A finger is narrower than one 32 px H3 token, and one latent frame spans 4 video frames, so a quick strike can fall inside a single latent frame.
+- 22 notes in the suite are unplayable as transcribed.
+- The piano blockout renders through the Blender scripts in `blockout/`; it isn't a ComfyUI node yet. The drum blockout is.
+- Drums: the timing of the strokes carries over to H3, but not which drum each stroke lands on.
+- One H3 clip is 124 frames. Longer takes are chained clips, each starting from the last frame of the one before (`h3_tools/skeleton_piano.py`).
+
+## Credits
+
+- **newjordan**: piano blockout, working piano, hand looks, the lock nodes and the Comfy API runner.
+- **[stepupgaming](https://github.com/stepupgaming)**: the drum blockout, the drum nodes, the Comfy SDK drivers, H3 over the drum blockout and the stick-sync scorer.
+- MiniMax H3 and the Fun ControlNet Union 2.0 patch (`Comfy-Org/MiniMax-H3`), ComfyUI, the [Comfy SDK](https://docs.comfy.org/development/api-development/sdks) (MIT), Blender.
+- MPFB2 hands (generated meshes CC0, MPFB2 code GPL-3.0). Salamander Grand Piano V3 by Alexander Holm (CC-BY 3.0). Example MIDI from the Mutopia Project; see `examples/piano/README.md`.
+
+---
+
+## Technical notes
+
+The sections below are the working notes behind Band Aid: where it started (per-zone isolated H3 runs for multi-performer band shots), the scorers, the blockout modules and the drum experiments.
 
 Multi-performer music-video shots on **MiniMax H3**: the singer's mouth on the vocal *and* the guitarist's hands on the guitar, in the same shot.
 
-## The problem
+### The problem
 
 H3 generates video and audio jointly, with **one** audio stream and one attention pass over the whole frame. Nothing tells it which sound belongs to which part of the frame. Drive a two-person shot with the full mix and it guesses: everyone sings, or one person performs and the other freezes.
 
-## The approach
+### The approach
 
 1. **Pre-isolate.** Split the song into stems (dry lead vocal, guitar, drums, backing vocals) and define the **zones of action** in the frame (a box per performer).
 2. **Isolated runs.** One H3 run per zone. Only that zone regenerates, driven by **its own stem** frozen into H3's audio stream. Everything outside the zone is locked to the previous take.
@@ -19,7 +156,7 @@ shot spec (zones) ──preflight──▶ cut stems + jobs ──run_chain─�
                                                                     (each take scored per zone)
 ```
 
-## How the lock works (per-token noise masks)
+### How the lock works (per-token noise masks)
 
 `comfy_nodes/h3_band_zone_latent.py` (**H3 Band Zone Latent**) writes per-stream noise masks onto the AV latent:
 
@@ -39,11 +176,11 @@ An isolated run is `mode B` + `video_denoise 0` (the take is locked) + a zone bo
 - **Retiming an H3 take onto the onsets** (time-warping the zone with DTW so its stroke peaks land on the onsets) failed: the generated strokes weren't distinct enough to align.
 - **Conclusion:** H3 doesn't place a strum or a key press on a specific onset from the audio alone. Its video tokens span 4 frames, finer than a 16th-note strum, and nothing ties a background performer's hand to the stem. Timing has to be in the pixels before H3 sees them, which is what `blockout/` does (below).
 
-## Setup
+### Setup
 
 **Not included:** ComfyUI, the MiniMax H3 weights, separator checkpoints, the face landmark model, and any input media.
 
-1. **ComfyUI with MiniMax H3 support and per-token noise masks on nested AV latents** (upstream ComfyUI PR #15375). Without that PR the zone latent still loads, but the sampler applies its masks as inpaint blending, a looser lock. Copy `comfy_nodes/h3_band_zone_latent.py` into `ComfyUI/custom_nodes/`. H3 file names default to the values in `h3band/config.py` (`H3B_UNET`, `H3B_CLIP`, `H3B_VAE`, `H3B_AUDIO_VAE`).
+1. **ComfyUI with MiniMax H3 support and per-token noise masks on nested AV latents** (upstream ComfyUI PR #15375). Without that PR the zone latent still loads, but the sampler applies its masks as inpaint blending, a looser lock. Install Band Aid (see [Install](#install)), or copy only `comfy_nodes/h3_band_zone_latent.py` into `ComfyUI/custom_nodes/`. H3 file names default to the values in `h3band/config.py` (`H3B_UNET`, `H3B_CLIP`, `H3B_VAE`, `H3B_AUDIO_VAE`).
 2. **Two venvs.** They're kept separate because mediapipe and torch pins fight.
    ```bash
    python3 -m venv .venv_score && .venv_score/bin/pip install -r requirements-score.txt
@@ -69,7 +206,7 @@ An isolated run is `mode B` + `video_denoise 0` (the take is locked) + a zone bo
    | `H3B_MODEL_DIR` | `./models` | audio-separator checkpoints |
    | `H3B_FACE_MODEL` | `models/face_landmarker.task` | mediapipe model |
 
-## Workflow
+### Workflow
 
 ```bash
 cd h3band
@@ -91,7 +228,7 @@ cd h3band
 
 **Starting from an existing take.** Put `"plate": "<input-relative mp4>"` in the spec. The base run is skipped and the first zone run locks to that take. Mind any preroll: `song_start` is where the *render's* frame 0 sits in the song.
 
-## Scorers (each with its own control)
+### Scorers (each with its own control)
 
 - **`sync_score.py VIDEO AUDIO --box x0,y0,x1,y1`**: mediapipe FaceLandmarker `jawOpen` (plus the inner-lip gap) against the vocal envelope (150–4000 Hz RMS dB). It reports:
   - peak cross-correlation and its lag over ±8 frames
@@ -107,14 +244,14 @@ cd h3band
   - At 24 fps a 16th note is about 3 frames, so beat-phase locking (metric `b`) can't separate synced from static; it's reported but not used.
 - **`drum_sync_score.py VIDEO HITS.json START [--box ...]`**: stick speed (`strum_score2`'s sub-box flow signal) against the hand hits (kick and hi-hat pedal dropped) within ±2 frames. Controls: the hits shifted by half their median gap (between the hits) and by 1/2/3 s, plus a 200-shift permutation p-value. strum_score2's ±4-frame search let shifted controls slide back onto an 8th-note groove.
 
-## Known limits
+### Known limits
 
 - **Video tokens are about 4 frames long.** H3's latent frames cover 1, 4, 4, 4, 4 pixel frames per 17-frame clip, and a token is 32 px. 16th-note strums are finer than one video token, so strum timing has to come through the 40 Hz audio tokens.
 - **The lyric aligner is weak on sung vocals.** torchaudio MMS_FA is speech-trained: expect about ±0.5 s on half the words, and character spans rather than phonemes. Vocal activity leans on dry-vocal energy.
 - **Stroke direction** (down vs up, from low-vs-high band rise timing) is a weak signal; treat individual calls as unreliable.
 - **One shared audio stream per run.** The zone runs work around this by freezing one stem per run; they don't solve it.
 
-## Instrument blockouts (`blockout/`)
+### Instrument blockouts (`blockout/`)
 
 Zone runs gave lip sync, but not instruments: H3 doesn't learn a strum or a key press from the audio alone. H3 *is* good at painting over grey 3D blockouts. So we animate primitive performers playing the actual notes, render grey footage, and let H3 re-skin it with the stem locked in its audio stream. The timing is in the pixels.
 
@@ -166,7 +303,7 @@ $P -m blockout.drums work/drum_events.json work/drums.json --beats $H3B_BEATS
 
 Example MIDIs from the Mutopia Project: Clair de Lune, Rondo alla Turca and Brahms Op. 118 No. 2 are Public Domain; Rachmaninoff Op. 3 No. 2 is CC BY-SA 4.0. `knights_suite.mid` (built by `suite.py`) contains an original theme plus excerpts of the Rachmaninoff (CC BY-SA 4.0) and the Brahms.
 
-## Drum blockout in ComfyUI, driven by the Comfy SDK
+### Drum blockout in ComfyUI, driven by the Comfy SDK
 
 `comfy_nodes/h3_band_drums.py` puts the drum blockout in a ComfyUI graph:
 
@@ -199,7 +336,7 @@ cd h3band
 
 `COMFY_BASE_URL` picks the server (default `http://127.0.0.1:8189`). On an RTX 5060 Ti, 121 frames at 1280x704 (Workbench) take about 17 s on the server, including detection. The node loads every frame into one `IMAGE` batch (about 10 MB per 1280x704 frame), so render long takes in sections.
 
-### H3 over the drum blockout
+#### H3 over the drum blockout
 
 `h3band/sdk_drum_h3.py` builds the whole H3 graph and runs it through the same SDK path. The drum stem is trimmed to the window and frozen in H3's audio stream by H3 Band Zone Latent (`audio_denoise` 0). With `--blockout`, the grey frames from H3 Band Drum Blockout are VAE-encoded as the starting video latent and sampled over the last `--steps` of `round(steps / denoise)` steps. `--no-blockout` starts the video from noise: what H3 does from the audio alone. The stack is the lab's turbo graph: w4a8 fl2va DiT, Turbo v4 LoRA + Turbo Sampler (8 steps), realism LoRA, sigma shift 12/3, 1280x736, 124 frames.
 
@@ -238,7 +375,7 @@ The frame at each big hit in the window. The blockout moves to the toms (3.08 s,
 
 `drum_sync_score.py` only separates synced from unsynced on varied playing. On the steady 8th-note groove (8.0–13.2 s) the blockout itself fails its between-hits control (margin −0.02), so score fills and breaks. All of these takes use the `drumsynth.py` render of the MIDI; H3 over a blockout driven by a real drum stem hasn't been scored yet.
 
-## Hackathon tasks
+### Hackathon tasks
 
 - [ ] **Per-zone audio binding.** Bind each stem to its zone inside one run: multiple audio segments plus an attention bias, so stem A's tokens reach only zone A's video tokens.
 - [ ] **Staggered per-zone timesteps.** Give zones their own timestep rows (AdaLN row ids per token). Global structure resolves first, then each zone develops in turn while the other stays noisy as context.
@@ -248,6 +385,7 @@ The frame at each big hit in the window. The blockout moves to the toms (3.08 s,
 - [x] **H3 over the drum blockout.** Go: at denoise 0.6–0.8 the sticks keep the blockout's timing (p 0.005 at 0.8), audio alone doesn't (`h3band/sdk_drum_h3.py`, `h3band/drum_sync_score.py`). Which drum each stroke lands on doesn't carry over yet.
 - [ ] **Bass blockout.** Bass fingers on the bass note onsets.
 - [x] **Comfy nodes for the drum blockout.** Drum Events / Drum Hits (MIDI) / Drum Blockout render, driven through the Comfy SDK (`h3band/sdk_drum_blockout.py`).
+- [x] **Band Aid lock nodes.** Blockout Reference Edges and Blockout Lock Check (`comfy_nodes/h3_blockout_lock.py`); the H3 lock graph through the Comfy API (`h3band/h3_run.py`, `examples/workflows/band_aid_h3_lock_api.json`).
 - [ ] **Comfy nodes for the rest of the chain.** Piano and guitar blockout render nodes, then blockout → H3 Band Zone Latent end to end through the SDK.
 - [ ] **A ground-truth strum clip** for `strum_score2.py` (real footage with known stroke times), plus stroke-direction scoring.
 - [ ] **Phoneme-level vocal alignment** for sung vocals, giving visemes for the mouth.
