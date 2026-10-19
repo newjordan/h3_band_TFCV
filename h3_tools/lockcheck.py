@@ -9,7 +9,8 @@ reference edge: did H3 draw anything where our hand isn't? Both in px at the ren
 share within the tolerance (--tol px, default 3; at a closer camera use the scale-matched one, e.g. 3 x 1.45 = 4.35).
 --every K scores only every K-th render frame (a K-times dense render against the reference at the take's own rate).
 Writes OUT_PREFIX.csv (per frame) and OUT_PREFIX_overlay.mp4 (the render with the reference edges
-in red and the mask outline in yellow), and prints the summary.
+in red and the mask outline in yellow), and prints the summary. Also the same recall outside the hand region (the
+scene: keys and case), so a render that drops the key presses shows up.
 """
 import sys, subprocess, numpy as np, cv2
 
@@ -34,12 +35,15 @@ def main():
     h = (w * 704 // 1280) // 2 * 2
     R, N, M = frames(render, w, h)[::every], frames(ref, w, h), frames(mask, w, h, gray=True)
     n = min(len(R), len(N), len(M))
-    rows = []
+    rows, scene = [], []
     vw = cv2.VideoWriter(out + "_overlay_raw.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 24, (w, h))
     k = np.ones((15, 15), np.uint8)
     for i in range(n):
         m = cv2.dilate((M[i] > 127).astype(np.uint8), k) > 0               # the hand region, a little wider
-        er, en = edges(R[i]) & m, edges(N[i]) & m
+        ER, EN = edges(R[i]), edges(N[i])
+        sn = EN & ~m                                                         # the scene outside the hands: keys, case
+        scene.append(float(np.mean(cv2.distanceTransform((~ER).astype(np.uint8), cv2.DIST_L2, 3)[sn] <= tol)) if sn.sum() > 50 else np.nan)
+        er, en = ER & m, EN & m
         if en.sum() < 20:
             rows.append((i, np.nan, np.nan, np.nan, np.nan)); vw.write(R[i]); continue
         d_to_h3 = cv2.distanceTransform((~er).astype(np.uint8), cv2.DIST_L2, 3)
@@ -60,12 +64,13 @@ def main():
     a = np.array([r[1:] for r in rows], float)
     ok = ~np.isnan(a[:, 0])
     with open(out + ".csv", "w") as fh:
-        fh.write("frame,ref_to_h3_med_px,ref_within_tol,h3_to_ref_med_px,h3_within_tol\n")
-        for r in rows:
-            fh.write(",".join(str(x) for x in r) + "\n")
+        fh.write("frame,ref_to_h3_med_px,ref_within_tol,h3_to_ref_med_px,h3_within_tol,scene_ref_within_tol\n")
+        for r, sc in zip(rows, scene):
+            fh.write(",".join(str(x) for x in r) + f",{sc}\n")
     q = lambda c: np.round(np.nanpercentile(a[ok, c], [10, 50, 90]), 2)
     print(f"{render.split('/')[-1]}: frames {n}  ref->h3 med px p10/50/90 {q(0)}  ref within {tol:g} px p10/50/90 {q(1)}  "
-          f"h3->ref med px p10/50/90 {q(2)}  h3 within {tol:g} px p10/50/90 {q(3)}  worst {np.nanmin(a[ok, 1]):.2f}")
+          f"h3->ref med px p10/50/90 {q(2)}  h3 within {tol:g} px p10/50/90 {q(3)}  worst {np.nanmin(a[ok, 1]):.2f}  "
+          f"scene (keys, outside the hands) within {tol:g} px p10/50/90 {np.round(np.nanpercentile(scene, [10, 50, 90]), 2)}")
 
 
 if __name__ == "__main__":

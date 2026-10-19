@@ -43,6 +43,9 @@ def main():
             fr["keys"] = keys_lerp(a["keys"], b["keys"], u)
             if "keys_plan" in a:
                 fr["keys_plan"] = keys_lerp(a["keys_plan"], b.get("keys_plan", {}), u)
+            ca, cb = a.get("cam"), b.get("cam")
+            if ca and cb and ca.get("shot") == cb.get("shot"):     # a moving camera glides; never across a cut
+                fr["cam"] = dict(ca, **{k: lerp(ca[k], cb[k], u) for k in ("pos", "look", "up", "lens") if k in ca and k in cb})
             out.append(fr)
     d2 = {k: v for k, v in d.items() if k != "frames"}
     d2["frames"] = out; d2["fps"] = d["fps"] * K; d2["start"] = d["start"] + F[f0]["t"]

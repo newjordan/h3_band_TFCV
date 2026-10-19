@@ -1687,3 +1687,19 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   bones on the lines; one faint extra finger bone at frame 50 where two fingers cross. Best render so far: now on the
   Band Aid page (`docs/media/skeleton_piano_h3.mp4`, triptych `skeleton_piano.mp4`, a view switch in the node) and the
   preview Artifact. **T6b** (1920x1088, the x4 take's clip 0, 124 frames) started 16:03 against production clip 0.
+- **The user (16:25): "keys dont work! you dont see them being pressed down ... i need the full animation".** Cause:
+  every skeleton test used a camera looking straight down at the keys; a pressed key tilts its front 10 mm straight
+  down, along the line of sight, so nothing changes in the picture (Blender plate or H3), and the lock check only
+  scored the hands. Fix: the approved steadicam edit (`suite_c19/render/edit_show.json`, cameras.py --style fingers),
+  one H3 clip per shot (a cut hides any look change between clips), density up to 4x so each shot fits 362 frames,
+  frames past a cut hold the shot's camera and are dropped (`skeleton_piano.py` SHOTS / shot_edit / final_shot).
+  `densify_take.py` now interpolates the camera inside a shot (it copied it, so a moving camera stepped every K
+  frames). `lockcheck.py` also scores the scene outside the hands (keys, case). Prompts for moving shots drop
+  "locked-off" / "The camera does not move" for a camera sentence.
+- **Key probe** (shot 1 steady_low_R, first 124 dense frames = 31 take frames, 4x): hands 75 / 80 / 83% at 3 px (our
+  grey plate vs its own normal pass: 77 / 79 / 82), keys outside the hands 74 / 78 / 81% (grey plate 26 / 31 / 40: its
+  keys are low-contrast). By eye (zoom, take frames 7-14): the black key right of the index tip goes down in frames
+  10-11 in the normal pass and in H3 (some smear on the way down) and is back up by 12. H3 draws the presses. Strikes
+  last 2-4 frames at 24 fps; the raw 4x clip at 24 fps is a slow-motion view where they read clearly. Posted (band
+  site `h3-skeleton-keys`). Rendering: shot 1 (88 take frames, 4x, 362), shot 2 orbit (146, 2x, 294), shot 3 across
+  (87, 4x, 362): the Rachmaninoff opening, 13.4 s.

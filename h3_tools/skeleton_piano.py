@@ -85,6 +85,65 @@ RUNS = {
 }
 
 
+# The performance cut: the approved fingers-style edit of the C19 take (blockout/cameras.py --style fingers: low
+# steadicam, orbit, across; cuts on downbeats). Seen from above, a key that goes down moves along the line of sight
+# and never reads; from these cameras the key fronts drop. Each shot is one H3 clip (a cut hides any change of look
+# between clips): density K = up to 4 so the shot fits H3's 362-frame trained range, frames past the cut keep the
+# shot's camera and are dropped in `final`.
+SHOW_EDIT = HOME / "h3/hands_loop/action_20261017/suite_c19/render/edit_show.json"
+TAKE_SOUND = HOME / "h3/hands_loop/action_20261017/suite_c19/cand/action_km02_audio/model.wav"
+SHOT_WORDS = {   # (view words, camera sentence) per shot type
+    "steady_low": ("Seen from low beside the keyboard, close on the hands and the keys they press",
+                   "The camera glides slowly beside the hands, low over the keys."),
+    "orbit": ("Seen from beside the keyboard, close on the hands and the keys they press",
+              "The camera circles slowly around the hands."),
+    "across": ("Seen from across the keyboard, close on the hands and the keys they press",
+               "The camera glides slowly along the keys."),
+}
+# Rachmaninoff opening (take frames 993-1313, song 81.3-94.7 s): three shots of the show edit
+SHOTS = [("rach_s1", 993, 88, "steady_low_R"), ("rach_s2", 1081, 146, "orbit_R"), ("rach_s3", 1227, 87, "across_L")]
+
+
+def _grid(n):                                      # smallest 17k+5 >= n
+    return 5 + 17 * max(0, -(-(n - 5) // 17))
+
+
+for _name, _f0, _n, _shot in SHOTS:
+    _K = min(4, 362 // _n)
+    while _grid(_K * _n) > 362:
+        _K -= 1
+    _L = _grid(_K * _n)
+    _w = SHOT_WORDS[_shot.rsplit("_", 1)[0]]
+    RUNS[_name] = {"edit": ROOT / f"edit_c19_show_{_name}.json", "f0": 0, "clips": [_L], "densify": _K,
+                   "keep": _n, "take_f0": _f0, "shot": _shot, "view": _w[0], "camera_words": _w[1],
+                   "sound": ROOT / f"sound_{_name}.wav", "tol": 3.0}
+
+
+# probe: the first 124 dense frames of shot 1 (31 take frames): do the keys go down in H3 from this camera?
+RUNS["rach_s1_probe"] = dict(RUNS["rach_s1"], clips=[124], keep=31)
+
+
+def shot_edit(run):
+    """The dense edit and slowed sound of one shot: densify_take on the show edit (camera interpolated inside the
+    shot), frames past the cut hold the shot's last camera; the take's sound from the shot's start, slowed K times."""
+    R = RUNS[run]; K, n, f0, L = R["densify"], R["keep"], R["take_f0"], R["clips"][0]
+    n_ext = -(-L // K)
+    if not R["edit"].exists():
+        subprocess.run([PY, str(REPO / "h3_tools/densify_take.py"), str(SHOW_EDIT), str(R["edit"]), str(f0), str(n_ext),
+                        str(K)], check=True)
+        d = json.loads(R["edit"].read_text())
+        held = d["frames"][(n - 1) * K]["cam"]
+        assert held.get("shot") == R["shot"], (held.get("shot"), R["shot"])
+        for fr in d["frames"][n * K:]:
+            fr["cam"] = dict(held)
+        R["edit"].write_text(json.dumps(d))
+    if not R["sound"].exists():
+        tempo = {1: "anull", 2: "atempo=0.5", 3: "atempo=0.5,atempo=0.6666667", 4: "atempo=0.5,atempo=0.5"}[K]
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{f0 / 24.0:.4f}", "-t", f"{n_ext / 24.0 + 0.1:.4f}",
+                        "-i", str(TAKE_SOUND), "-af", tempo, "-ac", "2", "-ar", "48000", str(R["sound"])], check=True)
+    print(run, R["shot"], "K", K, "frames", L, "originals", n, "of", n_ext)
+
+
 def clip_frames(run):
     R = RUNS[run]; out, f = [], R["f0"]
     for n in R["clips"]:
@@ -102,17 +161,22 @@ def render(run, kind, extra, procs=4):
         return out
     env = dict(os.environ, RIG_SLEEVE="0.06")
     step = -(-n // procs)
-    ps = []
-    for k in range(procs):
-        a, b = a0 + k * step, min(a0 + (k + 1) * step, a0 + n)
-        W, H = R.get("size", (1280, 704))
-        cmd = ["blender", "-b", "--factory-startup", "-P", str(REPO / "blockout/blender_piano.py"), "--",
-               str(R["edit"]), str(out), "--view", "edit", "--frames", f"{a}:{b}", "--hand-style", LOOK,
-               "--res", f"{W}x{H}"] + extra
-        ps.append(subprocess.Popen(cmd, cwd=REPO, env=env, stdout=open(out / f"blender_{k}.log", "w"),
-                                   stderr=subprocess.STDOUT))
-    for p in ps:
-        p.wait()
+    W, H = R.get("size", (1280, 704))
+    for attempt in range(3):                   # Blender's GL can segfault next to a running H3: rerun missing parts
+        ps = []
+        for k in range(procs):
+            a, b = a0 + k * step, min(a0 + (k + 1) * step, a0 + n)
+            if a >= b or all((out / f"f_{f:05d}.png").exists() for f in range(a, b)):
+                continue
+            cmd = ["blender", "-b", "--factory-startup", "-P", str(REPO / "blockout/blender_piano.py"), "--",
+                   str(R["edit"]), str(out), "--view", "edit", "--frames", f"{a}:{b}", "--hand-style", LOOK,
+                   "--res", f"{W}x{H}"] + extra
+            ps.append(subprocess.Popen(cmd, cwd=REPO, env=env, stdout=open(out / f"blender_{k}.log", "w"),
+                                       stderr=subprocess.STDOUT))
+        for p in ps:
+            p.wait()
+        if len(list(out.glob("f_*.png"))) >= n:
+            break
     got = len(list(out.glob("f_*.png")))
     assert got >= n, f"{out}: {got} frames"
     return out
@@ -159,7 +223,11 @@ def passes(run):
 
 def prompt(run):
     P = json.loads((REPO / "h3_tools/hand_look_prompts.json").read_text())
-    return P["base"].format(**P["looks"][LOOK]).replace("Seen from high above and behind the player", RUNS[run]["view"])
+    t = P["base"].format(**P["looks"][LOOK]).replace("Seen from high above and behind the player", RUNS[run]["view"])
+    if RUNS[run].get("camera_words"):              # a moving shot: not locked off
+        t = t.replace("One continuous locked-off shot", "One continuous shot").replace(
+            "The camera does not move.", RUNS[run]["camera_words"])
+    return t
 
 
 def tag(run, k):
@@ -262,7 +330,47 @@ def join(run):
     print("joined", d / f"{run}.mp4")
 
 
+def decimate(src, dst, K, n, gray=False):
+    vf = f"select='not(mod(n\\,{K}))',setpts=N/24/TB" + (",format=gray" if gray else "")
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-vf", vf, "-r", "24", "-frames:v", str(n),
+                    "-c:v", "libx264", "-crf", "10", "-pix_fmt", "yuv420p", str(dst)], check=True)
+
+
+def final_shot(run):
+    """A shot run: its H3 clip's every K-th frame up to the cut, the take's sound at speed, the lock check against the
+    shot's own passes taken the same way (dense frame K*i is take frame take_f0 + i exactly), and the triptych."""
+    R = RUNS[run]; d = ROOT / run; K, n = R["densify"], R["keep"]
+    out = d / f"{run}_final.mp4"
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(out_mp4(run, 0)), "-ss", f"{R['take_f0'] / 24.0:.4f}",
+                    "-t", f"{n / 24.0:.4f}", "-i", str(TAKE_SOUND), "-map", "0:v", "-map", "1:a",
+                    "-vf", f"select='not(mod(n\\,{K}))',setpts=N/24/TB", "-r", "24", "-frames:v", str(n),
+                    "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", str(out)],
+                   check=True)
+    for kind, gray in (("normal", False), ("mask", True)):
+        decimate(d / f"c0_{kind}.mp4", d / f"ref_{kind}.mp4", K, n, gray)
+    decimate(COMFY_IN / cin(run, 0, "plate"), d / "ref_plate.mp4", K, n)
+    lc = subprocess.run([PY, str(REPO / "h3_tools/lockcheck.py"), str(out), str(d / "ref_normal.mp4"), str(d / "ref_mask.mp4"),
+                         str(d / "lc_final"), "--tol", str(R["tol"])], check=True, capture_output=True, text=True).stdout.strip()
+    ceil = subprocess.run([PY, str(REPO / "h3_tools/lockcheck.py"), str(d / "ref_plate.mp4"), str(d / "ref_normal.mp4"),
+                           str(d / "ref_mask.mp4"), str(d / "lc_ceiling"), "--tol", str(R["tol"])],
+                          check=True, capture_output=True, text=True).stdout.strip()
+    with open(d / "scores.txt", "a") as fh:
+        fh.write(f"final {n} frames: {lc}\nceiling (Blender plate): {ceil}\n")
+    print(lc); print("ceiling:", ceil)
+    font = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+    lab = lambda t: (f"scale=640:352,drawbox=x=0:y=0:w=iw:h=30:color=black@0.55:t=fill,"
+                     f"drawtext=fontfile={font}:text='{t}':x=10:y=7:fontsize=17:fontcolor=white")
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(d / "ref_plate.mp4"), "-i", str(out), "-i", str(d / "lc_final_overlay.mp4"),
+                    "-filter_complex", f"[0:v]{lab('Blender blockout (our rig)')}[a];[1:v]{lab('H3 render (skeleton look)')}[b];"
+                                       f"[2:v]{lab('Lock check, our edges in red over H3')}[c];[a][b][c]hstack=3[v]",
+                    "-map", "[v]", "-map", "1:a", "-frames:v", str(n), "-c:v", "libx264", "-crf", "16",
+                    "-pix_fmt", "yuv420p", "-c:a", "copy", str(d / f"{run}_triptych.mp4")], check=True)
+    print("final", out, d / f"{run}_triptych.mp4")
+
+
 def final(run):
+    if "keep" in RUNS[run]:
+        return final_shot(run)
     R = RUNS[run]; d = ROOT / run; K = R["densify"]; ref = RUNS[R["ref"]]; rd = ROOT / R["ref"]
     done = []
     for k in range(len(R["clips"])):
@@ -299,6 +407,8 @@ def final(run):
 if __name__ == "__main__":
     cmd, run = sys.argv[1:3]
     if cmd in ("passes", "all"):
+        if "keep" in RUNS[run]:
+            shot_edit(run)
         passes(run)
     if cmd in ("run", "all"):
         run_all(run, upto=int(sys.argv[3]) if len(sys.argv) > 3 else None)
