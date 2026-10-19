@@ -1570,3 +1570,7 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   Under the realistic judge the extra wrong keys mostly vanish (+25). **C22 = C19 + `DYN_STRIKE`** (C6d2's: hv0 0.8
   m/s at vel 40, k 45, lift 3-16 mm, strike 40-70 ms; the C6d failure was the solve smoothing the strikes away) queued
   beside C21; the strike window now uses DYN_STRIKE's strike time.
+- **C17 = C15 + `LEAP_LIFT` 25 mm** (massless | 0.2 kg): 91.7% (C15 90.8) | 94.4% (94.3), missed 159 (176) | 108
+  (110), wrong 547 (548) | 384 (373), struck twice 128 (119) | 88 (76), pops 5.65 (5.22), crossed **0.86%** (1.03).
+  The leap catches it removed were grazes the realistic judge doesn't sound: no sound gain; not stacked (a look option
+  for leaps: the user's eye). Rendering C19 to judge the crisper strikes by eye.
