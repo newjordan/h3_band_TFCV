@@ -1635,3 +1635,7 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   skeleton_piano.py.
 - Pushed (the user's call, 10:49): `comfy-plugin` -> origin, and origin/main fast-forwarded to it (f077c0a): the Band
   Aid package, README, docs/ page with the skeleton clip (T2 close, lock triptych). GitHub Pages not enabled.
+- **T4 (close camera + 2x frame density):** on the first 62 original frames at the scale-matched 4.35 px, reference
+  edges matched **81 / 84 / 87%**, worst frame **77%** (T2 close at 24 fps on the same frames: 72 / 78 / 83%, worst
+  65%). Overlays at frames 50 / 52: T2's right hand is a ghosted smear; T4's is crisp with the bones on the red lines.
+  Size and density stack. Next: T5 (4x), T7 (stock matmul), T6 (1920x1088).
