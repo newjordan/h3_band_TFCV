@@ -2604,7 +2604,10 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
                             tip[1] += CL["over"][j] * max(0.0, hitpad(e[2], f)[1] - 0.002 - c[1])
                         act[j][f] = (e[2], float(c[0]), float(c[2]))
                         if STRIKE_KEEP:                       # the strike itself (from its lift to the key bed)
-                            S_ = strike_time(max(e[5], FORCE["touch"]) if FORCE else e[5])
+                            tch_ = max(e[5], FORCE["touch"]) if FORCE else e[5]
+                            S_ = strike_time(tch_)
+                            if DYN_STRIKE:                    # (the strike's own length, as finger_tip makes it)
+                                S_ = _dyn_strike(e[2], e[3], tch_, 0.5 * sum(hitpad(e[2], f, e[4])))[1]
                             if e[0] - S_ - 1.0 / fps <= t <= e[0] + 1.0 / fps:
                                 STRK[j][f] = 1.0
                         if e[0] - 0.15 <= t <= e[1]:

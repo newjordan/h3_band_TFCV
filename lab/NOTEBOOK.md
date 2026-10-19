@@ -1561,3 +1561,12 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   one key): the hand does not spread for a stretch (comfort_abd 10). C18 (`PRESS_AXES` x 12) tests lateral pull;
   **C21 = C15 + `WIDE_ABD` (0.10 m, 3.0)** queued after C20/C18 (spread costs 3 instead of 10 while the hand presses
   keys >= 10 cm apart; the earlier W1 run was never scored, the judge changed under it).
+- **C19 = C15 + `STRIKE_KEEP` {raw 1.0, pin 100}** (massless | key mass 0.2 kg): sounded **94.6%** (C15 90.8) |
+  **95.0%** (94.3), missed 104 (176) | 95 (110), silent presses 16 (66) | 19 (27), wrong 652 (548) | 398 (373),
+  struck twice 123 (119) | 71 (76), timing p90 **40 ms** (54) | **35** (59), mean -12.9 ms (early: LEAD_TIP's 18 ms was
+  for the spring's lag) | -0.7 ms, velocity r 0.5 (0.4) | 0.2; within each piece still ~0 (every strike the same
+  lift). Pops 14.6/min (5.2), crossed 1.54% (1.03): `tools/pops_where.py` puts the extra fast frames on striking
+  fingers (49 -> 188 finger-frames; free 4 -> 4): crisp strikes, not jitter, but a look call for the user's eye.
+  Under the realistic judge the extra wrong keys mostly vanish (+25). **C22 = C19 + `DYN_STRIKE`** (C6d2's: hv0 0.8
+  m/s at vel 40, k 45, lift 3-16 mm, strike 40-70 ms; the C6d failure was the solve smoothing the strikes away) queued
+  beside C21; the strike window now uses DYN_STRIKE's strike time.
