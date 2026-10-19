@@ -1537,3 +1537,9 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   above). **C15 under 0.2 kg: 94.3%** (massless 90.8), missed 110 (176), silent presses 27 (66), wrong **373** (548),
   struck twice 76 (119), timing p90 59 ms (54; the Rach 44 ms late on average, 34), velocity r 0.21 (0.42), holds cut
   8.3% (8.2). Bracketing 0.1 / 0.4 kg running.
+- **Key mass bracket on C15** (sounded / missed / wrong / struck twice / timing p90): none 90.8% / 176 / 548 / 119 / 54
+  ms; 0.1 kg 94.6% / 103 / 450 / 80 / 51; 0.2 kg 94.3% / 110 / 373 / 76 / 59; 0.4 kg 93.6% / 122 / 350 / 74 / 69 (mean
+  34 ms late: a heavy key is slow). Any real mass gives ~94% of notes; the wrong-key count depends on it (-18% to
+  -36%). From here: both judges reported, the massless one as the pessimistic bound and 0.2 kg (the published model)
+  as the realistic one; skin in wrong key tops stays a visual fault either way. Re-judging V3 / C8d / C14 / C16 at
+  0.2 kg for one table (`tools/rejudge_km.sh`).
