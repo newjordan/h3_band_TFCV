@@ -1549,3 +1549,8 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   110 / 373 / 76 / 59**; C16 90.8% / 177 / 548 / 112 | 94.3% / 110 / 410 / 83 / 58. C15's thumb fix holds whole
   under inertia (its catches were real presses); C16's free-finger gain halves (many were grazes a real key would not
   sound). C15 is the best candidate on both.
+- **C15 under the realistic judge, what is left:** wrong 373 = pressing fingers 180 (48%), thumbs pressing 57, free
+  fingers 108 (landing 41, travel 55, lifting only 12), struck twice 76. Missed 110 = never pressed with no finger on
+  it 48, solve never pressed 23, key down but no blow 20, plan pressed / physics key not down 19. **Unplayable as
+  transcribed: 22 notes** (the two Rach climax chords at 120.55 and 128.49 s span 82 cm, more than two hands reach at
+  once); the other no-finger misses (Rach bass C#3s at ~97-105 s, scattered Chopin) are reachable: solve / fingering.
