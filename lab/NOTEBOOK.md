@@ -1432,3 +1432,6 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   MPFB thumb's end phalanx is ~27 mm wide near its base (half-width 13.5 mm at u 0.6), wider than a 22.3 mm key top:
   a flat pressing thumb overlaps both neighbours. Fixing it means pressing with the narrower tip (more IP flex, a
   thumb effector nearer the tip): a pose / rig decision (the hand stays the stock MPFB at scale 1.0). Not adopted.
+- **C12 = C8 + `KEY_ROUND` (solver collisions with the judge's rounded skin, normal weight; C8d recipe): 90.3%**,
+  wrong **632** (C8d 679), struck twice 131 (111), pops 6.4 (5.5; Rach 21 vs 16), crossed 1.33% (0.77). Fewer wrong
+  keys at the cost of visibly worse motion (crossings, pops): not adopted. C8d stays the candidate.
