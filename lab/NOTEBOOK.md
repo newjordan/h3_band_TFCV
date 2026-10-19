@@ -1620,3 +1620,18 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   stricter here (the same physical error is 1.45x more px); at the scale-matched 4.35 px **73 / 80 / 85%** (wide clip
   0 at 3 px: 70 / 78 / 82%), render edges on the reference 77% (75%). A small gain; most bones sit on the lines; the
   remaining misses are temporal ghosts (a faint finger where it was a frame earlier). T3 (2x frame density) rendering.
+- **T3 (2x frame density, `h3_tools/densify_take.py`: an in-between pose after each frame, the originals kept, H3 sees
+  the motion at half speed; every other output frame kept):** on clip 0's first 62 frames, reference edges within 3 px
+  p10/50/90 **75 / 80 / 83%**, worst frame 73% (clip 0 on the same frames 67 / 78 / 82%, worst 61%): the temporal
+  ghosts drop. Close camera and density each help: T4 = close + 2x, T5 = close + 4x (one H3 latent frame per original
+  frame) rendering.
+- The user (10:50): render "in super size, and almost every frame ... an incredibly slow H3 process, but high
+  quality"; "we need to make the h3 token size bigger, no way around it"; "get into the kernel, let's get an expansive
+  matmul in place" -> (asked) **stock matmul first**: `KS_H3_STOCK_MATMUL=1` (NVFP4 weights dequantized, bf16
+  activations; no activation quantization). Only the NVFP4 H3 checkpoints are on disk. H3's token: VAE 16x space /
+  4x time + 2x2 patch = 32 x 32 px x 4 frames; 1280x704 = 40 x 22 tokens a frame. Queued (`stock_t7.sh`): after T4/T5,
+  restart h3audio-comfy with the stock matmul, **T7** = T2's job (close camera, seed 7) with only the matmul changed.
+  Then **T6** = the close camera at 1920x1088 (2.25x the tokens), stock matmul. Package branch: `size` per run in
+  skeleton_piano.py.
+- Pushed (the user's call, 10:49): `comfy-plugin` -> origin, and origin/main fast-forwarded to it (f077c0a): the Band
+  Aid package, README, docs/ page with the skeleton clip (T2 close, lock triptych). GitHub Pages not enabled.

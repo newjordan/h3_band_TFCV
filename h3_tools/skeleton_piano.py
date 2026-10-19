@@ -34,6 +34,13 @@ RUNS = {
     # frame, originals kept), the sound slowed to half speed: H3's 4-frame latent spans half the motion. Lock test.
     "rach_open_x2": {"edit": ROOT / "edit_c19_x2.json", "f0": 0, "clips": [124],
                      "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x2_c0.wav"},
+    # the close camera at 4x the frame density: one H3 latent frame (4 video frames) per original frame (T5)
+    "rach_open_close_x4": {"edit": ROOT / "edit_c19_close_x4.json", "f0": 0, "clips": [124],
+                           "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x4_c0.wav"},
+    # "super size": the close camera at 1920x1088 (2.25x the H3 tokens; the same 124 frames as T2) (T6)
+    "rach_open_close_hd": {"edit": ROOT / "edit_c19_close.json", "f0": 993, "clips": [124], "size": (1920, 1088),
+                           "view": "Seen from directly above the keyboard",
+                           "sound": HOME / "h3/hands_loop/action_20261017/suite_c19/cand/action_km02_audio/model.wav"},
     # both: the close camera at twice the frame density (T4)
     "rach_open_close_x2": {"edit": ROOT / "edit_c19_close_x2.json", "f0": 0, "clips": [124],
                            "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x2_c0.wav"},
@@ -64,8 +71,10 @@ def render(run, kind, extra, procs=4):
     ps = []
     for k in range(procs):
         a, b = a0 + k * step, min(a0 + (k + 1) * step, a0 + n)
+        W, H = R.get("size", (1280, 704))
         cmd = ["blender", "-b", "--factory-startup", "-P", str(REPO / "blockout/blender_piano.py"), "--",
-               str(R["edit"]), str(out), "--view", "edit", "--frames", f"{a}:{b}", "--hand-style", LOOK] + extra
+               str(R["edit"]), str(out), "--view", "edit", "--frames", f"{a}:{b}", "--hand-style", LOOK,
+               "--res", f"{W}x{H}"] + extra
         ps.append(subprocess.Popen(cmd, cwd=REPO, env=env, stdout=open(out / f"blender_{k}.log", "w"),
                                    stderr=subprocess.STDOUT))
     for p in ps:
@@ -75,19 +84,19 @@ def render(run, kind, extra, procs=4):
     return out
 
 
-def encode(src, dst, f0, n, gray=False, crf=14):
-    vf = "scale=1280:704" + (",format=gray" if gray else "")
+def encode(src, dst, f0, n, gray=False, crf=14, size=(1280, 704)):
+    vf = f"scale={size[0]}:{size[1]}" + (",format=gray" if gray else "")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", "24", "-start_number", str(f0), "-i", f"{src}/f_%05d.png",
                     "-frames:v", str(n), "-vf", vf, "-c:v", "libx264", "-crf", str(crf), "-pix_fmt", "yuv420p", str(dst)],
                    check=True)
 
 
-def canny(src, dst, f0, n):
+def canny(src, dst, f0, n, size=(1280, 704)):
     import cv2
-    p = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "gray", "-s", "1280x704", "-r", "24",
+    p = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "gray", "-s", f"{size[0]}x{size[1]}", "-r", "24",
                           "-i", "-", "-c:v", "libx264", "-crf", "8", "-pix_fmt", "yuv420p", str(dst)], stdin=subprocess.PIPE)
     for f in range(f0, f0 + n):
-        im = cv2.resize(cv2.imread(str(src / f"f_{f:05d}.png")), (1280, 704), interpolation=cv2.INTER_AREA)
+        im = cv2.resize(cv2.imread(str(src / f"f_{f:05d}.png")), tuple(size), interpolation=cv2.INTER_AREA)
         p.stdin.write(cv2.Canny(cv2.GaussianBlur(im, (3, 3), 0), 20, 60).tobytes())
     p.stdin.close(); p.wait()
 
@@ -103,10 +112,11 @@ def passes(run):
     normal = render(run, "normal", ["--pass", "normal"])
     mask = render(run, "mask", ["--pass", "mask"])
     for k, (f0, n) in enumerate(clip_frames(run)):
-        encode(plate, COMFY_IN / cin(run, k, "plate"), f0, n)
-        encode(normal, ROOT / run / f"c{k}_normal.mp4", f0, n, crf=12)
-        encode(mask, ROOT / run / f"c{k}_mask.mp4", f0, n, gray=True, crf=10)
-        canny(normal, COMFY_IN / cin(run, k, "ncanny"), f0, n)
+        sz = R.get("size", (1280, 704))
+        encode(plate, COMFY_IN / cin(run, k, "plate"), f0, n, size=sz)
+        encode(normal, ROOT / run / f"c{k}_normal.mp4", f0, n, crf=12, size=sz)
+        encode(mask, ROOT / run / f"c{k}_mask.mp4", f0, n, gray=True, crf=10, size=sz)
+        canny(normal, COMFY_IN / cin(run, k, "ncanny"), f0, n, size=sz)
         t0 = f0 / 24.0                             # seconds into the take (model.wav starts at the take's frame 0)
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t0:.4f}", "-t", f"{n / 24.0:.4f}", "-i", str(R["sound"]),
                         "-ac", "2", "-ar", "48000", str(COMFY_IN / cin(run, k, "sound", "wav"))], check=True)
@@ -128,7 +138,8 @@ def out_mp4(run, k):
 
 def job(run, k, first=None):
     n = clip_frames(run)[k][1]
-    j = {"steps": 20, "width": 1280, "height": 704, "length": n, "scheduler": "beta", "sampler": "res_multistep",
+    W, H = RUNS[run].get("size", (1280, 704))
+    j = {"steps": 20, "width": W, "height": H, "length": n, "scheduler": "beta", "sampler": "res_multistep",
          "seed": SEED, "audio": cin(run, k, "sound", "wav"), "prompt": prompt(run), "mode": "B",
          "video": cin(run, k, "plate"), "video_strength": 0.88,
          "control": {"video": cin(run, k, "ncanny"), "strength": 1.0}, "tag": tag(run, k)}
