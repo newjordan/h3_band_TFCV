@@ -1665,3 +1665,11 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   fit under the 15 GB floor: `after_eval.sh` waits for the eval server to exit, restarts the container (stock matmul)
   and reruns the production run, then `after_x4_full.sh` (final, 1920 passes, T6b). The 1920 passes render meanwhile
   (one Blender part crashed in the GL driver next to the running H3 at 12:29; rerun with the GPU idle).
+- **Production clips 0-2 (13:17-13:56):** the lock holds clip by clip (every 4th dense frame vs the 24 fps close
+  reference at 4.35 px: c0 84 / 87 / 89 worst 83 = T5; c1 84 / 86 worst 82; c2 dense 85 / 88 / 90 worst 80; the c0 -> c1
+  seam frame 87%). **But chained clips darken:** mean grey (whole frame) c0 25.7 flat, c1 ~22, c2 ~19.8; the plates are
+  identical (62.4-62.8). Per link: the chain image taken from the mp4 is 0.6 darker than the runner's lossless PNG,
+  H3's re-draw of the keyframe (fl2va `first_frame` -> `minimax_keyframes` cond) another ~0.9, and H3 settles ~1.5-2
+  lower within 4-8 frames; it compounds. Fixes: chain from the PNG (`last_frame` now copies the runner's last PNG);
+  **T9a** = every clip on its own (`chain: False`, no keyframe; clip 0 is the shared no-keyframe render) to see whether
+  the no-keyframe exposure holds across clips and how the seam looks. The 1920 test (T6b) waits for that call.

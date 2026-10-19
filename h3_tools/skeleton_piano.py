@@ -52,6 +52,12 @@ RUNS = {
     "rach_open_close_x4_full": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [124, 124, 124, 124],
                                 "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x4_full.wav",
                                 "densify": 4, "ref": "rach_open_close", "tol": 4.35},
+    # T9a: the production run with every clip rendered on its own (no keyframe chain), same inputs and seed: chained
+    # clips darkened ~3 grey levels a link (clip 0 25.7, clip 1 ~22, clip 2 ~19.8: keyframe re-draw + H3 settling)
+    "rach_open_close_x4_indep": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [124, 124, 124, 124],
+                                 "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x4_full.wav",
+                                 "densify": 4, "ref": "rach_open_close", "tol": 4.35, "chain": False,
+                                 "inputs_from": "rach_open_close_x4_full"},
     # the same at 1920x1088 (2.25x the H3 tokens, ~57 min a clip): super size on top of the density (T6b = its clip 0)
     "rach_open_close_x4_hd": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [124, 124, 124, 124],
                               "size": (1920, 1088), "view": "Seen from directly above the keyboard",
@@ -151,13 +157,19 @@ def out_mp4(run, k):
     return COMFY_OUT / f"{tag(run, k)}_00001_.mp4"
 
 
+def src(run):
+    """The run whose passes (plate, control, sound, normal, mask) this run uses (RUNS inputs_from; default itself)."""
+    return RUNS[run].get("inputs_from", run)
+
+
 def job(run, k, first=None):
     n = clip_frames(run)[k][1]
     W, H = RUNS[run].get("size", (1280, 704))
+    i = src(run)
     j = {"steps": 20, "width": W, "height": H, "length": n, "scheduler": "beta", "sampler": "res_multistep",
-         "seed": SEED, "audio": cin(run, k, "sound", "wav"), "prompt": prompt(run), "mode": "B",
-         "video": cin(run, k, "plate"), "video_strength": 0.88,
-         "control": {"video": cin(run, k, "ncanny"), "strength": 1.0}, "tag": tag(run, k)}
+         "seed": SEED, "audio": cin(i, k, "sound", "wav"), "prompt": prompt(run), "mode": "B",
+         "video": cin(i, k, "plate"), "video_strength": 0.88,
+         "control": {"video": cin(i, k, "ncanny"), "strength": 1.0}, "tag": tag(run, k)}
     if first:                                      # chained: this clip opens on the previous clip's last H3 frame
         j["image"] = first
     else:
@@ -168,9 +180,15 @@ def job(run, k, first=None):
     return p
 
 
-def last_frame(mp4, dst):
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-sseof", "-0.1", "-i", str(mp4), "-frames:v", "1", "-update", "1",
-                    str(dst)], check=True)
+def last_frame(run, k, dst):
+    """Clip k's last H3 frame, lossless: the PNG the runner saves beside the mp4 (the mp4's last frame is ~0.6 grey
+    levels darker after the yuv420 round trip, and chained clips compound it); the mp4 if no PNGs."""
+    pngs = sorted((COMFY_OUT / tag(run, k)).glob("frame_*.png"))
+    if pngs:
+        subprocess.run(["cp", str(pngs[-1]), str(dst)], check=True)
+        return
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-sseof", "-0.1", "-i", str(out_mp4(run, k)), "-frames:v", "1",
+                    "-update", "1", str(dst)], check=True)
 
 
 def run_all(run, need=int(os.environ.get("H3_NEED_GB", 30)), poll=180, upto=None):
@@ -178,9 +196,9 @@ def run_all(run, need=int(os.environ.get("H3_NEED_GB", 30)), poll=180, upto=None
         if out_mp4(run, k).exists():
             print("exists:", out_mp4(run, k)); continue
         first = None
-        if k:
+        if k and RUNS[run].get("chain", True):          # chain = False: every clip on its own (no keyframe), like clip 0
             first = cin(run, k, "first", "png")
-            last_frame(out_mp4(run, k - 1), COMFY_IN / first)
+            last_frame(run, k - 1, COMFY_IN / first)
         p = job(run, k, first)
         while True:
             r = subprocess.run(["bash", str(LEASE), "take", "h3-skeleton", f"H3 skeleton piano {run} clip {k}", str(need)],
@@ -200,8 +218,8 @@ def run_all(run, need=int(os.environ.get("H3_NEED_GB", 30)), poll=180, upto=None
 
 
 def score(run, k):
-    ref, mask = ROOT / run / f"c{k}_normal.mp4", ROOT / run / f"c{k}_mask.mp4"
-    plate = COMFY_IN / cin(run, k, "plate")
+    ref, mask = ROOT / src(run) / f"c{k}_normal.mp4", ROOT / src(run) / f"c{k}_mask.mp4"
+    plate = COMFY_IN / cin(src(run), k, "plate")
     mm = subprocess.check_output([PY, str(REPO / "h3_tools/motionmatch.py"), str(ref), str(out_mp4(run, k)), str(mask),
                                   f"{run} c{k} vs normal"]).decode().strip()
     mp = subprocess.check_output([PY, str(REPO / "h3_tools/motionmatch.py"), str(plate), str(out_mp4(run, k)), str(mask),
@@ -257,7 +275,7 @@ def final(run):
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", "24", "-start_number", str(ref["f0"]),
                     "-i", str(rd / "plate/f_%05d.png"), "-i", str(out), "-i", str(d / "lc_final_overlay.mp4"),
                     "-filter_complex", f"[0:v]{lab('Blender blockout (our rig)')}[a];[1:v]{lab('H3 render (skeleton look)')}[b];"
-                                       f"[2:v]{lab('Lock check: our edges in red over H3')}[c];[a][b][c]hstack=3[v]",
+                                       f"[2:v]{lab('Lock check, our edges in red over H3')}[c];[a][b][c]hstack=3[v]",
                     "-map", "[v]", "-map", "1:a", "-frames:v", str(n), "-c:v", "libx264", "-crf", "16",
                     "-pix_fmt", "yuv420p", "-c:a", "copy", str(d / f"{run}_triptych.mp4")], check=True)
     print("final", out, d / f"{run}_triptych.mp4")
