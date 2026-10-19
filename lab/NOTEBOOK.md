@@ -1582,3 +1582,15 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   suite as an A/B player (C19 hands on the key-weight piano | the song | C19 on the weightless piano, one sampler and
   pedal), the both-judges table (V3 / C14 / C15 / C19), the user's calls (thumb-tip press; crisper strikes), the 22
   unplayable notes, and what's running (C20, C18, C21, C22).
+
+## 2026-10-19: skeleton hands play the piano (H3)
+
+The user: "just skeleton hands I want to see the skeleton hands play the piano, and it fucking match". New tool
+`h3_tools/skeleton_piano.py` (the hand-looks recipe on a piano take, in chained clips): the C19 take with locked-off
+cameras (`blockout/cameras.py --style still` -> `~/h3/results/skeleton_piano/edit_c19_still.json`, 25 shots), Blender
+grey plate / normal pass / mask with the skeleton geometry (`--hand-style skeleton`, RIG_SLEEVE 0.06), H3 fl2va mode B,
+plate at video_strength 0.88, Fun ControlNet Union 2.0 at 1.0 on the normal pass's Canny (20/60), the skeleton prompt
+with the view words of the shot; clip k > 0 opens on clip k-1's last H3 frame (`image`), so the look carries across
+the cuts between clips; sound = the C19 hands on the key-weight piano. First run `rach_open`: the Rachmaninoff opening,
+overhead still shot, frames 993-1313 (song 81.3-94.7 s), clips 124 + 124 + 73 (~28 min of H3 per 124 frames).
+Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and vs the plate.
