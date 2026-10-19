@@ -1508,3 +1508,8 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   strike on screen: a look call for the user. **C19 = C14 + `STRIKE_KEEP` {1.0, 100}** queued with C17 (6 parts
   each), then C18 = C14 + `PRESS_AXES` x 12 (pressing fingers lean toward the thumb side: 149 vs 61 catches)
   (`tools/queue_c17_19_18.sh`).
+- **C15 = C14 + `THUMB_AIM` 0 (C8d recipe, new depop): 90.8%** (C14 91.1), missed 176 (171), wrong **548** (C14
+  604 de-popped), struck twice 119 (113), timing p90 54 ms, holds cut 8.2%, pops **5.22** (5.65), crossed 1.03%.
+  Pressing-thumb catches 120 -> 75, free thumb 42 -> 29: with the tip pad the 2.5 mm aim toward the fingers only
+  pushed the thumb onto the next key. Best wrong-key count yet; notes level (Debussy +3, Rach -7: re-solve noise
+  scale).
