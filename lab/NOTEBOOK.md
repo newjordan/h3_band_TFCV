@@ -1454,3 +1454,7 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   8.6%, broken 0.09%, pops 6.1 (C8d 5.5), crossed 0.99% (0.77). The two changes complement: KEY_ROUND's fewer
   catches, the tip press's notes and fewer crossings. New best candidate; rendering it (lease piano-c14). The thumb
   change is a rig decision for the user.
+- **C14 render** (`suite_c14/render/suite_show.mp4`) reviewed at 1 fps: plays through, nothing broken or missing; the
+  0:42 hook is milder than C8d's; 5:32 crossing and the 4:17 fan unchanged. Posted: band site top section
+  `piano-c14-render` (whole suite, C8d | C14 Rach side by side, V3 / C8d / C14 table). Awaiting the user's eye; the
+  thumb-tip press (`RIG_THUMB_EFF_US`) is a rig decision.
