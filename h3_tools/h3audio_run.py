@@ -8,6 +8,7 @@ A_ref   = ref2va (set "model" to the ref2va checkpoint): still as <Picture 1>, v
           in the target audio stream.
 C       = any mode + "control": {video, strength, start, end}: Fun ControlNet Union structure lock;
           "guides": [{image, frame_idx}]: extra keyframe anchors (MiniMaxH3AddGuide).
+          "sparse": {method sol-attn|sla, tau | keep_percent, start, end, dense_blocks, sink}: block-sparse attention.
 A_guide = first frame + vocal pinned as a MiniMaxH3AddGuide audio guide at frame 0 (target audio generated).
 B       = existing take VAE-encoded as the video stream at video_denoise (shifted-sigma mask) or video_strength
           (fraction of unshifted flow time to regenerate; see video_mask), vocal frozen in the audio stream,
@@ -101,6 +102,18 @@ def build(j):
         model = n(53, "MiniMaxH3FunControlNetApply", model=model, model_patch=patch2, vae=vae,
                   strength=float(c2.get("strength", 1.0)), start_percent=float(c2.get("start", 0.0)),
                   end_percent=float(c2.get("end", 1.0)), control_video=["52", 0])
+    if j.get("sparse"):                              # block-sparse attention on comfy_kitchen kernels (BlockSparseAttention)
+        sp = j["sparse"]
+        meth = sp.get("method", "sol-attn")
+        sel = {"selection": meth}
+        if meth == "sol-attn":
+            sel["selection.tau"] = float(sp.get("tau", 1.3))
+        else:
+            sel["selection.keep_percent"] = float(sp.get("keep_percent", 10.0))
+        model = n(55, "BlockSparseAttention", model=model, start_percent=float(sp.get("start", 0.2)),
+                  end_percent=float(sp.get("end", 1.0)), dense_blocks=str(sp.get("dense_blocks", "")),
+                  min_tokens=int(sp.get("min_tokens", 12288)), extra_tokens=int(sp.get("extra_tokens", 256)),
+                  sink_conditioning=sp.get("sink", "exact_kv_and_rows"), verbose=bool(sp.get("verbose", False)), **sel)
     avae = n(4, "VAELoader", vae_name="minimax_h3_audio_vae_fp32.safetensors")
     aud = n(6, "LoadAudio", audio=j["audio"])
     mode = j["mode"]

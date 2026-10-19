@@ -64,6 +64,13 @@ RUNS = {
     "rach_open_close_x4_long": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [362],
                                 "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x4_full.wav",
                                 "densify": 4, "ref": "rach_open_close", "tol": 4.35},
+    # T12: T10 with block-sparse attention (BlockSparseAttention sol-attn, tau 1.3, dense for the first 20% of the
+    # steps, text/audio rows exact): the kernel lever for bigger token counts, if it keeps the lock
+    "rach_open_close_x4_long_sparse": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [362],
+                                       "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x4_full.wav",
+                                       "densify": 4, "ref": "rach_open_close", "tol": 4.35,
+                                       "inputs_from": "rach_open_close_x4_long",
+                                       "sparse": {"method": "sol-attn", "tau": 1.3, "start": 0.2, "verbose": True}},
     # the same at 1920x1088 (2.25x the H3 tokens, ~57 min a clip): super size on top of the density (T6b = its clip 0)
     "rach_open_close_x4_hd": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [124, 124, 124, 124],
                               "size": (1920, 1088), "view": "Seen from directly above the keyboard",
@@ -176,6 +183,8 @@ def job(run, k, first=None):
          "seed": SEED, "audio": cin(i, k, "sound", "wav"), "prompt": prompt(run), "mode": "B",
          "video": cin(i, k, "plate"), "video_strength": 0.88,
          "control": {"video": cin(i, k, "ncanny"), "strength": 1.0}, "tag": tag(run, k)}
+    if RUNS[run].get("sparse"):                    # block-sparse attention (h3audio_run.py "sparse")
+        j["sparse"] = RUNS[run]["sparse"]
     if first:                                      # chained: this clip opens on the previous clip's last H3 frame
         j["image"] = first
     else:
