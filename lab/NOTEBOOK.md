@@ -1642,3 +1642,6 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
 - **T5 (close camera + 4x frame density: one H3 latent frame per original frame):** first 31 original frames at 4.35
   px: **85 / 87 / 89%**, worst **83%** (T4 2x 81 / 84 / 87, worst 77; T2 24 fps 73 / 78 / 83, worst 69). Monotonic in
   density. Cost: 4x the H3 frames (5 s of music = 496 frames = 4 clips of 124, ~66 min at 1280x704).
+- **T7 (T2's job with the stock matmul, `KS_H3_STOCK_MATMUL=1`):** all 124 frames at 4.35 px 74 / 81 / 86%, worst 67%
+  (T2 NVFP4 matmul 73 / 80 / 85%, worst 65%): +1 point, small. 1,380 s wall including the model reload (clip 0 NVFP4
+  alone 990 s). Size and density are the levers; the stock matmul stays on (small, cheap).
