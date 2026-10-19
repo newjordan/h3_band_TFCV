@@ -1645,3 +1645,5 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
 - **T7 (T2's job with the stock matmul, `KS_H3_STOCK_MATMUL=1`):** all 124 frames at 4.35 px 74 / 81 / 86%, worst 67%
   (T2 NVFP4 matmul 73 / 80 / 85%, worst 65%): +1 point, small. 1,380 s wall including the model reload (clip 0 NVFP4
   alone 990 s). Size and density are the levers; the stock matmul stays on (small, cheap).
+- **Handoff 12:00:** `~/h3/HANDOFF_20261019_h3_lock.md`; the user: focus the rest of the day on perfecting the H3
+  video. Container h3audio-comfy runs with `KS_H3_STOCK_MATMUL=1`; watchdog on; T6 (1920x1088) rendering.
