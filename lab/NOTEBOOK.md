@@ -1681,3 +1681,9 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   greyer ones. Chained = smooth seams, decaying look; unchained = clean look, a pop every 1.3 s of music.
 - **T10 (running 14:32):** one 362-frame clip (H3's trained range is ~124-362 frames, per the node's tooltip) of the
   same 4x take = 90 original frames, 3.8 s, no seam and no chain; ~80 min at 1280x704.
+- **T10 (one 362-frame clip, 4x density, 1280x704, stock matmul; 87 min):** 90 original frames (3.8 s) at 4.35 px
+  **85 / 88 / 91%**, worst 76% (frame 0, the clip's single-frame first latent; next worst 81%). Grey steady over the
+  whole clip (16.4-17.1, no seam, no decay), but a darker, sepia-olive look than the 124-frame clips (~26). Overlays:
+  bones on the lines; one faint extra finger bone at frame 50 where two fingers cross. Best render so far: now on the
+  Band Aid page (`docs/media/skeleton_piano_h3.mp4`, triptych `skeleton_piano.mp4`, a view switch in the node) and the
+  preview Artifact. **T6b** (1920x1088, the x4 take's clip 0, 124 frames) started 16:03 against production clip 0.

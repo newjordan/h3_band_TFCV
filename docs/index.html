@@ -290,7 +290,7 @@ footer { padding-block: 0 40px; color: var(--text-dim); font-size: 13px; }
               </div></div>
               <div class="widget text">…bare bony skeleton hands … play the keys of a glossy black grand piano. The camera does not move. Each key goes down under the bony skeleton finger that presses it…</div>
               <div class="widget"><span class="k">size</span><span class="v">1280 × 704</span></div>
-              <div class="widget"><span class="k">length</span><span class="v">124</span></div>
+              <div class="widget"><span class="k">length</span><span class="v">362</span></div>
             </div>
           </div>
 
@@ -387,7 +387,7 @@ footer { padding-block: 0 40px; color: var(--text-dim); font-size: 13px; }
                 </div>
               </div>
               <div class="widget"><span class="arr">◀</span><span class="k">tolerance_px</span><span class="v">3.0</span><span class="arr">▶</span></div>
-              <div class="widget readout">edges within 3 px, hand mask<br>Blender plate (ceiling) 0.97<br>H3 skeleton clips 0.78–0.86</div>
+              <div class="widget readout">edges within tolerance, hand mask<br>Blender plate (ceiling) 0.97<br>H3 skeleton, 4x density 0.88</div>
             </div>
           </div>
 
@@ -417,6 +417,17 @@ footer { padding-block: 0 40px; color: var(--text-dim); font-size: 13px; }
   <section class="group g-demo" id="demo">
     <div class="gtitle"><h2>Demo</h2><span>H3 renders are labelled H3. Blender renders are labelled Blender.</span></div>
     <div class="ginner">
+
+      <div class="mnode" id="skeleton-slot">
+        <div class="title"><b>Skeleton hands play the piano</b><span class="src h3">H3 render</span></div>
+        <div class="mbody">
+          <div class="controls">
+            <div class="combo" data-combo="skel-view"><button type="button" aria-label="Previous view">◀</button><span class="k">view</span><span class="v" aria-live="polite">H3 render</span><button type="button" aria-label="Next view">▶</button></div>
+          </div>
+          <video id="v-skel" controls playsinline preload="metadata" poster="media/skeleton_piano_poster.jpg" src="media/skeleton_piano_h3.mp4"></video>
+          <p class="cap">The C19 take, Rachmaninoff opening: one 362-frame H3 clip from a locked-off overhead camera fitted to the hands. The blockout is rendered at 4x frame density (three in-between poses after every frame) and every 4th H3 frame is kept, so each H3 latent frame covers one frame of the take. Lock check: in the median frame 88% of our reference edges have an H3 edge within the scale-matched tolerance (85% in the 10th-percentile frame, 76% in the worst, the first); a Blender render of the same geometry scores 97%. Switch the view to see Blender | H3 | the lock overlay. Sound: what these hands play on the working piano.</p>
+        </div>
+      </div>
 
       <div class="mnode">
         <div class="title"><b>Five hand looks, one blockout</b><span class="src h3">H3 render</span></div>
@@ -466,23 +477,12 @@ footer { padding-block: 0 40px; color: var(--text-dim); font-size: 13px; }
         </div>
       </div>
 
-      <div class="row2">
-        <div class="mnode" id="skeleton-slot">
-          <div class="title"><b>Skeleton hands play the piano</b><span class="src h3">H3 render</span></div>
-          <div class="mbody">
-            <div style="position:relative">
-              <video controls playsinline preload="metadata" poster="media/skeleton_piano_poster.jpg"><source src="media/skeleton_piano.mp4" type="video/mp4"></video>
-            </div>
-            <p class="cap">The C19 take, Rachmaninoff opening, one 124-frame H3 clip (5.2 s) from a locked-off overhead camera. Left: the Blender reference. Middle: H3 with the skeleton look. Right: Blockout Lock Check, our reference edges in red over H3. 80% of the reference edges have an H3 edge within the scale-matched tolerance (median frame; a Blender render of the same geometry scores 97%). Arms and wrist bones lock; fast fingers can leave a faint ghost. Sound: the hands on the working piano.</p>
-          </div>
-        </div>
-        <div class="mnode">
-          <div class="title"><b>Drums, by stepupgaming</b><span class="src mixed">Blender blockout + H3</span></div>
-          <div class="mbody">
-            <img src="drums/snare_hit_frames.jpg" alt="Frames around a snare hit: H3 over the drum blockout and H3 from audio alone" loading="lazy">
-            <img src="drums/frames_at_hits.jpg" alt="Frames at each big hit in the window: the blockout and the H3 takes" loading="lazy">
-            <p class="cap">One snare backbeat, frame by frame, and the frame at each big hit. Top row: the grey drum blockout. Over the blockout, the stick comes down on the hit. From the audio alone, the stick is mid-stroke at the hit.</p>
-          </div>
+      <div class="mnode">
+        <div class="title"><b>Drums, by stepupgaming</b><span class="src mixed">Blender blockout + H3</span></div>
+        <div class="mbody">
+          <img src="drums/snare_hit_frames.jpg" alt="Frames around a snare hit: H3 over the drum blockout and H3 from audio alone" loading="lazy">
+          <img src="drums/frames_at_hits.jpg" alt="Frames at each big hit in the window: the blockout and the H3 takes" loading="lazy">
+          <p class="cap">One snare backbeat, frame by frame, and the frame at each big hit. Top row: the grey drum blockout. Over the blockout, the stick comes down on the hit. From the audio alone, the stick is mid-stroke at the hit.</p>
         </div>
       </div>
     </div>
@@ -494,10 +494,10 @@ footer { padding-block: 0 40px; color: var(--text-dim); font-size: 13px; }
       <ol class="steps">
         <li><div class="title">Notes to motion</div><p>The piano solver picks a fingering and moves rigged MPFB2 hands so each finger reaches its key on the note. The drum solver does the same for a drummer from drum onsets or a GM drum MIDI.<span class="where">blockout/piano.py · blockout/drums.py</span></p></li>
         <li><div class="title">Judge on a working piano</div><p>The animated hands play a simulated grand action: weighted keys, a hammer with let-off, dampers and pedal. A key sounds only when a finger really presses it, so the audio is what the hands play.<span class="where">blockout/action.py</span></p></li>
-        <li><div class="title">Render the reference</div><p>Blender renders three passes of the same motion: a grey plate with the look's geometry, a normal pass, and a hand mask.<span class="where">blockout/blender_piano.py · blender_drums.py</span></p></li>
+        <li><div class="title">Render the reference</div><p>Blender renders three passes of the same motion: a grey plate with the look's geometry, a normal pass, and a hand mask. For the piano clip it renders at 4x frame density, with three in-between poses after every frame.<span class="where">blockout/blender_piano.py · blender_drums.py · h3_tools/densify_take.py</span></p></li>
         <li><div class="title">Edges from the normal pass</div><p>Canny 20/60 after a 3 px blur. The normal pass has an edge at every finger and joint. A grey beauty pass has almost none on the fingers.<span class="where">Blockout Reference Edges</span></p></li>
         <li><div class="title">H3 paints the look</div><p>fl2va mode B: the grey plate in the video stream at video_strength 0.88, H3 Fun ControlNet Union 2.0 at strength 1.0 on the edges, and the stem frozen in H3's audio stream. The prompt names the look.<span class="where">H3 Band Zone Latent · h3band/h3_run.py → /prompt</span></p></li>
-        <li><div class="title">Measure the lock</div><p>For each reference edge inside the hand mask, is there an H3 edge within 3 px? The node also writes an overlay with the reference edges in red over the render.<span class="where">Blockout Lock Check</span></p></li>
+        <li><div class="title">Measure the lock</div><p>For each reference edge inside the hand mask, is there an H3 edge within 3 px (scaled with the camera's zoom)? The node also writes an overlay with the reference edges in red over the render.<span class="where">Blockout Lock Check</span></p></li>
       </ol>
     </div>
   </section>
@@ -526,14 +526,16 @@ footer { padding-block: 0 40px; color: var(--text-dim); font-size: 13px; }
           <div class="mbody">
             <div class="tscroll">
               <table>
-                <thead><tr><th>Render</th><th class="num">Edges within 3 px</th></tr></thead>
+                <thead><tr><th>Render</th><th class="num">Edges matched</th></tr></thead>
                 <tbody>
                   <tr><td>Blender grey plate (the ceiling)</td><td class="num">97%</td></tr>
-                  <tr><td>H3 skeleton hands, three clips</td><td class="num">78–86%</td></tr>
+                  <tr><td>H3 skeleton hands, 24 fps clips</td><td class="num">78–86%</td></tr>
+                  <tr><td>H3 skeleton, close camera, 24 fps</td><td class="num">80%</td></tr>
+                  <tr><td>H3 skeleton, close camera, 4x frame density</td><td class="num">88%</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="fine">Share of the reference geometry's edges with an H3 edge within 3 px, inside the hand mask. Arms and wrists lock. Fast fingers ghost: H3 sometimes draws a faint finger where it was a frame or two earlier. This is the open problem.</p>
+            <p class="fine">Median frame: the share of the reference geometry's edges with an H3 edge within 3 px at the wide camera, 4.35 px at the close camera (the same distance on the keys), inside the hand mask. Arms and wrists lock. At 24 fps fast fingers ghost, because one H3 latent frame spans 4 video frames and a strike can fall inside one. Rendering at 4x frame density gives each frame of the take its own latent frame and removes most of the ghosts, for 4x the H3 time.</p>
           </div>
         </div>
       </div>
@@ -613,11 +615,11 @@ python sdk_drum_h3.py ../work/C.mp4 --midi ../examples/drums/rock_groove.mid --a
     <div class="gtitle"><h2>Limitations</h2><span>what doesn't work yet</span></div>
     <div class="ginner">
       <ul class="limits">
-        <li>Fast fingers ghost in H3. A finger is narrower than one 32 px H3 token, and one latent frame spans 4 video frames, so a quick strike can fall inside a single latent frame.</li>
+        <li>At 24 fps fast fingers ghost in H3: a finger is narrower than one 32 px H3 token, and one latent frame spans 4 video frames. 4x frame density fixes most of it, at 4x the H3 time (the 3.8 s clip above is about 90 minutes of H3 on one GB10).</li>
         <li>22 notes in the suite are unplayable as transcribed.</li>
         <li>The piano blockout renders through the Blender scripts in <code>blockout/</code>; it is not a ComfyUI node yet. The drum blockout is.</li>
         <li>Drums: the timing of the strokes carries over to H3, but not which drum each stroke lands on.</li>
-        <li>One H3 clip is 124 frames. Longer takes are chained clips, each starting from the last frame of the one before.</li>
+        <li>One H3 clip is up to 362 frames, the top of H3's trained range. Chaining clips from the previous clip's last frame darkens the look by about 10% a link, and clips rendered on their own change the look at the seam, so longer takes should cut where the camera cuts.</li>
         <li>The tightest audio lock needs per-token noise masks on nested AV latents (upstream ComfyUI PR #15375). Without it the Zone Latent falls back to inpaint-style blending.</li>
       </ul>
     </div>
@@ -696,15 +698,25 @@ python sdk_drum_h3.py ../work/C.mp4 --midi ../examples/drums/rock_groove.mid --a
   }
 
   // combo widgets
-  var state = { "cycle-shot": 0, "trio-shot": 0, "trio-look": 0 };
+  var state = { "skel-view": 0, "cycle-shot": 0, "trio-shot": 0, "trio-look": 0 };
   var opts = {
+    "skel-view": ["H3 render", "lock check"],
     "cycle-shot": ["kh111", "ov125"],
     "trio-shot": ["kh111", "ov125"],
     "trio-look": ["skeleton", "monster", "robot", "kitty-cat paw", "real hands"]
   };
   var files = { "skeleton": "skeleton", "monster": "monster", "robot": "robot", "kitty-cat paw": "paw", "real hands": "real" };
   function apply(name) {
-    if (name === "cycle-shot") {
+    if (name === "skel-view") {
+      // same moment, other view: the H3 render alone, or Blender | H3 | Blockout Lock Check
+      var s = document.getElementById("v-skel"), at = s.currentTime, playing = !s.paused;
+      s.src = state["skel-view"] ? "media/skeleton_piano.mp4" : "media/skeleton_piano_h3.mp4";
+      s.addEventListener("loadedmetadata", function seek() {
+        s.removeEventListener("loadedmetadata", seek);
+        s.currentTime = Math.min(at, s.duration || at);
+        if (playing) s.play().catch(function () {});
+      });
+    } else if (name === "cycle-shot") {
       var v = document.getElementById("v-cycle"), sh = opts["cycle-shot"][state["cycle-shot"]];
       v.poster = "media/" + sh + "_cycle_poster.jpg"; v.src = "media/" + sh + "_cycle.mp4"; v.play().catch(function () {});
     } else {
@@ -724,13 +736,6 @@ python sdk_drum_h3.py ../work/C.mp4 --midi ../examples/drums/rock_groove.mid --a
     btns[0].addEventListener("click", function () { step(-1); });
     btns[1].addEventListener("click", function () { step(1); });
   });
-
-  // the skeleton clip slot: keep the placeholder poster until docs/media/skeleton_piano.mp4 exists
-  var slot = document.getElementById("skeleton-slot");
-  var src = slot.querySelector("source");
-  src.addEventListener("error", function () { slot.classList.add("is-pending"); });
-  var probe = slot.querySelector("video");
-  probe.addEventListener("loadedmetadata", function () { slot.classList.remove("is-pending"); });
 })();
 </script>
 </body>
