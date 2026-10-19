@@ -1446,3 +1446,6 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   thumb catches 184 (152): worse, so the flat wide base was not the whole story (the tilted thumb still lands on its
   neighbours). More notes and smoother but more wrong keys. **C14 = C13 + `KEY_ROUND`** (C12 cut wrong keys 47 but
   crossed more; C13 crosses less) on the suite.
+- **Stronger cleanup on C8d's de-popped take** (S2 + `CLEAR` 2 mm, `GAIN_FREE` 1000, 6 passes): 90.0%, wrong 688
+  (C8d 679), struck twice 120 (111), pops 6.4 (5.5). The cleanup is saturated: bigger corrections add pops and don't
+  remove catches.
