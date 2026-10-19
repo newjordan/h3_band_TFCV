@@ -1574,3 +1574,7 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   (110), wrong 547 (548) | 384 (373), struck twice 128 (119) | 88 (76), pops 5.65 (5.22), crossed **0.86%** (1.03).
   The leap catches it removed were grazes the realistic judge doesn't sound: no sound gain; not stacked (a look option
   for leaps: the user's eye). Rendering C19 to judge the crisper strikes by eye.
+- **C19 render** (`suite_c19/render/suite_show.mp4`), reviewed at 1 fps (12 sheets) and at 24 fps over 2:48-2:49 against
+  C16: plays through, nothing broken or missing; at the edit's camera distances the crisper strikes are not jarring
+  (the 24 fps strips look alike; pose differences frame to frame, no snaps). Same known spots as C14/C16 (3:45 stacked
+  hands, 5:33 crossing, straight fingers at 1:11 / 4:18). Posting it (sound from the key-mass piano) with both judges.
