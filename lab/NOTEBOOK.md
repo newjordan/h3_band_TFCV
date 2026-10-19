@@ -1519,3 +1519,9 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   same -56 as C15 but on other faults (C15: thumbs), so they should stack: **C20 = C15 + `RELEASE_ARC`**. Rebased
   C17 (leap lift), C19 (strike keep) and C18 (press x 12) on C15; C17/C19 solving, then C20 + C18 (6 parts each,
   `tools/queue_c20_18.sh`).
+- **C16 render** (`suite_c16/render/suite_show.mp4`, 350.6 s), reviewed at 1 fps (12 contact sheets): plays
+  through, nothing broken or missing. New against C14: at 0:09-0:10 the left middle finger lies out straight over
+  the keys while the others curl (the release's quick lift taken by straightening the finger); suite-wide straight-
+  finger share is the same (C14 / C15 / C16 / C8d: middle 21.8 / 22.6 / 20.7 / 20.6% of hand-frames, PIP + DIP <
+  25 deg, `tools/straight.py`). Unchanged from C14: 3:45 the hands stacked in one register, 5:33 the over/under
+  crossing, straight right finger at 1:11.
