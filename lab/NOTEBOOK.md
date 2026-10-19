@@ -1647,3 +1647,14 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   alone 990 s). Size and density are the levers; the stock matmul stays on (small, cheap).
 - **Handoff 12:00:** `~/h3/HANDOFF_20261019_h3_lock.md`; the user: focus the rest of the day on perfecting the H3
   video. Container h3audio-comfy runs with `KS_H3_STOCK_MATMUL=1`; watchdog on; T6 (1920x1088) rendering.
+- **2026-10-19 12:20, T6 stopped at step 11/20 (my misread):** `docker logs` holds tqdm's carriage-return updates until
+  the next newline, so the 1920x1088 run looked stuck on step 1 after 30 min; it was at 165 s/step (the FLOP estimate:
+  50 blocks, 42 heads x 128, hidden 5376; 75.5k video tokens vs 32.6k; SDPA at 75.5k tokens 3.1 s a call, cuDNN / flash
+  both fine on GB10). I interrupted it 25 min before the end. Super size is slow, not broken: ~57 min a 124-frame
+  clip. Read sampler progress from the Comfy websocket or by elapsed time, never from the last docker log line.
+- **Production run** `rach_open_close_x4_full` (close camera + 4x density + stock matmul, 1280x704; 4 chained clips =
+  the first 124 original frames, 5.2 s) started 12:22. New `skeleton_piano.py final RUN`: every K-th frame of the
+  rendered clips (the take's own frames), the take's sound at speed, lock check against the 24 fps reference run
+  (`RUNS[...]["ref"]`, tolerance `tol`), and a Blender | H3 | overlay triptych. `lockcheck.py --tol PX --every K`
+  (reproduces T5 84 / 87 / 89, worst 82 and T7 74 / 81 / 85, worst 67 at 4.35 px). Next: **T6b** = the same dense take
+  at 1920x1088, clip 0 (31 original frames), against the production run's clip 0 on the same frames.

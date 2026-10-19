@@ -6,6 +6,11 @@
     skeleton_piano.py score  RUN     per clip: flow agreement with the normal pass inside the hand mask (motionmatch)
     skeleton_piano.py join   RUN     the clips back to back (+ the take's sound) -> ROOT/RUN/RUN.mp4, and a
                                      side-by-side with the Blender plate -> ROOT/RUN/RUN_sbs.mp4
+    skeleton_piano.py final  RUN     a dense run (RUNS densify K): every K-th frame of the rendered clips (the take's
+                                     own frames), the take's sound at speed -> ROOT/RUN/RUN_final.mp4; the lock check of
+                                     it against the 24 fps reference run (RUNS ref, tolerance tol) -> lc_final.csv and
+                                     overlay; a triptych (Blender | H3 | lock overlay) -> ROOT/RUN/RUN_triptych.mp4
+    skeleton_piano.py run    RUN N   only the first N clips
 
 RUN = a key of RUNS below: the edit (cameras.py --style still on the take), its first frame, the clip lengths
 (17k+5 frames each), the view words for the prompt and the sound (the take's hands on the working piano).
@@ -41,6 +46,16 @@ RUNS = {
     "rach_open_close_hd": {"edit": ROOT / "edit_c19_close.json", "f0": 993, "clips": [124], "size": (1920, 1088),
                            "view": "Seen from directly above the keyboard",
                            "sound": HOME / "h3/hands_loop/action_20261017/suite_c19/cand/action_km02_audio/model.wav"},
+    # production candidate: close camera, 4x density, the first 124 original frames (5.2 s) as 4 chained H3 clips;
+    # `final` keeps every 4th frame (the originals), puts the take's sound back at speed and lock-checks the result
+    # against the 24 fps close-camera reference (run rach_open_close: the same 124 original frames, take frames 993+)
+    "rach_open_close_x4_full": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [124, 124, 124, 124],
+                                "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x4_full.wav",
+                                "densify": 4, "ref": "rach_open_close", "tol": 4.35},
+    # the same at 1920x1088 (2.25x the H3 tokens, ~57 min a clip): super size on top of the density (T6b = its clip 0)
+    "rach_open_close_x4_hd": {"edit": ROOT / "edit_c19_close_x4_full.json", "f0": 0, "clips": [124, 124, 124, 124],
+                              "size": (1920, 1088), "view": "Seen from directly above the keyboard",
+                              "sound": ROOT / "sound_x4_full.wav", "densify": 4, "ref": "rach_open_close", "tol": 4.35},
     # both: the close camera at twice the frame density (T4)
     "rach_open_close_x2": {"edit": ROOT / "edit_c19_close_x2.json", "f0": 0, "clips": [124],
                            "view": "Seen from directly above the keyboard", "sound": ROOT / "sound_x2_c0.wav"},
@@ -158,8 +173,8 @@ def last_frame(mp4, dst):
                     str(dst)], check=True)
 
 
-def run_all(run, need=int(os.environ.get("H3_NEED_GB", 30)), poll=180):
-    for k in range(len(RUNS[run]["clips"])):
+def run_all(run, need=int(os.environ.get("H3_NEED_GB", 30)), poll=180, upto=None):
+    for k in range(len(RUNS[run]["clips"]) if upto is None else upto):
         if out_mp4(run, k).exists():
             print("exists:", out_mp4(run, k)); continue
         first = None
@@ -212,12 +227,48 @@ def join(run):
     print("joined", d / f"{run}.mp4")
 
 
+def final(run):
+    R = RUNS[run]; d = ROOT / run; K = R["densify"]; ref = RUNS[R["ref"]]; rd = ROOT / R["ref"]
+    done = []
+    for k in range(len(R["clips"])):
+        if not out_mp4(run, k).exists():
+            break
+        done.append(out_mp4(run, k))
+    n = sum(R["clips"][:len(done)]) // K                 # the take's own frames covered by the rendered clips
+    lst = d / "final_clips.txt"
+    lst.write_text("".join(f"file '{p}'\n" for p in done))
+    t0 = ref["f0"] / 24.0
+    out = d / f"{run}_final.mp4"
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-ss", f"{t0:.4f}",
+                    "-t", f"{n / 24.0:.4f}", "-i", str(ref["sound"]), "-map", "0:v", "-map", "1:a",
+                    "-vf", f"select='not(mod(n\\,{K}))',setpts=N/24/TB", "-r", "24", "-frames:v", str(n),
+                    "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", str(out)],
+                   check=True)
+    lc = subprocess.run([PY, str(REPO / "h3_tools/lockcheck.py"), str(out), str(rd / "c0_normal.mp4"), str(rd / "c0_mask.mp4"),
+                         str(d / "lc_final"), "--tol", str(R["tol"])], check=True, capture_output=True, text=True).stdout.strip()
+    with open(d / "scores.txt", "a") as fh:
+        fh.write(f"final ({len(done)} clips, {n} frames): {lc}\n")
+    print(lc)
+    font = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+    lab = lambda t: (f"scale=640:352,drawbox=x=0:y=0:w=iw:h=30:color=black@0.55:t=fill,"
+                     f"drawtext=fontfile={font}:text='{t}':x=10:y=7:fontsize=17:fontcolor=white")
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", "24", "-start_number", str(ref["f0"]),
+                    "-i", str(rd / "plate/f_%05d.png"), "-i", str(out), "-i", str(d / "lc_final_overlay.mp4"),
+                    "-filter_complex", f"[0:v]{lab('Blender blockout (our rig)')}[a];[1:v]{lab('H3 render (skeleton look)')}[b];"
+                                       f"[2:v]{lab('Lock check: our edges in red over H3')}[c];[a][b][c]hstack=3[v]",
+                    "-map", "[v]", "-map", "1:a", "-frames:v", str(n), "-c:v", "libx264", "-crf", "16",
+                    "-pix_fmt", "yuv420p", "-c:a", "copy", str(d / f"{run}_triptych.mp4")], check=True)
+    print("final", out, d / f"{run}_triptych.mp4")
+
+
 if __name__ == "__main__":
     cmd, run = sys.argv[1:3]
     if cmd in ("passes", "all"):
         passes(run)
     if cmd in ("run", "all"):
-        run_all(run)
+        run_all(run, upto=int(sys.argv[3]) if len(sys.argv) > 3 else None)
+    if cmd == "final":
+        final(run)
     if cmd == "score":
         for k in range(len(RUNS[run]["clips"])):
             score(run, k)
