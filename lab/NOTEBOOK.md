@@ -1554,3 +1554,10 @@ jobs, scores and videos under `~/h3/results/hand_looks/`.
   it 48, solve never pressed 23, key down but no blow 20, plan pressed / physics key not down 19. **Unplayable as
   transcribed: 22 notes** (the two Rach climax chords at 120.55 and 128.49 s span 82 cm, more than two hands reach at
   once); the other no-finger misses (Rach bass C#3s at ~97-105 s, scattered Chopin) are reachable: solve / fingering.
+- **Pressing-finger catches lean thumbward on every finger** (C15, realistic judge; thumb side / pinky side): index
+  36 / 24, middle 38 / 11, ring 22 / 13, pinky 35 / 2. Not the fingertip's roll (`tools/finger_roll.py`: index tilts
+  thumb side down p50 9.5 deg, pinky the other way -13 deg, yet the pinky catches thumbward 35:2): the pads sit 2-5 mm
+  toward the thumb in the tail when neighbours are 2-3 white keys apart (`tools/lean_why.py`: lean 18-20% vs 12.5% at
+  one key): the hand does not spread for a stretch (comfort_abd 10). C18 (`PRESS_AXES` x 12) tests lateral pull;
+  **C21 = C15 + `WIDE_ABD` (0.10 m, 3.0)** queued after C20/C18 (spread costs 3 instead of 10 while the hand presses
+  keys >= 10 cm apart; the earlier W1 run was never scored, the judge changed under it).
