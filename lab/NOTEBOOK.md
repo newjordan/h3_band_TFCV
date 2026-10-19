@@ -1639,3 +1639,6 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   edges matched **81 / 84 / 87%**, worst frame **77%** (T2 close at 24 fps on the same frames: 72 / 78 / 83%, worst
   65%). Overlays at frames 50 / 52: T2's right hand is a ghosted smear; T4's is crisp with the bones on the red lines.
   Size and density stack. Next: T5 (4x), T7 (stock matmul), T6 (1920x1088).
+- **T5 (close camera + 4x frame density: one H3 latent frame per original frame):** first 31 original frames at 4.35
+  px: **85 / 87 / 89%**, worst **83%** (T4 2x 81 / 84 / 87, worst 77; T2 24 fps 73 / 78 / 83, worst 69). Monotonic in
+  density. Cost: 4x the H3 frames (5 s of music = 496 frames = 4 clips of 124, ~66 min at 1280x704).
