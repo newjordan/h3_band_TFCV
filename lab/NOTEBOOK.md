@@ -1813,3 +1813,12 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   unanchored too: its success is 4x + no keyframe. Next (`probes3.sh`): shot 2 with **overlapping clips**
   (`ov_rach_s2_ov`: 9 held frames of context instead of one keyframe) and **all clips unanchored** (`ov_rach_s2_un`:
   no keyframe, seams unbridged); the suite waits for the join method.
+- **Overlap doesn't stop the wire either (ov_rach_s2_ov, 18:05):** clip 1 (9 held frames of clip 0) is a skeleton
+  like the chain's clip 1, and the seam is smoother (luma 37.5 -> 35.2 -> 34.6 -> 34.1 -> 33.3 over 4 take frames
+  instead of a 2-frame step) but still sinks ~10%; clip 2 (camera swinging behind the hand) is the same long wire
+  fingers as the keyframe chain. Whatever carries clip k-1's look into clip k (one keyframe or three latent frames of
+  context) bends it into wires as the view turns; fresh (unanchored) clips paint full skeletons at every angle tried.
+  Stopped after clip 2. Running: `ov_rach_s2_un` (every clip fresh) to see the seams. Shot 3 (across) with view words
+  (`ov_rach_s3_cv`): forearms still single rods, a person behind the keys: the control carried the rig's shirt-sleeve
+  edges (the hand mask blanks hands only); `pose_control.py --keys` takes the key edges from a rig-hidden normal pass
+  (`normal_nohands`), probe `s3c0_w` (+ `--width`) queued.
