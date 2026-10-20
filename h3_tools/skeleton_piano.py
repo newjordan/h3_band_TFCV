@@ -256,6 +256,11 @@ for _s in ("rach_s1", "rach_s2", "rach_s3"):
 # at the same take frame 993) as the keyframe of the long clip.
 RUNS["ov_rach_s1_kf"] = dict(RUNS["ov_rach_s1"], inputs_from="ov_rach_s1",
                              first_image="band/skeleton/kf_rach_s1_skeleton.png")
+# ov_rach_s1_kf: frame 0 the skeleton keyframe, then the hands dissolve into dark ghosts with the pose lines drawn
+# as glowing wires. Long clips don't hold on this recipe; every clip that worked was 124 frames. Shot 1 as three
+# chained 124-frame clips: clip 0 = probe D (same dense frames 0-123), clips 1-2 open on the previous clip's last frame.
+RUNS["ov_rach_s1_ch"] = dict(RUNS["ov_rach_s1"], clips=[124, 124, 124], edit=ROOT / "edit_c19_show_ov_rach_s1_ch.json",
+                             sound=ROOT / "sound_ov_rach_s1_ch.wav", bone_ref=None)
 RUNS["ov_rach_s2x4"] = dict(RUNS["ov_rach_s2"], densify=4, clips=[294, 294], keep=146,
                             edit=ROOT / "edit_c19_show_ov_rach_s2x4.json", sound=ROOT / "sound_ov_rach_s2x4.wav")
 

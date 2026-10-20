@@ -1755,3 +1755,8 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   hands; the look-first prompt isn't enough. Orbit shot stopped. Test: **ov_rach_s1_kf** = the same clip with D's own
   first frame (H3's skeleton at take frame 993) as the keyframe (`first_image`), so the look is anchored by an H3
   frame (prompt-made, not our geometry).
+- **ov_rach_s1_kf (362 frames, D's skeleton frame as the keyframe):** frame 0 the skeleton, then the hands dissolve
+  into dark ghosts with the pose lines drawn as thin glowing wires. **Long clips don't hold on the overlay recipe**
+  (unanchored: flesh; anchored: wire ghosts); every clip that worked was 124 frames (D, monster, robot). Test:
+  **ov_rach_s1_ch** = shot 1 as three chained 124-frame clips (clip 0 = D, identical inputs; clips 1-2 open on the
+  previous clip's last H3 frame).
