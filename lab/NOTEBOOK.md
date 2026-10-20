@@ -1790,3 +1790,17 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   swung behind, under the "beside" words. Re-render (`rach_cv_chain.sh`): `ov_rach_s2_cv` (clips 0-1 adopted from the
   chain, 2-4 chained on with `view_auto`), `ov_rach_s3_cv` (across, all three clips with `view_auto`), joined with
   shot 1 -> `rach_cv_final.mp4`.
+- **s01x4p (the suite's shot 1, "both" from high behind, first 124 dense frames at 4x, view words):** both skeleton
+  hands on the keys where the rig's hands are (left hand x 150-280 vs the rig's 140-280 of 640; right 350-480 vs
+  350-490), thumbs out, fingertips on the keys; the fingers flatter than the rig's arch. At 24 fps this camera painted
+  open hands in front of the keys. 4x + view words make the high cameras work: **every camera of the edit stays**
+  (the recamera swap is not needed). Band site `high-cam`.
+- **Seam dimming, measured (shot 1 chain, per take frame):** across seam 1 the luma goes 39.2 -> 37.4 -> 34.9 and
+  holds ~34.6; seam 2 35.3 -> 33.4 -> 32.1 -> 31.7. Inside a chained clip: keyframe PNG 39.1, clip frame 0 37.3, frame 4
+  34.9, frame 8 34.3, then flat: the drop is in the first two latent frames after the keyframe, a visible dim step
+  every 1.3 s. **Overlap** (`overlap` run key): clip k opens O = 9 frames (3 latent frames) before clip k-1 ends;
+  those frames of its video stream are clip k-1's own last H3 frames (lossless PNGs) held clean (`lock` head 3, mask 0
+  = sigma 0; `h3audio_run.py` head profile), the rest the hand-free plate at 0.88; final drops each later clip's
+  first O frames (`_cat` trim). Probe `ov_rach_s1_ov` (clip 0 adopted from the chain, same prompt) after the re-render.
+- **Suite at 4x (`S4X`, s4x_s00..39):** 306 overlapping clips, ~70 h of H3; Blender inputs building
+  (`suite4_inputs.sh`); `suite4_chain.sh` waits for the overlap probe and a go flag (`suite4.go`).

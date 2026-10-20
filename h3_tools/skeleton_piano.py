@@ -281,6 +281,18 @@ RUNS["s2c3_vw"] = dict(RUNS["s2c3_v"], control_kind="posekeysw")
 # Every chained clip settles ~10% darker within its first two latent frames (shot 1: 39.2 -> 37.4 -> 34.9 across the
 # seam, a visible dim step every 1.3 s). Overlap probe: shot 1 with each later clip opening 9 frames (3 latent frames)
 # before the previous one ends, those frames the previous clip's H3 frames held clean (lock head), dropped in final.
+# The whole Knight's Suite at 4x (the user: "the full knights suite with our camera angels"; 20 Oct: high cameras
+# work at 4x with view words, so every shot of the edit stays): each shot a chain of 124-frame clips, overlapping by
+# OV frames (OV_SUITE), view words per clip, the skeleton first in the prompt. S4X = the run names in order.
+OV_SUITE = 9
+S4X = []
+for _r in SUITE:
+    _n = RUNS[_r]["keep"]
+    _c = 1 + max(0, -(-(4 * _n - 124) // (124 - OV_SUITE)))
+    _name = _r.replace("suite_", "s4x_")
+    RUNS[_name] = dict(RUNS[_r], densify=4, clips=[124] * _c, overlap=OV_SUITE, view_auto=True,
+                       edit=ROOT / f"edit_c19_show_{_name}.json", sound=ROOT / f"sound_{_name}.wav")
+    S4X.append(_name)
 RUNS["ov_rach_s1_ov"] = dict(RUNS["ov_rach_s1_ch"], overlap=9)   # same prompt as the chain: a clean A/B
 RUNS["ov_rach_s2_cv"] = dict(RUNS["ov_rach_s2_ch"], inputs_from="ov_rach_s2_ch", view_auto=True)
 RUNS["ov_rach_s3_cv"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", view_auto=True)
