@@ -1804,3 +1804,12 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   first O frames (`_cat` trim). Probe `ov_rach_s1_ov` (clip 0 adopted from the chain, same prompt) after the re-render.
 - **Suite at 4x (`S4X`, s4x_s00..39):** 306 overlapping clips, ~70 h of H3; Blender inputs building
   (`suite4_inputs.sh`); `suite4_chain.sh` waits for the overlap probe and a go flag (`suite4.go`).
+- **Correction: the keyframe, not the words.** `ov_rach_s2_cv` clips 2-3 (view words, chained on the previous clip's
+  last frame) came out the same long wire fingers as the old chain. **s2c3_u** (clip 3 unanchored with the OLD "beside"
+  words): the same full skeleton hands as s2c3_v (radius and ulna, carpals, fingers on the keys); the words only tint
+  the keys gold. So the wire is the keyframe chain under a moving view: each link inherits the previous look and, as
+  the camera swings behind the hand, H3 bends it into wires (shot 1's static camera held for 3 links). View words stay
+  (harmless, they describe the camera), but they fix nothing on their own. The high-camera probe s01x4p was
+  unanchored too: its success is 4x + no keyframe. Next (`probes3.sh`): shot 2 with **overlapping clips**
+  (`ov_rach_s2_ov`: 9 held frames of context instead of one keyframe) and **all clips unanchored** (`ov_rach_s2_un`:
+  no keyframe, seams unbridged); the suite waits for the join method.

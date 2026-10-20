@@ -275,6 +275,15 @@ RUNS["ov_rach_s3_ch"] = dict(RUNS["ov_rach_s3"], clips=[124] * 3, bone_ref=None,
 RUNS["s2c3_v"] = dict(RUNS["ov_rach_s2_ch"], f0=RUNS["ov_rach_s2_ch"]["f0"] + 3 * 124, clips=[124], view_auto=True,
                       chain=False)
 RUNS["s2c3_vw"] = dict(RUNS["s2c3_v"], control_kind="posekeysw")
+# ov_rach_s2_cv's clip 2 (view words, chained on clip 1's last frame) came out the same wire fingers as the chain's:
+# with a keyframe the words do nothing. The control for the confound: clip 3 unanchored with the old "beside" words.
+RUNS["s2c3_u"] = dict(RUNS["s2c3_v"], view_auto=False)
+# s2c3_u (unanchored, old words): the same full skeleton hands as s2c3_v. The keyframe is what turns the orbit to wire,
+# not the words (they only tint the keys). How should the suite's clips join, then? Shot 2 (the orbit) two ways, clip
+# 0 adopted from the chain: OV = each clip opens on the previous clip's last 9 H3 frames held (3 latent frames of
+# context, not one keyframe); UN = every clip unanchored (no keyframe; clip 3 = s2c3_u), to see the seams.
+RUNS["ov_rach_s2_ov"] = dict(RUNS["ov_rach_s2_ch"], overlap=9)
+RUNS["ov_rach_s2_un"] = dict(RUNS["ov_rach_s2_ch"], inputs_from="ov_rach_s2_ch", chain=False)
 # s2c3_v (view words alone): full skeleton hands seen from behind (radius and ulna, carpals, metacarpals, fingers on
 # the keys) where the chain painted wires. The opening's bad clips again with view_words: shot 2 clips 2-4 chained on
 # from the chain's clip 1 (clips 0-1 adopted), shot 3 all three clips.
