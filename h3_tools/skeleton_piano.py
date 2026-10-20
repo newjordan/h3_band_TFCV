@@ -278,6 +278,10 @@ RUNS["s2c3_vw"] = dict(RUNS["s2c3_v"], control_kind="posekeysw")
 # s2c3_v (view words alone): full skeleton hands seen from behind (radius and ulna, carpals, metacarpals, fingers on
 # the keys) where the chain painted wires. The opening's bad clips again with view_words: shot 2 clips 2-4 chained on
 # from the chain's clip 1 (clips 0-1 adopted), shot 3 all three clips.
+# Every chained clip settles ~10% darker within its first two latent frames (shot 1: 39.2 -> 37.4 -> 34.9 across the
+# seam, a visible dim step every 1.3 s). Overlap probe: shot 1 with each later clip opening 9 frames (3 latent frames)
+# before the previous one ends, those frames the previous clip's H3 frames held clean (lock head), dropped in final.
+RUNS["ov_rach_s1_ov"] = dict(RUNS["ov_rach_s1_ch"], overlap=9)   # same prompt as the chain: a clean A/B
 RUNS["ov_rach_s2_cv"] = dict(RUNS["ov_rach_s2_ch"], inputs_from="ov_rach_s2_ch", view_auto=True)
 RUNS["ov_rach_s3_cv"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", view_auto=True)
 if "suite_s01" in RUNS:
@@ -366,10 +370,38 @@ def shot_edit(run):
 
 
 def clip_frames(run):
+    """(first dense frame, length) of each clip; with "overlap" O every clip after the first opens O frames before the
+    previous one ends (those O frames are the previous clip's H3 frames, held; final drops them)."""
     R = RUNS[run]; out, f = [], R["f0"]
     for n in R["clips"]:
-        out.append((f, n)); f += n
+        out.append((f, n)); f += n - R.get("overlap", 0)
     return out
+
+
+def overlap_plate(run, k):
+    """Clip k's video stream with an overlap: its first O frames are clip k-1's last O H3 frames (lossless PNGs), the
+    rest the hand-free plate. With those latent frames held clean (job "lock" head), clip k continues clip k-1 from
+    real context (3 latent frames) instead of one keyframe, after which H3 settled ~10% darker within two latent frames."""
+    import cv2
+    O = RUNS[run]["overlap"]; i = src(run)
+    pngs = sorted((COMFY_OUT / tag(run, k - 1)).glob("frame_*.png"))[-O:]
+    plate = str(COMFY_IN / cin(i, k, RUNS[run].get("plate_kind", "plate")))
+    cap = cv2.VideoCapture(plate); frames = []
+    while True:
+        ok, im = cap.read()
+        if not ok:
+            break
+        frames.append(im)
+    H, W = frames[0].shape[:2]
+    for j, pth in enumerate(pngs):
+        frames[j] = cv2.resize(cv2.imread(str(pth)), (W, H), interpolation=cv2.INTER_AREA)
+    dst = COMFY_IN / cin(run, k, "plate_ov")
+    proc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{W}x{H}", "-r", "24",
+                             "-i", "-", "-c:v", "libx264", "-crf", "8", "-pix_fmt", "yuv420p", str(dst)], stdin=subprocess.PIPE)
+    for im in frames:
+        proc.stdin.write(im.tobytes())
+    proc.stdin.close(); proc.wait()
+    return pngs[0]
 
 
 def render(run, kind, extra, procs=4):
@@ -520,6 +552,10 @@ def job(run, k, first=None):
             j[key] = RUNS[run][key]
     if RUNS[run].get("sparse"):                    # block-sparse attention (h3audio_run.py "sparse")
         j["sparse"] = RUNS[run]["sparse"]
+    if RUNS[run].get("overlap") and k:             # overlap: the previous clip's last frames held as context
+        O = RUNS[run]["overlap"]
+        j["video"] = cin(run, k, "plate_ov")
+        j["lock"] = {"head": 1 + (O - 1) // 4, "anchor": 0.0, "free": j["video_strength"]}
     if first:                                      # chained: this clip opens on the previous clip's last H3 frame
         j["image"] = first
     else:
@@ -548,7 +584,10 @@ def run_all(run, need=int(os.environ.get("H3_NEED_GB", 30)), poll=180, upto=None
         first = RUNS[run].get("first_image") if k == 0 else None   # a keyframe that anchors the look (an H3 frame)
         if k and RUNS[run].get("chain", True):          # chain = False: every clip on its own (no keyframe), like clip 0
             first = cin(run, k, "first", "png")
-            last_frame(run, k - 1, COMFY_IN / first)
+            if RUNS[run].get("overlap"):
+                subprocess.run(["cp", str(overlap_plate(run, k)), str(COMFY_IN / first)], check=True)
+            else:
+                last_frame(run, k - 1, COMFY_IN / first)
         p = job(run, k, first)
         while True:
             r = subprocess.run(["bash", str(LEASE), "take", "h3-skeleton", f"H3 skeleton piano {run} clip {k}", str(need)],
@@ -603,9 +642,18 @@ def decimate(src, dst, K, n, gray=False):
                     "-c:v", "libx264", "-crf", "10", "-pix_fmt", "yuv420p", str(dst)], check=True)
 
 
-def _cat(paths, dst):
+def _cat(paths, dst, trim=0):
+    """paths joined; trim: drop the first trim frames of every path after the first (a run's clip overlap)."""
     if len(paths) == 1:
         return paths[0]
+    if trim:
+        ins = sum((["-i", str(p)] for p in paths), [])
+        fc = "".join(f"[{i}:v]" + (f"trim=start_frame={trim},setpts=PTS-STARTPTS" if i else "null") + f"[v{i}];"
+                     for i in range(len(paths)))
+        fc += "".join(f"[v{i}]" for i in range(len(paths))) + f"concat=n={len(paths)}:v=1:a=0[v]"
+        subprocess.run(["ffmpeg", "-v", "error", "-y"] + ins + ["-filter_complex", fc, "-map", "[v]", "-c:v", "libx264",
+                        "-crf", "10", "-pix_fmt", "yuv420p", str(dst)], check=True)
+        return dst
     lst = dst.with_suffix(".txt")
     lst.write_text("".join(f"file '{p}'\n" for p in paths))
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-c:v", "libx264", "-crf", "10",
@@ -619,7 +667,10 @@ def final_shot(run):
     R = RUNS[run]; d = ROOT / run; K, n = R["densify"], R["keep"]
     out = d / f"{run}_final.mp4"
     video = out_mp4(run, 0)
-    if len(R["clips"]) > 1:                        # a shot too long for one clip at K: its clips back to back
+    O = R.get("overlap", 0)
+    if len(R["clips"]) > 1 and O:                  # overlapping clips: each later clip without its held frames
+        video = _cat([out_mp4(run, k) for k in range(len(R["clips"]))], d / "clips_joined.mp4", trim=O)
+    elif len(R["clips"]) > 1:                      # a shot too long for one clip at K: its clips back to back
         lst = d / "clips.txt"
         lst.write_text("".join(f"file '{out_mp4(run, k)}'\n" for k in range(len(R["clips"]))))
         video = d / "clips_joined.mp4"
@@ -633,9 +684,9 @@ def final_shot(run):
     d.mkdir(parents=True, exist_ok=True)
     nc = len(R["clips"])
     for kind, gray in (("normal", False), ("mask", True)):
-        decimate(_cat([ROOT / src(run) / f"c{k}_{kind}.mp4" for k in range(nc)], d / f"all_{kind}.mp4"),
+        decimate(_cat([ROOT / src(run) / f"c{k}_{kind}.mp4" for k in range(nc)], d / f"all_{kind}.mp4", O),
                  d / f"ref_{kind}.mp4", K, n, gray)
-    decimate(_cat([COMFY_IN / cin(src(run), k, "plate") for k in range(nc)], d / "all_plate.mp4"), d / "ref_plate.mp4", K, n)
+    decimate(_cat([COMFY_IN / cin(src(run), k, "plate") for k in range(nc)], d / "all_plate.mp4", O), d / "ref_plate.mp4", K, n)
     lc = subprocess.run([PY, str(REPO / "h3_tools/lockcheck.py"), str(out), str(d / "ref_normal.mp4"), str(d / "ref_mask.mp4"),
                          str(d / "lc_final"), "--tol", str(R["tol"])], check=True, capture_output=True, text=True).stdout.strip()
     if R.get("bone_ref"):                          # are H3's bones where the rig's bones are? (reference only)
@@ -670,7 +721,8 @@ def inside(run):
     R = RUNS[run]; d = ROOT / run; K, n = R["densify"], R["keep"]
     nc = len(R["clips"])
     ctl = R.get("control_kind", "ncanny")
-    decimate(_cat([COMFY_IN / cin(src(run), k, ctl) for k in range(nc)], d / f"all_{ctl}.mp4"), d / "ref_control.mp4", K, n)
+    decimate(_cat([COMFY_IN / cin(src(run), k, ctl) for k in range(nc)], d / f"all_{ctl}.mp4", R.get("overlap", 0)),
+             d / "ref_control.mp4", K, n)
     font = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
     lab = lambda t: (f"scale=640:352,drawbox=x=0:y=0:w=iw:h=30:color=black@0.55:t=fill,"
                      f"drawtext=fontfile={font}:text='{t}':x=10:y=7:fontsize=17:fontcolor=white")

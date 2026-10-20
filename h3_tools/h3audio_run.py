@@ -57,13 +57,14 @@ def lock_masks(j):
     """Lockstep profile, one mask per latent frame. j["lock"] = {"every": k, "anchor": s_a, "free": s_f, "width": w}:
     every k-th latent frame (and w-1 after it) is an anchor held to the plate at strength s_a; the rest at s_f.
     Latent frames: 5 per 17 pixel frames (73 frames = 22 latent frames)."""
-    L = j["lock"]
-    n, f = 0, 0                                     # latent frames: the VAE packs pixel frames 1,4,4,4,4 per 17
+    L = j["lock"]                                   # or {"head": h, "anchor": s_a, "free": s_f}: the first h latent
+    n, f = 0, 0                                     # frames anchored (an overlap held from the previous clip), the rest free
+    # latent frames: the VAE packs pixel frames 1,4,4,4,4 per 17
     while f < int(j["length"]):
         f += (1, 4, 4, 4, 4)[n % 5]; n += 1
     out = []
     for k in range(n):
-        anchor = k % int(L["every"]) < int(L.get("width", 1))
+        anchor = k < int(L["head"]) if "head" in L else k % int(L["every"]) < int(L.get("width", 1))
         out.append(strength_to_mask(L["anchor"] if anchor else L["free"]))
     return out
 
