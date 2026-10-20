@@ -1760,3 +1760,21 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   (unanchored: flesh; anchored: wire ghosts); every clip that worked was 124 frames (D, monster, robot). Test:
   **ov_rach_s1_ch** = shot 1 as three chained 124-frame clips (clip 0 = D, identical inputs; clips 1-2 open on the
   previous clip's last H3 frame).
+- **Rachmaninoff opening on the overlay recipe, all three shots (20 Oct, 15:07; `rach_ch_chain.sh` -> `rach_ch_final.mp4`,
+  321 frames, 13.4 s, sound; band site `rach-overlay`).** Shot 1 (steady_low_R, 3 links) and the orbit's first half
+  (shot 2 clips 0-1, az -20 to -35 deg from the treble end): crisp skeleton hands on the keys. **Fails:** shot 2 clips
+  2-4, the orbit ending just behind the right hand (az -75 to -100, 40 deg up, 0.39 m; wrist below the frame, elbow
+  level with the camera): H3 paints the joints as long thin wire bones; flow_cos vs the normal pass 0.71 -> 0.00 in
+  clips 3-4. Shot 3 (across_L, facing the pianist, 41 deg up, 0.72 m): small skeleton hands on the keys, each forearm a
+  single thin rod (the control's one arm line). Whole-frame Y per link: shot 1 39 -> 35 -> 32.5, shot 2 37 -> 34.6 ->
+  35 -> 33.7 -> 33.7 (~8% a link at most). The prompt said "seen from beside the keyboard" for the whole orbit.
+  Probes queued (`probe_view.sh`): **s2c3_v** = clip 3 alone, unanchored, with `view_words` (the view sentence from
+  the clip's camera: circular-mean azimuth from the look point, player on -y, median elevation); **s2c3_vw** = the
+  same + `pose_control.py --width` (lines half a 12 mm bone wide through the frame's lens, near bones over far ones,
+  joints as knobs); **s01x4p** = the suite's "both" shot from above at 4x (high cameras were only ever tried at 24
+  fps), with `view_words`. (`--depth`, relative 1/z thickness, was built and dropped: behind the hand the near end is
+  off-screen, so the visible part is all about the same depth.)
+- Band Aid page + README rewritten locally (not pushed) on the stock-hand overlay: graph (performer: plate without
+  hands + pose_json; Blockout Pose Control replaces Reference Edges), Demo (opening slot; four looks cycle / grid /
+  stock hand | control | H3 trio from `overlay_media.py`, paw dropped), How it works, Results (bones on the rig 63%,
+  keys 72%), Limitations (4x, 124-frame chains, along-the-finger cameras).
