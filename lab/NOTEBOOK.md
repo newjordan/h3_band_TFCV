@@ -1750,3 +1750,8 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   we fix what doesn't"; chose the Rachmaninoff opening now at 4x (`rach_chain.sh`: steady_low 362 | orbit 2 chained x
   294 | across 362), then the rest of the suite. `h3_tools/recamera.py` (same cuts, failing cameras re-shot) is built,
   not used. Open: the high cameras (overhead, both, steady) at 4x untested; whole suite at 4x ~100 h on one GB10.
+- **ov_rach_s1 (the overlay recipe on one 362-frame clip, 4x):** dark translucent FLESH hands, where its 124-frame
+  probe D (same camera, take frames, seed, inputs) painted skeletons: on a long clip H3 drifts back to its default
+  hands; the look-first prompt isn't enough. Orbit shot stopped. Test: **ov_rach_s1_kf** = the same clip with D's own
+  first frame (H3's skeleton at take frame 993) as the keyframe (`first_image`), so the look is anchored by an H3
+  frame (prompt-made, not our geometry).

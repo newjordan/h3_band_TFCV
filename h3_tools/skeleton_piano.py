@@ -251,6 +251,11 @@ for _s in ("rach_s1", "rach_s2", "rach_s3"):
 
 # The user (20 Oct): render the Rachmaninoff opening now, at 4x (2x paints half-flesh hands, 24 fps loses them).
 # Shot 2 (orbit, 146 take frames) at 4x is two chained 294-frame clips (the second opens on the first's last H3 frame).
+# ov_rach_s1 (362 frames) painted dark flesh hands where its 124-frame probe (D, same camera, frames, seed) painted
+# skeletons: on a long clip H3 drifts back to its default hands. Anchor the look: D's own first frame (H3's skeleton
+# at the same take frame 993) as the keyframe of the long clip.
+RUNS["ov_rach_s1_kf"] = dict(RUNS["ov_rach_s1"], inputs_from="ov_rach_s1",
+                             first_image="band/skeleton/kf_rach_s1_skeleton.png")
 RUNS["ov_rach_s2x4"] = dict(RUNS["ov_rach_s2"], densify=4, clips=[294, 294], keep=146,
                             edit=ROOT / "edit_c19_show_ov_rach_s2x4.json", sound=ROOT / "sound_ov_rach_s2x4.wav")
 
@@ -443,7 +448,7 @@ def run_all(run, need=int(os.environ.get("H3_NEED_GB", 30)), poll=180, upto=None
     for k in range(len(RUNS[run]["clips"]) if upto is None else upto):
         if out_mp4(run, k).exists():
             print("exists:", out_mp4(run, k)); continue
-        first = None
+        first = RUNS[run].get("first_image") if k == 0 else None   # a keyframe that anchors the look (an H3 frame)
         if k and RUNS[run].get("chain", True):          # chain = False: every clip on its own (no keyframe), like clip 0
             first = cin(run, k, "first", "png")
             last_frame(run, k - 1, COMFY_IN / first)
