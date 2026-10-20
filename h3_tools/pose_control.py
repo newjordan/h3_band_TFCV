@@ -3,6 +3,9 @@ overlay control.
 
 --depth: perspective in the joint lines (nearer bones and joints thicker, near bones drawn over far ones): seen along
 the fingers (from behind the hand or from above) the flat joint skeleton doesn't say which way the fingers point.
+--keys DIR: the key edges from DIR, a normal pass rendered with the rig hidden (blender_piano.py --hide hands): no hand,
+arm or sleeve edges at all and no blanked hole, so the keys under the fingers stay in the control. With the hand-mask
+blanking the rig's shirt sleeves stayed in, and seen from across the keys H3 painted a person behind them.
 --width: the lines as wide as half a 12 mm bone through the frame's lens (POSE2D frames carry "lens"): close up, the
 fixed 3 px lines got painted as thin wires.
 
@@ -47,8 +50,9 @@ def draw(img, hand, elbow, side, scale, f=None):
 def main():
     hands_mode = sys.argv[sys.argv.index("--hands") + 1] if "--hands" in sys.argv else "none"
     depth, width = "--depth" in sys.argv, "--width" in sys.argv
-    args = [a for i, a in enumerate(sys.argv) if a not in ("--hands", "--depth", "--width")
-            and (i == 0 or sys.argv[i - 1] != "--hands")]
+    keys = sys.argv[sys.argv.index("--keys") + 1] if "--keys" in sys.argv else None
+    args = [a for i, a in enumerate(sys.argv) if a not in ("--hands", "--depth", "--width", "--keys")
+            and (i == 0 or sys.argv[i - 1] not in ("--hands", "--keys"))]
     pose, ndir, mdir, out = args[1:5]
     P = json.load(open(pose))
     W, H = P["size"]
@@ -60,10 +64,10 @@ def main():
                             stdin=subprocess.PIPE)
     k = np.ones((25, 25), np.uint8)
     for j, f in enumerate(frames):
-        nrm = cv2.resize(cv2.imread(f"{ndir}/f_{int(f):05d}.png"), (W, H), interpolation=cv2.INTER_AREA)
+        nrm = cv2.resize(cv2.imread(f"{keys or ndir}/f_{int(f):05d}.png"), (W, H), interpolation=cv2.INTER_AREA)
         msk = cv2.resize(cv2.imread(f"{mdir}/f_{int(f):05d}.png", 0), (W, H), interpolation=cv2.INTER_AREA) > 127
         ed = cv2.Canny(cv2.GaussianBlur(nrm, (3, 3), 0), 20, 60) > 0
-        if hands_mode != "edges":
+        if hands_mode != "edges" and not keys:
             ed &= ~(cv2.dilate(msk.astype(np.uint8), k) > 0)        # no hand outline or skin detail in the control
         img = np.zeros((H, W, 3), np.uint8)
         img[ed] = 255

@@ -283,6 +283,11 @@ RUNS["s2c3_u"] = dict(RUNS["s2c3_v"], view_auto=False)
 # 0 adopted from the chain: OV = each clip opens on the previous clip's last 9 H3 frames held (3 latent frames of
 # context, not one keyframe); UN = every clip unanchored (no keyframe; clip 3 = s2c3_u), to see the seams.
 RUNS["ov_rach_s2_ov"] = dict(RUNS["ov_rach_s2_ch"], overlap=9)
+# ov_rach_s3_cv (across, view words): the forearms still single thin rods (the control's one arm line, seen end-on), and
+# "facing the pianist" painted a person behind the keys. Probe: clip 0 unanchored with the arm and bones drawn as wide
+# as the bones (--width) and words without a person.
+RUNS["s3c0_w"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", clips=[124], view_auto=True,
+                      control_kind="posekeysnw")       # + the key edges from a rig-hidden normal pass (no sleeves)
 RUNS["ov_rach_s2_un"] = dict(RUNS["ov_rach_s2_ch"], inputs_from="ov_rach_s2_ch", chain=False)
 # s2c3_v (view words alone): full skeleton hands seen from behind (radius and ulna, carpals, metacarpals, fingers on
 # the keys) where the chain painted wires. The opening's bad clips again with view_words: shot 2 clips 2-4 chained on
@@ -349,7 +354,10 @@ def controls(run, kind):
     its pose2d_c{k}.json (each frame's lens from the run's edit)."""
     i = src(run); R = RUNS[i]
     E = json.loads(R["edit"].read_text())["frames"]
-    flag = {"posekeysw": "--width", "posekeysd": "--depth"}[kind]
+    flags = {"posekeysw": ["--width"], "posekeysd": ["--depth"], "posekeysn": [], "posekeysnw": ["--width"]}[kind]
+    if kind.startswith("posekeysn"):             # key edges from a normal pass with the rig hidden (no sleeves)
+        render(i, "normal_nohands", ["--pass", "normal", "--hide", "hands"])
+        flags = flags + ["--keys", str(ROOT / i / "normal_nohands")]
     for k in range(len(R["clips"])):
         sub = ROOT / i / f"pose2d_c{k}.json"
         P = json.loads(sub.read_text())
@@ -357,7 +365,7 @@ def controls(run, kind):
             fr["lens"] = E[int(f)]["cam"]["lens"]
         sub.write_text(json.dumps(P))
         subprocess.run([PY, str(REPO / "h3_tools/pose_control.py"), str(sub), str(ROOT / i / "normal"), str(ROOT / i / "mask"),
-                        str(COMFY_IN / cin(i, k, kind)), flag], check=True)
+                        str(COMFY_IN / cin(i, k, kind))] + flags, check=True)
 
 
 def adopt(run, frm, upto):
@@ -530,8 +538,8 @@ def view_words(run, k):
     if d <= 150:
         return (f"Seen from{high} across the keyboard, from the far side of the keys, the fingertips toward the camera "
                 "and the keys they press")
-    return ("Seen from across the piano, facing the pianist, the fingertips coming toward the camera onto the keys "
-            "they press")
+    return ("Seen from across the piano, from the far side of the keys, the fingertips coming toward the camera onto the "
+            "keys they press")              # no "pianist": across, H3 painted a person behind the hands
 
 
 def prompt(run, k=None):
