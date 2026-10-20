@@ -293,6 +293,12 @@ RUNS["s3c0_w"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", clips=
 # early on the previous clip's frames, held clean (lock head) EXCEPT a box around both hands and forearms
 # (face_box at denoise 1.0), and no hard keyframe; the scene carries over, the hands are painted fresh.
 RUNS["ov_rach_s2_bg"] = dict(RUNS["ov_rach_s2_ov"], inputs_from="ov_rach_s2_ov", bg_overlap=True)
+# The user (19:10): "what about a depth map pass?" Depth as a SECOND control under the pose control: the pose pins the
+# joints, depth says which way the fingers and forearms point (what the flat joint lines can't) and how far each key
+# went down. Earlier (K2, chrome era) depth alone kept the look but didn't pin fingers; here the pose does the pinning.
+# D = shot 3 clip 0 fresh: rig-free keys + pose (posekeysn) at 1.0, depth of the stock hand + piano at 0.5.
+RUNS["s3c0_d"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", clips=[124], view_auto=True,
+                      control_kind="posekeysn", control2_kind="depth", control2_strength=0.5, depth_range="0.35,1.4")
 RUNS["ov_rach_s2_un"] = dict(RUNS["ov_rach_s2_ch"], inputs_from="ov_rach_s2_ch", chain=False)
 # s2c3_v (view words alone): full skeleton hands seen from behind (radius and ulna, carpals, metacarpals, fingers on
 # the keys) where the chain painted wires. The opening's bad clips again with view_words: shot 2 clips 2-4 chained on
@@ -359,6 +365,12 @@ def controls(run, kind):
     its pose2d_c{k}.json (each frame's lens from the run's edit)."""
     i = src(run); R = RUNS[i]
     E = json.loads(R["edit"].read_text())["frames"]
+    if kind == "depth":                          # the stock hand + piano as inverse depth (near = white), per clip
+        rng = RUNS[run].get("depth_range", "0.12,2.5")   # fit it to the shot: the default leaves a 0.7 m scene flat grey
+        out = render(i, "depth", ["--pass", "depth", "--depth-range", rng])
+        for k, (f0, n) in enumerate(clip_frames(i)):
+            encode(out, COMFY_IN / cin(i, k, "depth"), f0, n, size=R.get("size", (1280, 704)))
+        return
     flags = {"posekeysw": ["--width"], "posekeysd": ["--depth"], "posekeysn": [], "posekeysnw": ["--width"]}[kind]
     if kind.startswith("posekeysn"):             # key edges from a normal pass with the rig hidden (no sleeves)
         render(i, "normal_nohands", ["--pass", "normal", "--hide", "hands"])
@@ -593,6 +605,9 @@ def job(run, k, first=None):
          "video": cin(i, k, RUNS[run].get("plate_kind", "plate")), "video_strength": 0.88,
          "control": {"video": cin(i, k, RUNS[run].get("control_kind", "ncanny")), "strength": RUNS[run].get("control_strength", 1.0),
                      "end": RUNS[run].get("control_end", 1.0)}, "tag": tag(run, k)}
+    if RUNS[run].get("control2_kind"):             # a second Fun ControlNet patch (h3audio_run.py "control2")
+        j["control2"] = {"video": cin(i, k, RUNS[run]["control2_kind"]), "strength": RUNS[run].get("control2_strength", 0.5),
+                         "end": 1.0}
     for key in ("cfg", "negative"):                # prompt guidance (h3audio_run.py "cfg")
         if RUNS[run].get(key):
             j[key] = RUNS[run][key]

@@ -1829,3 +1829,10 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   clean (lock head 3) except a box around both hands (`hands_box`, the rig's joints over the overlap + 48 px, via the
   latent node's face_box at denoise 1.0), no hard keyframe: the scene and light carry over, the hands are painted
   fresh. Limit: the node takes one box, so in close two-hand views it covers ~2/3 of the frame.
+- **The user (19:10): "what about a depth map pass?"** `blender_piano.py --pass depth` (inverse depth, near = white)
+  exists; K2/K6 (chrome era) found depth alone keeps the look but doesn't pin fingers, and adds nothing under dense
+  edges. New use: depth as a SECOND control (`control2`, 0.5) under the pose control, which does the pinning; depth
+  carries what the flat joint lines can't (which way fingers and forearms point; key travel). The default range
+  (0.12-2.5 m) leaves a 0.7 m shot flat grey: `depth_range` per run (shot 3: 0.35-1.4). Probe **s3c0_d** (shot 3
+  clip 0 fresh: rig-free keys + pose at 1.0, depth 0.5) after s3c0_w. Risk: the depth carries the stock hand's
+  (flesh) volume. Band site `orbit-fresh` (the fresh-clip orbit with sound).
