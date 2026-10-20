@@ -1726,3 +1726,10 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   flesh: H3's prior for hands at a piano beats a skeleton look named mid-prompt. The official H3 blueprint uses
   BasicGuider (guidance 1). **D** = C + the look first in so many words; **E** = D + CFG 4 with a negative ("human
   hands, skin, flesh, ...", CFGGuider, `h3audio_run.py` "cfg"). Running.
+- **D works (20:47): the overlay system.** Stock hand everywhere: pose control (rig joints + keys), plate without hands,
+  and the look first in the prompt (`SKEL_LEAD`: "Two skeleton hands made only of bare ivory-white bone, with no skin, no
+  flesh and no muscle ..."). H3 paints skeleton hands whose bones sit on the rig: bone-geometry edges within 3 px 60 /
+  63 / 66% (B/C 33%; the geometry-traced clips 81%, not comparable: not the overlay system). Keys go down (the red key
+  felt shows under a pressed key). E (CFG 4) stopped: twice the cost, D already works. Posted band site `h3-overlay`.
+  Rendering (`overlay_chain.sh`): the other four looks on the same probe (`ov_s1_<look>`, `LOOK_LEADS`), then the three
+  steadicam shots on the overlay recipe (`ov_rach_s1..3`, `skeleton_piano.py overlay RUN` builds the inputs), joined.

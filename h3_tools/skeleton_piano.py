@@ -143,6 +143,20 @@ RUNS["std_s1_pose_nh"] = dict(RUNS["std_s1_pose"], plate_kind="plate_nohands")
 SKEL_LEAD = ("Two skeleton hands made only of bare ivory-white bone, with no skin, no flesh and no muscle: every finger "
              "a chain of separate bones with knobbly joints, the bony wrists and the bare radius and ulna of the forearms.")
 RUNS["std_s1_pose_nh_lead"] = dict(RUNS["std_s1_pose_nh"], prompt_lead=SKEL_LEAD)
+# D works: H3 paints skeleton hands over the stock hand, bones on the rig (63% of the bone geometry's edges within 3 px,
+# the flesh-hand tests 33%). The overlay recipe: stock-hand pose control + keys, a plate without hands, the look first.
+LOOK_LEADS = {
+    "skeleton": SKEL_LEAD,
+    "monster": ("Two monster hands, not human: rough scaly creature skin, hooked black talons and knobbly clawed fingers, "
+                "rows of short spikes on the backs of the hands and jagged spines along the scaly forearms."),
+    "robot": ("Two robot hands made entirely of brushed metal, no skin anywhere: hard metal finger segments with a hinge pin "
+              "at every joint, riveted panels on the backs of the hands, pistons along the mechanical forearms."),
+    "paw": ("Two fluffy kitty-cat paws, not human hands: soft dense cat fur over rounded furry toes with tiny curved claws, "
+            "pink toe beans, furry cat forearms."),
+    "real": "Two human pianist's hands: natural skin, visible knuckles and tendons, short clean fingernails.",
+}
+for _look in LOOK_LEADS:                           # the five looks on the same probe, the same stock-hand inputs
+    RUNS[f"ov_s1_{_look}"] = dict(RUNS["std_s1_pose_nh"], look=_look, prompt_lead=LOOK_LEADS[_look])
 RUNS["std_s1_pose_nh_cfg"] = dict(RUNS["std_s1_pose_nh_lead"], cfg=4.0,
                                   negative="human hands, skin, flesh, fingernails, realistic human fingers, gloves")
 
@@ -154,6 +168,40 @@ def nohands(run):
     for k, (f0, n) in enumerate(clip_frames(run)):
         encode(out, COMFY_IN / cin(run, k, "plate_nohands"), f0, n, size=R.get("size", (1280, 704)))
     print("plate_nohands", run, "ok")
+
+
+# The three shots of the Rachmaninoff opening on the overlay recipe (stock hand; the skeleton only in the prompt).
+# bone_ref = the shot's skeleton-geometry passes (rendered before the rule), measurement only.
+for _s in ("rach_s1", "rach_s2", "rach_s3"):
+    RUNS["ov_" + _s] = dict(RUNS[_s], control_kind="posekeys", plate_kind="plate_nohands", prompt_lead=SKEL_LEAD,
+                            bone_ref=_s)
+
+
+def overlay_inputs(run):
+    """Everything the overlay recipe feeds H3, all from the stock hand: passes (plate, normal, mask; the normal pass gives
+    the keys' edges), the piano without hands, the rig's joints through the camera (blender_piano.py --pose2d), and the
+    control (pose_control.py: OpenPose hand skeleton + keys, hands blanked)."""
+    R = RUNS[run]
+    if "keep" in R:
+        shot_edit(run)
+    passes(run)
+    nohands(run)
+    a0, n = R["f0"], sum(R["clips"])
+    W, H = R.get("size", (1280, 704))
+    pj = ROOT / run / "pose2d.json"
+    if not pj.exists():
+        subprocess.run(["blender", "-b", "--factory-startup", "-P", str(REPO / "blockout/blender_piano.py"), "--",
+                        str(R["edit"]), str(ROOT / run / "pose_tmp"), "--view", "edit", "--frames", f"{a0}:{a0 + n}",
+                        "--hand-style", HAND, "--res", f"{W}x{H}", "--pose2d", str(pj)], cwd=REPO,
+                       env=dict(os.environ, RIG_SLEEVE="0.06"), check=True, capture_output=True)
+    P = json.loads(pj.read_text())
+    for k, (f0, n) in enumerate(clip_frames(run)):
+        sub = ROOT / run / f"pose2d_c{k}.json"
+        sub.write_text(json.dumps({"size": P["size"], "frames": {f: P["frames"][f] for f in sorted(P["frames"], key=int)
+                                                                 if f0 <= int(f) < f0 + n}}))
+        subprocess.run([PY, str(REPO / "h3_tools/pose_control.py"), str(sub), str(ROOT / run / "normal"),
+                        str(ROOT / run / "mask"), str(COMFY_IN / cin(run, k, "posekeys"))], check=True)
+    print("overlay inputs", run, "ok")
 
 
 def shot_edit(run):
@@ -256,7 +304,7 @@ def passes(run):
 
 def prompt(run):
     P = json.loads((REPO / "h3_tools/hand_look_prompts.json").read_text())
-    t = P["base"].format(**P["looks"][LOOK]).replace("Seen from high above and behind the player", RUNS[run]["view"])
+    t = P["base"].format(**P["looks"][RUNS[run].get("look", LOOK)]).replace("Seen from high above and behind the player", RUNS[run]["view"])
     if RUNS[run].get("camera_words"):              # a moving shot: not locked off
         t = t.replace("One continuous locked-off shot", "One continuous shot").replace(
             "The camera does not move.", RUNS[run]["camera_words"])
@@ -466,6 +514,8 @@ if __name__ == "__main__":
         final(run)
     if cmd == "nohands":
         nohands(run)
+    if cmd == "overlay":
+        overlay_inputs(run)
     if cmd == "score":
         for k in range(len(RUNS[run]["clips"])):
             score(run, k)
