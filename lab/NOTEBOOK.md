@@ -1703,3 +1703,10 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   last 2-4 frames at 24 fps; the raw 4x clip at 24 fps is a slow-motion view where they read clearly. Posted (band
   site `h3-skeleton-keys`). Rendering: shot 1 (88 take frames, 4x, 362), shot 2 orbit (146, 2x, 294), shot 3 across
   (87, 4x, 362): the Rachmaninoff opening, 13.4 s.
+- **19:00, the user: the skeleton rig "undermines the entire purpose of the project which is the standard hand overlay
+  system".** Every H3 skeleton clip so far (clip 0, T1-T10, production, T9a, the probe, shots 1-2) fed H3 a plate and a
+  control built with `--hand-style skeleton` (bone geometry, MPFB skin hidden): H3 traced bones we drew, so the lock
+  numbers measure tracing, not the overlay system. Shots 2-3 stopped. `skeleton_piano.py` now renders every H3 input
+  with the stock MPFB2 hand (`HAND = "real"`); the look is the prompt alone. Skeleton geometry is kept only as a
+  measurement reference (`bone_ref`: are H3's bones where the rig's bones are), never fed to H3. Band site sections
+  marked. Next: **std_s1_probe** = the key probe on the stock hand, recipe unchanged, to see what H3 paints.

@@ -28,7 +28,12 @@ COMFY_OUT = HOME / "comfyui-h3-audio/output/ks_lipsync"
 RUNNER = HOME / "h3audio/h3audio_run.py"
 LEASE = HOME / "h3/gpu_lease.sh"
 PY = str(HOME / "h3/mv_tools/.venv/bin/python")
-LOOK = "skeleton"
+LOOK = "skeleton"     # the look H3 paints (prompt only)
+# Every H3 input (grey plate, normal pass, control, mask) is the stock MPFB2 hand: the project is the standard-hand
+# overlay system, so the look must come from H3, never from look geometry in our renders. (Until 19 Oct 19:00 these
+# runs used --hand-style skeleton, bone geometry in the plate and control: rejected by the user.) Look geometry may
+# only be rendered as a measurement reference (RUNS "bone_ref": where the rig's bones are), never fed to H3.
+HAND = "real"
 SEED = 7
 RUNS = {
     # Rachmaninoff, the opening (song 81.3 - 94.7 s), the overhead still shot of the C19 take
@@ -120,7 +125,10 @@ for _name, _f0, _n, _shot in SHOTS:
 
 
 # probe: the first 124 dense frames of shot 1 (31 take frames): do the keys go down in H3 from this camera?
-RUNS["rach_s1_probe"] = dict(RUNS["rach_s1"], clips=[124], keep=31)
+# (rendered on skeleton geometry before the standard-hand rule; its passes now serve only as the bone reference)
+RUNS["rach_s1_probe"] = dict(RUNS["rach_s1"], clips=[124], keep=31, hand_ref="skeleton")
+# the same probe on the stock hand: the overlay system. bone_ref = where the rig's bones are (measurement only)
+RUNS["std_s1_probe"] = dict(RUNS["rach_s1"], clips=[124], keep=31, bone_ref="rach_s1_probe")
 
 
 def shot_edit(run):
@@ -169,7 +177,7 @@ def render(run, kind, extra, procs=4):
             if a >= b or all((out / f"f_{f:05d}.png").exists() for f in range(a, b)):
                 continue
             cmd = ["blender", "-b", "--factory-startup", "-P", str(REPO / "blockout/blender_piano.py"), "--",
-                   str(R["edit"]), str(out), "--view", "edit", "--frames", f"{a}:{b}", "--hand-style", LOOK,
+                   str(R["edit"]), str(out), "--view", "edit", "--frames", f"{a}:{b}", "--hand-style", R.get("hand_ref", HAND),
                    "--res", f"{W}x{H}"] + extra
             ps.append(subprocess.Popen(cmd, cwd=REPO, env=env, stdout=open(out / f"blender_{k}.log", "w"),
                                        stderr=subprocess.STDOUT))
@@ -351,6 +359,16 @@ def final_shot(run):
     decimate(COMFY_IN / cin(run, 0, "plate"), d / "ref_plate.mp4", K, n)
     lc = subprocess.run([PY, str(REPO / "h3_tools/lockcheck.py"), str(out), str(d / "ref_normal.mp4"), str(d / "ref_mask.mp4"),
                          str(d / "lc_final"), "--tol", str(R["tol"])], check=True, capture_output=True, text=True).stdout.strip()
+    if R.get("bone_ref"):                          # are H3's bones where the rig's bones are? (reference only)
+        bd = ROOT / R["bone_ref"]
+        for kind, gray in (("normal", False), ("mask", True)):
+            decimate(bd / f"c0_{kind}.mp4", d / f"bone_{kind}.mp4", K, n, gray)
+        bones = subprocess.run([PY, str(REPO / "h3_tools/lockcheck.py"), str(out), str(d / "bone_normal.mp4"),
+                                str(d / "bone_mask.mp4"), str(d / "lc_bones"), "--tol", str(R["tol"])],
+                               check=True, capture_output=True, text=True).stdout.strip()
+        with open(d / "scores.txt", "a") as fh:
+            fh.write(f"bones (rig bone geometry, reference only): {bones}\n")
+        print("bones:", bones)
     ceil = subprocess.run([PY, str(REPO / "h3_tools/lockcheck.py"), str(d / "ref_plate.mp4"), str(d / "ref_normal.mp4"),
                            str(d / "ref_mask.mp4"), str(d / "lc_ceiling"), "--tol", str(R["tol"])],
                           check=True, capture_output=True, text=True).stdout.strip()
