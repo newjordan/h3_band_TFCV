@@ -29,7 +29,7 @@
  "41": {
   "class_type": "LoadVideo",
   "inputs": {
-   "file": "band_aid/skeleton_c0_ncanny.mp4"
+   "file": "band_aid/skeleton_c0_posekeys.mp4"
   }
  },
  "42": {
@@ -80,7 +80,7 @@
  "20": {
   "class_type": "LoadVideo",
   "inputs": {
-   "file": "band_aid/skeleton_c0_plate.mp4"
+   "file": "band_aid/skeleton_c0_plate_nohands.mp4"
   }
  },
  "21": {
@@ -127,7 +127,7 @@
     "3",
     0
    ],
-   "prompt": "One continuous locked-off shot from a high-budget 1987 rock music video, pristine 35mm film transfer, deep blacks, fine film grain, a crisp fast-shutter image with no motion blur. A smoky late-night jazz cafe: cigarette smoke curls and drifts over the keyboard, warm amber lamp light and candle glow, glints on the black lacquer. Seen from directly above the keyboard: bare bony skeleton hands: ivory-white human skeleton finger bones with slender waisted shafts, flared ends and knobbly knuckle joints, exposed metacarpals and clustered wrist bones, the paired radius and ulna of the bare skeleton forearms play the keys of a glossy black grand piano. The camera does not move. Each key goes down under the bony skeleton finger that presses it, exactly following the motion. No cuts, no new objects, no faces, no text, no logo. Audio: a solo grand piano, dramatic and stormy.",
+   "prompt": "Two skeleton hands made only of bare ivory-white bone, with no skin, no flesh and no muscle: every finger a chain of separate bones with knobbly joints, the bony wrists and the bare radius and ulna of the forearms. One continuous shot from a high-budget 1987 rock music video, pristine 35mm film transfer, deep blacks, fine film grain, a crisp fast-shutter image with no motion blur. A smoky late-night jazz cafe: cigarette smoke curls and drifts over the keyboard, warm amber lamp light and candle glow, glints on the black lacquer. Seen from low beside the keyboard, close on the hands and the keys they press: bare bony skeleton hands: ivory-white human skeleton finger bones with slender waisted shafts, flared ends and knobbly knuckle joints, exposed metacarpals and clustered wrist bones, the paired radius and ulna of the bare skeleton forearms play the keys of a glossy black grand piano. The camera glides slowly beside the hands, low over the keys. Each key goes down under the bony skeleton finger that presses it, exactly following the motion. No cuts, no new objects, no faces, no text, no logo. Audio: a solo grand piano, dramatic and stormy.",
    "width": 1280,
    "height": 704,
    "length": 124
@@ -265,7 +265,7 @@
     "16",
     0
    ],
-   "filename_prefix": "h3band/band_aid_skeleton_piano_c0",
+   "filename_prefix": "h3band/band_aid_skeleton_overlay_c0",
    "format": "mp4",
    "codec": "auto"
   }

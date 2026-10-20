@@ -104,6 +104,18 @@ SHOT_WORDS = {   # (view words, camera sentence) per shot type
               "The camera circles slowly around the hands."),
     "across": ("Seen from across the keyboard, close on the hands and the keys they press",
                "The camera glides slowly along the keys."),
+    "steady": ("Seen from beside the keyboard, close on the hands and the keys they press",
+               "The camera follows the hands smoothly along the keys."),
+    "both": ("Seen from beside the keyboard, both hands and the keys they press",
+             "The camera glides slowly along the keyboard."),
+    "overhead": ("Seen from above the keyboard, the hands and the keys they press",
+                 "The camera follows the hands smoothly from above."),
+    "descend": ("Seen from above the keyboard, the hands and the keys they press",
+                "The camera comes down slowly toward the hands."),
+    "rise": ("Seen from above the keyboard, the hands and the keys they press",
+             "The camera rises slowly away from the hands."),
+    "pov": ("Seen from the pianist's own point of view, looking down at the hands and the keys they press",
+            "The camera moves gently with the pianist's head."),
 }
 # Rachmaninoff opening (take frames 993-1313, song 81.3-94.7 s): three shots of the show edit
 SHOTS = [("rach_s1", 993, 88, "steady_low_R"), ("rach_s2", 1081, 146, "orbit_R"), ("rach_s3", 1227, 87, "across_L")]
@@ -111,6 +123,18 @@ SHOTS = [("rach_s1", 993, 88, "steady_low_R"), ("rach_s2", 1081, 146, "orbit_R")
 
 def _grid(n):                                      # smallest 17k+5 >= n
     return 5 + 17 * max(0, -(-(n - 5) // 17))
+
+
+def _show_shots():
+    """(first frame, frames, shot name) of every shot of the show edit, in order."""
+    F = json.loads(SHOW_EDIT.read_text())["frames"]
+    out, prev = [], None
+    for i, fr in enumerate(F):
+        s = fr["cam"].get("shot")
+        if s != prev:
+            out.append([i, 0, s]); prev = s
+        out[-1][1] += 1
+    return out
 
 
 for _name, _f0, _n, _shot in SHOTS:
@@ -122,6 +146,21 @@ for _name, _f0, _n, _shot in SHOTS:
     RUNS[_name] = {"edit": ROOT / f"edit_c19_show_{_name}.json", "f0": 0, "clips": [_L], "densify": _K,
                    "keep": _n, "take_f0": _f0, "shot": _shot, "view": _w[0], "camera_words": _w[1],
                    "sound": ROOT / f"sound_{_name}.wav", "tol": 3.0}
+
+
+# The whole Knight's Suite (take C19, 8,415 frames, 350 s) on the show edit (the C19 performance cut's cameras): one
+# H3 clip per shot at the take's own 24 fps (40 shots of 146-299 frames, all inside H3's 362), the overlay recipe
+# (stock hand, pose control + keys, piano plate without hands, the skeleton first in the prompt). `suite` joins them.
+SUITE = []
+if SHOW_EDIT.exists():
+    for _j, (_f0, _n, _shot) in enumerate(_show_shots()):
+        _name = f"suite_s{_j:02d}"
+        _w = SHOT_WORDS[_shot.rsplit("_", 1)[0] if _shot[-2:] in ("_L", "_R") else _shot]
+        RUNS[_name] = {"edit": ROOT / f"edit_c19_show_{_name}.json", "f0": 0, "clips": [_grid(_n)], "densify": 1,
+                       "keep": _n, "take_f0": _f0, "shot": _shot, "view": _w[0], "camera_words": _w[1],
+                       "sound": ROOT / f"sound_{_name}.wav", "tol": 3.0, "control_kind": "posekeys",
+                       "plate_kind": "plate_nohands", "prompt_lead": None}
+        SUITE.append(_name)
 
 
 # probe: the first 124 dense frames of shot 1 (31 take frames): do the keys go down in H3 from this camera?
@@ -143,6 +182,8 @@ RUNS["std_s1_pose_nh"] = dict(RUNS["std_s1_pose"], plate_kind="plate_nohands")
 SKEL_LEAD = ("Two skeleton hands made only of bare ivory-white bone, with no skin, no flesh and no muscle: every finger "
              "a chain of separate bones with knobbly joints, the bony wrists and the bare radius and ulna of the forearms.")
 RUNS["std_s1_pose_nh_lead"] = dict(RUNS["std_s1_pose_nh"], prompt_lead=SKEL_LEAD)
+for _name in SUITE:
+    RUNS[_name]["prompt_lead"] = SKEL_LEAD
 # D works: H3 paints skeleton hands over the stock hand, bones on the rig (63% of the bone geometry's edges within 3 px,
 # the flesh-hand tests 33%). The overlay recipe: stock-hand pose control + keys, a plate without hands, the look first.
 LOOK_LEADS = {
@@ -157,6 +198,10 @@ LOOK_LEADS = {
 }
 for _look in LOOK_LEADS:                           # the five looks on the same probe, the same stock-hand inputs
     RUNS[f"ov_s1_{_look}"] = dict(RUNS["std_s1_pose_nh"], look=_look, prompt_lead=LOOK_LEADS[_look])
+# paw v1 painted human hands with fur cuffs (the paw shape fights a human finger pose); v2: fur over every finger
+RUNS["ov_s1_paw2"] = dict(RUNS["ov_s1_paw"], prompt_lead=(
+    "Two furry cat-paw hands, no bare skin anywhere: long fingers completely covered in thick fluffy orange tabby cat "
+    "fur, rounded furry fingertips with tiny curved claws and pink toe beans, fluffy tabby cat fur all along the forearms."))
 RUNS["std_s1_pose_nh_cfg"] = dict(RUNS["std_s1_pose_nh_lead"], cfg=4.0,
                                   negative="human hands, skin, flesh, fingernails, realistic human fingers, gloves")
 
