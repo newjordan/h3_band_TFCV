@@ -1778,3 +1778,15 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   hands + pose_json; Blockout Pose Control replaces Reference Edges), Demo (opening slot; four looks cycle / grid /
   stock hand | control | H3 trio from `overlay_media.py`, paw dropped), How it works, Results (bones on the rig 63%,
   keys 72%), Limitations (4x, 124-frame chains, along-the-finger cameras).
+- **View probes (shot 2 clip 3, just behind the right hand; unanchored, 124 frames, 4x):** **s2c3_v** (`view_words`:
+  "Seen from just behind and above the pianist's right hand, looking over the wrist and the back of the hand, the
+  fingers reaching away from the camera and curling down onto the keys they press"): full skeleton hands where the chain
+  painted wires: radius and ulna, carpals, metacarpals, fingertips on the control's keys; the hand a little more
+  compact than the rig (the wrist comes into frame; the rig's wrist is just below it), keys warm gold. **s2c3_vw**
+  (+ `--width` lines): also bone, not wire, but H3 follows the thick lines literally: long beaded metacarpals out of
+  the bottom edge, fingers curled exactly on the control. **The view sentence is the fix**; the width adds literalness,
+  not quality, so the recipe stays on the plain control. Confound: the chain's clip 3 was anchored on clip 2's wire
+  frame, the probes unanchored; but clip 2 opened on clip 1's good frame and still turned to wire as the camera
+  swung behind, under the "beside" words. Re-render (`rach_cv_chain.sh`): `ov_rach_s2_cv` (clips 0-1 adopted from the
+  chain, 2-4 chained on with `view_auto`), `ov_rach_s3_cv` (across, all three clips with `view_auto`), joined with
+  shot 1 -> `rach_cv_final.mp4`.

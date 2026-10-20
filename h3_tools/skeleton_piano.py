@@ -275,6 +275,11 @@ RUNS["ov_rach_s3_ch"] = dict(RUNS["ov_rach_s3"], clips=[124] * 3, bone_ref=None,
 RUNS["s2c3_v"] = dict(RUNS["ov_rach_s2_ch"], f0=RUNS["ov_rach_s2_ch"]["f0"] + 3 * 124, clips=[124], view_auto=True,
                       chain=False)
 RUNS["s2c3_vw"] = dict(RUNS["s2c3_v"], control_kind="posekeysw")
+# s2c3_v (view words alone): full skeleton hands seen from behind (radius and ulna, carpals, metacarpals, fingers on
+# the keys) where the chain painted wires. The opening's bad clips again with view_words: shot 2 clips 2-4 chained on
+# from the chain's clip 1 (clips 0-1 adopted), shot 3 all three clips.
+RUNS["ov_rach_s2_cv"] = dict(RUNS["ov_rach_s2_ch"], inputs_from="ov_rach_s2_ch", view_auto=True)
+RUNS["ov_rach_s3_cv"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", view_auto=True)
 if "suite_s01" in RUNS:
     RUNS["s01x4p"] = dict(RUNS["suite_s01"], densify=4, clips=[124], keep=31, view_auto=True,
                           edit=ROOT / "edit_c19_show_s01x4p.json", sound=ROOT / "sound_s01x4p.wav")
@@ -312,6 +317,31 @@ def overlay_inputs(run):
                         str(ROOT / run / "mask"), str(COMFY_IN / cin(run, k, ctl if flag else "posekeys"))] + flag,
                        check=True)
     print("overlay inputs", run, "ok")
+
+
+def controls(run, kind):
+    """The pose control of another flavour (posekeysw: --width, posekeysd: --depth) for every clip of a run's inputs, from
+    its pose2d_c{k}.json (each frame's lens from the run's edit)."""
+    i = src(run); R = RUNS[i]
+    E = json.loads(R["edit"].read_text())["frames"]
+    flag = {"posekeysw": "--width", "posekeysd": "--depth"}[kind]
+    for k in range(len(R["clips"])):
+        sub = ROOT / i / f"pose2d_c{k}.json"
+        P = json.loads(sub.read_text())
+        for f, fr in P["frames"].items():
+            fr["lens"] = E[int(f)]["cam"]["lens"]
+        sub.write_text(json.dumps(P))
+        subprocess.run([PY, str(REPO / "h3_tools/pose_control.py"), str(sub), str(ROOT / i / "normal"), str(ROOT / i / "mask"),
+                        str(COMFY_IN / cin(i, k, kind)), flag], check=True)
+
+
+def adopt(run, frm, upto):
+    """Clips 0..upto-1 of run are frm's (H3 output and its PNG frames, so the chain carries on from frm's clip upto-1)."""
+    for k in range(upto):
+        if not out_mp4(run, k).exists():
+            subprocess.run(["cp", str(out_mp4(frm, k)), str(out_mp4(run, k))], check=True)
+        if (COMFY_OUT / tag(frm, k)).is_dir() and not (COMFY_OUT / tag(run, k)).exists():
+            subprocess.run(["cp", "-r", str(COMFY_OUT / tag(frm, k)), str(COMFY_OUT / tag(run, k))], check=True)
 
 
 def shot_edit(run):
@@ -702,6 +732,10 @@ if __name__ == "__main__":
         final(run)
     if cmd == "inside":
         inside(run)
+    if cmd == "controls":
+        controls(run, sys.argv[3])
+    if cmd == "adopt":
+        adopt(run, sys.argv[3], int(sys.argv[4]))
     if cmd == "nohands":
         nohands(run)
     if cmd == "overlay":
