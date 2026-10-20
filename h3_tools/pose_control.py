@@ -1,4 +1,10 @@
-"""pose_control.py POSE2D.json NORMAL_DIR MASK_DIR OUT.mp4 [N] [--hands outline|edges] : the standard-hand overlay control.
+"""pose_control.py POSE2D.json NORMAL_DIR MASK_DIR OUT.mp4 [N] [--hands outline|edges] [--depth] : the standard-hand
+overlay control.
+
+--depth: perspective in the joint lines (nearer bones and joints thicker, near bones drawn over far ones): seen along
+the fingers (from behind the hand or from above) the flat joint skeleton doesn't say which way the fingers point.
+--width: the lines as wide as half a 12 mm bone through the frame's lens (POSE2D frames carry "lens"): close up, the
+fixed 3 px lines got painted as thin wires.
 
 --hands outline: also the stock hand's outer outline (where the hand is and how the fingers curl, nothing inside it);
 --hands edges: keep all of the stock hand's normal-pass edges (outline + knuckles) under the joints. Seen from above,
@@ -18,21 +24,31 @@ EDGES = [(0, 1), (1, 2), (2, 3), (3, 4), (0, 5), (5, 6), (6, 7), (7, 8), (0, 9),
 ARM = {"R": (0, 255, 255), "L": (0, 255, 0)}          # BGR: OpenPose body colours of the right / left lower arm
 
 
-def draw(img, hand, elbow, side, scale):
-    th, r = max(2, round(3 * scale)), max(3, round(4 * scale))
+def draw(img, hand, elbow, side, scale, f=None):
+    """f(depth) (--depth / --width): a thickness factor per bone and joint from its depth, and the hand's bones drawn
+    far to near, so the near ones cross over the far ones."""
     p = [(int(round(x)), int(round(y))) for x, y, _ in hand]
+    z = [q[2] for q in hand]
+    zref, f = f is not None, f or (lambda d: 1.0)
     e = (int(round(elbow[0])), int(round(elbow[1])))
-    cv2.line(img, e, p[0], ARM[side], max(4, round(7 * scale)), cv2.LINE_AA)
-    for k, (a, b) in enumerate(EDGES):
+    cv2.line(img, e, p[0], ARM[side], max(4, round(7 * scale * f(z[0]))), cv2.LINE_AA)
+    order = sorted(range(len(EDGES)), key=lambda k: -(z[EDGES[k][0]] + z[EDGES[k][1]])) if zref else range(len(EDGES))
+    for k in order:
+        a, b = EDGES[k]
         rgb = colorsys.hsv_to_rgb(k / len(EDGES), 1.0, 1.0)
+        th = max(2, round(3 * scale * f((z[a] + z[b]) / 2)))
         cv2.line(img, p[a], p[b], tuple(int(255 * c) for c in rgb[::-1]), th, cv2.LINE_AA)
-    for q in p:
-        cv2.circle(img, q, r, (0, 0, 255), -1, cv2.LINE_AA)
+    for i in (sorted(range(len(p)), key=lambda i: -z[i]) if zref else range(len(p))):
+        g = f(z[i])                               # joints grow slower than the bones: knuckle knobs, not blobs
+        cv2.circle(img, p[i], max(3, round(4 * scale * (g if g <= 1 else 1 + 0.4 * (g - 1)))), (0, 0, 255), -1,
+                   cv2.LINE_AA)
 
 
 def main():
     hands_mode = sys.argv[sys.argv.index("--hands") + 1] if "--hands" in sys.argv else "none"
-    args = [a for i, a in enumerate(sys.argv) if a != "--hands" and (i == 0 or sys.argv[i - 1] != "--hands")]
+    depth, width = "--depth" in sys.argv, "--width" in sys.argv
+    args = [a for i, a in enumerate(sys.argv) if a not in ("--hands", "--depth", "--width")
+            and (i == 0 or sys.argv[i - 1] != "--hands")]
     pose, ndir, mdir, out = args[1:5]
     P = json.load(open(pose))
     W, H = P["size"]
@@ -56,8 +72,16 @@ def main():
             cv2.drawContours(img, cnt, -1, (255, 255, 255), max(1, round(W / 1280)), cv2.LINE_AA)
         hands = P["frames"][f]
         # far hand first (larger camera depth), so the near hand's lines sit on top
+        hands = {s: v for s, v in hands.items() if s in ("L", "R")}
+        fz = None
+        if depth and hands:                       # relative: zref / depth, zref = the frame's median joint depth
+            zref = float(np.median([q[2] for s in hands for q in hands[s]["hand"]]))
+            fz = lambda d, zref=zref: float(np.clip(zref / max(d, 1e-3), 0.5, 2.5))
+        if width and "lens" in P["frames"][f]:    # absolute: half a 12 mm bone's width through the lens (sensor 36 mm)
+            fpx = P["frames"][f]["lens"] / 36.0 * W
+            fz = lambda d, fpx=fpx: float(np.clip(fpx * 0.006 / max(d, 1e-3) / (3 * W / 1280), 0.67, 8.0))
         for side in sorted(hands, key=lambda s: -np.mean([q[2] for q in hands[s]["hand"]])):
-            draw(img, hands[side]["hand"], hands[side]["elbow"], side, W / 1280)
+            draw(img, hands[side]["hand"], hands[side]["elbow"], side, W / 1280, fz)
         if j == 0:
             cv2.imwrite(out.rsplit(".", 1)[0] + ".png", img)
         proc.stdin.write(img.tobytes())

@@ -117,7 +117,7 @@ class BlockoutPoseControl:
             e &= ~(cv2.dilate((m > 0.5).astype(np.uint8), k) > 0)
             img = np.zeros((H, W, 3), np.uint8)
             img[e] = 255
-            hands = frames.get(str(first_frame + i), {})
+            hands = {s: v for s, v in frames.get(str(first_frame + i), {}).items() if s in ("L", "R")}   # not "lens"
             for side in sorted(hands, key=lambda s: -np.mean([q[2] for q in hands[s]["hand"]])):
                 hand = [[x * sx, y * sy, z] for x, y, z in hands[side]["hand"]]
                 el = hands[side]["elbow"]

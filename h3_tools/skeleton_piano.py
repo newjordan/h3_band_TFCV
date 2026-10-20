@@ -18,7 +18,7 @@ The recipe: fl2va mode B, the grey plate WITH the look's geometry at video_stren
 (strength 1.0) on the Canny (20/60) of the normal pass of the same geometry; the look comes from that geometry and
 the prompt. Every frame here is H3's; the plates and controls are Blender's.
 """
-import json, os, pathlib, subprocess, sys, time
+import json, math, os, pathlib, subprocess, sys, time
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 HOME = pathlib.Path.home()
@@ -267,6 +267,17 @@ RUNS["ov_rach_s2_ch"] = dict(RUNS["ov_rach_s2"], densify=4, clips=[124] * 5, kee
                              edit=ROOT / "edit_c19_show_ov_rach_s2_ch.json", sound=ROOT / "sound_ov_rach_s2_ch.wav")
 RUNS["ov_rach_s3_ch"] = dict(RUNS["ov_rach_s3"], clips=[124] * 3, bone_ref=None,
                              edit=ROOT / "edit_c19_show_ov_rach_s3_ch.json", sound=ROOT / "sound_ov_rach_s3_ch.wav")
+# Shot 2's orbit ends just behind the right hand (clips 2-4, ~40 deg up, 0.39 m): H3 painted the joints of fingers
+# pointing away from the camera as long thin wires, the prompt still saying "beside". Probes on clip 3 alone,
+# unanchored: V = the view in words from where the camera is (view_words); VW = V + the joint lines as wide as half a
+# bone through the lens (pose_control.py --width). The high cameras failed at 24 fps but were never tried at 4x:
+# S01X4 = the suite's shot 1 ("both", from above) at 4x, its first 124 dense frames, with V.
+RUNS["s2c3_v"] = dict(RUNS["ov_rach_s2_ch"], f0=RUNS["ov_rach_s2_ch"]["f0"] + 3 * 124, clips=[124], view_auto=True,
+                      chain=False)
+RUNS["s2c3_vw"] = dict(RUNS["s2c3_v"], control_kind="posekeysw")
+if "suite_s01" in RUNS:
+    RUNS["s01x4p"] = dict(RUNS["suite_s01"], densify=4, clips=[124], keep=31, view_auto=True,
+                          edit=ROOT / "edit_c19_show_s01x4p.json", sound=ROOT / "sound_s01x4p.wav")
 RUNS["ov_rach_s2x4"] = dict(RUNS["ov_rach_s2"], densify=4, clips=[294, 294], keep=146,
                             edit=ROOT / "edit_c19_show_ov_rach_s2x4.json", sound=ROOT / "sound_ov_rach_s2x4.wav")
 
@@ -289,12 +300,17 @@ def overlay_inputs(run):
                         "--hand-style", HAND, "--res", f"{W}x{H}", "--pose2d", str(pj)], cwd=REPO,
                        env=dict(os.environ, RIG_SLEEVE="0.06"), check=True, capture_output=True)
     P = json.loads(pj.read_text())
+    E = json.loads(R["edit"].read_text())["frames"]
     for k, (f0, n) in enumerate(clip_frames(run)):
         sub = ROOT / run / f"pose2d_c{k}.json"
-        sub.write_text(json.dumps({"size": P["size"], "frames": {f: P["frames"][f] for f in sorted(P["frames"], key=int)
+        sub.write_text(json.dumps({"size": P["size"], "frames": {f: dict(P["frames"][f], lens=E[int(f)]["cam"]["lens"])
+                                                                 for f in sorted(P["frames"], key=int)
                                                                  if f0 <= int(f) < f0 + n}}))
+        ctl = R.get("control_kind", "posekeys")
+        flag = {"posekeys": [], "posekeysd": ["--depth"], "posekeysw": ["--width"]}.get(ctl, [])
         subprocess.run([PY, str(REPO / "h3_tools/pose_control.py"), str(sub), str(ROOT / run / "normal"),
-                        str(ROOT / run / "mask"), str(COMFY_IN / cin(run, k, "posekeys"))], check=True)
+                        str(ROOT / run / "mask"), str(COMFY_IN / cin(run, k, ctl if flag else "posekeys"))] + flag,
+                       check=True)
     print("overlay inputs", run, "ok")
 
 
@@ -396,9 +412,49 @@ def passes(run):
     print("passes", run, "ok")
 
 
-def prompt(run):
+def view_words(run, k):
+    """Clip k's view in words, from where its camera really is (circular mean over the clip of the camera's direction
+    from the point it looks at; the player sits on -y, the keys run along x). The shot type's words are one sentence for
+    the whole shot: an orbit that starts beside the keyboard and ends just behind the right hand kept saying "beside",
+    and H3 painted the joints of fingers pointing away from the camera as long thin wires."""
+    R = RUNS[run]
+    F = json.loads(R["edit"].read_text())["frames"]
+    f0, n = clip_frames(run)[k]
+    ex = ey = 0.0; el = []
+    for fr in F[f0:f0 + n]:
+        c = fr["cam"]; v = [c["pos"][i] - c["look"][i] for i in range(3)]
+        h = math.hypot(v[0], v[1])
+        el.append(math.degrees(math.atan2(v[2], h))); ex += v[0] / max(h, 1e-6); ey += v[1] / max(h, 1e-6)
+    e = sorted(el)[len(el) // 2]
+    az = math.degrees(math.atan2(ey, ex))                          # 0: the treble end (+x), -90: the player's side
+    d = abs((az + 90 + 180) % 360 - 180)                           # 0 = straight behind the hands, 180 = facing them
+    side = R.get("shot", "")[-2:]
+    hand = {"_R": "right hand", "_L": "left hand"}.get(side, "hands")
+    end = "the treble" if ex > 0 else "the bass"
+    high = " high" if e > 45 else (" low" if e < 22 else "")
+    if e >= 60:
+        return ("Seen from high above the keyboard, looking down on the backs of the hands, the fingers curled down onto "
+                "the keys they press")
+    if d <= 30:
+        back = "the wrists and the backs of the hands" if hand == "hands" else "the wrist and the back of the hand"
+        return (f"Seen from just behind and above the pianist's {hand}, looking over {back}, "
+                "the fingers reaching away from the camera and curling down onto the keys they press")
+    if d <= 55:
+        return (f"Seen from{high} behind the {hand}, from {end} end of the keyboard, looking along the keys, close on "
+                "the fingers and the keys they press")
+    if d <= 125:
+        return f"Seen from{high} beside the keyboard at {end} end, close on the hands and the keys they press"
+    if d <= 150:
+        return (f"Seen from{high} across the keyboard, from the far side of the keys, the fingertips toward the camera "
+                "and the keys they press")
+    return ("Seen from across the piano, facing the pianist, the fingertips coming toward the camera onto the keys "
+            "they press")
+
+
+def prompt(run, k=None):
     P = json.loads((REPO / "h3_tools/hand_look_prompts.json").read_text())
-    t = P["base"].format(**P["looks"][RUNS[run].get("look", LOOK)]).replace("Seen from high above and behind the player", RUNS[run]["view"])
+    view = view_words(run, k) if k is not None and RUNS[run].get("view_auto") else RUNS[run]["view"]
+    t = P["base"].format(**P["looks"][RUNS[run].get("look", LOOK)]).replace("Seen from high above and behind the player", view)
     if RUNS[run].get("camera_words"):              # a moving shot: not locked off
         t = t.replace("One continuous locked-off shot", "One continuous shot").replace(
             "The camera does not move.", RUNS[run]["camera_words"])
@@ -425,7 +481,7 @@ def job(run, k, first=None):
     W, H = RUNS[run].get("size", (1280, 704))
     i = src(run)
     j = {"steps": 20, "width": W, "height": H, "length": n, "scheduler": "beta", "sampler": "res_multistep",
-         "seed": SEED, "audio": cin(i, k, "sound", "wav"), "prompt": prompt(run), "mode": "B",
+         "seed": SEED, "audio": cin(i, k, "sound", "wav"), "prompt": prompt(run, k), "mode": "B",
          "video": cin(i, k, RUNS[run].get("plate_kind", "plate")), "video_strength": 0.88,
          "control": {"video": cin(i, k, RUNS[run].get("control_kind", "ncanny")), "strength": RUNS[run].get("control_strength", 1.0),
                      "end": RUNS[run].get("control_end", 1.0)}, "tag": tag(run, k)}
@@ -579,6 +635,25 @@ def final_shot(run):
     print("final", out, d / f"{run}_triptych.mp4")
 
 
+def inside(run):
+    """The shot's stock hand (Blender) | its control (rig joints + keys) | H3, take frames, with the take's sound."""
+    R = RUNS[run]; d = ROOT / run; K, n = R["densify"], R["keep"]
+    nc = len(R["clips"])
+    ctl = R.get("control_kind", "ncanny")
+    decimate(_cat([COMFY_IN / cin(src(run), k, ctl) for k in range(nc)], d / f"all_{ctl}.mp4"), d / "ref_control.mp4", K, n)
+    font = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+    lab = lambda t: (f"scale=640:352,drawbox=x=0:y=0:w=iw:h=30:color=black@0.55:t=fill,"
+                     f"drawtext=fontfile={font}:text='{t}':x=10:y=7:fontsize=17:fontcolor=white")
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(d / "ref_plate.mp4"), "-i", str(d / "ref_control.mp4"),
+                    "-i", str(d / f"{run}_final.mp4"),
+                    "-filter_complex", f"[0:v]{lab('our rig, the stock MPFB2 hand (Blender)')}[a];"
+                                       f"[1:v]{lab('control, rig joints + keys')}[b];[2:v]{lab('H3 render')}[c];"
+                                       "[a][b][c]hstack=3[v]",
+                    "-map", "[v]", "-map", "2:a", "-frames:v", str(n), "-c:v", "libx264", "-crf", "16",
+                    "-pix_fmt", "yuv420p", "-c:a", "copy", str(d / f"{run}_inside.mp4")], check=True)
+    print("inside", d / f"{run}_inside.mp4")
+
+
 def final(run):
     if "keep" in RUNS[run]:
         return final_shot(run)
@@ -625,6 +700,8 @@ if __name__ == "__main__":
         run_all(run, upto=int(sys.argv[3]) if len(sys.argv) > 3 else None)
     if cmd == "final":
         final(run)
+    if cmd == "inside":
+        inside(run)
     if cmd == "nohands":
         nohands(run)
     if cmd == "overlay":
