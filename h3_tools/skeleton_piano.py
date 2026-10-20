@@ -288,6 +288,11 @@ RUNS["ov_rach_s2_ov"] = dict(RUNS["ov_rach_s2_ch"], overlap=9)
 # as the bones (--width) and words without a person.
 RUNS["s3c0_w"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", clips=[124], view_auto=True,
                       control_kind="posekeysnw")       # + the key edges from a rig-hidden normal pass (no sleeves)
+# ov_rach_s2_un (every clip fresh): full skeletons at every angle of the orbit, hands where the rig's are, but the
+# scene jumps at each seam (candles, lamps, key colour, light). BG = fresh hands, held scene: each clip opens 9 frames
+# early on the previous clip's frames, held clean (lock head) EXCEPT a box around both hands and forearms
+# (face_box at denoise 1.0), and no hard keyframe; the scene carries over, the hands are painted fresh.
+RUNS["ov_rach_s2_bg"] = dict(RUNS["ov_rach_s2_ov"], inputs_from="ov_rach_s2_ov", bg_overlap=True)
 RUNS["ov_rach_s2_un"] = dict(RUNS["ov_rach_s2_ch"], inputs_from="ov_rach_s2_ch", chain=False)
 # s2c3_v (view words alone): full skeleton hands seen from behind (radius and ulna, carpals, metacarpals, fingers on
 # the keys) where the chain painted wires. The opening's bad clips again with view_words: shot 2 clips 2-4 chained on
@@ -405,6 +410,18 @@ def clip_frames(run):
     for n in R["clips"]:
         out.append((f, n)); f += n - R.get("overlap", 0)
     return out
+
+
+def hands_box(run, k, n, margin=48):
+    """Pixel box (x0,y0,x1,y1) around both hands (the rig's 21 joints a hand, clipped to the frame) over
+    clip k's first n frames: the region a background-only overlap paints fresh."""
+    P = json.loads((ROOT / src(run) / f"pose2d_c{k}.json").read_text())
+    W, H = P["size"]
+    pts = [q[:2] for f in sorted(P["frames"], key=int)[:n] for sd, h in P["frames"][f].items() if sd in ("L", "R")
+           for q in h["hand"]]                     # hands only: the forearms outside carry over (already bone)
+    xs = [min(max(x, 0), W) for x, _ in pts]; ys = [min(max(y, 0), H) for _, y in pts]
+    return [max(0, int(min(xs)) - margin), max(0, int(min(ys)) - margin), min(W, int(max(xs)) + margin),
+            min(H, int(max(ys)) + margin)]
 
 
 def overlap_plate(run, k):
@@ -584,7 +601,10 @@ def job(run, k, first=None):
     if RUNS[run].get("overlap") and k:             # overlap: the previous clip's last frames held as context
         O = RUNS[run]["overlap"]
         j["video"] = cin(run, k, "plate_ov")
-        j["lock"] = {"head": 1 + (O - 1) // 4, "anchor": 0.0, "free": j["video_strength"]}
+        j["lock"] = {"head": 1 + (O - 1) // 4, "anchor": RUNS[run].get("overlap_strength", 0.0), "free": j["video_strength"]}
+        if RUNS[run].get("bg_overlap"):            # hold only the scene: the hands' box painted fresh in every frame
+            box = ",".join(str(v) for v in hands_box(run, k, O))
+            j.update(face_box_start=box, face_box_end=box, face_denoise=1.0)
     if first:                                      # chained: this clip opens on the previous clip's last H3 frame
         j["image"] = first
     else:
@@ -613,7 +633,9 @@ def run_all(run, need=int(os.environ.get("H3_NEED_GB", 30)), poll=180, upto=None
         first = RUNS[run].get("first_image") if k == 0 else None   # a keyframe that anchors the look (an H3 frame)
         if k and RUNS[run].get("chain", True):          # chain = False: every clip on its own (no keyframe), like clip 0
             first = cin(run, k, "first", "png")
-            if RUNS[run].get("overlap"):
+            if RUNS[run].get("overlap") and (RUNS[run].get("overlap_strength") or RUNS[run].get("bg_overlap")):
+                overlap_plate(run, k); first = None    # soft overlap: context re-noised, no frame pinned hard
+            elif RUNS[run].get("overlap"):
                 subprocess.run(["cp", str(overlap_plate(run, k)), str(COMFY_IN / first)], check=True)
             else:
                 last_frame(run, k - 1, COMFY_IN / first)

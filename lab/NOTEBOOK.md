@@ -1822,3 +1822,10 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   (`ov_rach_s3_cv`): forearms still single rods, a person behind the keys: the control carried the rig's shirt-sleeve
   edges (the hand mask blanks hands only); `pose_control.py --keys` takes the key edges from a rig-hidden normal pass
   (`normal_nohands`), probe `s3c0_w` (+ `--width`) queued.
+- **ov_rach_s2_un (every clip of the orbit fresh, 18:50):** full skeletons in every clip at every angle (radius and
+  ulna, carpals, knuckles, fingers on the keys where the rig's are), the best orbit yet; but at each seam the scene
+  jumps: candles, lamps, the key colour (white -> gold), the light. The hands' look holds (same prompt, seed, control).
+  **BG overlap** (`ov_rach_s2_bg`, `bg_overlap`): each clip opens 9 frames early on the previous clip's frames, held
+  clean (lock head 3) except a box around both hands (`hands_box`, the rig's joints over the overlap + 48 px, via the
+  latent node's face_box at denoise 1.0), no hard keyframe: the scene and light carry over, the hands are painted
+  fresh. Limit: the node takes one box, so in close two-hand views it covers ~2/3 of the frame.
