@@ -849,6 +849,12 @@ for i in FRAME_IDS:
     for ob in COL.objects:                           # see the fingers from the far side of the piano
         if ob.name in ("fallboard", "lid_body", "music_desk", "cheek_l", "cheek_r"):
             ob.hide_render = bool(hide_case) or (ob.name == "music_desk" and VIEW != "pov")
+    if "hands" in opts.get("--hide", ""):             # the piano alone (a plate whose hands H3 paints from a pose control)
+        if globals().get("MPFB_MESH") is not None:
+            MPFB_MESH.hide_render = True
+        for ob in COL.objects:
+            if ob.name.startswith(("L_", "R_")):
+                ob.hide_render = True
     if "body" in opts.get("--hide", ""):              # debug: see the hands from the player's side
         for ob in COL.objects:
             if ob.name.split("_")[0].rstrip("-1") in ("torso", "head", "nose", "neck", "thigh", "shin", "bench") \
@@ -867,8 +873,28 @@ for i in FRAME_IDS:
         if cnt:
             MQ["frames"][i] = cnt
         continue
+    if opts.get("--pose2d"):                          # no image: the posed rig's joints through this frame's camera
+        from bpy_extras.object_utils import world_to_camera_view
+        bpy.context.view_layer.update()
+
+        def _px(co):
+            v = world_to_camera_view(scn, cam, Vector(co))
+            return [round(v.x * W, 2), round((1 - v.y) * H, 2), round(v.z, 4)]
+        POSE2D = globals().setdefault("POSE2D", {})
+        hp = {}
+        for h, hd in fr["hands"].items():                # OpenPose hand order: wrist; thumb CMC MCP IP tip; then
+            pts = [_px(hd["wrist"])]                     # each finger MCP PIP DIP tip (MPFB finger{f}-1..3 heads + tail)
+            for f in range(1, 6):
+                bs = [MPFB_ARM.pose.bones[f"finger{f}-{s}.{h}"] for s in (1, 2, 3)]
+                pts += [_px(MPFB_ARM.matrix_world @ b.head) for b in bs] + [_px(MPFB_ARM.matrix_world @ bs[-1].tail)]
+            hp[h] = {"hand": pts, "elbow": _px(hd["elbow"])}
+        POSE2D[i] = hp
+        continue
     scn.render.filepath = os.path.join(out_dir, f"f_{i:05d}.png")
     bpy.ops.render.render(write_still=True)
+if opts.get("--pose2d"):
+    json.dump({"size": [W, H], "frames": globals().get("POSE2D", {})}, open(opts["--pose2d"], "w"))
+    print("pose2d", len(globals().get("POSE2D", {})), "frames ->", opts["--pose2d"])
 if MESHQA:
     MQ["key_hits_by_part"] = PARTS_HIT
     json.dump(MQ, open(MESHQA, "w"))

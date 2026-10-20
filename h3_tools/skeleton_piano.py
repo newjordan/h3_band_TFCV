@@ -129,6 +129,23 @@ for _name, _f0, _n, _shot in SHOTS:
 RUNS["rach_s1_probe"] = dict(RUNS["rach_s1"], clips=[124], keep=31, hand_ref="skeleton")
 # the same probe on the stock hand: the overlay system. bone_ref = where the rig's bones are (measurement only)
 RUNS["std_s1_probe"] = dict(RUNS["rach_s1"], clips=[124], keep=31, bone_ref="rach_s1_probe")
+# std_s1_probe painted flesh hands on the stock-hand outline (hands 53%, bones 14%): the control sets the category.
+# A: release the ControlNet after the first 40% of the steps (layout early, the look free late)
+RUNS["std_s1_cend04"] = dict(RUNS["std_s1_probe"], inputs_from="std_s1_probe", control_end=0.4)
+# B: the overlay control: the rig's joints as an OpenPose hand skeleton + the keys' edges with the hands blanked
+# (h3_tools/pose_control.py on blender_piano.py --pose2d of the stock hand); nothing in it says what the hand looks like
+RUNS["std_s1_pose"] = dict(RUNS["std_s1_probe"], inputs_from="std_s1_probe", control_kind="posekeys")
+# C: B + a plate of the piano alone (blender_piano.py --hide hands): no hand look anywhere in H3's inputs
+RUNS["std_s1_pose_nh"] = dict(RUNS["std_s1_pose"], plate_kind="plate_nohands")
+
+
+def nohands(run):
+    """The piano without hands for every clip of a run (plate_nohands): H3's video stream, hands from the pose control."""
+    R = RUNS[run]
+    out = render(run, "plate_nohands", ["--hide", "hands"])
+    for k, (f0, n) in enumerate(clip_frames(run)):
+        encode(out, COMFY_IN / cin(run, k, "plate_nohands"), f0, n, size=R.get("size", (1280, 704)))
+    print("plate_nohands", run, "ok")
 
 
 def shot_edit(run):
@@ -257,8 +274,9 @@ def job(run, k, first=None):
     i = src(run)
     j = {"steps": 20, "width": W, "height": H, "length": n, "scheduler": "beta", "sampler": "res_multistep",
          "seed": SEED, "audio": cin(i, k, "sound", "wav"), "prompt": prompt(run), "mode": "B",
-         "video": cin(i, k, "plate"), "video_strength": 0.88,
-         "control": {"video": cin(i, k, "ncanny"), "strength": 1.0}, "tag": tag(run, k)}
+         "video": cin(i, k, RUNS[run].get("plate_kind", "plate")), "video_strength": 0.88,
+         "control": {"video": cin(i, k, RUNS[run].get("control_kind", "ncanny")), "strength": RUNS[run].get("control_strength", 1.0),
+                     "end": RUNS[run].get("control_end", 1.0)}, "tag": tag(run, k)}
     if RUNS[run].get("sparse"):                    # block-sparse attention (h3audio_run.py "sparse")
         j["sparse"] = RUNS[run]["sparse"]
     if first:                                      # chained: this clip opens on the previous clip's last H3 frame
@@ -354,9 +372,10 @@ def final_shot(run):
                     "-vf", f"select='not(mod(n\\,{K}))',setpts=N/24/TB", "-r", "24", "-frames:v", str(n),
                     "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", str(out)],
                    check=True)
+    d.mkdir(parents=True, exist_ok=True)
     for kind, gray in (("normal", False), ("mask", True)):
-        decimate(d / f"c0_{kind}.mp4", d / f"ref_{kind}.mp4", K, n, gray)
-    decimate(COMFY_IN / cin(run, 0, "plate"), d / "ref_plate.mp4", K, n)
+        decimate(ROOT / src(run) / f"c0_{kind}.mp4", d / f"ref_{kind}.mp4", K, n, gray)
+    decimate(COMFY_IN / cin(src(run), 0, "plate"), d / "ref_plate.mp4", K, n)
     lc = subprocess.run([PY, str(REPO / "h3_tools/lockcheck.py"), str(out), str(d / "ref_normal.mp4"), str(d / "ref_mask.mp4"),
                          str(d / "lc_final"), "--tol", str(R["tol"])], check=True, capture_output=True, text=True).stdout.strip()
     if R.get("bone_ref"):                          # are H3's bones where the rig's bones are? (reference only)
@@ -432,6 +451,8 @@ if __name__ == "__main__":
         run_all(run, upto=int(sys.argv[3]) if len(sys.argv) > 3 else None)
     if cmd == "final":
         final(run)
+    if cmd == "nohands":
+        nohands(run)
     if cmd == "score":
         for k in range(len(RUNS[run]["clips"])):
             score(run, k)

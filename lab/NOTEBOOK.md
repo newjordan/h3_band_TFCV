@@ -1710,3 +1710,11 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   with the stock MPFB2 hand (`HAND = "real"`); the look is the prompt alone. Skeleton geometry is kept only as a
   measurement reference (`bone_ref`: are H3's bones where the rig's bones are), never fed to H3. Band site sections
   marked. Next: **std_s1_probe** = the key probe on the stock hand, recipe unchanged, to see what H3 paints.
+- **std_s1_probe (stock hand, recipe unchanged):** H3 paints flesh human hands that sit on our stock-hand outline
+  (hand edges 39 / 53 / 64% at 3 px; rig bone positions 14%); the skeleton prompt is ignored: the control (Canny of the
+  stock hand's normal pass: outline + skin shading) sets the category. Tests, one change each, same 124 frames:
+  **A** ControlNet released after 40% of the steps; **B** an overlay control: `blender_piano.py --pose2d` (the posed
+  stock MPFB armature's 21 hand joints + elbow through the shot camera) drawn as an OpenPose hand skeleton by
+  `h3_tools/pose_control.py`, over the keys' edges with the hands blanked; **C** = B + a plate of the piano alone
+  (`--hide hands`; the pressed keys read very clearly in it). The user (19:20): replace the look-geometry demos on the
+  page ("very dumb and bad") with stock-hand renders.
