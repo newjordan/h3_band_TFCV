@@ -1733,3 +1733,10 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   felt shows under a pressed key). E (CFG 4) stopped: twice the cost, D already works. Posted band site `h3-overlay`.
   Rendering (`overlay_chain.sh`): the other four looks on the same probe (`ov_s1_<look>`, `LOOK_LEADS`), then the three
   steadicam shots on the overlay recipe (`ov_rach_s1..3`, `skeleton_piano.py overlay RUN` builds the inputs), joined.
+- **The user (22:00): "no more paw! I just want a nice full piano piece, the full knights suite with our camera
+  angles"** (= the C19 performance-cut edit, `edit_show.json`). Looks stopped (monster and robot worked; paw v1 painted
+  human hands with fur cuffs). **Suite render** (`suite_chain.sh`): 40 shots (146-299 frames), one H3 clip per shot at
+  24 fps, overlay recipe, skeleton lead, NVFP4 matmul (container restarted with KS_H3_STOCK_MATMUL=0). Shot 0 (the
+  descent, 243 frames): 66 min (Blender built all 40 shots' inputs on the GPU at the same time), skeleton hands inside
+  the stock hand's outline, keys/scene 73% at 3 px. Estimate ~19 h for the rest; the joined suite grows on the band
+  site (`suite_publish.sh`).
