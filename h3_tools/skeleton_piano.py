@@ -261,6 +261,12 @@ RUNS["ov_rach_s1_kf"] = dict(RUNS["ov_rach_s1"], inputs_from="ov_rach_s1",
 # chained 124-frame clips: clip 0 = probe D (same dense frames 0-123), clips 1-2 open on the previous clip's last frame.
 RUNS["ov_rach_s1_ch"] = dict(RUNS["ov_rach_s1"], clips=[124, 124, 124], edit=ROOT / "edit_c19_show_ov_rach_s1_ch.json",
                              sound=ROOT / "sound_ov_rach_s1_ch.wav", bone_ref=None)
+# The chain holds the skeleton across clips (seams smooth); each link settles ~17% darker (24 -> 20 -> 17), reset at
+# the next camera cut. Shots 2 (orbit, 146 take frames) and 3 (across, 87) as chained 124-frame clips at 4x.
+RUNS["ov_rach_s2_ch"] = dict(RUNS["ov_rach_s2"], densify=4, clips=[124] * 5, keep=146, bone_ref=None,
+                             edit=ROOT / "edit_c19_show_ov_rach_s2_ch.json", sound=ROOT / "sound_ov_rach_s2_ch.wav")
+RUNS["ov_rach_s3_ch"] = dict(RUNS["ov_rach_s3"], clips=[124] * 3, bone_ref=None,
+                             edit=ROOT / "edit_c19_show_ov_rach_s3_ch.json", sound=ROOT / "sound_ov_rach_s3_ch.wav")
 RUNS["ov_rach_s2x4"] = dict(RUNS["ov_rach_s2"], densify=4, clips=[294, 294], keep=146,
                             edit=ROOT / "edit_c19_show_ov_rach_s2x4.json", sound=ROOT / "sound_ov_rach_s2x4.wav")
 
@@ -526,14 +532,14 @@ def final_shot(run):
     shot's own passes taken the same way (dense frame K*i is take frame take_f0 + i exactly), and the triptych."""
     R = RUNS[run]; d = ROOT / run; K, n = R["densify"], R["keep"]
     out = d / f"{run}_final.mp4"
-    src = out_mp4(run, 0)
+    video = out_mp4(run, 0)
     if len(R["clips"]) > 1:                        # a shot too long for one clip at K: its clips back to back
         lst = d / "clips.txt"
         lst.write_text("".join(f"file '{out_mp4(run, k)}'\n" for k in range(len(R["clips"]))))
-        src = d / "clips_joined.mp4"
+        video = d / "clips_joined.mp4"
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-an", "-c:v", "libx264",
-                        "-crf", "12", "-pix_fmt", "yuv420p", str(src)], check=True)
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-ss", f"{R['take_f0'] / 24.0:.4f}",
+                        "-crf", "12", "-pix_fmt", "yuv420p", str(video)], check=True)
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(video), "-ss", f"{R['take_f0'] / 24.0:.4f}",
                     "-t", f"{n / 24.0:.4f}", "-i", str(TAKE_SOUND), "-map", "0:v", "-map", "1:a",
                     "-vf", f"select='not(mod(n\\,{K}))',setpts=N/24/TB", "-r", "24", "-frames:v", str(n),
                     "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", str(out)],
