@@ -9,6 +9,7 @@ A_ref   = ref2va (set "model" to the ref2va checkpoint): still as <Picture 1>, v
 C       = any mode + "control": {video, strength, start, end}: Fun ControlNet Union structure lock;
           "guides": [{image, frame_idx}]: extra keyframe anchors (MiniMaxH3AddGuide).
           "sparse": {method sol-attn|sla, tau | keep_percent, start, end, dense_blocks, sink}: block-sparse attention.
+          "cfg": prompt guidance > 1 with "negative" (CFGGuider; H3 ships for cfg 1, so this doubles the cost).
 A_guide = first frame + vocal pinned as a MiniMaxH3AddGuide audio guide at frame 0 (target audio generated).
 B       = existing take VAE-encoded as the video stream at video_denoise (shifted-sigma mask) or video_strength
           (fraction of unshifted flow time to regenerate; see video_mask), vocal frozen in the audio stream,
@@ -162,7 +163,12 @@ def build(j):
     smp = n(9, "KSamplerSelect", sampler_name=j.get("sampler", "res_multistep"))
     sig = n(10, "BasicScheduler", model=model, scheduler=j.get("scheduler", "simple"), steps=j["steps"], denoise=1.0)
     noise = n(11, "RandomNoise", noise_seed=j["seed"])
-    guider = n(12, "BasicGuider", model=model, conditioning=pos)
+    if j.get("cfg"):                                 # prompt guidance (H3 ships for cfg 1): negative from its own conditioning node
+        neg = n(90, "MiniMaxH3ImageToVideo", clip=clip, vae=vae, prompt=j.get("negative", ""), width=j["width"],
+                height=j["height"], length=j["length"])
+        guider = n(12, "CFGGuider", model=model, positive=pos, negative=neg, cfg=float(j["cfg"]))
+    else:
+        guider = n(12, "BasicGuider", model=model, conditioning=pos)
     g["13"] = {"class_type": "SamplerCustomAdvanced", "inputs": {"noise": noise, "guider": guider, "sampler": smp,
                "sigmas": sig, "latent_image": lat}}
     out = ["13", 0]

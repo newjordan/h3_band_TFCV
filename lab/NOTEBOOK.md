@@ -1718,3 +1718,11 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   `h3_tools/pose_control.py`, over the keys' edges with the hands blanked; **C** = B + a plate of the piano alone
   (`--hide hands`; the pressed keys read very clearly in it). The user (19:20): replace the look-geometry demos on the
   page ("very dumb and bad") with stock-hand renders.
+- **Stock-hand tests (shot 1 probe, 31 take frames, 3 px; "bones" = H3 edges vs the rig's bone geometry, reference
+  only):** baseline (Canny of the stock hand's normal pass) flesh hands on our outline, hand 53%, bones 14%. **A**
+  (control released after 40%): photoreal flesh hands, hand 37%, bones 15%: the look is set early; dropped. **B** (pose
+  control + keys): translucent flesh hands with the pose lines glowing through, hand 15%, bones 33%. **C** (B + plate
+  without hands): the same, darker; hand 17%, bones 33%. With no hand look anywhere in H3's inputs it still paints
+  flesh: H3's prior for hands at a piano beats a skeleton look named mid-prompt. The official H3 blueprint uses
+  BasicGuider (guidance 1). **D** = C + the look first in so many words; **E** = D + CFG 4 with a negative ("human
+  hands, skin, flesh, ...", CFGGuider, `h3audio_run.py` "cfg"). Running.

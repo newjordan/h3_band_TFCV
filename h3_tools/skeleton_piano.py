@@ -137,6 +137,14 @@ RUNS["std_s1_cend04"] = dict(RUNS["std_s1_probe"], inputs_from="std_s1_probe", c
 RUNS["std_s1_pose"] = dict(RUNS["std_s1_probe"], inputs_from="std_s1_probe", control_kind="posekeys")
 # C: B + a plate of the piano alone (blender_piano.py --hide hands): no hand look anywhere in H3's inputs
 RUNS["std_s1_pose_nh"] = dict(RUNS["std_s1_pose"], plate_kind="plate_nohands")
+# A, B, C all painted flesh hands (C even with no hand anywhere in H3's inputs): H3's prior for hands at a piano wins
+# over a skeleton look named mid-prompt. D: C + the look first, in so many words. E: D + prompt guidance 4 with a
+# negative (CFGGuider; H3 ships for guidance 1).
+SKEL_LEAD = ("Two skeleton hands made only of bare ivory-white bone, with no skin, no flesh and no muscle: every finger "
+             "a chain of separate bones with knobbly joints, the bony wrists and the bare radius and ulna of the forearms.")
+RUNS["std_s1_pose_nh_lead"] = dict(RUNS["std_s1_pose_nh"], prompt_lead=SKEL_LEAD)
+RUNS["std_s1_pose_nh_cfg"] = dict(RUNS["std_s1_pose_nh_lead"], cfg=4.0,
+                                  negative="human hands, skin, flesh, fingernails, realistic human fingers, gloves")
 
 
 def nohands(run):
@@ -252,6 +260,8 @@ def prompt(run):
     if RUNS[run].get("camera_words"):              # a moving shot: not locked off
         t = t.replace("One continuous locked-off shot", "One continuous shot").replace(
             "The camera does not move.", RUNS[run]["camera_words"])
+    if RUNS[run].get("prompt_lead"):               # the look first, in so many words
+        t = RUNS[run]["prompt_lead"] + " " + t
     return t
 
 
@@ -277,6 +287,9 @@ def job(run, k, first=None):
          "video": cin(i, k, RUNS[run].get("plate_kind", "plate")), "video_strength": 0.88,
          "control": {"video": cin(i, k, RUNS[run].get("control_kind", "ncanny")), "strength": RUNS[run].get("control_strength", 1.0),
                      "end": RUNS[run].get("control_end", 1.0)}, "tag": tag(run, k)}
+    for key in ("cfg", "negative"):                # prompt guidance (h3audio_run.py "cfg")
+        if RUNS[run].get(key):
+            j[key] = RUNS[run][key]
     if RUNS[run].get("sparse"):                    # block-sparse attention (h3audio_run.py "sparse")
         j["sparse"] = RUNS[run]["sparse"]
     if first:                                      # chained: this clip opens on the previous clip's last H3 frame
