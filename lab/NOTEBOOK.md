@@ -1740,3 +1740,13 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   descent, 243 frames): 66 min (Blender built all 40 shots' inputs on the GPU at the same time), skeleton hands inside
   the stock hand's outline, keys/scene 73% at 3 px. Estimate ~19 h for the rest; the joined suite grows on the band
   site (`suite_publish.sh`).
+- **Suite at 24 fps fails (20 Oct, night):** shots 0-1 (descend, both; seen from above): skeleton hands open and in
+  front of the keys (from above curled fingers point at the camera; the joints collapse into stubs). Probe F (joints +
+  the stock hand's outline): hands exactly on the rig, curled on the keys, but painted flesh with glowing bone lines.
+  s02p (steady, ~40 deg): ghostly smeared bones. s04p (steady_low, the camera of the working probe D, 24 fps): the
+  hands lost, stringy bones along the keys; s04x2p (same frames, 2x): on the rig but half-flesh hands with bony tips;
+  D (4x): crisp skeletons on the rig. **Density is the lever for the overlay recipe: 4x.** The user: swapping angles is
+  a dodge ("it's a problem you're ditching an angle") but "I need real good results now ... work with what works, then
+  we fix what doesn't"; chose the Rachmaninoff opening now at 4x (`rach_chain.sh`: steady_low 362 | orbit 2 chained x
+  294 | across 362), then the rest of the suite. `h3_tools/recamera.py` (same cuts, failing cameras re-shot) is built,
+  not used. Open: the high cameras (overhead, both, steady) at 4x untested; whole suite at 4x ~100 h on one GB10.

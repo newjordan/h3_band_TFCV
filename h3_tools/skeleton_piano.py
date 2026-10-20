@@ -125,9 +125,9 @@ def _grid(n):                                      # smallest 17k+5 >= n
     return 5 + 17 * max(0, -(-(n - 5) // 17))
 
 
-def _show_shots():
-    """(first frame, frames, shot name) of every shot of the show edit, in order."""
-    F = json.loads(SHOW_EDIT.read_text())["frames"]
+def _show_shots(edit=None):
+    """(first frame, frames, shot name) of every shot of the show edit (or another edit), in order."""
+    F = json.loads((edit or SHOW_EDIT).read_text())["frames"]
     out, prev = [], None
     for i, fr in enumerate(F):
         s = fr["cam"].get("shot")
@@ -151,17 +151,44 @@ for _name, _f0, _n, _shot in SHOTS:
 # The whole Knight's Suite (take C19, 8,415 frames, 350 s) on the show edit (the C19 performance cut's cameras): one
 # H3 clip per shot at the take's own 24 fps (40 shots of 146-299 frames, all inside H3's 362), the overlay recipe
 # (stock hand, pose control + keys, piano plate without hands, the skeleton first in the prompt). `suite` joins them.
-SUITE = []
-if SHOW_EDIT.exists():
-    for _j, (_f0, _n, _shot) in enumerate(_show_shots()):
-        _name = f"suite_s{_j:02d}"
-        _w = SHOT_WORDS[_shot.rsplit("_", 1)[0] if _shot[-2:] in ("_L", "_R") else _shot]
-        RUNS[_name] = {"edit": ROOT / f"edit_c19_show_{_name}.json", "f0": 0, "clips": [_grid(_n)], "densify": 1,
-                       "keep": _n, "take_f0": _f0, "shot": _shot, "view": _w[0], "camera_words": _w[1],
-                       "sound": ROOT / f"sound_{_name}.wav", "tol": 3.0, "control_kind": "posekeys",
-                       "plate_kind": "plate_nohands", "prompt_lead": None}
-        SUITE.append(_name)
+SUITE, SIDE = [], []
+# "work with what works, then fix what doesn't" (the user, 20 Oct): the same edit with the shots whose cameras fail on
+# the overlay recipe re-shot on the camera types that work (h3_tools/recamera.py; same cuts and timing)
+SIDE_EDIT = ROOT / "edit_show_side.json"
 
+
+def _suite_runs(prefix, edit, out):
+    for j, (f0, n, shot) in enumerate(_show_shots(edit)):
+        name = f"{prefix}_s{j:02d}"
+        w = SHOT_WORDS[shot.rsplit("_", 1)[0] if shot[-2:] in ("_L", "_R") else shot]
+        RUNS[name] = {"edit": ROOT / f"edit_c19_show_{name}.json", "f0": 0, "clips": [_grid(n)], "densify": 1,
+                      "keep": n, "take_f0": f0, "shot": shot, "view": w[0], "camera_words": w[1],
+                      "sound": ROOT / f"sound_{name}.wav", "tol": 3.0, "control_kind": "posekeys",
+                      "plate_kind": "plate_nohands", "prompt_lead": None, "source_edit": edit}
+        out.append(name)
+
+
+if SHOW_EDIT.exists():
+    _suite_runs("suite", SHOW_EDIT, SUITE)
+if SIDE_EDIT.exists():
+    _suite_runs("side", SIDE_EDIT, SIDE)
+
+# The suite's shot 1 ("both", from above) put the skeleton hands in front of the keys as open hands: seen from above,
+# curled fingers point at the camera and their joints collapse into stubs. Probes on its first 124 frames:
+# F = joints + the stock hand's outer outline; G = joints over all of the stock hand's edges (outline + knuckles).
+if "suite_s01" in RUNS:
+    RUNS["s01p"] = dict(RUNS["suite_s01"], clips=[124], keep=124)
+    RUNS["s01p_outline"] = dict(RUNS["s01p"], inputs_from="s01p", control_kind="poseoutline")
+    RUNS["s01p_edges"] = dict(RUNS["s01p"], inputs_from="s01p", control_kind="poseedges")
+    # F (outline) puts the hands on the rig, curled on the keys, but paints them flesh. The side view at 24 fps:
+    RUNS["s02p"] = dict(RUNS["suite_s02"], clips=[124], keep=124)
+    # s02p (steady, ~40 deg up, 24 fps): ghostly smeared bones. Which side cameras hold at 24 fps:
+    for _j in (4, 5, 6):                           # steady_low_R, orbit_R, across_L
+        RUNS[f"s{_j:02d}p"] = dict(RUNS[f"suite_s{_j:02d}"], clips=[124], keep=124)
+    # s04p (steady_low at 24 fps) lost the hands: stringy bones along the keys; the same shot at 4x (std_s1 D) held.
+    # The rig's joints move too far inside one H3 latent frame. Does 2x hold? (the same start, 62 take frames)
+    RUNS["s04x2p"] = dict(RUNS["suite_s04"], densify=2, clips=[124], keep=62,
+                          edit=ROOT / "edit_c19_show_s04x2p.json", sound=ROOT / "sound_s04x2p.wav")
 
 # probe: the first 124 dense frames of shot 1 (31 take frames): do the keys go down in H3 from this camera?
 # (rendered on skeleton geometry before the standard-hand rule; its passes now serve only as the bone reference)
@@ -182,7 +209,7 @@ RUNS["std_s1_pose_nh"] = dict(RUNS["std_s1_pose"], plate_kind="plate_nohands")
 SKEL_LEAD = ("Two skeleton hands made only of bare ivory-white bone, with no skin, no flesh and no muscle: every finger "
              "a chain of separate bones with knobbly joints, the bony wrists and the bare radius and ulna of the forearms.")
 RUNS["std_s1_pose_nh_lead"] = dict(RUNS["std_s1_pose_nh"], prompt_lead=SKEL_LEAD)
-for _name in SUITE:
+for _name in SUITE + SIDE:
     RUNS[_name]["prompt_lead"] = SKEL_LEAD
 # D works: H3 paints skeleton hands over the stock hand, bones on the rig (63% of the bone geometry's edges within 3 px,
 # the flesh-hand tests 33%). The overlay recipe: stock-hand pose control + keys, a plate without hands, the look first.
@@ -222,6 +249,12 @@ for _s in ("rach_s1", "rach_s2", "rach_s3"):
                             bone_ref=_s)
 
 
+# The user (20 Oct): render the Rachmaninoff opening now, at 4x (2x paints half-flesh hands, 24 fps loses them).
+# Shot 2 (orbit, 146 take frames) at 4x is two chained 294-frame clips (the second opens on the first's last H3 frame).
+RUNS["ov_rach_s2x4"] = dict(RUNS["ov_rach_s2"], densify=4, clips=[294, 294], keep=146,
+                            edit=ROOT / "edit_c19_show_ov_rach_s2x4.json", sound=ROOT / "sound_ov_rach_s2x4.wav")
+
+
 def overlay_inputs(run):
     """Everything the overlay recipe feeds H3, all from the stock hand: passes (plate, normal, mask; the normal pass gives
     the keys' edges), the piano without hands, the rig's joints through the camera (blender_piano.py --pose2d), and the
@@ -252,10 +285,10 @@ def overlay_inputs(run):
 def shot_edit(run):
     """The dense edit and slowed sound of one shot: densify_take on the show edit (camera interpolated inside the
     shot), frames past the cut hold the shot's last camera; the take's sound from the shot's start, slowed K times."""
-    R = RUNS[run]; K, n, f0, L = R["densify"], R["keep"], R["take_f0"], R["clips"][0]
+    R = RUNS[run]; K, n, f0, L = R["densify"], R["keep"], R["take_f0"], sum(R["clips"])
     n_ext = -(-L // K)
     if not R["edit"].exists():
-        subprocess.run([PY, str(REPO / "h3_tools/densify_take.py"), str(SHOW_EDIT), str(R["edit"]), str(f0), str(n_ext),
+        subprocess.run([PY, str(REPO / "h3_tools/densify_take.py"), str(R.get("source_edit", SHOW_EDIT)), str(R["edit"]), str(f0), str(n_ext),
                         str(K)], check=True)
         d = json.loads(R["edit"].read_text())
         held = d["frames"][(n - 1) * K]["cam"]
@@ -468,20 +501,39 @@ def decimate(src, dst, K, n, gray=False):
                     "-c:v", "libx264", "-crf", "10", "-pix_fmt", "yuv420p", str(dst)], check=True)
 
 
+def _cat(paths, dst):
+    if len(paths) == 1:
+        return paths[0]
+    lst = dst.with_suffix(".txt")
+    lst.write_text("".join(f"file '{p}'\n" for p in paths))
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-c:v", "libx264", "-crf", "10",
+                    "-pix_fmt", "yuv420p", str(dst)], check=True)
+    return dst
+
+
 def final_shot(run):
     """A shot run: its H3 clip's every K-th frame up to the cut, the take's sound at speed, the lock check against the
     shot's own passes taken the same way (dense frame K*i is take frame take_f0 + i exactly), and the triptych."""
     R = RUNS[run]; d = ROOT / run; K, n = R["densify"], R["keep"]
     out = d / f"{run}_final.mp4"
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(out_mp4(run, 0)), "-ss", f"{R['take_f0'] / 24.0:.4f}",
+    src = out_mp4(run, 0)
+    if len(R["clips"]) > 1:                        # a shot too long for one clip at K: its clips back to back
+        lst = d / "clips.txt"
+        lst.write_text("".join(f"file '{out_mp4(run, k)}'\n" for k in range(len(R["clips"]))))
+        src = d / "clips_joined.mp4"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-an", "-c:v", "libx264",
+                        "-crf", "12", "-pix_fmt", "yuv420p", str(src)], check=True)
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-ss", f"{R['take_f0'] / 24.0:.4f}",
                     "-t", f"{n / 24.0:.4f}", "-i", str(TAKE_SOUND), "-map", "0:v", "-map", "1:a",
                     "-vf", f"select='not(mod(n\\,{K}))',setpts=N/24/TB", "-r", "24", "-frames:v", str(n),
                     "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", str(out)],
                    check=True)
     d.mkdir(parents=True, exist_ok=True)
+    nc = len(R["clips"])
     for kind, gray in (("normal", False), ("mask", True)):
-        decimate(ROOT / src(run) / f"c0_{kind}.mp4", d / f"ref_{kind}.mp4", K, n, gray)
-    decimate(COMFY_IN / cin(src(run), 0, "plate"), d / "ref_plate.mp4", K, n)
+        decimate(_cat([ROOT / src(run) / f"c{k}_{kind}.mp4" for k in range(nc)], d / f"all_{kind}.mp4"),
+                 d / f"ref_{kind}.mp4", K, n, gray)
+    decimate(_cat([COMFY_IN / cin(src(run), k, "plate") for k in range(nc)], d / "all_plate.mp4"), d / "ref_plate.mp4", K, n)
     lc = subprocess.run([PY, str(REPO / "h3_tools/lockcheck.py"), str(out), str(d / "ref_normal.mp4"), str(d / "ref_mask.mp4"),
                          str(d / "lc_final"), "--tol", str(R["tol"])], check=True, capture_output=True, text=True).stdout.strip()
     if R.get("bone_ref"):                          # are H3's bones where the rig's bones are? (reference only)

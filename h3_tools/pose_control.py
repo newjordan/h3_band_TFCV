@@ -1,4 +1,8 @@
-"""pose_control.py POSE2D.json NORMAL_DIR MASK_DIR OUT.mp4 [N] : the standard-hand overlay control for H3 Fun ControlNet.
+"""pose_control.py POSE2D.json NORMAL_DIR MASK_DIR OUT.mp4 [N] [--hands outline|edges] : the standard-hand overlay control.
+
+--hands outline: also the stock hand's outer outline (where the hand is and how the fingers curl, nothing inside it);
+--hands edges: keep all of the stock hand's normal-pass edges (outline + knuckles) under the joints. Seen from above,
+curled fingers point at the camera and their joints collapse into stubs, so the joints alone read as an open hand.
 
 Per frame: the rig's hands as an OpenPose hand skeleton (21 joints from the posed stock MPFB2 armature, projected through
 the shot camera by blender_piano.py --pose2d; rainbow finger colours, red joints) plus the forearm (elbow -> wrist), over
@@ -27,12 +31,14 @@ def draw(img, hand, elbow, side, scale):
 
 
 def main():
-    pose, ndir, mdir, out = sys.argv[1:5]
+    hands_mode = sys.argv[sys.argv.index("--hands") + 1] if "--hands" in sys.argv else "none"
+    args = [a for i, a in enumerate(sys.argv) if a != "--hands" and (i == 0 or sys.argv[i - 1] != "--hands")]
+    pose, ndir, mdir, out = args[1:5]
     P = json.load(open(pose))
     W, H = P["size"]
     frames = sorted(P["frames"], key=int)
-    if len(sys.argv) > 5:
-        frames = frames[:int(sys.argv[5])]
+    if len(args) > 5:
+        frames = frames[:int(args[5])]
     proc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{W}x{H}",
                              "-r", "24", "-i", "-", "-c:v", "libx264", "-crf", "8", "-pix_fmt", "yuv420p", out],
                             stdin=subprocess.PIPE)
@@ -41,9 +47,13 @@ def main():
         nrm = cv2.resize(cv2.imread(f"{ndir}/f_{int(f):05d}.png"), (W, H), interpolation=cv2.INTER_AREA)
         msk = cv2.resize(cv2.imread(f"{mdir}/f_{int(f):05d}.png", 0), (W, H), interpolation=cv2.INTER_AREA) > 127
         ed = cv2.Canny(cv2.GaussianBlur(nrm, (3, 3), 0), 20, 60) > 0
-        ed &= ~(cv2.dilate(msk.astype(np.uint8), k) > 0)            # no hand outline or skin detail in the control
+        if hands_mode != "edges":
+            ed &= ~(cv2.dilate(msk.astype(np.uint8), k) > 0)        # no hand outline or skin detail in the control
         img = np.zeros((H, W, 3), np.uint8)
         img[ed] = 255
+        if hands_mode == "outline":                                  # the hand's outer contour only
+            cnt, _ = cv2.findContours(msk.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+            cv2.drawContours(img, cnt, -1, (255, 255, 255), max(1, round(W / 1280)), cv2.LINE_AA)
         hands = P["frames"][f]
         # far hand first (larger camera depth), so the near hand's lines sit on top
         for side in sorted(hands, key=lambda s: -np.mean([q[2] for q in hands[s]["hand"]])):
