@@ -1872,3 +1872,30 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   `probes9.sh` runs that first seam then existing **s3c0_ds** (stock depth + pose in one control). Corrected seam
   prompt `febbe789-4db7-4203-9e09-a737f8322d5a` queued at 19:56:44. Generated anatomy/seam: **PENDING REVIEW**.
   Whole-suite `s4x` recipe and gate unchanged; do not promote this probe on the strength of the input test.
+
+
+## 20 Oct 2026, 22:00 — corrected overlap output rejected; input fidelity is not playing
+
+- Operator called the shown site output very bad. Independent review of corrected `ov_rach_s2_bgc` clip 1
+  (8 samples, `~/h3/results/skeleton_piano/review_20261020/bg_corrected_c1.mp4`) also gives **REJECT**:
+  repeated comb/rib infill, five digits not consistently traceable, wire-like terminal pieces, membranous
+  wrist/palm bridges, unreliable fingertip/key contact and changing hand identity. The input fix was real but
+  **did not fix generated anatomy**. Do not describe it as a successful fresh-hand join.
+- The private band site's earlier claims (“right skeleton for each view”, “hands' look holds”, “high cameras
+  work”) were stronger than the evidence. Corrected `orbit-fresh`, `high-cam` and `rach-overlay` captions,
+  added a prominent quality correction, rebuilt with `mv_tools/band_site.py`. Page assertions **PASS**:
+  corrected headings present, stale fresh-orbit success claim absent, corrected candidate recorded REJECT,
+  `suite4_OKGO` still absent. Original manifest backed up locally. No public docs push or new media posting.
+- At 21:58, Comfy queue empty; no probes9/run client present; corrected MP4 finished at 20:11 but its client
+  log never recorded completion. No `s3c0_ds` output or run log. **The depth probe did not start.** Previous
+  claim that the script would advance automatically was not an observed outcome; do not report it running.
+- Measurement gap: `blockout/human_score.py` gates **input animation** pose distributions against human
+  landmarks; `h3_tools/lockcheck.py` tests generated/reference edge proximity. Neither is proof of a generated
+  hand playing the right notes or moving gracefully. Edge/input passes cannot override visible hand failures.
+- Required output-level gates, separately reported (no compensating average): (1) anatomy/trackable five-digit
+  topology with explicit occlusion/unknown labels; (2) fingertip-to-key surface contact and correct press/release
+  event timing against the take; (3) temporal identity/proportions and rigid keyboard consistency; (4) graceful
+  wrist/finger trajectories compared with real-pianist motion and human review. Missing/low-confidence hand
+  detections must be UNKNOWN/FAIL, never a pass. Build calibrated labels on real controls and known H3 failures
+  before treating a detector/classifier score as a reliable acceptance gate.
+- No further suite render authorized by a passing input test. Current honest output verdict: **FAILED**.
