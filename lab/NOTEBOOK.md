@@ -1846,3 +1846,29 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   the candles: the box was pure noise for the whole clip, so under the hands H3 had no plate at all (fresh clips have
   the hand-free plate there at 0.88). Try 2: the box at the plate's own strength (mask 0.9921875). Try 1's clip 1 kept
   in `ov_rach_s2_bg/try1/`.
+
+
+## 20 Oct 2026, 19:57 — held-scene overlap: the fresh box still contained old H3 hands
+
+- Reviewed `ov_rach_s2_bg` try 2, clip 1 (124 frames, 1280x704 at 24 fps; seed 7). **REJECT**: dense comb/rib
+  infill under the fingers, thin wire-like ends, ambiguous digit chains/contact. Try 1 was also rejected. Fresh-clip
+  orbit remains a comparison baseline, not an approved performance: anatomy changes and keyboard/scene colors jump.
+- Found a concrete input defect in `overlap_plate`: the noise mask freed the hand box, but its encoded video still
+  contained the previous H3 hands during the first 9 frames. At plate strength 0.88 that is not a fresh-hand input.
+  **Hypothesis, not yet a generated-output result:** this leaked appearance is contributing to ribbed anatomy.
+- Fix: background-only overlap now replaces the box with the configured **hand-free** plate before VAE encoding;
+  outside the box it retains the previous H3 frames. Ordinary full-frame overlap is unchanged. No look geometry,
+  camera edits, prompt/seed/control changes, or renderer output relabeled as H3.
+- Regression: `mv_tools/.venv/bin/python -m unittest discover -s tests -p test_skeleton_piano_overlap.py -v` from
+  `~/h3b_pkg` (use the absolute venv path): first **1 FAIL / 1 PASS**, after fix **2 PASS**. Failure explicitly showed
+  old H3 pixels inside the supposedly fresh box. Tests cover both the fresh-box contract and unchanged full overlap.
+- Real encoded-input verification (`~/h3/results/skeleton_piano/ov_rach_s2_bgc/input_verification.json`): hand-box
+  MAE to configured hand-free plate **1.4566/255**, outside-box MAE to previous H3 **0.4765/255**, versus thresholds
+  of 3/255: **PASS**. First measurement used the stock-hand reference by mistake and failed; rerun against the
+  actual configured `plate_nohands` input above is the relevant comparison. Input fidelity is not anatomy proof.
+- Preserved try 2 clip 1 at `~/h3/results/skeleton_piano/review_20261020/bg_try2_c1.mp4`. Stopped only exact PIDs
+  of `probes8` and its rejected-run clients, interrupted the matching Comfy prompt; no other jobs were interrupted.
+- Next candidate uses separate run **ov_rach_s2_bgc**, adopts the same clip 0, renders **only clip 1** first. The new
+  `probes9.sh` runs that first seam then existing **s3c0_ds** (stock depth + pose in one control). Corrected seam
+  prompt `febbe789-4db7-4203-9e09-a737f8322d5a` queued at 19:56:44. Generated anatomy/seam: **PENDING REVIEW**.
+  Whole-suite `s4x` recipe and gate unchanged; do not promote this probe on the strength of the input test.

@@ -293,6 +293,9 @@ RUNS["s3c0_w"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", clips=
 # early on the previous clip's frames, held clean (lock head) EXCEPT a box around both hands and forearms
 # (face_box at the plate's own strength), and no hard keyframe; the scene carries over, the hands are painted fresh.
 RUNS["ov_rach_s2_bg"] = dict(RUNS["ov_rach_s2_ov"], inputs_from="ov_rach_s2_ov", bg_overlap=True)
+# Same held-scene probe after fixing the overlap plate: no previous H3 hand pixels inside the fresh box.
+# Separate output namespace preserves the rejected try-2 candidate for comparison.
+RUNS["ov_rach_s2_bgc"] = dict(RUNS["ov_rach_s2_bg"])
 # The user (19:10): "what about a depth map pass?" Depth as a SECOND control under the pose control: the pose pins the
 # joints, depth says which way the fingers and forearms point (what the flat joint lines can't) and how far each key
 # went down. Earlier (K2, chrome era) depth alone kept the look but didn't pin fingers; here the pose does the pinning.
@@ -456,8 +459,15 @@ def overlap_plate(run, k):
             break
         frames.append(im)
     H, W = frames[0].shape[:2]
+    box = hands_box(run, k, O) if RUNS[run].get("bg_overlap") else None
     for j, pth in enumerate(pngs):
-        frames[j] = cv2.resize(cv2.imread(str(pth)), (W, H), interpolation=cv2.INTER_AREA)
+        held = cv2.resize(cv2.imread(str(pth)), (W, H), interpolation=cv2.INTER_AREA)
+        if box:
+            # The mask alone is not enough: at the plate's strength the VAE still sees the old H3
+            # hands. Feed the same hand-free plate as an unanchored clip inside the fresh region.
+            x0, y0, x1, y1 = box
+            held[y0:y1, x0:x1] = frames[j][y0:y1, x0:x1]
+        frames[j] = held
     dst = COMFY_IN / cin(run, k, "plate_ov")
     proc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{W}x{H}", "-r", "24",
                              "-i", "-", "-c:v", "libx264", "-crf", "8", "-pix_fmt", "yuv420p", str(dst)], stdin=subprocess.PIPE)
