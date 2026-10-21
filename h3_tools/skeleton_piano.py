@@ -299,6 +299,10 @@ RUNS["ov_rach_s2_bg"] = dict(RUNS["ov_rach_s2_ov"], inputs_from="ov_rach_s2_ov",
 # D = shot 3 clip 0 fresh: rig-free keys + pose (posekeysn) at 1.0, depth of the stock hand + piano at 0.5.
 RUNS["s3c0_d"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", clips=[124], view_auto=True,
                       control_kind="posekeysn", control2_kind="depth", control2_strength=0.5, depth_range="0.35,1.4")
+# s3c0_d: no hands at all (an empty keyboard): the depth patch at 0.5 fought the pose patch. s3c0_w (rig-free keys +
+# width): the person behind the keys is gone, the forearms thicker single bones. DS = depth as the base of the one
+# control, the joints drawn on it (no key edges).
+RUNS["s3c0_ds"] = dict(RUNS["s3c0_d"], control_kind="posedepth", control2_kind=None)
 RUNS["ov_rach_s2_un"] = dict(RUNS["ov_rach_s2_ch"], inputs_from="ov_rach_s2_ch", chain=False)
 # s2c3_v (view words alone): full skeleton hands seen from behind (radius and ulna, carpals, metacarpals, fingers on
 # the keys) where the chain painted wires. The opening's bad clips again with view_words: shot 2 clips 2-4 chained on
@@ -371,7 +375,8 @@ def controls(run, kind):
         for k, (f0, n) in enumerate(clip_frames(i)):
             encode(out, COMFY_IN / cin(i, k, "depth"), f0, n, size=R.get("size", (1280, 704)))
         return
-    flags = {"posekeysw": ["--width"], "posekeysd": ["--depth"], "posekeysn": [], "posekeysnw": ["--width"]}[kind]
+    flags = {"posekeysw": ["--width"], "posekeysd": ["--depth"], "posekeysn": [], "posekeysnw": ["--width"],
+             "posedepth": ["--base", str(ROOT / i / "depth")]}[kind]
     if kind.startswith("posekeysn"):             # key edges from a normal pass with the rig hidden (no sleeves)
         render(i, "normal_nohands", ["--pass", "normal", "--hide", "hands"])
         flags = flags + ["--keys", str(ROOT / i / "normal_nohands")]

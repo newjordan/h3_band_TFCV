@@ -6,6 +6,8 @@ the fingers (from behind the hand or from above) the flat joint skeleton doesn't
 --keys DIR: the key edges from DIR, a normal pass rendered with the rig hidden (blender_piano.py --hide hands): no hand,
 arm or sleeve edges at all and no blanked hole, so the keys under the fingers stay in the control. With the hand-mask
 blanking the rig's shirt sleeves stayed in, and seen from across the keys H3 painted a person behind them.
+--base DIR: the joints drawn over DIR's frames (a depth pass) instead of the key edges: one control carrying depth
+and joints (as a second ControlNet patch at 0.5, depth made H3 paint no hands at all).
 --width: the lines as wide as half a 12 mm bone through the frame's lens (POSE2D frames carry "lens"): close up, the
 fixed 3 px lines got painted as thin wires.
 
@@ -51,8 +53,9 @@ def main():
     hands_mode = sys.argv[sys.argv.index("--hands") + 1] if "--hands" in sys.argv else "none"
     depth, width = "--depth" in sys.argv, "--width" in sys.argv
     keys = sys.argv[sys.argv.index("--keys") + 1] if "--keys" in sys.argv else None
-    args = [a for i, a in enumerate(sys.argv) if a not in ("--hands", "--depth", "--width", "--keys")
-            and (i == 0 or sys.argv[i - 1] not in ("--hands", "--keys"))]
+    base = sys.argv[sys.argv.index("--base") + 1] if "--base" in sys.argv else None
+    args = [a for i, a in enumerate(sys.argv) if a not in ("--hands", "--depth", "--width", "--keys", "--base")
+            and (i == 0 or sys.argv[i - 1] not in ("--hands", "--keys", "--base"))]
     pose, ndir, mdir, out = args[1:5]
     P = json.load(open(pose))
     W, H = P["size"]
@@ -71,6 +74,8 @@ def main():
             ed &= ~(cv2.dilate(msk.astype(np.uint8), k) > 0)        # no hand outline or skin detail in the control
         img = np.zeros((H, W, 3), np.uint8)
         img[ed] = 255
+        if base:                                  # a depth pass under the joints instead of the key edges
+            img = cv2.resize(cv2.imread(f"{base}/f_{int(f):05d}.png"), (W, H), interpolation=cv2.INTER_AREA)
         if hands_mode == "outline":                                  # the hand's outer contour only
             cnt, _ = cv2.findContours(msk.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             cv2.drawContours(img, cnt, -1, (255, 255, 255), max(1, round(W / 1280)), cv2.LINE_AA)

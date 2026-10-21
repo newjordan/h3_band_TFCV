@@ -1836,3 +1836,8 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   (0.12-2.5 m) leaves a 0.7 m shot flat grey: `depth_range` per run (shot 3: 0.35-1.4). Probe **s3c0_d** (shot 3
   clip 0 fresh: rig-free keys + pose at 1.0, depth 0.5) after s3c0_w. Risk: the depth carries the stock hand's
   (flesh) volume. Band site `orbit-fresh` (the fresh-clip orbit with sound).
+- **Shot 3 probes (clip 0, fresh, view words):** **s3c0_w** (rig-free key edges + width lines): the person behind the
+  keys is gone (it came from the rig's sleeve edges), the forearms are thicker but still single bones, small skeleton
+  hands on the keys. **s3c0_d** (pose + rig-free keys at 1.0, depth of the stock hand + piano as a second patch at
+  0.5): **no hands at all**, an empty keyboard; the two patches fight. Next, **s3c0_ds**: depth as the base of the
+  one control with the joints drawn on it (`pose_control.py --base`), after the held-scene orbit.
