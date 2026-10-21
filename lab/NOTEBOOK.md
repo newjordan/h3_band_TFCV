@@ -1841,3 +1841,8 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   hands on the keys. **s3c0_d** (pose + rig-free keys at 1.0, depth of the stock hand + piano as a second patch at
   0.5): **no hands at all**, an empty keyboard; the two patches fight. Next, **s3c0_ds**: depth as the base of the
   one control with the joints drawn on it (`pose_control.py --base`), after the held-scene orbit.
+- **ov_rach_s2_bg try 1 (box at denoise 1.0):** the scene carries over the seam (the candles and dark room of clip 0,
+  no jump to clip 1-fresh's beige table), but the fresh hands came out ribbed, centipede-like bones, and a pink blob by
+  the candles: the box was pure noise for the whole clip, so under the hands H3 had no plate at all (fresh clips have
+  the hand-free plate there at 0.88). Try 2: the box at the plate's own strength (mask 0.9921875). Try 1's clip 1 kept
+  in `ov_rach_s2_bg/try1/`.

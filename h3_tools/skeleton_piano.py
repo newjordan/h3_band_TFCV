@@ -291,7 +291,7 @@ RUNS["s3c0_w"] = dict(RUNS["ov_rach_s3_ch"], inputs_from="ov_rach_s3_ch", clips=
 # ov_rach_s2_un (every clip fresh): full skeletons at every angle of the orbit, hands where the rig's are, but the
 # scene jumps at each seam (candles, lamps, key colour, light). BG = fresh hands, held scene: each clip opens 9 frames
 # early on the previous clip's frames, held clean (lock head) EXCEPT a box around both hands and forearms
-# (face_box at denoise 1.0), and no hard keyframe; the scene carries over, the hands are painted fresh.
+# (face_box at the plate's own strength), and no hard keyframe; the scene carries over, the hands are painted fresh.
 RUNS["ov_rach_s2_bg"] = dict(RUNS["ov_rach_s2_ov"], inputs_from="ov_rach_s2_ov", bg_overlap=True)
 # The user (19:10): "what about a depth map pass?" Depth as a SECOND control under the pose control: the pose pins the
 # joints, depth says which way the fingers and forearms point (what the flat joint lines can't) and how far each key
@@ -624,7 +624,10 @@ def job(run, k, first=None):
         j["lock"] = {"head": 1 + (O - 1) // 4, "anchor": RUNS[run].get("overlap_strength", 0.0), "free": j["video_strength"]}
         if RUNS[run].get("bg_overlap"):            # hold only the scene: the hands' box painted fresh in every frame
             box = ",".join(str(v) for v in hands_box(run, k, O))
-            j.update(face_box_start=box, face_box_end=box, face_denoise=1.0)
+            S = 12.0                               # H3's video shift: the box at the clip's own plate strength (1.0
+            v = j["video_strength"]                # = pure noise, no plate under the hands, painted ribbed bones)
+            j.update(face_box_start=box, face_box_end=box,
+                     face_denoise=min(1.0, -(-round(S * v / (1 + (S - 1) * v) * 256, 6) // 1) / 256))
     if first:                                      # chained: this clip opens on the previous clip's last H3 frame
         j["image"] = first
     else:
