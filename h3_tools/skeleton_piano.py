@@ -402,6 +402,28 @@ def adopt(run, frm, upto):
             subprocess.run(["cp", "-r", str(COMFY_OUT / tag(frm, k)), str(COMFY_OUT / tag(run, k))], check=True)
 
 
+def sample_clock_audio(source, destination, start_frame, frames, density):
+    """Exact 24-fps/48-kHz conditioning clock, NOT pitch-preserving.
+
+    A source sample at s becomes dense sample density*s. This deliberately
+    lowers pitch by density; use only as an explicit conditioning experiment.
+    Final delivery must still use TAKE_SOUND, never this diagnostic audio.
+    """
+    if (not all(isinstance(x, int) for x in (start_frame, frames, density))
+            or start_frame < 0 or frames <= 0 or density not in (1, 2, 3, 4)):
+        raise ValueError("sample clock needs nonnegative start, positive frames and integer density 1..4")
+    start, end = start_frame * 2000, (start_frame + frames) * 2000
+    samples = frames * 2000 * density
+    af = (f"aresample=48000,atrim=start_sample={start}:end_sample={end},asetpts=PTS-STARTPTS,"
+          f"asetrate={48000 // density},aresample=48000:async=0")
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(source), "-af", af,
+                    "-ac", "2", "-c:a", "pcm_s16le", str(destination)], check=True)
+    import wave
+    with wave.open(str(destination), "rb") as wav:
+        if wav.getnframes() != samples:
+            raise ValueError(f"conditioning audio truncated: {wav.getnframes()} samples, expected {samples}")
+
+
 def shot_edit(run):
     """The dense edit and slowed sound of one shot: densify_take on the show edit (camera interpolated inside the
     shot), frames past the cut hold the shot's last camera; the take's sound from the shot's start, slowed K times."""
@@ -704,16 +726,16 @@ def score(run, k):
 
 def join(run):
     R = RUNS[run]; d = ROOT / run
-    n = len(R["clips"])
-    lst = d / "clips.txt"
-    lst.write_text("".join(f"file '{out_mp4(run, k)}'\n" for k in range(n)))
-    t0, dur = R["f0"] / 24.0, sum(R["clips"]) / 24.0
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-ss", f"{t0:.4f}",
+    n, overlap = len(R["clips"]), R.get("overlap", 0)
+    video = _cat([out_mp4(run, k) for k in range(n)], d / "joined_video.mp4", trim=overlap)
+    plate = _cat([COMFY_IN / cin(src(run), k, "plate") for k in range(n)],
+                 d / "joined_plate.mp4", trim=overlap)
+    count = sum(R["clips"]) - overlap * (n - 1)
+    t0, dur = R["f0"] / 24.0, count / 24.0
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(video), "-ss", f"{t0:.4f}",
                     "-t", f"{dur:.4f}", "-i", str(R["sound"]), "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-crf", "16",
                     "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", str(d / f"{run}.mp4")], check=True)
-    plates = d / "plates.txt"
-    plates.write_text("".join(f"file '{COMFY_IN / cin(run, k, 'plate')}'\n" for k in range(n)))
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(plates), "-i", str(d / f"{run}.mp4"),
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(plate), "-i", str(d / f"{run}.mp4"),
                     "-filter_complex", "[0:v]scale=640:352[a];[1:v]scale=640:352[b];[a][b]hstack", "-map", "1:a",
                     "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "copy", "-shortest",
                     str(d / f"{run}_sbs.mp4")], check=True)
@@ -760,10 +782,13 @@ def final_shot(run):
         video = d / "clips_joined.mp4"
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-an", "-c:v", "libx264",
                         "-crf", "12", "-pix_fmt", "yuv420p", str(video)], check=True)
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(video), "-ss", f"{R['take_f0'] / 24.0:.4f}",
-                    "-t", f"{n / 24.0:.4f}", "-i", str(TAKE_SOUND), "-map", "0:v", "-map", "1:a",
+    audio_start, audio_end = R["take_f0"] * 2000, (R["take_f0"] + n) * 2000
+    audio_trim = (f"aresample=48000,atrim=start_sample={audio_start}:end_sample={audio_end},"
+                  "asetpts=PTS-STARTPTS")
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(video), "-i", str(TAKE_SOUND),
+                    "-map", "0:v", "-map", "1:a", "-af", audio_trim,
                     "-vf", f"select='not(mod(n\\,{K}))',setpts=N/24/TB", "-r", "24", "-frames:v", str(n),
-                    "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", str(out)],
+                    "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-movie_timescale", "48000", str(out)],
                    check=True)
     d.mkdir(parents=True, exist_ok=True)
     nc = len(R["clips"])

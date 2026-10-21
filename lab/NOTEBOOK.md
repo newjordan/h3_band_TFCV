@@ -1899,3 +1899,25 @@ Scores per clip: motionmatch inside the Blender hand mask vs the normal pass and
   detections must be UNKNOWN/FAIL, never a pass. Build calibrated labels on real controls and known H3 failures
   before treating a detector/classifier score as a reliable acceptance gate.
 - No further suite render authorized by a passing input test. Current honest output verdict: **FAILED**.
+
+### 20 Oct 2026 23:xx — native H3 delivery clock repaired; execution still FAILED
+
+Operator makes perfect timing/execution mandatory. New measured packaging bugs, not anatomy claims:
+- `join` repeated overlap frames (synthetic decoded global IDs: 72 vs required54); both H3/ref joins now trim.
+- `final_shot` four-decimal seek shifted audio2 samples; integer48k sample trim fixes it (real AAC red->green).
+- Default MP4 movie timescale rounded declared playback down16 samples; primary shot final now uses48000.
+- Existing dense conditioning atempo clock short3845 samples/80.104ms in dense time vs exact4x; NOT per-note lag.
+  Standalone exact sample-clock helper passes impulse tests, lowers pitch4x, NOT wired to production/H3.
+- Native code path candidate `h3/results/skeleton_piano/ov_rach_s2_clock_exact_v2/ov_rach_s2_clock_exact_v2_final.mp4`:
+  146 frames24fps, exact292000 declared audio samples, zero decoded correlation lag in7 windows incl tail;
+  14 expected-H3 boundary content comparisons maxMAE.94. Digital clock PASS, NOT pianist execution PASS.
+- New `h3_tools/piano_clock_audit.py` rejects missing/shifted/truncated output, wrong duration and gross splice IDs;
+  `piano_event_sheet.py` labels exact frames and PLAN ONLY finger owners; observed contacts remain UNLABELLED.
+- Frame-exact sheet final29..33 take1110..1114: final30->31 plan R60/66/69 -> L54/51; H3 instead resets hand/key
+  presentation and background; ownership/contact untrackable. Temporal FAIL, contact/note UNKNOWN/not passed.
+- Existing rig/edge scores do not certify contact/grace. Whole suite still NOT authorized by this result.
+- 12unittests PASS; compileall/Ruff F/diff whitespace PASS. LSP unavailable. Independent review timed out, NOT approval.
+Report: h3/reports/research-671292e2416696ee8cfe959cdcc8ad4f-1.md. Evidence native_final_clock_audit_v2.json,
+condition_clock JSON, event_1112.jpg in h3/results/skeleton_piano/review_20261020/. Original candidates intact.
+Legacy non-shot/diagnostic composite muxers not yet sample-clock-certified. Next: calibrated output event labels/
+persistent finger-key tracking at failed boundary and targeted repair, NOT an entire suite render.
