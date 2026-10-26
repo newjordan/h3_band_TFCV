@@ -1,0 +1,37 @@
+{
+  "status": "RENDER_RECOVERED_PERFORMANCE_NOT_ACCEPTED",
+  "fresh_inference_runs": 2,
+  "baseline": {
+    "wall_s": 1180,
+    "hand_motion_correlation_to_plate": 0.02,
+    "median_reference_edge_distance_px": 5.48,
+    "reference_edges_within_3px": 0.37,
+    "visual_verdict": "Malformed fan-like skeletal anatomy and ambiguous contact"
+  },
+  "geometry_variant": {
+    "wall_s": 1170,
+    "hand_motion_correlation_to_plate": 0.91,
+    "median_reference_edge_distance_px": 0.96,
+    "reference_edges_within_3px": 0.67,
+    "visual_verdict": "Solid gray human hands; skeleton appearance not achieved"
+  },
+  "changed_settings": {
+    "baseline": {
+      "plate": "hand-free",
+      "control": "posekeys",
+      "video_strength": 0.88
+    },
+    "geometry": {
+      "plate": "stock-hand",
+      "control": "normal edges",
+      "video_strength": 0.25
+    }
+  },
+  "remaining": [
+    "Physical source performance has known missed/extra notes in longer shot",
+    "Reconciled key depths do not repair finger trajectories",
+    "Conditioning time stretch event alignment remains unverified",
+    "Skeleton appearance and accurate motion not jointly achieved",
+    "No full-suite acceptance or seam validation"
+  ]
+}

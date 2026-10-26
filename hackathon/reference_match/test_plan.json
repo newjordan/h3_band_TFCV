@@ -1,0 +1,33 @@
+{
+  "status": "PREPARED_NOT_LAUNCHED",
+  "execution_enabled": false,
+  "source_post": "https://x.com/MiniMax_AI/status/2099381310733328784",
+  "source_first_frame": 1137,
+  "original_frame_count": 31,
+  "dense_frame_count": 124,
+  "density": 4,
+  "fps": 24,
+  "api_graph": "examples/workflows/hackathon/ref2va_video_reference_api.json",
+  "input_contract": "124 stock-hand dense frames at 24 fps; no skeletal Blender geometry supplied to H3.",
+  "launch_gates": [
+    "Explicit approval to start model/services",
+    "Validate installed node schema and selected model filenames",
+    "Validate media duration and conditioning/delivery clocks",
+    "Fresh run tags and leases; preserve existing queues and suite4.go waiter",
+    "Honor existing free-memory guards; never bypass them",
+    "No stale static calibration for a changed workload"
+  ],
+  "acceptance": [
+    "Skeleton appearance AND exact finger/key ownership/contact pass together",
+    "Review all 31 original-clock delivery frames",
+    "Validate acoustic-event alignment to original TAKE_SOUND",
+    "Record missed/extra contacts; source performance itself has known defects",
+    "No full-suite acceptance from short-shot results"
+  ],
+  "not_qualified": [
+    "Ref2VA inference",
+    "Ref2VA plus Fun ControlNet",
+    "Fast adapters on the serving quantized model",
+    "Pitch-preserving conditioning event alignment"
+  ]
+}

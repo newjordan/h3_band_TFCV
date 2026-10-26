@@ -1,0 +1,7 @@
+DRAFT — validate the installed Ref2VA prompt/input mapping before use.
+
+<Video 1> is the stock-hand source plate, providing the piano keyboard layout, exact hand and finger trajectories, key movement, camera path and temporal structure. It is a motion/structure reference, not the desired hand appearance.
+
+[reference generation] Generate the same continuous shot with bare ivory-white skeletal hands and forearms instead of the solid stock hands. Preserve each finger's identity and trajectory, its target key, contact and release order, key motion, camera framing and timing from <Video 1>. Do not add or omit strikes. No cuts, extra fingers, fused fingers, skin, text or logos. Maintain the smoky, warm-lit late-night piano scene.
+
+Original source audio is authoritative for delivery. Native generated audio is not a replacement for the original TAKE_SOUND. Any conditioning stretch and return to the original delivery clock must be verified separately.

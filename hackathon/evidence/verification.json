@@ -1,0 +1,39 @@
+{
+  "result": "PASS_OFFLINE_HANDOFF",
+  "checks": [
+    "fl2va_control: API topology, required inputs, relative paths and canvas parity PASS",
+    "ref2va_video_reference: API topology, required inputs, relative paths and canvas parity PASS",
+    "Negative control rejected: dangling edge",
+    "Negative control rejected: bad slot",
+    "Negative control rejected: cycle",
+    "Negative control rejected: missing socket",
+    "Reference plan launch-disabled and dense/original count invariants PASS",
+    "Seven custom-node mappings and utility syntax PASS (AST only; no runtime imports)",
+    "Local Markdown links, landing page, plugin entry and license PASS"
+  ],
+  "sha256": {
+    "docs/hackathon.html": "de6a1794044434b8c87b43f39f1bb087806d4ff074135999a8ad79b321f29e7e",
+    "examples/workflows/hackathon/README.md": "d65960100ff6bd7fe6cc9873cc954f5d2e72a4340eed585fdae2d28546bd52f9",
+    "examples/workflows/hackathon/fl2va_control_api.json": "a3de6d92ee043bc5d762e04bccc592e84b1aa0f3924a592c8c075c4602daae26",
+    "examples/workflows/hackathon/fl2va_control_canvas.json": "0a7785afd47b9a77f7144488f7bbc89b9b4bbcfbb8be0443b28234a8bc78b612",
+    "examples/workflows/hackathon/ref2va_video_reference_api.json": "eb3f9b3d697c113ae91729276e90383a101c694f76497518af376e8d9f8fda8c",
+    "examples/workflows/hackathon/ref2va_video_reference_canvas.json": "8927c3f314f0e03ecd56c3e3a794c031fa7ca20e5d0c8c64960bb03d4f580efd",
+    "hackathon/MARKETING.md": "3d3f82e090ea0a09029421d198a17d1d035438fd3b878186a6d2073bb7489337",
+    "hackathon/PACKAGE.md": "16297ca0211f41b2edd43e08e07490b1efd35012ce71d0c6a1aa727ece857a02",
+    "hackathon/README.md": "d8670d2256a8bf584a081371fe1da19305b28c33eafefde38e158843b28ecf0d",
+    "hackathon/STATUS.md": "4411d81d6706df2482094373925c615a3266edb1c8f5a09b5d030267cfaa8108",
+    "hackathon/TEAM.md": "5356d7aa043723b73bf4a02efd5c603281fde2b9b11bb227f4fe6f78803abc71",
+    "hackathon/evidence/piano_recovery_summary.json": "7acc7c3e3a270b0e6c85dd3cc414abe2bd589de51c14026431c64b96de481852",
+    "hackathon/reference_match/candidate_prompt.txt": "2563147f6cba24adc65d65d2b417dd234e0a16b02f221c8e29a112cd72101189",
+    "hackathon/reference_match/test_plan.json": "5bb5282f989b8edd8b7560ff4d330a557d50839b17c6d6b4c4ad6bd4d6b834f4",
+    "scripts/package_hackathon.py": "37b75ecc640b044bf8e9657cd2f673767bc1b9b6c3413be2fb1855994244fac6",
+    "scripts/verify_hackathon.py": "358ebcb042ac67c630228cf859f6c6ccc953c26217fb1f7414b148d5f085be65"
+  },
+  "not_verified": [
+    "Target Comfy schema/UI import",
+    "Model inference or fidelity",
+    "Fresh install or Registry publication",
+    "Clip rights/provenance"
+  ],
+  "resource_scope": "stdlib-only small file/AST/JSON checks; no model, tensor, media decode, GPU, services or network"
+}
