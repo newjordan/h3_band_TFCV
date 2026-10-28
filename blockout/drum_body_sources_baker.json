@@ -1,0 +1,71 @@
+{
+ "version": 1,
+ "drummer": "baker",
+ "method": "SAM 3D Body (sam_3d_body_dinov3_bf16, ComfyUI core nodes) on each frame, whole frame as the box, hand refinement on; SAM3DBody_Smooth savgol window 7; BVH via BuildPoseFile, camera translation off. Made with: python h3band/sam3d_mocap.py work/sam3d/clips/X.mp4 work/sam3d/X --fps F. Each clip is a cut of one static-camera shot (ffmpeg scene detection at threshold 0.12 and contact sheets), scaled to 960x540 so ComfyUI's LoadVideo holds it in memory.",
+ "note": "a solo kit at home, daylight; three shots between handheld cuts",
+ "sources": [
+  {
+   "id": "baker_a",
+   "bvh": "../work/sam3d/baker_a.bvh",
+   "video": "../work/sam3d/clips/baker_a.mp4",
+   "content": "Ginger Baker, solo at home in South Africa, 2005 (Cream's channel), https://www.youtube.com/watch?v=R0Or_Uk-vnE, 42-63.5 s",
+   "rate": "real time, 29.97 fps, 645 frames",
+   "cut": [
+    42,
+    63.5
+   ],
+   "shots": [
+    {
+     "id": "s1",
+     "t": [
+      0.0,
+      21.522
+     ],
+     "view": "front-side"
+    }
+   ]
+  },
+  {
+   "id": "baker_b",
+   "bvh": "../work/sam3d/baker_b.bvh",
+   "video": "../work/sam3d/clips/baker_b.mp4",
+   "content": "Ginger Baker, solo at home in South Africa, 2005 (Cream's channel), https://www.youtube.com/watch?v=R0Or_Uk-vnE, 214.5-244 s",
+   "rate": "real time, 29.97 fps, 885 frames",
+   "cut": [
+    214.5,
+    244
+   ],
+   "shots": [
+    {
+     "id": "s1",
+     "t": [
+      0.0,
+      29.53
+     ],
+     "view": "front-side"
+    }
+   ]
+  },
+  {
+   "id": "baker_c",
+   "bvh": "../work/sam3d/baker_c.bvh",
+   "video": "../work/sam3d/clips/baker_c.mp4",
+   "content": "Ginger Baker, solo at home in South Africa, 2005 (Cream's channel), https://www.youtube.com/watch?v=R0Or_Uk-vnE, 263-295.5 s",
+   "rate": "real time, 29.97 fps, 975 frames",
+   "cut": [
+    263,
+    295.5
+   ],
+   "shots": [
+    {
+     "id": "s1",
+     "t": [
+      0.0,
+      32.533
+     ],
+     "view": "front-side"
+    }
+   ]
+  }
+ ]
+}
