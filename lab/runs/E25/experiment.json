@@ -1,0 +1,12 @@
+{
+ "id": "E25",
+ "leg": "H4 contact",
+ "parent": "E24",
+ "hypothesis": "Repair and overshoot are complementary (late arrival vs stopping short).",
+ "change": "E24 + press overshoot 3 mm",
+ "ovr": {
+  "REPAIR_ITERS": 2,
+  "PRESS_OVERSHOOT": 0.003
+ },
+ "env": "HAND_SCALE=1"
+}

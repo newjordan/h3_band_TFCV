@@ -1,0 +1,21 @@
+{
+ "id": "E23",
+ "leg": "H4 contact",
+ "parent": "E20",
+ "hypothesis": "Shallow presses stop at the key bed because the target is the bed itself; aiming 3 mm below it lets contact complete.",
+ "change": "E20 + press overshoot 3 mm",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "PRESS_OVERSHOOT": 0.003
+ },
+ "env": "HAND_SCALE=1"
+}

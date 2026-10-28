@@ -15,7 +15,8 @@ from .. import human_score as hs
 from .hand import HandRig
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "comfort.json")
+from .skeleton import THUMB_AXIS
+OUT = os.path.join(HERE, "comfort.json" if THUMB_AXIS == "rest" else f"comfort_thumb{THUMB_AXIS}.json")   # (only its thumb is used)
 FN = ["index", "middle", "ring", "pinky"]
 
 

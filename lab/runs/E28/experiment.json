@@ -1,0 +1,22 @@
+{
+ "id": "E28",
+ "leg": "H2 data-driven hand",
+ "parent": "E26",
+ "hypothesis": "The contact stack lifts the real-size hand toward the big hand.",
+ "change": "E26 with the real-size hand",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "REPAIR_ITERS": 2,
+  "PRESS_OVERSHOOT": 0.003
+ },
+ "env": "HAND_SCALE=0.7284"
+}

@@ -1,0 +1,35 @@
+{
+  "base": "One continuous locked-off shot from a high-budget 1987 rock music video, pristine 35mm film transfer, deep blacks, fine film grain, a crisp fast-shutter image with no motion blur. A smoky late-night jazz cafe: cigarette smoke curls and drifts over the keyboard, warm amber lamp light and candle glow, {GLINT}. Seen from high above and behind the player: {HANDS} play the keys of a glossy black grand piano. The camera does not move. Each key goes down under the {FINGER} that presses it, exactly following the motion. No cuts, no new objects, no faces, no text, no logo. Audio: a solo grand piano, dramatic and stormy.",
+  "looks": {
+    "skeleton": {
+      "HANDS": "bare bony skeleton hands: ivory-white human skeleton finger bones with slender waisted shafts, flared ends and knobbly knuckle joints, exposed metacarpals and clustered wrist bones, the paired radius and ulna of the bare skeleton forearms",
+      "GLINT": "glints on the black lacquer",
+      "FINGER": "bony skeleton finger"
+    },
+    "monster": {
+      "HANDS": "gnarly clawed monster hands: rough scaly creature skin with hooked talons, warty finger ridges and knobbly joints, rows of short spikes on the backs of the hands, overlapping scaly plates and jagged dorsal spines along the monster forearms",
+      "GLINT": "glints on the black lacquer",
+      "FINGER": "clawed monster finger"
+    },
+    "robot": {
+      "HANDS": "mechanical robot hands: hard brushed-metal android finger shells with bevelled rectangular segments, exposed cylindrical hinge pins and gaps at every joint, flat riveted back-of-hand panels with seams, wrist rings and paired hydraulic pistons with thin polished rods and plate bands along the robot forearms",
+      "GLINT": "glints on the brushed metal",
+      "FINGER": "mechanical robot finger"
+    },
+    "paw": {
+      "HANDS": "fluffy kitty-cat paws: soft dense cat fur around separate rounded furry toes with plump tips and tiny curved retractable claws, thin pink toe beans and trefoil-shaped pink main paw pads, little fur tufts on the toe sides and backs of the paws, fluffy tufted fur cuffs around the cat forearms",
+      "GLINT": "glints on the black lacquer",
+      "FINGER": "furry cat toe"
+    },
+    "real": {
+      "HANDS": "the pianist's bare human hands: natural skin with visible knuckles and tendons, short clean fingernails, rolled-up white shirt sleeves on the forearms,",
+      "GLINT": "glints on the black lacquer",
+      "FINGER": "finger"
+    },
+    "armour": {
+      "HANDS": "the shiny armored knight's hands: mirror-polished chrome silver articulated gauntlets with jointed steel fingers, gleaming chrome vambraces over chainmail sleeves",
+      "GLINT": "glints on the chrome",
+      "FINGER": "steel finger"
+    }
+  }
+}

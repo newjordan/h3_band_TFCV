@@ -1,0 +1,514 @@
+[
+ {
+  "id": "E00",
+  "leg": "H0 baseline",
+  "parent": "",
+  "hypothesis": "Reference point: the current rig (v17D code + torso hitbox fix + F\u00fcrElise wrist model) with the oversized MPFB hand.",
+  "change": "big hand (24.3 cm), all current fixes, strike bands 12 mm toward the key fronts",
+  "ovr": {},
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E01",
+  "leg": "H2 data-driven hand",
+  "parent": "E00",
+  "hypothesis": "A pianist-sized hand (F\u00fcrElise median 17.7 cm) driven by the F\u00fcrElise wrist model plays the suite about as accurately as the oversized hand.",
+  "change": "real-size hand (scale 0.728)",
+  "ovr": {},
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E10",
+  "leg": "H1 ragdoll-first",
+  "parent": "E01",
+  "hypothesis": "With every motion constraint loosened (a free ragdoll wrist), the real-size hand reaches ~100% key sync; the remaining misses are structural (unfingered notes), not kinematic.",
+  "change": "ragdoll ceiling: no wrist smoothing, no wrist-joint term, ease up to 10 cm on a weak spring, no finger smoothing",
+  "ovr": {
+   "WRIST_LAMBDA": 0,
+   "WRIST_W": 0,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": false,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E05",
+  "leg": "H0 baseline",
+  "parent": "E00",
+  "hypothesis": "Fingering every note (rolled sub-chords for chords wider than a hand or with > 5 keys, doubled keys struck once) and scaling the wrist model's depth to the hand removes the unfingered class and puts the knuckles where pianists' are.",
+  "change": "E00 + every note fingered (SPLIT_WIDE) + knuckle-depth scaling",
+  "ovr": {},
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E06",
+  "leg": "H2 data-driven hand",
+  "parent": "E05",
+  "hypothesis": "Same code with the pianist-sized hand.",
+  "change": "E05 with the real-size hand",
+  "ovr": {},
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E20",
+  "leg": "H4 contact",
+  "parent": "E05",
+  "hypothesis": "Shallow misses come from the press target weighting height half as much as position.",
+  "change": "E05 + press height weight 1.5 -> 3",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ]
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E21",
+  "leg": "H4 contact",
+  "parent": "E20",
+  "hypothesis": "The pressing pad is held up by its own key's surface in the collision model.",
+  "change": "E20 + pressing pad may sink 3 mm into its own key",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "OWN_KEY_GIVE": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E07",
+  "leg": "H0 baseline",
+  "parent": "E05",
+  "hypothesis": "Ablation: the old 'playable()' note dropping costs the unfingered notes.",
+  "change": "E05 with SPLIT_WIDE off (playable() drops notes)",
+  "ovr": {
+   "SPLIT_WIDE": false
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E02",
+  "leg": "H2 data-driven hand",
+  "parent": "E06",
+  "hypothesis": "Ablation: the F\u00fcrElise wrist model contributes to the real-size hand's accuracy.",
+  "change": "E06 without the F\u00fcrElise wrist model",
+  "ovr": {},
+  "env": "HAND_SCALE=0.7284 RIG_WRIST_MODEL=0"
+ },
+ {
+  "id": "E11",
+  "leg": "H1 ragdoll-first",
+  "parent": "E10",
+  "hypothesis": "Reverse ladder 1: finger smoothing back on.",
+  "change": "ragdoll (E10 settings, current code) + finger joint smoothing",
+  "ovr": {
+   "WRIST_LAMBDA": 0,
+   "WRIST_W": 0,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E12",
+  "leg": "H1 ragdoll-first",
+  "parent": "E11",
+  "hypothesis": "Reverse ladder 2: light wrist-path smoothing.",
+  "change": "E11 + wrist smoothing lambda 2",
+  "ovr": {
+   "WRIST_LAMBDA": 2.0,
+   "WRIST_W": 0,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E14",
+  "leg": "H1 ragdoll-first",
+  "parent": "E12",
+  "hypothesis": "Reverse ladder 3: soft wrist-joint term.",
+  "change": "E12 + wrist joint term 0.015",
+  "ovr": {
+   "WRIST_LAMBDA": 2.0,
+   "WRIST_W": 0.015,
+   "EASE_MAX": 0.1,
+   "EASE_PRIOR": 0.05,
+   "FINGER_REFINE": true,
+   "WRIST_PASSES": 1
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E22",
+  "leg": "H4 contact",
+  "parent": "E05",
+  "hypothesis": "Pinning the pressing pad hard across the key and in depth (Tipiano-style hard mask during presses) removes sideways and shallow misses.",
+  "change": "E05 + press weights across/depth 3,1.5 -> 20,20 (black 20,20,20)",
+  "ovr": {
+   "PRESS_AXES": [
+    20.0,
+    1.0,
+    20.0
+   ],
+   "PRESS_AXES_BLACK": [
+    20.0,
+    20.0,
+    20.0
+   ]
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E23",
+  "leg": "H4 contact",
+  "parent": "E20",
+  "hypothesis": "Shallow presses stop at the key bed because the target is the bed itself; aiming 3 mm below it lets contact complete.",
+  "change": "E20 + press overshoot 3 mm",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E24",
+  "leg": "H4 contact",
+  "parent": "E20",
+  "hypothesis": "Verify-and-repair on the best contact weights: re-solving the fingers with each missed note's press boosted (x4 per pass, 2 passes) recovers most of E20's remaining misses.",
+  "change": "E20 + 2 repair passes (REPAIR_W 4)",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E25",
+  "leg": "H4 contact",
+  "parent": "E24",
+  "hypothesis": "Repair and overshoot are complementary (late arrival vs stopping short).",
+  "change": "E24 + press overshoot 3 mm",
+  "ovr": {
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E26",
+  "leg": "H4 contact",
+  "parent": "E20",
+  "hypothesis": "The two contact gains stack: E20's press-height weight plus repair + overshoot (E25).",
+  "change": "E20 + 2 repair passes + 3 mm overshoot",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E27",
+  "leg": "H4 contact",
+  "parent": "E26",
+  "hypothesis": "More repair (4 passes) closes more of the remaining misses.",
+  "change": "E26 with 4 repair passes",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 4,
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E28",
+  "leg": "H2 data-driven hand",
+  "parent": "E26",
+  "hypothesis": "The contact stack lifts the real-size hand toward the big hand.",
+  "change": "E26 with the real-size hand",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E29",
+  "leg": "H5 reach",
+  "parent": "E26",
+  "hypothesis": "Over-wide chords are physically impossible for one hand; redistributing their inner-edge notes to the other hand when it can take them (REACH_SPLIT) removes those sideways misses.",
+  "change": "E26 + REACH_SPLIT",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E30",
+  "leg": "H5 reach",
+  "parent": "E28",
+  "hypothesis": "Same for the real-size hand, whose misses are 76% reach.",
+  "change": "E28 + REACH_SPLIT",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true
+  },
+  "env": "HAND_SCALE=0.7284"
+ },
+ {
+  "id": "E31",
+  "leg": "H5 reach",
+  "parent": "E29",
+  "hypothesis": "Rolled sub-chords started when the hand can get there (ROLL_STAGGER) add to REACH_SPLIT.",
+  "change": "E29 + ROLL_STAGGER",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true,
+   "ROLL_STAGGER": true
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E32",
+  "leg": "H5 reach",
+  "parent": "E30",
+  "hypothesis": "The real-size hand misses Rachmaninoff octaves because the rig's thumb (CMC 30 deg) and pinky (25 deg) cannot open to the span; anatomical limits (thumb 45, pinky 30) let it reach.",
+  "change": "E30 + thumb CMC abduction 45 deg, pinky 30 deg",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true
+  },
+  "env": "HAND_SCALE=0.7284 RIG_LIMITS='{\"cmc\":{\"abd\":[-45,45]},\"mcp_edge\":{\"abd\":[-30,30]}}'"
+ },
+ {
+  "id": "E33",
+  "leg": "H5 reach",
+  "parent": "E32",
+  "hypothesis": "Planning the hand open (home finger spread x1.15) for wide chords puts its centre where both ends can be reached.",
+  "change": "E32 + HOME spread x1.15",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true,
+   "HOME_S": 1.15
+  },
+  "env": "HAND_SCALE=0.7284 RIG_LIMITS='{\"cmc\":{\"abd\":[-45,45]},\"mcp_edge\":{\"abd\":[-30,30]}}'"
+ },
+ {
+  "id": "E34",
+  "leg": "H5 reach",
+  "parent": "E29",
+  "hypothesis": "Ablation on the current stack: does fingering every note (rolled sub-chords) still cost sideways misses once REACH_SPLIT shares wide chords between hands?",
+  "change": "E29 with SPLIT_WIDE off",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true,
+   "SPLIT_WIDE": false
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E35",
+  "leg": "H4 contact",
+  "parent": "E29",
+  "hypothesis": "Letting the pad sink 3 mm into its own key (E21: -10 shallow on E20) adds to the E29 stack.",
+  "change": "E29 + OWN_KEY_GIVE 3 mm",
+  "ovr": {
+   "PRESS_AXES": [
+    3.0,
+    1.0,
+    3.0
+   ],
+   "PRESS_AXES_BLACK": [
+    3.0,
+    3.0,
+    3.0
+   ],
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true,
+   "OWN_KEY_GIVE": 0.003
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E36",
+  "leg": "H4 contact",
+  "parent": "E29",
+  "hypothesis": "The hard press mask (E22: 95.3% alone) adds to the E29 stack (repair + overshoot + REACH_SPLIT).",
+  "change": "E29 with PRESS_AXES [20,1,20], black [20,20,20]",
+  "ovr": {
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true,
+   "PRESS_AXES": [
+    20.0,
+    1.0,
+    20.0
+   ],
+   "PRESS_AXES_BLACK": [
+    20.0,
+    20.0,
+    20.0
+   ]
+  },
+  "env": "HAND_SCALE=1"
+ },
+ {
+  "id": "E37",
+  "leg": "H4 contact",
+  "parent": "E29",
+  "hypothesis": "A middle press mask [8,1,8] keeps most of E22's gain at less tremor.",
+  "change": "E29 with PRESS_AXES [8,1,8], black [8,8,8]",
+  "ovr": {
+   "REPAIR_ITERS": 2,
+   "PRESS_OVERSHOOT": 0.003,
+   "REACH_SPLIT": true,
+   "PRESS_AXES": [
+    8.0,
+    1.0,
+    8.0
+   ],
+   "PRESS_AXES_BLACK": [
+    8.0,
+    8.0,
+    8.0
+   ]
+  },
+  "env": "HAND_SCALE=1"
+ }
+]

@@ -1,0 +1,59 @@
+"""Publish the lab (plots + results table) to the band site: python lab/publish.py"""
+import csv, json, os, shutil, subprocess
+LAB = os.path.dirname(os.path.abspath(__file__))
+W = os.path.expanduser("~/h3/results/band_site/web")
+os.makedirs(os.path.join(W, "media", "lab"), exist_ok=True)
+for f in os.listdir(os.path.join(LAB, "plots")):
+    shutil.copy2(os.path.join(LAB, "plots", f), os.path.join(W, "media", "lab", f))
+rows = list(csv.DictReader(open(os.path.join(LAB, "results.csv"))))
+E = {e["id"]: e for e in json.load(open(os.path.join(LAB, "experiments.json")))}
+table = [["id", "leg", "change", "key sync %", "Debussy", "Rach", "Chopin", "unfingered / sideways / short / shallow",
+          "wrist dev med/p95", "shake mm", "tremor"]]
+for r in rows:
+    table.append([r["id"], r["leg"], r["change"], r["keysync"], r["debussy"], r["rach"], r["chopin"],
+                  f'{r["unfingered"]} / {r["sideways"]} / {r["short"]} / {r["shallow"]}',
+                  f'{r["wrist_dev_median"]} / {r["wrist_dev_p95"]}', r["jitter_mm"], r["tremor_per_joint_s"]])
+queued = [e for e in E if e not in {r["id"] for r in rows}]
+m = json.load(open(os.path.join(W, "manifest.json")))
+m["sections"] = [s for s in m["sections"] if s["id"] != "lab"]
+ts = "?" if not rows else rows[-1]["started"]
+m["sections"].insert(0, {"id": "lab", "title": "Piano-hand lab: every note, every key (target 100% key sync)",
+  "intro": ("Each experiment solves the whole suite (Clair de Lune -> Rachmaninoff -> Chopin complete, ~1,820 notes) in 10 s windows "
+            "on toymaker + sparky + turbo and scores every note: key at least half down within 0.25 s of its onset. Legs: H0 baseline, "
+            "H1 ragdoll-first (loosen to 100%, then reverse into realism), H2 data-driven real-size hand (FürElise), H3 ablations. "
+            f"Notebook: lab/NOTEBOOK.md in newjordan/h3_band_TFCV (ks-wrist). Last run started {ts}; queued: {', '.join(queued) or 'none'}."),
+  "items": [{"kind": "table", "title": "Results (whole suite)", "rows": table}] +
+           ([{"kind": "video", "src": "media/lab/k_armour.mp4", "title": "Leg K: Blender plate | K1 skin (normal-pass edges) | K20 gauntlet geometry | K21 gauntlet + vambrace geometry",
+              "note": "Single shot kh111, H3 fl2va + Fun ControlNet on the canny of Blender's normal pass; the armour comes from geometry added to the Blender hand, the plate stays grey."}]
+            if os.path.exists(os.path.join(LAB, "plots", "k_armour.mp4")) else []) +
+           ([{"kind": "video", "src": "media/lab/k23_ov125.mp4", "title": "Leg K, K23: the recipe on a second shot (ov125): plate | armoured grey plate | H3"}]
+            if os.path.exists(os.path.join(LAB, "plots", "k23_ov125.mp4")) else []) +
+           [{"kind": "image", "src": f"media/lab/{f}", "title": t} for f, t in (
+               ("keysync_runs.png", "Key sync by experiment"), ("keysync_sections.png", "Key sync per section"),
+               ("misses.png", "Missed notes by kind"), ("tradeoff_wrist.png", "Key sync vs wrist deviation"),
+               ("tradeoff_jitter.png", "Key sync vs wrist shake"), ("tradeoff_tremor.png", "Key sync vs finger tremor"),
+               ("k_handfidelity.png", "Leg K: H3 render vs Blender plate inside the hands, per run"),
+               ("k_frame_vs_hand.png", "Leg K: whole-frame vs hand-region structure"),
+               ("k1cmp.jpg", "Leg K, K1: plate / q60 (beauty-pass canny) / K1 (normal-pass canny): hands match, chrome lost"),
+               ("k2cmp.jpg", "Leg K, K2: plate / K1 / K2 (depth control): chrome kept, hands drift"),
+               ("k3_probe.png", "Leg K, K3 probe: attention mass on the reference image and the text per DiT block"),
+               ("k5cmp.jpg", "Leg K, K5: plate / K1 / K5 (chrome references + beauty canny): look kept, hands drift"),
+               ("k6cmp.jpg", "Leg K, K6: plate / K1 / K6 (normal canny 0.6 + depth): hands match, still skin"),
+               ("k7cmp.jpg", "Leg K, K7: plate / K5 / K7: identical, ref2va ignores the ControlNet"),
+               ("kh111_chrome_f0.png", "Leg K: Blender plate in target materials (--pass chrome), frame 0"),
+               ("k10cmp.jpg", "Leg K, K10: chrome plate / K1 / K10 (K1 + chrome plate): chrome, but hands drift"),
+               ("k11cmp.jpg", "Leg K, K11: chrome plate / K10 / K11 (+ chrome first frame): chrome, hands closer"),
+               ("k12_probe.png", "Leg K, K3/K12 probes: where H3 reads references, the pinned frame and the text"),
+               ("k13cmp.jpg", "Leg K, K13: chrome plate / K11 / K13 (plate held at 0.70): gauntlets, plate backdrop leaks"),
+               ("k14cmp.jpg", "Leg K, K14: chrome plate / K13 / K14 (lockstep anchors)"),
+               ("k15cmp.jpg", "Leg K, K15: chrome plate / K11 / K15 (KV pull x4 on the pinned-frame heads): no change"),
+               ("k17cmp.jpg", "Leg K, K17: dark-cafe chrome plate v2 / K13 / K17"),
+               ("gauntlet_pass.jpg", "Leg K, K-d: gauntlet geometry on the plate (joint rings, cuff, vambrace): normal pass / chrome pass"),
+               ("k20cmp.jpg", "Leg K, K20: gauntlet plate / K1 / K20 (grey plate + gauntlet-geometry canny): steel gauntlets that follow the plate"),
+               ("k19cmp.jpg", "Leg K, K19: gauntlet plate / K20 / K19 (chrome plate + gauntlet canny): look of the plate, hands drift"),
+               ("k21cmp.jpg", "Leg K, K21: plate / K20 / K21 (gauntlet + vambrace geometry in the control): full armour, best motion match"),
+               ("k22cmp.jpg", "Leg K, K22: armoured grey plate / K21 / K22: the recipe for the film"))
+            if os.path.exists(os.path.join(LAB, "plots", f))]})
+json.dump(m, open(os.path.join(W, "manifest.json"), "w"), indent=1)
+subprocess.run(["python3", os.path.expanduser("~/h3/mv_tools/band_site.py")], capture_output=True)
+print("published", len(rows), "rows")

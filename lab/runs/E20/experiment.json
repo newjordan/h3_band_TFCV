@@ -1,0 +1,20 @@
+{
+ "id": "E20",
+ "leg": "H4 contact",
+ "parent": "E05",
+ "hypothesis": "Shallow misses come from the press target weighting height half as much as position.",
+ "change": "E05 + press height weight 1.5 -> 3",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ]
+ },
+ "env": "HAND_SCALE=1"
+}

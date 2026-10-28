@@ -227,14 +227,236 @@ def direct(anim, seed=0):
     return anim
 
 
+
+# ---------------------------------------------------------------- fingers edit: moving cameras that watch the fingers
+# The steadicam on the busier hand is the backbone; the other shots break it up. Every camera follows its hand
+# through a spring (an operator a beat behind, never locked to the bones), floats a few mm, and backs off on its
+# own if the hand it watches would leave the frame. Cuts land on downbeats; opens descending (top-down) from the
+# whole keyboard onto the hands, closes rising off them. The body is hidden throughout: only arms, hands and piano.
+FINGER_SHOTS = {"steady": (5.0, 5.0),        # front three-quarter on one hand, high (the review handcam, smoothed)
+                "steady_low": (1.5, 2.0),    # low from the hand's outer end of the keys: the strikes in profile
+                "both": (1.5, 2.5),          # both hands from the player's side
+                "overhead": (1.2, 1.2),      # straight down on one hand, turning slowly
+                "orbit": (1.5, 1.5),         # round one hand from its outer side to the front
+                "across": (1.2, 1.0),        # from inside the piano (case hidden), looking back at the fingers
+                "pov": (0.8, 0.5)}           # the player's eyes
+SINGLE = ("steady", "steady_low", "overhead", "orbit", "across")
+MAX_SHOT = 14.0           # s: a camera that keeps being drawn runs on at most this long before a cut
+ARM_CLEAR = 0.08          # m the camera keeps from either arm's axis (forearm, upper arm)
+FINGER_DOF = False        # depth of field on the close shots (off: every edge sharp for H3)
+#            azimuth deg (start, end; + = the hand's outer side), elevation deg (start, end), distance m, lens mm, f-stop
+SHOT_GEOM = {"steady": ((18, 32), (42, 40), 0.36, 32.0, 8.0),
+             "steady_low": ((58, 68), (14, 16), 0.34, 35.0, 8.0),
+             "both": ((-8, 8), (50, 46), 0.62, 30.0, None),
+             "orbit": ((72, -8), (28, 40), 0.38, 32.0, 8.0),
+             "across": ((160, 150), (40, 36), 0.40, 32.0, 8.0),
+             "overhead": ((0, 0), (90, 90), 0.42, 30.0, None)}
+
+
+def _track_pts(fr, side):
+    h = fr["hands"][side]
+    return np.array([c[k] for c in h["fingers"] for k in (0, 3)])
+
+
+def _onsets(frames, f0, f1, side):
+    n, prev = 0, set()
+    for i in range(f0, f1):
+        cur = {p for p, who in frames[i].get("press", {}).items() if who[0] == side}
+        n += len(cur - prev)
+        prev = cur
+    return n
+
+
+def _in_frame(pos, look, up, lens, pts, aspect=16 / 9):
+    """Largest |screen coordinate| of pts as a fraction of the half frame (1 = on the edge)."""
+    hx = 18.0 / lens; hy = hx / aspect
+    f = look - pos; f = f / np.linalg.norm(f)
+    r = np.cross(f, up); r = r / np.linalg.norm(r); u = np.cross(r, f)
+    v = pts - pos; z = v @ f
+    if (z <= 0.02).any():
+        return 9.0
+    return float(max(np.abs(v @ r / z).max() / hx, np.abs(v @ u / z).max() / hy))
+
+
+def _seg_dist(p, a, b):
+    ab = b - a
+    t = np.clip(((p - a) * ab).sum(-1) / np.maximum((ab * ab).sum(-1), 1e-9), 0, 1)
+    return np.linalg.norm(p - (a + ab * t[..., None]), axis=-1)
+
+
+def _arm_clear(pos, frames, f0, f1):
+    """Closest the camera comes to either arm (forearm or upper arm axis) over the shot, m."""
+    d = 9.0
+    for i in range(f0, f1, 2):
+        fr, p = frames[i], pos[i - f0]
+        for h, hd in fr["hands"].items():
+            sh = np.array(fr["body"]["shoulders"][h]); el = np.array(hd["elbow"]); wr = np.array(hd["wrist"])
+            d = min(d, float(_seg_dist(p, el, wr)), float(_seg_dist(p, sh, el)))
+    return d
+
+
+def _shot_track(name, frames, f0, f1, side, fps, seed, dscale=1.0, energy=0.3, cx=0.0, swing=0.0):
+    """pos, look, up, lens, fstop, focus per frame for one shot (swing: deg further round to the hand's outer side)."""
+    L = max(f1 - f0, 1)
+    t = np.arange(L) / fps
+    u = np.clip(np.arange(L) / max(L - 1, 1), 0, 1)
+    ease = u * u * (3 - 2 * u)
+    sides = [side] if side else ["L", "R"]
+    raw = np.array([np.mean([_track_pts(frames[i], s).mean(0) for s in sides], axis=0) for i in range(f0, f1)])
+    fq = 0.9 + 0.8 * energy                                 # a busy passage: the operator keeps up a little harder
+    tgt = dynamics.filter_track(raw, fps, fq, 1.0, 0.0)
+    look = dynamics.filter_track(raw, fps, fq * 1.6, 0.95, 0.0) + np.array([0, 0.012, -0.008])
+    up = np.tile([0, 0, 1.0], (L, 1))
+    fl = np.stack([dynamics.drift(t, 0.0025, seed + k) for k in range(3)], 1)     # hand-held float, mm
+    sg = 1.0 if side == "R" else -1.0
+    if name == "pov":
+        eye = np.array([frames[i]["body"]["eye"] for i in range(f0, f1)])
+        fwd = np.array([frames[i]["body"]["cam_fwd"] for i in range(f0, f1)])
+        upv = np.array([frames[i]["body"]["cam_up"] for i in range(f0, f1)])
+        eye = dynamics.filter_track(eye, fps, 1.5, 1.0, 0.0)
+        return eye, eye + fwd, upv, np.full(L, 30.0), [None] * L, raw
+    if name in ("descend", "rise"):                      # top-down: from the whole keyboard onto the hands (or back)
+        k = ease if name == "descend" else 1 - ease
+        spread = max(abs(_track_pts(frames[i], "R").mean(0)[0] - _track_pts(frames[i], "L").mean(0)[0])
+                     for i in range(f0, f1, 4))
+        near = max(0.48, 0.20 + 0.85 * spread)              # m above the keys at the hands: both stay in frame
+        h = max(0.95, near + 0.3) * (1 - k) + near * k
+        x = cx + (tgt[:, 0] - cx) * k
+        y = 0.07 + (tgt[:, 1] - 0.045 - 0.07) * k + 0.10 * (1 - k)    # high up, framed toward the keys so the elbows
+                                                                      # (where the skinned forearm ends) stay below frame
+        yaw = np.radians(14.0) * (1 - k)
+        pos = np.stack([x, y - 0.02, h], 1) + fl
+        lk = np.stack([x, y, np.zeros(L)], 1)
+        up = np.stack([-np.sin(yaw), np.cos(yaw), np.zeros(L)], 1)
+        return pos, lk, up, np.full(L, 30.0), [None] * L, raw
+    a0, e0, d, lens, fstop = SHOT_GEOM[name]
+    az = np.radians(a0[0] + (a0[1] - a0[0]) * ease + swing) * (sg if side else 1.0)
+    el = np.radians(e0[0] + (e0[1] - e0[0]) * ease)
+    if name == "both":
+        spread = np.array([np.linalg.norm(_track_pts(frames[i], "R").mean(0) - _track_pts(frames[i], "L").mean(0))
+                           for i in range(f0, f1)])
+        d = dynamics.filter_track(np.maximum(d, 0.30 + 1.05 * spread)[:, None], fps, 0.5, 1.0, 0.0)[:, 0]
+    d = d * dscale
+    if name == "overhead":
+        rot = np.radians(8.0 * (2 * ease - 1)) * sg
+        off = np.stack([np.zeros(L), np.full(L, -0.05), np.full(L, 1.0)], 1) * np.asarray(d).reshape(-1, 1)
+        up = np.stack([-np.sin(rot), np.cos(rot), np.zeros(L)], 1)
+        look = look - np.array([0, 0.052, 0])          # the whole hand centred, palm and all
+        tgt = tgt - np.array([0, 0.040, 0])
+    else:
+        off = np.stack([np.sin(az) * np.cos(el), -np.cos(az) * np.cos(el), np.sin(el)], 1) * np.asarray(d).reshape(-1, 1)
+    return tgt + off + fl, look, up, np.full(L, lens), [fstop] * L, raw
+
+
+def _best(name, side, frames, f0, f1, fps, seed, cx, out_margin):
+    """The planned camera, backed off until its hand stays in frame; if it would pass through an arm, the same camera
+    swung further round to the hand's outer side, then the steadicam (likewise), then straight down, then both hands."""
+    energy = float(np.mean([frames[i].get("energy", 0.3) for i in range(f0, f1)]))
+    busy = "R" if _onsets(frames, f0, f1, "R") >= _onsets(frames, f0, f1, "L") else "L"
+    if name in ("pov", "descend", "rise"):
+        chain = [(name, 0.0)]
+    elif name == "both":
+        chain = [("both", 0.0), ("overhead", 0.0)]
+    else:
+        chain = [(name, 0.0), (name, 18.0), ("steady", 0.0), ("steady", 25.0), ("overhead", 0.0), ("both", 0.0)]
+    for nm, swing in chain:
+        sd = None if nm in ("both", "pov", "descend", "rise") else (side or busy)
+        pts = [np.vstack([_track_pts(frames[i], s) for s in ([sd] if sd else ["L", "R"])]) for i in range(f0, f1)]
+        for dscale in (1.0, 1.12, 1.25, 1.4, 1.6, 1.8, 2.0, 2.3):
+            tr = _shot_track(nm, frames, f0, f1, sd, fps, seed, dscale, energy, cx, swing)
+            worst = max(_in_frame(tr[0][i], tr[1][i], tr[2][i], tr[3][i], pts[i]) for i in range(0, f1 - f0, 2))
+            if worst <= out_margin or nm == "pov":
+                break
+        clear = _arm_clear(tr[0], frames, f0, f1)
+        if clear >= ARM_CLEAR or nm in ("pov", "descend", "rise"):
+            break
+    return {"f0": f0, "f1": f1, "name": nm, "side": sd, "swing": swing, "track": tr, "dscale": dscale, "worst": worst,
+            "clear": clear}
+
+
+def direct_fingers(anim, seed=0, out_margin=0.92):
+    frames, fps = anim["frames"], anim["fps"]
+    rng = np.random.default_rng(seed)
+    n = len(frames)
+    energy = np.array([f.get("energy", 0.3) for f in frames])
+    db = [int(round(d * fps)) for d in anim.get("downbeats", []) if 0 < d * fps < n]
+    cuts, f0 = [], 0
+    while f0 < n:                                            # ~8 s soft, ~6 s loud, on the next downbeat
+        e = float(energy[f0:min(f0 + 6 * fps, n)].mean())
+        nxt = [d for d in db if d >= f0 + int((8.5 - 3.0 * e) * fps)]
+        f1 = nxt[0] if nxt else n
+        if n - f1 < 4 * fps:
+            f1 = n
+        cuts.append((f0, f1)); f0 = f1
+    shots, last, last_side = [], None, None
+    for k, (f0, f1) in enumerate(cuts):
+        e = float(energy[f0:f1].mean())
+        if k == 0:
+            name, side = "descend", None
+        elif k == len(cuts) - 1:
+            name, side = "rise", None
+        else:
+            names = [m for m in FINGER_SHOTS if m != last or m == "steady"]
+            if last == "steady" and shots[-2:] and all(s[2] == "steady" for s in shots[-2:]):
+                names.remove("steady")                       # three steadicams in a row at most
+            w = np.array([FINGER_SHOTS[m][0] * (1 - e) + FINGER_SHOTS[m][1] * e for m in names])
+            name = names[int(rng.choice(len(names), p=w / w.sum()))]
+            side = None
+            if name in SINGLE:
+                oR, oL = _onsets(frames, f0, f1, "R"), _onsets(frames, f0, f1, "L")
+                busy = "R" if oR >= oL else "L"
+                close = min(oR, oL) >= 0.7 * max(oR, oL, 1)
+                side = ("L" if last_side == "R" else "R") if close and last_side else busy
+            if shots and (name, side) == shots[-1][2:] and f1 - shots[-1][0] > MAX_SHOT * fps:
+                if name in SINGLE:                                # long enough on this hand: cut to the other one
+                    side = "L" if side == "R" else "R"
+                else:
+                    names.remove(name)
+                    w = np.array([FINGER_SHOTS[m][0] * (1 - e) + FINGER_SHOTS[m][1] * e for m in names])
+                    name = names[int(rng.choice(len(names), p=w / w.sum()))]
+                    side = None if name not in SINGLE else ("L" if last_side == "R" else "R")
+        if shots and (name, side) == shots[-1][2:]:            # the same camera again: one continuous shot, no jump cut
+            shots[-1] = (shots[-1][0], f1, name, side)
+        else:
+            shots.append((f0, f1, name, side))
+        last, last_side = name, side or last_side
+    res = []
+    for k, (f0, f1, name, side) in enumerate(shots):
+        r = _best(name, side, frames, f0, f1, fps, seed * 1000 + k, anim["centre_x"], out_margin)
+        if res and (r["name"], r["side"]) == (res[-1]["name"], res[-1]["side"]) and name not in ("descend", "rise"):
+            m = _best(r["name"], r["side"], frames, res[-1]["f0"], f1, fps, seed * 1000 + k, anim["centre_x"], out_margin)
+            if (m["name"], m["side"]) == (r["name"], r["side"]):       # a fallback landed on the camera before it:
+                res[-1] = m                                          # one continuous shot instead of a jump cut
+                continue
+        res.append(r)
+    out = []
+    for r in res:
+        f0, f1, name, side, dscale = r["f0"], r["f1"], r["name"], r["side"], r["dscale"]
+        pos, look, up, lens, fst, focus = r["track"]
+        for i in range(f1 - f0):
+            c = {"pos": [round(float(v), 5) for v in pos[i]], "look": [round(float(v), 5) for v in look[i]],
+                 "up": [round(float(v), 5) for v in up[i]], "lens": float(lens[i]), "shot": name + (f"_{side}" if side else ""),
+                 "hide_head": True, "hide_body": True, "hide_case": name == "across"}
+            if fst[i] and FINGER_DOF:
+                c["fstop"] = float(fst[i]) * dscale ** 2           # backed off: keep the same depth on the hand
+                c["focus"] = [round(float(v), 5) for v in focus[i]]
+            frames[f0 + i]["cam"] = c
+        out.append({"start": f0 / fps, "end": f1 / fps, "shot": name + (f"_{side}" if side else ""), "swing": r["swing"],
+                    "backoff": round(dscale, 2), "in_frame": round(r["worst"], 2), "arm_clear": round(r["clear"], 3)})
+    anim["shots"] = out
+    return anim
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("anim"); ap.add_argument("out")
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--style", default="still", choices=["still", "music"],
-                    help="still: locked-off shots of the keys and hands (default); music: the older energy-driven edit")
+    ap.add_argument("--style", default="still", choices=["still", "music", "fingers"],
+                    help="still: locked-off shots of the keys and hands (default); music: the older energy-driven edit; "
+                         "fingers: moving cameras that follow the fingers (steadicam first)")
     a = ap.parse_args()
-    anim = direct_still(json.load(open(a.anim))) if a.style == "still" else direct(json.load(open(a.anim)), a.seed)
+    anim = json.load(open(a.anim))
+    anim = (direct_still(anim) if a.style == "still" else direct(anim, a.seed) if a.style == "music"
+            else direct_fingers(anim, a.seed))
     json.dump(anim, open(a.out, "w"))
     from collections import Counter
     print(len(anim["shots"]), "shots:", dict(Counter(s["shot"] for s in anim["shots"])))

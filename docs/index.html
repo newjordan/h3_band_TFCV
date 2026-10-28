@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Band Aid</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Band Aid puts the beat in the pixels for MiniMax H3: Blender blockout performers play the real notes, H3 paints the look over them in ComfyUI.">
+<link rel="icon" href="media/icon.png">
+<style>
+/* Layout: the whole page is a ComfyUI canvas. The hero is a node graph; each section is a ComfyUI group; media sits in Save Video nodes. */
+:root {
+  --canvas: #1d1d1d;
+  --grid: #262626;
+  --grid-major: #2d2d2d;
+  --node: #353535;
+  --node-title: #2b2b2b;
+  --node-edge: #151515;
+  --widget: #222222;
+  --widget-line: #555555;
+  --text: #dddddd;
+  --text-dim: #9a9a9a;
+  --text-strong: #ffffff;
+  --code: #151515;
+  --run: #2fe05b;
+  /* ComfyUI link colours by type */
+  --t-image: #64b5f6;
+  --t-latent: #ff9cf9;
+  --t-model: #b39ddb;
+  --t-cond: #ffa931;
+  --t-vae: #ff6e6e;
+  --t-mask: #81c784;
+  --t-control: #6ee7b7;
+  --t-audio: #e8c56b;
+  --t-notes: #c8c8c8;
+  --t-float: #aaaaaa;
+  --t-string: #9a9;
+  /* node title tints (LiteGraph node colours) */
+  --c-blue: #335;
+  --c-green: #353;
+  --c-purple: #535;
+  --c-yellow: #653;
+  --c-red: #533;
+  --c-cyan: #355;
+  --c-pale: #3f5159;
+  --c-brown: #593930;
+  --font-ui: Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background-color: var(--canvas);
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  color: var(--text);
+  font: 15px/1.6 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--t-image); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--run); outline-offset: 2px; }
+code, pre, kbd { font-family: var(--font-mono); font-size: 0.86em; }
+:not(pre) > code { background: var(--widget); border: 1px solid #2f2f2f; border-radius: 4px; padding: 0.05em 0.35em; color: #e6e6e6; }
+pre { background: var(--code); border: 1px solid #2c2c2c; border-radius: 6px; padding: 12px 14px; overflow-x: auto; margin: 0; line-height: 1.5; color: #d6d6d6; }
+pre .c { color: #7d8b7d; }
+h1, h2, h3 { text-wrap: balance; color: var(--text-strong); margin: 0; }
+p { margin: 0; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* top menu bar, like ComfyUI's */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: #171717; }
+.menubar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: #171717; border-bottom: 1px solid #2a2a2a; }
+.menubar .wrap { display: flex; align-items: center; gap: 14px; min-height: 48px; flex-wrap: wrap; padding-block: 6px; }
+.brand { display: flex; align-items: center; gap: 9px; color: var(--text-strong); text-decoration: none; font-weight: 700; letter-spacing: 0.01em; }
+.brand img { width: 26px; height: 26px; border-radius: 5px; }
+.menu { display: flex; gap: 2px; flex-wrap: wrap; margin-left: auto; }
+.menu a { color: var(--text-dim); text-decoration: none; font-size: 13px; padding: 5px 9px; border-radius: 6px; }
+.menu a:hover { color: var(--text); background: #262626; }
+@media (max-width: 520px) { .menu a { padding: 4px 6px; font-size: 12px; } .menubar .wrap { gap: 8px; } }
+.queue { background: #2a2a2a; border: 1px solid #3a3a3a; color: var(--text) !important; }
+
+/* hero */
+.hero { padding-block: 44px 20px; display: grid; gap: 22px; }
+.eyebrow { font: 600 12px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+.hero h1 { font-size: clamp(44px, 7vw, 76px); line-height: 1; letter-spacing: -0.03em; font-weight: 800; }
+.hero h1 span { color: var(--t-image); }
+.lead { font-size: clamp(17px, 2vw, 20px); line-height: 1.5; max-width: 62ch; color: #e4e4e4; }
+.sublead { color: var(--text-dim); max-width: 70ch; }
+.cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--text-strong); background: #353535; border: 1px solid #4a4a4a; }
+.btn.primary { background: #2a4a6a; border-color: #3f789e; }
+.btn:hover { filter: brightness(1.15); }
+
+/* node graph canvas */
+.graph-scroll { scrollbar-color: #555 #1d1d1d; overflow-x: auto; overflow-y: hidden; border-radius: 10px; border: 1px solid #2c2c2c; background: rgb(0 0 0 / 0.18); }
+.graph-sizer { position: relative; }
+.graph { position: absolute; left: 0; top: 0; width: 1480px; height: 640px; transform-origin: 0 0; }
+.graph svg.links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.graph-note { font-size: 13px; color: var(--text-dim); max-width: 90ch; }
+.swipe { display: none; }
+@media (max-width: 720px) { .swipe { display: inline; } }
+
+.node { position: absolute; width: 240px; background: var(--node); border: 1px solid var(--node-edge); border-radius: 8px; box-shadow: 0 6px 18px rgb(0 0 0 / 0.45); font-size: 12.5px; color: #aaa; }
+.node .title { display: flex; align-items: center; gap: 7px; height: 30px; padding: 0 10px; background: var(--node-title); border-radius: 7px 7px 0 0; color: #ccc; font-size: 13px; white-space: nowrap; overflow: hidden; }
+.node .title::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #8a8a8a; flex: none; }
+.node .title b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.node .badge { margin-left: auto; font: 600 9.5px/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: #cfe; background: rgb(0 0 0 / 0.3); border-radius: 4px; padding: 3px 5px; flex: none; }
+.node .badge.blender { color: #f0d0a0; }
+.node .body { padding: 6px 0 9px; display: grid; gap: 3px; }
+.node.running { border-color: var(--run); box-shadow: 0 0 0 2px var(--run), 0 6px 18px rgb(0 0 0 / 0.45); }
+.node.running .title::before { background: var(--run); }
+.io { display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
+.ins, .outs { display: grid; gap: 3px; }
+.slot { position: relative; height: 18px; line-height: 18px; white-space: nowrap; }
+.ins .slot { padding-left: 18px; }
+.outs .slot { padding-right: 18px; text-align: right; }
+.dot { position: absolute; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--c, #9a9); }
+.ins .dot { left: -5px; }
+.outs .dot { right: -5px; }
+.slot em { font-style: normal; color: #777; font-size: 10.5px; margin: 0 4px; }
+.widget { margin: 0 10px; height: 20px; border-radius: 10px; background: var(--widget); border: 1px solid #2e2e2e; display: flex; align-items: center; gap: 6px; padding: 0 9px; font-size: 11.5px; white-space: nowrap; overflow: hidden; }
+.widget .k { color: #999; }
+.widget .v { margin-left: auto; color: #ddd; overflow: hidden; text-overflow: ellipsis; }
+.widget .arr { color: #777; font-size: 9px; }
+.widget.text { height: auto; border-radius: 6px; white-space: normal; padding: 6px 9px; line-height: 1.35; color: #cfcfcf; }
+.widget.readout { height: auto; border-radius: 6px; white-space: normal; padding: 6px 9px; line-height: 1.4; background: #1b1b1b; font-family: var(--font-mono); font-size: 11px; color: #bfe8c8; }
+
+/* groups = sections */
+main { display: grid; gap: 40px; padding-block: 28px 56px; }
+.group { --g: 63 120 158; background: rgb(var(--g) / 0.12); border: 1px solid rgb(var(--g) / 0.5); border-radius: 6px; min-width: 0; scroll-margin-top: 70px; }
+.group > .gtitle { background: rgb(var(--g) / 0.42); padding: 10px 16px; border-radius: 5px 5px 0 0; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.group > .gtitle h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+.group > .gtitle span { font: 12px/1.3 var(--font-mono); color: rgb(255 255 255 / 0.65); }
+.group > .ginner { padding: 20px 16px 22px; display: grid; gap: 22px; min-width: 0; }
+.g-demo { --g: 63 120 158; }
+.g-how { --g: 136 170 136; }
+.g-results { --g: 181 139 42; }
+.g-nodes { --g: 136 136 170; }
+.g-install { --g: 136 170 170; }
+.g-limits { --g: 170 136 136; }
+.g-credits { --g: 176 102 52; }
+.prose { max-width: 70ch; display: grid; gap: 12px; }
+.prose h3 { font-size: 17px; }
+
+/* media nodes */
+.mnode { background: var(--node); border: 1px solid var(--node-edge); border-radius: 8px; box-shadow: 0 6px 18px rgb(0 0 0 / 0.4); min-width: 0; display: flex; flex-direction: column; }
+.mnode > .title { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 6px 12px; border-radius: 7px 7px 0 0; background: var(--node-title); color: #ddd; font-size: 13.5px; flex-wrap: wrap; }
+.mnode > .title::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #8a8a8a; flex: none; }
+.mnode > .title b { font-weight: 600; }
+.src { font: 600 10px/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; border-radius: 4px; padding: 4px 6px; margin-left: auto; }
+.src.h3 { background: #1f3a2a; color: #9ff0b8; }
+.src.blender { background: #3d2f1c; color: #f3cf96; }
+.src.mixed { background: #2b2f3d; color: #c4cff3; }
+.mnode .mbody { padding: 10px 12px 12px; display: grid; gap: 10px; min-width: 0; }
+.mnode video, .mnode img { width: 100%; max-width: 100%; height: auto; display: block; border-radius: 4px; background: #000; }
+.cap { font-size: 13.5px; color: #bdbdbd; max-width: 75ch; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.combo { display: inline-flex; align-items: center; height: 26px; border-radius: 13px; background: var(--widget); border: 1px solid #333; font-size: 12.5px; overflow: hidden; }
+.combo button { appearance: none; background: none; border: 0; color: #888; width: 26px; height: 26px; cursor: pointer; font-size: 10px; }
+.combo button:hover { color: #fff; background: #2c2c2c; }
+.combo .k { color: #999; padding: 0 6px 0 2px; }
+.combo .v { color: #eee; min-width: 92px; text-align: right; padding-right: 4px; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 860px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
+.pending { position: relative; }
+.pending .flag { display: none; }
+.pending.is-pending .flag { display: block; position: absolute; left: 10px; bottom: 10px; font: 600 11px/1 var(--font-mono); background: rgb(0 0 0 / 0.7); color: var(--t-control); padding: 6px 8px; border-radius: 4px; }
+
+/* steps */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; counter-reset: s; }
+@media (max-width: 980px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .steps { grid-template-columns: minmax(0, 1fr); } }
+.steps li { counter-increment: s; background: var(--node); border: 1px solid var(--node-edge); border-radius: 8px; min-width: 0; display: flex; flex-direction: column; }
+.steps li .title { display: flex; gap: 8px; align-items: center; padding: 7px 12px; background: var(--node-title); border-radius: 7px 7px 0 0; font-weight: 600; color: #e8e8e8; font-size: 14px; }
+.steps li .title::before { content: counter(s); font: 700 11px/1 var(--font-mono); width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: rgb(0 0 0 / 0.35); color: #ddd; flex: none; }
+.steps li p { padding: 10px 12px 13px; font-size: 14px; color: #c8c8c8; }
+.where { display: block; margin-top: 6px; font: 11.5px/1.4 var(--font-mono); color: var(--text-dim); }
+
+/* tables */
+.tscroll { overflow-x: auto; min-width: 0; scrollbar-color: #555 #1d1d1d; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #333; vertical-align: top; }
+thead th { font: 600 11px/1.3 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); background: #222; }
+tbody tr:nth-child(odd) { background: rgb(53 53 53 / 0.55); }
+tbody tr:nth-child(even) { background: rgb(34 34 34 / 0.55); }
+td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; color: #fff; font-weight: 600; }
+th.num { text-align: right; }
+.type { display: inline-flex; align-items: center; gap: 5px; font: 11px/1.2 var(--font-mono); color: #cfcfcf; white-space: nowrap; margin: 1px 6px 1px 0; }
+.type::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--c, #9a9); }
+.cls { font: 11.5px/1.3 var(--font-mono); color: var(--text-dim); display: block; }
+.results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 900px) { .results { grid-template-columns: minmax(0, 1fr); } }
+.fine { font-size: 13px; color: var(--text-dim); }
+.limits { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 80ch; }
+.credits { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.credits div { background: rgb(0 0 0 / 0.18); border: 1px solid #3a3a3a; border-radius: 6px; padding: 12px 14px; font-size: 14px; min-width: 0; }
+.credits b { color: #fff; display: block; margin-bottom: 4px; }
+footer { padding-block: 0 40px; color: var(--text-dim); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<header class="menubar">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="media/icon.png" alt="">Band Aid</a>
+    <nav class="menu" aria-label="Sections">
+      <a href="#demo">Demo</a>
+      <a href="#how">How it works</a>
+      <a href="#results">Results</a>
+      <a href="#nodes">Nodes</a>
+      <a href="#install">Install</a>
+      <a class="queue" href="https://github.com/newjordan/h3_band_TFCV">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap" id="top">
+  <section class="hero">
+    <div class="eyebrow">ComfyUI custom nodes · MiniMax H3 · Comfy API + Comfy SDK</div>
+    <h1>Band <span>Aid</span></h1>
+    <p class="lead">MiniMax H3 can paint a pianist or a drummer, but it can't land a key press or a drum hit on the beat from the audio alone. Band Aid animates a simple 3D performer on the real notes, then has H3 paint the final look over it. The timing is in the pixels before H3 starts.</p>
+    <p class="sublead">Built for the Comfy Developer Platform Challenge. Every H3 render is queued through the Comfy API, and the drum blockout runs through the Comfy SDK.</p>
+    <div class="cta">
+      <a class="btn primary" href="#demo">Watch the demo</a>
+      <a class="btn" href="#install">Install the nodes</a>
+      <a class="btn" href="https://github.com/newjordan/h3_band_TFCV">Source on GitHub</a>
+    </div>
+
+    <div class="graph-scroll" id="graphScroll">
+      <div class="graph-sizer" id="graphSizer">
+        <div class="graph" id="graph">
+          <svg class="links" id="links" aria-hidden="true"></svg>
+
+          <div class="node" id="n-notes" style="left:24px; top:28px; width:220px" data-run="1">
+            <div class="title" style="background:var(--c-pale)"><b>Notes</b></div>
+            <div class="body">
+              <div class="io"><div class="ins"></div><div class="outs"><div class="slot">NOTES<span class="dot" data-out="notes" style="--c:var(--t-notes)"></span></div></div></div>
+              <div class="widget"><span class="k">midi</span><span class="v">knights_suite.mid</span></div>
+              <div class="widget"><span class="k">feeling</span><span class="v">knights_suite.feeling.json</span></div>
+            </div>
+          </div>
+
+          <div class="node" id="n-audio" style="left:24px; top:236px; width:220px" data-run="5">
+            <div class="title"><b>Load Audio</b></div>
+            <div class="body">
+              <div class="io"><div class="ins"></div><div class="outs"><div class="slot">AUDIO<span class="dot" data-out="audio" style="--c:var(--t-audio)"></span></div></div></div>
+              <div class="widget"><span class="k">audio</span><span class="v">skeleton_c0_sound.wav</span></div>
+            </div>
+          </div>
+
+          <div class="node" id="n-unet" style="left:24px; top:392px; width:220px" data-run="6">
+            <div class="title" style="background:var(--c-purple)"><b>Load Diffusion Model</b></div>
+            <div class="body">
+              <div class="io"><div class="ins"></div><div class="outs"><div class="slot">MODEL<span class="dot" data-out="unet" style="--c:var(--t-model)"></span></div></div></div>
+              <div class="widget"><span class="k">unet</span><span class="v">minimax_h3_fl2va_pruned_nvfp4</span></div>
+            </div>
+          </div>
+
+          <div class="node" id="n-perf" style="left:290px; top:20px; width:250px" data-run="2">
+            <div class="title" style="background:var(--c-brown)"><b>Blockout Performer</b><span class="badge blender">Blender</span></div>
+            <div class="body">
+              <div class="io">
+                <div class="ins"><div class="slot"><span class="dot" data-in="notes" style="--c:var(--t-notes)"></span>notes</div></div>
+                <div class="outs">
+                  <div class="slot">grey_plate<span class="dot" data-out="plate" style="--c:var(--t-image)"></span></div>
+                  <div class="slot">normal_pass<span class="dot" data-out="normal" style="--c:var(--t-image)"></span></div>
+                  <div class="slot">hand_mask<span class="dot" data-out="mask" style="--c:var(--t-mask)"></span></div>
+                </div>
+              </div>
+              <div class="widget"><span class="arr">◀</span><span class="k">instrument</span><span class="v">piano</span><span class="arr">▶</span></div>
+              <div class="widget"><span class="arr">◀</span><span class="k">hands</span><span class="v">MPFB2 rig</span><span class="arr">▶</span></div>
+              <div class="widget"><span class="arr">◀</span><span class="k">look geometry</span><span class="v">skeleton</span><span class="arr">▶</span></div>
+              <div class="widget"><span class="arr">◀</span><span class="k">camera</span><span class="v">locked-off</span><span class="arr">▶</span></div>
+            </div>
+          </div>
+
+          <div class="node" id="n-i2v" style="left:290px; top:300px; width:250px" data-run="7">
+            <div class="title" style="background:var(--c-yellow)"><b>MiniMax H3 Image To Video</b></div>
+            <div class="body">
+              <div class="io"><div class="ins"></div><div class="outs">
+                <div class="slot">CONDITIONING<span class="dot" data-out="cond" style="--c:var(--t-cond)"></span></div>
+                <div class="slot">LATENT<span class="dot" data-out="avlatent" style="--c:var(--t-latent)"></span></div>
+              </div></div>
+              <div class="widget text">…bare bony skeleton hands … play the keys of a glossy black grand piano. The camera does not move. Each key goes down under the bony skeleton finger that presses it…</div>
+              <div class="widget"><span class="k">size</span><span class="v">1280 × 704</span></div>
+              <div class="widget"><span class="k">length</span><span class="v">124</span></div>
+            </div>
+          </div>
+
+          <div class="node" id="n-edges" style="left:590px; top:20px; width:272px" data-run="3">
+            <div class="title" style="background:var(--c-green)"><b>Blockout Reference Edges</b><span class="badge">Band Aid</span></div>
+            <div class="body">
+              <div class="io">
+                <div class="ins">
+                  <div class="slot"><span class="dot" data-in="normal" style="--c:var(--t-image)"></span>normal_pass</div>
+                  <div class="slot"><span class="dot" data-in="mask" style="--c:var(--t-mask)"></span>mask</div>
+                </div>
+                <div class="outs"><div class="slot">control<span class="dot" data-out="control" style="--c:var(--t-image)"></span></div></div>
+              </div>
+              <div class="widget"><span class="arr">◀</span><span class="k">low</span><span class="v">20</span><span class="arr">▶</span></div>
+              <div class="widget"><span class="arr">◀</span><span class="k">high</span><span class="v">60</span><span class="arr">▶</span></div>
+              <div class="widget"><span class="arr">◀</span><span class="k">blur</span><span class="v">3</span><span class="arr">▶</span></div>
+            </div>
+          </div>
+
+          <div class="node" id="n-enc" style="left:590px; top:226px; width:272px" data-run="4">
+            <div class="title" style="background:var(--c-red)"><b>VAE Encode</b></div>
+            <div class="body">
+              <div class="io">
+                <div class="ins"><div class="slot"><span class="dot" data-in="plate" style="--c:var(--t-image)"></span>pixels</div></div>
+                <div class="outs"><div class="slot">LATENT<span class="dot" data-out="platelat" style="--c:var(--t-latent)"></span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="node" id="n-cn" style="left:590px; top:330px; width:272px" data-run="8">
+            <div class="title" style="background:var(--c-cyan)"><b>H3 Fun ControlNet Apply</b></div>
+            <div class="body">
+              <div class="io">
+                <div class="ins">
+                  <div class="slot"><span class="dot" data-in="unet" style="--c:var(--t-model)"></span>model</div>
+                  <div class="slot"><span class="dot" data-in="control" style="--c:var(--t-image)"></span>control_video</div>
+                </div>
+                <div class="outs"><div class="slot">MODEL<span class="dot" data-out="cnmodel" style="--c:var(--t-model)"></span></div></div>
+              </div>
+              <div class="widget"><span class="k">patch</span><span class="v">fun_controlnet_union_2.0</span></div>
+              <div class="widget"><span class="arr">◀</span><span class="k">strength</span><span class="v">1.00</span><span class="arr">▶</span></div>
+            </div>
+          </div>
+
+          <div class="node" id="n-zone" style="left:910px; top:196px; width:262px" data-run="9">
+            <div class="title" style="background:var(--c-green)"><b>H3 Band Zone Latent</b><span class="badge">Band Aid</span></div>
+            <div class="body">
+              <div class="io">
+                <div class="ins">
+                  <div class="slot"><span class="dot" data-in="avlatent" style="--c:var(--t-latent)"></span>latent</div>
+                  <div class="slot"><span class="dot" data-in="audio" style="--c:var(--t-audio)"></span>audio</div>
+                  <div class="slot"><span class="dot" data-in="platelat" style="--c:var(--t-latent)"></span>video_latent</div>
+                </div>
+                <div class="outs"><div class="slot">LATENT<span class="dot" data-out="zonelat" style="--c:var(--t-latent)"></span></div></div>
+              </div>
+              <div class="widget"><span class="arr">◀</span><span class="k">video_denoise</span><span class="v">0.992</span><span class="arr">▶</span></div>
+              <div class="widget"><span class="arr">◀</span><span class="k">audio_denoise</span><span class="v">0.00</span><span class="arr">▶</span></div>
+            </div>
+          </div>
+
+          <div class="node" id="n-samp" style="left:910px; top:420px; width:262px" data-run="10">
+            <div class="title" style="background:var(--c-blue)"><b>H3 Sample + Decode</b></div>
+            <div class="body">
+              <div class="io">
+                <div class="ins">
+                  <div class="slot"><span class="dot" data-in="cnmodel" style="--c:var(--t-model)"></span>model</div>
+                  <div class="slot"><span class="dot" data-in="cond" style="--c:var(--t-cond)"></span>conditioning</div>
+                  <div class="slot"><span class="dot" data-in="zonelat" style="--c:var(--t-latent)"></span>latent</div>
+                </div>
+                <div class="outs">
+                  <div class="slot">IMAGE<span class="dot" data-out="render" style="--c:var(--t-image)"></span></div>
+                  <div class="slot">AUDIO<span class="dot" data-out="h3audio" style="--c:var(--t-audio)"></span></div>
+                </div>
+              </div>
+              <div class="widget"><span class="k">sampler</span><span class="v">res_multistep · beta · 20</span></div>
+              <div class="widget"><span class="arr">◀</span><span class="k">seed</span><span class="v">7</span><span class="arr">▶</span></div>
+            </div>
+          </div>
+
+          <div class="node" id="n-lock" style="left:1210px; top:20px; width:250px" data-run="11">
+            <div class="title" style="background:var(--c-green)"><b>Blockout Lock Check</b><span class="badge">Band Aid</span></div>
+            <div class="body">
+              <div class="io">
+                <div class="ins">
+                  <div class="slot"><span class="dot" data-in="render" style="--c:var(--t-image)"></span>render</div>
+                  <div class="slot"><span class="dot" data-in="normal" style="--c:var(--t-image)"></span>normal_pass</div>
+                  <div class="slot"><span class="dot" data-in="mask" style="--c:var(--t-mask)"></span>mask</div>
+                </div>
+                <div class="outs">
+                  <div class="slot">lock_recall<span class="dot" style="--c:var(--t-float)"></span></div>
+                  <div class="slot">lock_precision<span class="dot" style="--c:var(--t-float)"></span></div>
+                  <div class="slot">report<span class="dot" style="--c:var(--t-string)"></span></div>
+                  <div class="slot">overlay<span class="dot" style="--c:var(--t-image)"></span></div>
+                </div>
+              </div>
+              <div class="widget"><span class="arr">◀</span><span class="k">tolerance_px</span><span class="v">3.0</span><span class="arr">▶</span></div>
+              <div class="widget readout">edges within 3 px, hand mask<br>Blender plate (ceiling) 0.97<br>H3 skeleton clips 0.78–0.86</div>
+            </div>
+          </div>
+
+          <div class="node" id="n-save" style="left:1210px; top:400px; width:250px" data-run="12">
+            <div class="title"><b>Save Video</b></div>
+            <div class="body">
+              <div class="io">
+                <div class="ins">
+                  <div class="slot"><span class="dot" data-in="render" style="--c:var(--t-image)"></span>images</div>
+                  <div class="slot"><span class="dot" data-in="h3audio" style="--c:var(--t-audio)"></span>audio</div>
+                </div>
+                <div class="outs"></div>
+              </div>
+              <div class="widget"><span class="k">filename_prefix</span><span class="v">band_aid/skeleton</span></div>
+              <div class="widget"><span class="arr">◀</span><span class="k">format</span><span class="v">mp4</span><span class="arr">▶</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="graph-note">The pipeline as a ComfyUI graph, simplified from <code>examples/workflows/band_aid_h3_lock_api.json</code> (24 nodes). Nodes marked <b>Band Aid</b> ship in this package. The piano performer renders in Blender from the repo's <code>blockout/</code> scripts; the drum performer is a ComfyUI node. <span class="swipe">Scroll the graph sideways.</span></p>
+  </section>
+</div>
+
+<main class="wrap">
+
+  <section class="group g-demo" id="demo">
+    <div class="gtitle"><h2>Demo</h2><span>H3 renders are labelled H3. Blender renders are labelled Blender.</span></div>
+    <div class="ginner">
+
+      <div class="mnode">
+        <div class="title"><b>Five hand looks, one blockout</b><span class="src h3">H3 render</span></div>
+        <div class="mbody">
+          <div class="controls">
+            <div class="combo" data-combo="cycle-shot"><button type="button" aria-label="Previous shot">◀</button><span class="k">shot</span><span class="v" aria-live="polite">kh111</span><button type="button" aria-label="Next shot">▶</button></div>
+          </div>
+          <video id="v-cycle" autoplay muted loop playsinline controls preload="metadata" poster="media/kh111_cycle_poster.jpg" src="media/kh111_cycle.mp4"></video>
+          <p class="cap">Skeleton, monster, robot, kitty-cat paw and real hands, switching every 1.7 s. Under every look is the same Blender blockout motion; H3 paints each look from the control's geometry and the prompt.</p>
+        </div>
+      </div>
+
+      <div class="mnode">
+        <div class="title"><b>Inside one render</b><span class="src mixed">Blender | Blender | H3</span></div>
+        <div class="mbody">
+          <div class="controls">
+            <div class="combo" data-combo="trio-shot"><button type="button" aria-label="Previous shot">◀</button><span class="k">shot</span><span class="v" aria-live="polite">kh111</span><button type="button" aria-label="Next shot">▶</button></div>
+            <div class="combo" data-combo="trio-look"><button type="button" aria-label="Previous look">◀</button><span class="k">look</span><span class="v" aria-live="polite">skeleton</span><button type="button" aria-label="Next look">▶</button></div>
+          </div>
+          <video id="v-trio" autoplay muted loop playsinline controls preload="metadata" src="media/kh111_skeleton_trio.mp4"></video>
+          <p class="cap">Left: the Blender grey plate with the look's geometry (H3's video stream, at video_strength 0.88). Middle: the ControlNet input, Canny edges of Blender's normal pass. Right: the H3 render.</p>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="mnode">
+          <div class="title"><b>All five looks, shot kh111</b><span class="src mixed">H3 + Blender plate</span></div>
+          <div class="mbody">
+            <video muted loop playsinline controls preload="metadata" poster="media/kh111_grid_still.jpg" src="media/kh111_grid.mp4"></video>
+            <p class="cap">Five H3 renders and, bottom right, the Blender grey plate they all follow.</p>
+          </div>
+        </div>
+        <div class="mnode">
+          <div class="title"><b>All five looks, shot ov125</b><span class="src mixed">H3 + Blender plate</span></div>
+          <div class="mbody">
+            <video muted loop playsinline controls preload="metadata" poster="media/ov125_grid_still.jpg" src="media/ov125_grid.mp4"></video>
+            <p class="cap">Same recipe on a second shot of the same take.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mnode">
+        <div class="title"><b>The blockout: take C19, Rachmaninoff</b><span class="src blender">Blender blockout, not H3</span></div>
+        <div class="mbody">
+          <video controls playsinline preload="metadata" poster="media/piano_c19_rach_blender_poster.jpg" src="media/piano_c19_rach_blender.mp4"></video>
+          <p class="cap">A 25 s excerpt of the whole-suite performance, rendered in Blender. The hands are MPFB2 rigged hands solved from the notes. The sound is what those hands play on the simulated piano action, not the MIDI file. This is the motion H3 paints over.</p>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="mnode" id="skeleton-slot">
+          <div class="title"><b>Skeleton hands play the piano</b><span class="src h3">H3 render</span></div>
+          <div class="mbody">
+            <div style="position:relative">
+              <video controls playsinline preload="metadata" poster="media/skeleton_piano_poster.jpg"><source src="media/skeleton_piano.mp4" type="video/mp4"></video>
+            </div>
+            <p class="cap">The C19 take, Rachmaninoff opening, one 124-frame H3 clip (5.2 s) from a locked-off overhead camera. Left: the Blender reference. Middle: H3 with the skeleton look. Right: Blockout Lock Check, our reference edges in red over H3. 80% of the reference edges have an H3 edge within the scale-matched tolerance (median frame; a Blender render of the same geometry scores 97%). Arms and wrist bones lock; fast fingers can leave a faint ghost. Sound: the hands on the working piano.</p>
+          </div>
+        </div>
+        <div class="mnode">
+          <div class="title"><b>Drums, by stepupgaming</b><span class="src mixed">Blender blockout + H3</span></div>
+          <div class="mbody">
+            <img src="drums/snare_hit_frames.jpg" alt="Frames around a snare hit: H3 over the drum blockout and H3 from audio alone" loading="lazy">
+            <img src="drums/frames_at_hits.jpg" alt="Frames at each big hit in the window: the blockout and the H3 takes" loading="lazy">
+            <p class="cap">One snare backbeat, frame by frame, and the frame at each big hit. Top row: the grey drum blockout. Over the blockout, the stick comes down on the hit. From the audio alone, the stick is mid-stroke at the hit.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group g-how" id="how">
+    <div class="gtitle"><h2>How it works</h2><span>notes → motion → Blender passes → edges → H3 → lock check</span></div>
+    <div class="ginner">
+      <ol class="steps">
+        <li><div class="title">Notes to motion</div><p>The piano solver picks a fingering and moves rigged MPFB2 hands so each finger reaches its key on the note. The drum solver does the same for a drummer from drum onsets or a GM drum MIDI.<span class="where">blockout/piano.py · blockout/drums.py</span></p></li>
+        <li><div class="title">Judge on a working piano</div><p>The animated hands play a simulated grand action: weighted keys, a hammer with let-off, dampers and pedal. A key sounds only when a finger really presses it, so the audio is what the hands play.<span class="where">blockout/action.py</span></p></li>
+        <li><div class="title">Render the reference</div><p>Blender renders three passes of the same motion: a grey plate with the look's geometry, a normal pass, and a hand mask.<span class="where">blockout/blender_piano.py · blender_drums.py</span></p></li>
+        <li><div class="title">Edges from the normal pass</div><p>Canny 20/60 after a 3 px blur. The normal pass has an edge at every finger and joint. A grey beauty pass has almost none on the fingers.<span class="where">Blockout Reference Edges</span></p></li>
+        <li><div class="title">H3 paints the look</div><p>fl2va mode B: the grey plate in the video stream at video_strength 0.88, H3 Fun ControlNet Union 2.0 at strength 1.0 on the edges, and the stem frozen in H3's audio stream. The prompt names the look.<span class="where">H3 Band Zone Latent · h3band/h3_run.py → /prompt</span></p></li>
+        <li><div class="title">Measure the lock</div><p>For each reference edge inside the hand mask, is there an H3 edge within 3 px? The node also writes an overlay with the reference edges in red over the render.<span class="where">Blockout Lock Check</span></p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="group g-results" id="results">
+    <div class="gtitle"><h2>Results</h2><span>measured, not estimated</span></div>
+    <div class="ginner">
+      <div class="results">
+        <div class="mnode">
+          <div class="title"><b>Piano take C19 on the working piano</b><span class="src blender">Blender blockout</span></div>
+          <div class="mbody">
+            <div class="tscroll">
+              <table>
+                <thead><tr><th>Measure</th><th class="num">Realistic judge</th><th class="num">Strict judge</th></tr></thead>
+                <tbody>
+                  <tr><td>Written notes that sound</td><td class="num">95.0%</td><td class="num">94.6%</td></tr>
+                  <tr><td>Wrong keys sounded</td><td class="num">398</td><td class="num">652</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="fine">Realistic judge: keys with 0.2 kg action mass. Strict judge: weightless keys, so any brush of a finger sounds. Timing: 90% within 35 ms. 22 notes are unplayable as transcribed.</p>
+          </div>
+        </div>
+        <div class="mnode">
+          <div class="title"><b>How well H3 holds the blockout</b><span class="src h3">H3 render</span></div>
+          <div class="mbody">
+            <div class="tscroll">
+              <table>
+                <thead><tr><th>Render</th><th class="num">Edges within 3 px</th></tr></thead>
+                <tbody>
+                  <tr><td>Blender grey plate (the ceiling)</td><td class="num">97%</td></tr>
+                  <tr><td>H3 skeleton hands, three clips</td><td class="num">78–86%</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="fine">Share of the reference geometry's edges with an H3 edge within 3 px, inside the hand mask. Arms and wrists lock. Fast fingers ghost: H3 sometimes draws a faint finger where it was a frame or two earlier. This is the open problem.</p>
+          </div>
+        </div>
+      </div>
+      <p class="fine">Drums: from the audio alone, H3 paints a drummer whose sticks don't follow the hits. Over the drum blockout the sticks keep the blockout's timing. The README has stepupgaming's stick-sync table.</p>
+    </div>
+  </section>
+
+  <section class="group g-nodes" id="nodes">
+    <div class="gtitle"><h2>Nodes</h2><span>category: Band Aid, h3band</span></div>
+    <div class="ginner">
+      <div class="tscroll">
+        <table>
+          <thead><tr><th>Node</th><th>Inputs</th><th>Outputs</th><th>Needs</th></tr></thead>
+          <tbody>
+            <tr><td><b>Blockout Reference Edges</b><span class="cls">BandAidBlockoutReferenceEdges</span></td>
+              <td><span class="type" style="--c:var(--t-image)">normal_pass IMAGE</span><span class="type" style="--c:var(--t-mask)">mask MASK (optional)</span></td>
+              <td><span class="type" style="--c:var(--t-image)">control IMAGE</span></td><td>opencv-python</td></tr>
+            <tr><td><b>Blockout Lock Check</b><span class="cls">BandAidBlockoutLockCheck</span></td>
+              <td><span class="type" style="--c:var(--t-image)">render IMAGE</span><span class="type" style="--c:var(--t-image)">normal_pass IMAGE</span><span class="type" style="--c:var(--t-mask)">mask MASK</span></td>
+              <td><span class="type" style="--c:var(--t-float)">lock_recall FLOAT</span><span class="type" style="--c:var(--t-float)">lock_precision FLOAT</span><span class="type" style="--c:var(--t-string)">report STRING</span><span class="type" style="--c:var(--t-image)">overlay IMAGE</span></td><td>opencv-python</td></tr>
+            <tr><td><b>H3 Band Zone Latent</b><span class="cls">H3BandZoneLatent</span></td>
+              <td><span class="type" style="--c:var(--t-latent)">latent LATENT</span><span class="type" style="--c:var(--t-vae)">audio_vae VAE</span><span class="type" style="--c:var(--t-audio)">audio AUDIO</span><span class="type" style="--c:var(--t-latent)">video_latent LATENT (optional)</span></td>
+              <td><span class="type" style="--c:var(--t-latent)">LATENT</span></td><td>ComfyUI with MiniMax H3</td></tr>
+            <tr><td><b>H3 Band Drum Events</b><span class="cls">H3BandDrumEvents</span></td>
+              <td><span class="type" style="--c:var(--t-audio)">audio AUDIO</span></td>
+              <td><span class="type">DRUM_HITS</span></td><td>soundfile, scipy</td></tr>
+            <tr><td><b>H3 Band Drum Hits (MIDI)</b><span class="cls">H3BandDrumHitsMIDI</span></td>
+              <td>a GM drum <code>.mid</code> in the input folder</td>
+              <td><span class="type">DRUM_HITS</span></td><td></td></tr>
+            <tr><td><b>H3 Band Drum Blockout</b><span class="cls">H3BandDrumBlockout</span></td>
+              <td><span class="type">hits DRUM_HITS</span></td>
+              <td><span class="type" style="--c:var(--t-image)">IMAGE</span></td><td>Blender</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fine">Each node module loads on its own. A ComfyUI without MiniMax H3 still gets the lock and drum nodes.</p>
+    </div>
+  </section>
+
+  <section class="group g-install" id="install">
+    <div class="gtitle"><h2>Install and run</h2><span>ComfyUI custom node · Comfy API · Comfy SDK</span></div>
+    <div class="ginner">
+      <div class="prose">
+        <h3>Install into ComfyUI</h3>
+        <p>The nodes import the repo's <code>blockout/</code> and <code>h3band/</code> code, so the whole repo is the node package.</p>
+      </div>
+      <pre><span class="c"># in ComfyUI/custom_nodes</span>
+git clone https://github.com/newjordan/h3_band_TFCV band-aid
+<span class="c"># in ComfyUI's Python environment</span>
+pip install -r band-aid/requirements.txt
+<span class="c"># Blender for the blockout renders (default: blender on PATH)</span>
+export H3B_BLENDER=/path/to/blender</pre>
+      <div class="prose">
+        <p>H3 renders need a ComfyUI with MiniMax H3 and the H3 models from <code>Comfy-Org/MiniMax-H3</code>: <code>minimax_h3_fl2va_pruned_nvfp4</code> and the Fun ControlNet Union 2.0 model patch.</p>
+        <h3>Queue the lock graph through the Comfy API</h3>
+        <p><code>h3band/h3_run.py</code> builds the API-format graph from a small job file and posts it to <code>/prompt</code>. The plate, control and audio paths are relative to ComfyUI's input folder.</p>
+      </div>
+      <pre>export H3B_COMFY_URL=http://127.0.0.1:8188
+python h3band/h3_run.py examples/workflows/band_aid_skeleton_job.json --dump   <span class="c"># print the graph</span>
+python h3band/h3_run.py examples/workflows/band_aid_skeleton_job.json          <span class="c"># queue it</span>
+
+<span class="c"># or post the exported graph yourself</span>
+curl -X POST $H3B_COMFY_URL/prompt -H 'Content-Type: application/json' \
+  -d "{\"prompt\": $(cat examples/workflows/band_aid_h3_lock_api.json)}"</pre>
+      <div class="prose">
+        <h3>Drive the drum blockout with the Comfy SDK</h3>
+      </div>
+      <pre>pip install -r requirements-sdk.txt
+comfy-api-proxy run --comfyui http://127.0.0.1:8188 --port 8189 &amp;
+cd h3band
+python sdk_drum_blockout.py ../examples/drums/rock_groove.mid ../work/groove.mp4 --audio ../work/drums.wav
+python sdk_drum_h3.py ../work/C.mp4 --midi ../examples/drums/rock_groove.mid --audio ../work/drums.wav --blockout --denoise 0.8</pre>
+    </div>
+  </section>
+
+  <section class="group g-limits" id="limits">
+    <div class="gtitle"><h2>Limitations</h2><span>what doesn't work yet</span></div>
+    <div class="ginner">
+      <ul class="limits">
+        <li>Fast fingers ghost in H3. A finger is narrower than one 32 px H3 token, and one latent frame spans 4 video frames, so a quick strike can fall inside a single latent frame.</li>
+        <li>22 notes in the suite are unplayable as transcribed.</li>
+        <li>The piano blockout renders through the Blender scripts in <code>blockout/</code>; it is not a ComfyUI node yet. The drum blockout is.</li>
+        <li>Drums: the timing of the strokes carries over to H3, but not which drum each stroke lands on.</li>
+        <li>One H3 clip is 124 frames. Longer takes are chained clips, each starting from the last frame of the one before.</li>
+        <li>The tightest audio lock needs per-token noise masks on nested AV latents (upstream ComfyUI PR #15375). Without it the Zone Latent falls back to inpaint-style blending.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="group g-credits" id="credits">
+    <div class="gtitle"><h2>Credits</h2></div>
+    <div class="ginner">
+      <div class="credits">
+        <div><b>newjordan</b>Piano blockout, working piano, hand looks, lock nodes, Comfy API runner.</div>
+        <div><b>stepupgaming</b>Drum blockout, drum nodes, Comfy SDK drivers, H3 over the drum blockout and the stick-sync scorer.</div>
+        <div><b>Models and tools</b>MiniMax H3 and the Fun ControlNet Union 2.0 patch (Comfy-Org/MiniMax-H3), ComfyUI, the Comfy SDK, Blender.</div>
+        <div><b>Assets</b>MPFB2 hands (CC0 meshes, GPL-3.0 code). Salamander Grand Piano V3 by Alexander Holm (CC-BY 3.0). MIDI from the Mutopia Project.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">Band Aid, MIT licensed. Example MIDI files carry their own licenses. <a href="https://github.com/newjordan/h3_band_TFCV">github.com/newjordan/h3_band_TFCV</a></footer>
+
+<script>
+(function () {
+  "use strict";
+  var graph = document.getElementById("graph");
+  var sizer = document.getElementById("graphSizer");
+  var scroller = document.getElementById("graphScroll");
+  var svg = document.getElementById("links");
+  var GW = 1480, GH = 640;
+
+  function center(dot) {
+    var x = dot.offsetLeft + dot.offsetWidth / 2, y = dot.offsetTop + dot.offsetHeight / 2;
+    var el = dot.offsetParent;
+    while (el && el !== graph) { x += el.offsetLeft; y += el.offsetTop; el = el.offsetParent; }
+    return [x, y];
+  }
+  function drawLinks() {
+    var ns = "http://www.w3.org/2000/svg", out = "";
+    graph.querySelectorAll(".dot[data-out]").forEach(function (o) {
+      var key = o.getAttribute("data-out");
+      var col = getComputedStyle(o).backgroundColor;
+      var a = center(o);
+      graph.querySelectorAll('.dot[data-in="' + key + '"]').forEach(function (i) {
+        var b = center(i), d = Math.max(Math.abs(b[0] - a[0]) * 0.5, 40);
+        var p = "M" + a[0] + "," + a[1] + " C" + (a[0] + d) + "," + a[1] + " " + (b[0] - d) + "," + b[1] + " " + b[0] + "," + b[1];
+        var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+        out += '<path d="' + p + '" fill="none" stroke="rgba(0,0,0,0.55)" stroke-width="6"/>' +
+               '<path d="' + p + '" fill="none" stroke="' + col + '" stroke-width="3"/>' +
+               '<circle cx="' + mx + '" cy="' + my + '" r="4.5" fill="' + col + '" stroke="rgba(0,0,0,0.6)" stroke-width="1.5"/>';
+      });
+    });
+    svg.innerHTML = out;
+  }
+  function fit() {
+    var w = scroller.clientWidth;
+    var s = Math.max(Math.min(w / GW, 1), 0.56);
+    graph.style.transform = "scale(" + s + ")";
+    sizer.style.width = (GW * s) + "px";
+    sizer.style.height = (GH * s) + "px";
+  }
+  fit(); drawLinks();
+  window.addEventListener("resize", fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawLinks);
+
+  // executing outline, in queue order, like ComfyUI while a prompt runs
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var nodes = Array.prototype.slice.call(graph.querySelectorAll(".node[data-run]"))
+    .sort(function (a, b) { return a.getAttribute("data-run") - b.getAttribute("data-run"); });
+  if (!reduce && nodes.length) {
+    var k = 0;
+    nodes[0].classList.add("running");
+    setInterval(function () {
+      nodes[k].classList.remove("running");
+      k = (k + 1) % nodes.length;
+      nodes[k].classList.add("running");
+    }, 1100);
+  }
+
+  // combo widgets
+  var state = { "cycle-shot": 0, "trio-shot": 0, "trio-look": 0 };
+  var opts = {
+    "cycle-shot": ["kh111", "ov125"],
+    "trio-shot": ["kh111", "ov125"],
+    "trio-look": ["skeleton", "monster", "robot", "kitty-cat paw", "real hands"]
+  };
+  var files = { "skeleton": "skeleton", "monster": "monster", "robot": "robot", "kitty-cat paw": "paw", "real hands": "real" };
+  function apply(name) {
+    if (name === "cycle-shot") {
+      var v = document.getElementById("v-cycle"), sh = opts["cycle-shot"][state["cycle-shot"]];
+      v.poster = "media/" + sh + "_cycle_poster.jpg"; v.src = "media/" + sh + "_cycle.mp4"; v.play().catch(function () {});
+    } else {
+      var t = document.getElementById("v-trio");
+      t.src = "media/" + opts["trio-shot"][state["trio-shot"]] + "_" + files[opts["trio-look"][state["trio-look"]]] + "_trio.mp4";
+      t.play().catch(function () {});
+    }
+  }
+  document.querySelectorAll(".combo[data-combo]").forEach(function (c) {
+    var name = c.getAttribute("data-combo"), btns = c.querySelectorAll("button"), val = c.querySelector(".v");
+    function step(dir) {
+      var n = opts[name].length;
+      state[name] = (state[name] + dir + n) % n;
+      val.textContent = opts[name][state[name]];
+      apply(name);
+    }
+    btns[0].addEventListener("click", function () { step(-1); });
+    btns[1].addEventListener("click", function () { step(1); });
+  });
+
+  // the skeleton clip slot: keep the placeholder poster until docs/media/skeleton_piano.mp4 exists
+  var slot = document.getElementById("skeleton-slot");
+  var src = slot.querySelector("source");
+  src.addEventListener("error", function () { slot.classList.add("is-pending"); });
+  var probe = slot.querySelector("video");
+  probe.addEventListener("loadedmetadata", function () { slot.classList.remove("is-pending"); });
+})();
+</script>
+</body>
+</html>

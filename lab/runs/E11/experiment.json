@@ -1,0 +1,16 @@
+{
+ "id": "E11",
+ "leg": "H1 ragdoll-first",
+ "parent": "E10",
+ "hypothesis": "Reverse ladder 1: finger smoothing back on.",
+ "change": "ragdoll (E10 settings, current code) + finger joint smoothing",
+ "ovr": {
+  "WRIST_LAMBDA": 0,
+  "WRIST_W": 0,
+  "EASE_MAX": 0.1,
+  "EASE_PRIOR": 0.05,
+  "FINGER_REFINE": true,
+  "WRIST_PASSES": 1
+ },
+ "env": "HAND_SCALE=0.7284"
+}

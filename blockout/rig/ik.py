@@ -14,6 +14,12 @@ import math
 import numpy as np
 
 from .skeleton import FINGERS, METACARPAL, Skeleton, _rot, D
+import os as _os
+
+# RIG_THUMB_EFF_US="0.85,1.0": the thumb's pad (effector) is its lowest skin over only these shares of its end bone, so a
+# pressing thumb presses with its tip and its wide base (half-width ~13.5 mm at u 0.6, wider than a key) lifts off the
+# neighbouring keys. Unset: (0.55, 0.7, 0.85, 1.0) like the fingers (V3).
+THUMB_EFF_US = tuple(float(v) for v in _os.environ["RIG_THUMB_EFF_US"].split(",")) if _os.environ.get("RIG_THUMB_EFF_US") else None
 
 
 class Chain:
@@ -78,7 +84,8 @@ class Chain:
     def effector(self, pts, rots):
         """The fingertip pad that meets the key: the lowest skin of the end of the finger (soft minimum over the
         last part of the end bone, so it slides smoothly along the pad as the finger tilts)."""
-        P = [self.support(pts, rots, 2, u) for u in (0.55, 0.7, 0.85, 1.0)]
+        us = THUMB_EFF_US if (THUMB_EFF_US and self.f == 1) else (0.55, 0.7, 0.85, 1.0)
+        P = [self.support(pts, rots, 2, u) for u in us]
         z = np.array([p[2] for p in P])
         w = np.exp(-(z - z.min()) / 0.0015)
         return (w[:, None] * np.array(P)).sum(0) / w.sum()

@@ -1,0 +1,27 @@
+[project]
+name = "h3-band-aid"
+version = "0.1.0"
+description = "Band Aid: timing for MiniMax H3 music videos. Blender blockout performers (piano hands solved from the notes, a drummer from drum onsets) give H3 the key presses and drum hits on the beat; H3 paints the look over them through its Fun ControlNet, and a lock check measures how well it held."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "soundfile",
+    "opencv-python-headless",
+]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Environment :: GPU :: NVIDIA CUDA",
+]
+
+[project.urls]
+Repository = "https://github.com/newjordan/h3_band_TFCV"
+Documentation = "https://github.com/newjordan/h3_band_TFCV#readme"
+"Bug Tracker" = "https://github.com/newjordan/h3_band_TFCV/issues"
+
+[tool.comfy]
+PublisherId = "newjordan"
+DisplayName = "Band Aid"
+Icon = "https://raw.githubusercontent.com/newjordan/h3_band_TFCV/main/docs/media/icon.png"

@@ -1,0 +1,23 @@
+{
+ "id": "E29",
+ "leg": "H5 reach",
+ "parent": "E26",
+ "hypothesis": "Over-wide chords are physically impossible for one hand; redistributing their inner-edge notes to the other hand when it can take them (REACH_SPLIT) removes those sideways misses.",
+ "change": "E26 + REACH_SPLIT",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "REPAIR_ITERS": 2,
+  "PRESS_OVERSHOOT": 0.003,
+  "REACH_SPLIT": true
+ },
+ "env": "HAND_SCALE=1"
+}

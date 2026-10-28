@@ -1,0 +1,23 @@
+{
+ "id": "E36",
+ "leg": "H4 contact",
+ "parent": "E29",
+ "hypothesis": "The hard press mask (E22: 95.3% alone) adds to the E29 stack (repair + overshoot + REACH_SPLIT).",
+ "change": "E29 with PRESS_AXES [20,1,20], black [20,20,20]",
+ "ovr": {
+  "REPAIR_ITERS": 2,
+  "PRESS_OVERSHOOT": 0.003,
+  "REACH_SPLIT": true,
+  "PRESS_AXES": [
+   20.0,
+   1.0,
+   20.0
+  ],
+  "PRESS_AXES_BLACK": [
+   20.0,
+   20.0,
+   20.0
+  ]
+ },
+ "env": "HAND_SCALE=1"
+}

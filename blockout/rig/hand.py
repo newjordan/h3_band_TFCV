@@ -21,6 +21,9 @@ import numpy as np
 from .ik import Chain
 from .skeleton import Skeleton, _rot, D
 
+# fingers 2-5 rest rounded (K, default since 2026-10-17); env RIG_CURL replaces it, RIG_CURL=none gives v18/H
+RIG_CURL = '{"mcp": 20, "pip": 45, "kdip": 0.67}'
+
 
 def _furelise_cal():
     """blockout/rig/furelise_cal.json (blockout.furelise.calibrate), unless RIG_NO_FURELISE=1."""
@@ -63,6 +66,9 @@ class HandRig:
                                                               "comfort.json" if "comfort" in _cal_parts() else "comfort_mediapipe.json")
         if os.path.exists(cpath):                     # relaxed pose calibrated to measured pianists (calibrate.py)
             q = np.clip(np.array(json.load(open(cpath))[side]), self.lo, self.hi)
+            tpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "comfort_thumbx.json")
+            if self.sk.thumb_axis == "x" and os.path.exists(tpath):    # the thumb's relaxed pose on its own curl axis
+                q[:self.nq[0]] = np.clip(json.load(open(tpath))[side][:self.nq[0]], self.lo[:self.nq[0]], self.hi[:self.nq[0]])
             if len(q) == len(self.q_rest):
                 self.q_rest = q
                 for ch, a, b in zip(self.chains, self.sl[:-1], self.sl[1:]):
@@ -73,6 +79,17 @@ class HandRig:
         if cal and "k_dip" in cal and "kdip" in _cal_parts():                 # measured on concert pianists (FürElise): the end joint stays
             for ch, k in zip(self.chains[1:], cal["k_dip"]):    # nearly straight while the PIP bends
                 ch.k_dip = max(float(k), 1e-3)
+        curl = os.environ.get("RIG_CURL", RIG_CURL)
+        if curl and curl != "none":   # a rounded playing hand for fingers 2-5: {"mcp": deg, "pip": deg, "kdip": DIP per PIP}
+            cc = json.loads(curl)
+            for ch, a in zip(self.chains[1:], self.sl[1:-1]):
+                for i, d in enumerate(ch.dofs):
+                    if d[1] != "flex":
+                        continue
+                    kind = self.sk.kind[d[0]]
+                    v = cc["mcp"] if kind in ("mcp", "mcp_edge") else cc["pip"] if kind == "pip" else cc["pip"] * cc["kdip"]
+                    self.q_rest[a + i] = ch.q_rest[i] = float(np.clip(math.radians(v), self.lo[a + i], self.hi[a + i]))
+                ch.k_dip = float(cc["kdip"])
         # comfort is measured in units of how much people actually vary each joint while playing (human IQR / 1.35)
         self.sigma = self.rng.copy()
         try:
@@ -93,6 +110,16 @@ class HandRig:
                         self.sigma[a + i] = iqr(pf[f"{meas}.{names[ci - 1]}"])
         except (OSError, KeyError):
             pass
+
+    def _abd_gain(self, k):
+        """Per-dof comfort multiplier: sqrt(k) on the MCP abduction of fingers 2-5, 1 elsewhere."""
+        g = np.ones(len(self.lo))
+        for ci, (ch, a) in enumerate(zip(self.chains, self.sl[:-1])):
+            if ci:
+                for i, d in enumerate(ch.dofs):
+                    if d[1] == "abd":
+                        g[a + i] = math.sqrt(k)
+        return g
 
     def anatomical_abduction(self, root_rot, root_pos, pts, f):
         """Finger f's (2-5) abduction in degrees as anatomy measures it: the proximal phalanx against its
@@ -176,6 +203,8 @@ class HandRig:
             q_rest = q_rest.copy()
             for f, v in W["rest_override"].items():
                 q_rest[self.sl[f]:self.sl[f + 1]] = v
+        if W.get("comfort_abd", 1.0) != 1.0:          # spreading a finger costs more: the hand moves over instead
+            cw = cw * self._abd_gain(W["comfort_abd"])
         r.append(math.sqrt(W["comfort"]) * cw * (q - q_rest) / scale)
         for ch, a in zip(self.chains, self.sl[:-1]):
             if ch.k_dip:
@@ -185,6 +214,10 @@ class HandRig:
             r.append(math.sqrt(W["smooth"]) * 20.0 * (x[:3] - x_last[:3]))
         r.append(math.sqrt(W["root_pos"]) * (root_pos - ref_pos))
         r.append(math.sqrt(W["root_rot"]) * x[3:6])
+        if W.get("tilt", 0) > 0:                        # the hand keeps its planned tilt (knuckles over the wrist) only
+            fr_ = self.sk.R0["wrist"].T @ self.M_rest[1]  # turn and roll stay free to reach
+            f1, f0 = root_rot @ fr_, ref_rot @ fr_
+            r.append([math.sqrt(W["tilt"]) * (math.asin(float(np.clip(f1[2], -1, 1))) - math.asin(float(np.clip(f0[2], -1, 1))))])
         if forearm is not None:                          # wrist joint: the hand's forward axis against the forearm
             el, band = forearm
             fa = root_pos - np.asarray(el, float); fa /= np.linalg.norm(fa)
@@ -265,25 +298,39 @@ class HandRig:
         rest = W.get("rest_override", {}).get(f, self.q_rest[a:b])
         if f in W.get("rest_override", {}):
             cw *= math.sqrt(W.get("rest_override_w", 30.0))   # an overridden pose (the idle thumb's tuck) is held
+        if W.get("comfort_abd", 1.0) != 1.0:
+            cw = cw * self._abd_gain(W["comfort_abd"])[a:b]
         r.append(math.sqrt(W["comfort"]) * cw * (qf - rest) / scale)
         if ch.k_dip:
             r.append([math.sqrt(W["couple"]) * (qf[ch.i_dip] - ch.k_dip * qf[ch.i_pip])])
         if x_last is not None and W.get("smooth", 0) > 0:
             r.append(math.sqrt(W["smooth"]) * (qf - x_last[6 + a:6 + b]) / self.sigma[a:b])
-        if env is not None:
+        if W.get("formation", 0) > 0 and not pressing and f >= 1:
+            # an idle finger keeps formation: its knuckle bends follow the mean of its neighbours' (fingers 2-5), so
+            # it curls and travels with the hand instead of pointing off on its own
+            nb = [g for g in (f - 1, f + 1) if 1 <= g <= 4]
+            ref = np.mean([x[6 + self.sl[g] + 1:6 + self.sl[g + 1]] for g in nb], 0)
+            r.append(math.sqrt(W["formation"]) * (qf[1:] - ref) / self.sigma[a + 1:b])
+        if env is not None and getattr(env, "chain_env", False):   # the collision model wants the chain's posed bones
+            pen = env(f, P, Rs)                                        # (blockout/clean.py: the rendered mesh skin)
+            r.append(math.sqrt(W["env"]) * np.asarray(pen, float))
+        elif env is not None:
             smp = [[] for _ in range(5)]
             smp[f] = ch.samples(P, Rs)
             pen = env(smp, root_rot, x[:3])
             r.append(math.sqrt(W["env"]) * np.asarray(pen, float) if np.ndim(pen) else [math.sqrt(W["env"] * max(pen, 0.0))])
         return np.concatenate([np.ravel(v) for v in r])
 
-    def solve_fingers(self, ref_rot, x0, targets, weights, env=None, W=None, last=None, iters=20):
+    def solve_fingers(self, ref_rot, x0, targets, weights, env=None, W=None, last=None, iters=20, only=None):
         """The root is set (x0[:6]): each finger is its own small solve (one finger's trouble can't freeze the
-        others), from the previous pose and, if that stalls, from the relaxed pose too; the better one wins."""
+        others), from the previous pose and, if that stalls, from the relaxed pose too; the better one wins.
+        only: solve just these fingers (the others keep x0's joints)."""
         W = {**dict(comfort=4e-5, couple=5e-5, env=1.0), **(W or {})}
         x = np.array(x0, float)
         last = None if last is None else np.asarray(last, float)
         for f in range(5):
+            if only is not None and f not in only:
+                continue
             a, b = self.sl[f], self.sl[f + 1]
             lo, hi = self.lo[a:b], self.hi[a:b]
             args = (x, ref_rot, targets[f], weights[f], env, W, last)

@@ -1,0 +1,20 @@
+{
+ "steps": 20,
+ "width": 1280,
+ "height": 704,
+ "length": 124,
+ "scheduler": "beta",
+ "sampler": "res_multistep",
+ "seed": 7,
+ "audio": "band_aid/skeleton_c0_sound.wav",
+ "prompt": "One continuous locked-off shot from a high-budget 1987 rock music video, pristine 35mm film transfer, deep blacks, fine film grain, a crisp fast-shutter image with no motion blur. A smoky late-night jazz cafe: cigarette smoke curls and drifts over the keyboard, warm amber lamp light and candle glow, glints on the black lacquer. Seen from directly above the keyboard: bare bony skeleton hands: ivory-white human skeleton finger bones with slender waisted shafts, flared ends and knobbly knuckle joints, exposed metacarpals and clustered wrist bones, the paired radius and ulna of the bare skeleton forearms play the keys of a glossy black grand piano. The camera does not move. Each key goes down under the bony skeleton finger that presses it, exactly following the motion. No cuts, no new objects, no faces, no text, no logo. Audio: a solo grand piano, dramatic and stormy.",
+ "mode": "B",
+ "video": "band_aid/skeleton_c0_plate.mp4",
+ "video_strength": 0.88,
+ "control": {
+  "video": "band_aid/skeleton_c0_ncanny.mp4",
+  "strength": 1.0
+ },
+ "tag": "band_aid_skeleton_piano_c0",
+ "no_first": true
+}

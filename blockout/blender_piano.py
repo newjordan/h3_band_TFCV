@@ -2,6 +2,8 @@
 
     blender -b --factory-startup -P blockout/blender_piano.py -- ANIM.json OUT_DIR [--res 1280x704]
            [--frames a:b] [--engine WORKBENCH|CYCLES] [--view pov|three4|side|handcam [--hand R|L --angle front3q|side|top|front --dist m]] [--lens mm]
+           [--look show [--samples n] [--exposure ev]]
+           [--hand-style skeleton|monster|robot|paw|real]  (MPFB only; default real)
 
 --hands mpfb|skin|capsule: mpfb (default) is a real rigged, skinned CC0 hand from MPFB2, driven bone by
 bone; skin is a Skin-modifier tube stopgap over the joint graph; capsule is the original mannequin.
@@ -27,8 +29,11 @@ anim_path, out_dir = argv[0], argv[1]
 opts = dict(zip(argv[2::2], argv[3::2]))
 W, H = map(int, opts.get("--res", "1280x704").split("x"))
 ENGINE = opts.get("--engine", "WORKBENCH")
+if opts.get("--pass") == "chrome":     # target-material plate: Cycles, chrome hands, black gloss piano
+    ENGINE = "CYCLES"
 MARK = opts.get("--mark", "none")
 HANDS = opts.get("--hands", "mpfb")   # mpfb: the rigged MPFB2 hand; skin: Skin-modifier tubes; capsule: mannequin
+HAND_STYLE = opts.get("--hand-style", "real")
 anim = json.load(open(anim_path))
 frames = anim["frames"]
 _fr = opts.get("--frames", f"0:{len(frames)}")
@@ -296,7 +301,7 @@ def pose_rig(arm, rest, s, hd):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from blockout.rig.skeleton import Skeleton
     if s not in _SK:
-        _SK[s] = Skeleton(s)
+        _SK[s] = Skeleton(s, thumb_axis=anim.get("thumb_axis", "rest"))   # the thumb hinge the take was solved with
     sk = _SK[s]
     B = rest[s]["bones"]
     wrist, elbow = Vector(hd["wrist"]), Vector(hd["elbow"])
@@ -394,11 +399,61 @@ def pose_mpfb(arm, rest, s, hd):
                                @ want[pn].inverted() @ m)
 
 
+SLEEVE = float(os.environ.get("RIG_SLEEVE", "0.14"))   # m of primitive sleeve from the elbow over the skinned forearm's cut
+                                                        # (0.06 left it open when the camera looks along a raised forearm)
 if HANDS == "mpfb":
     MPFB_ARM, MPFB_REST = load_mpfb()
     _ys = [MPFB_MESH.matrix_world @ v.co for v in MPFB_MESH.data.vertices]
     _w = MPFB_ARM.data.bones["wrist.R"].head_local; _e = MPFB_ARM.data.bones["lowerarm01.R"].head_local
     MPFB_FULL_FOREARM = max(((p - _w).dot((_e - _w).normalized()) for p in _ys)) > 0.2
+    if "--gauntlet" in sys.argv:        # gauntlet geometry on the hand: a ring at every finger joint and a cuff at the
+        def _gaunt():                   # wrist, parented to the bones (so they follow the solved pose exactly); the
+            vg = {g.index: g.name for g in MPFB_MESH.vertex_groups}      # normal/canny control then shows plated
+            pts = {}                                                    # fingers, not a bare hand
+            for v in MPFB_MESH.data.vertices:
+                for g in v.groups:
+                    if g.weight > 0.6:
+                        pts.setdefault(vg[g.group], []).append(MPFB_MESH.matrix_world @ v.co)
+            for s_ in "LR":
+                names = [f"finger{f}-{k}" for f in range(1, 6) for k in (1, 2, 3) if (f, k) != (1, 1)] + ["wrist"]   # no ring on the thumb CMC (inside the palm)
+                for nm in names:
+                    b = MPFB_ARM.data.bones.get(f"{nm}.{s_}")
+                    if b is None or f"{nm}.{s_}" not in pts:
+                        continue
+                    a, d = b.head_local, (b.tail_local - b.head_local).normalized()
+                    rr = sorted(((p - a) - d * (p - a).dot(d)).length for p in pts[f"{nm}.{s_}"])
+                    r = rr[len(rr) // 2] * (1.25 if nm == "wrist" else 1.12)
+                    depth = (0.022 if nm == "wrist" else min(0.006, 0.3 * b.length))
+                    bpy.ops.mesh.primitive_cylinder_add(radius=r, depth=depth, vertices=28)
+                    o = bpy.context.active_object; o.name = f"ring_{nm}_{s_}"
+                    o.data.materials.append(M_SKIN)
+                    for pl in o.data.polygons:
+                        pl.use_smooth = True
+                    o.parent, o.parent_type, o.parent_bone = MPFB_ARM, "BONE", f"{nm}.{s_}"
+                    o.matrix_parent_inverse = Matrix.Identity(4)
+                    o.location = (0, -b.length + (0.012 if nm == "wrist" else 0.002), 0)   # at the joint (bone head)
+                    o.rotation_euler = (-math.pi / 2, 0, 0)                               # cylinder axis -> bone
+            global GBANDS
+            GBANDS = {}
+            for s_ in "LR":                 # vambrace: bands along the forearm, placed per frame elbow -> wrist
+                w_ = MPFB_ARM.data.bones[f"wrist.{s_}"].head_local; e_ = MPFB_ARM.data.bones[f"lowerarm01.{s_}"].head_local
+                ax = (w_ - e_).normalized()
+                fa = [p for g in ("lowerarm01", "lowerarm02") for p in pts.get(f"{g}.{s_}", [])]
+                rr = sorted(((p - e_) - ax * (p - e_).dot(ax)).length for p in fa) or [0.03]
+                r = rr[len(rr) // 2] * 1.10
+                GBANDS[s_] = []
+                for k in range(5):
+                    bpy.ops.mesh.primitive_cylinder_add(radius=1.0, depth=1.0, vertices=32)
+                    o = bpy.context.active_object; o.name = f"vambrace_{s_}{k}"
+                    o.data.materials.append(M_SKIN)
+                    for pl in o.data.polygons:
+                        pl.use_smooth = True
+                    GBANDS[s_].append((o, 0.2 + 0.15 * k, r * (1.0 - 0.12 * k / 4)))
+        _gaunt()
+
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import hand_styles
+    hand_styles.build(HAND_STYLE, MPFB_ARM, MPFB_MESH, {"skin": M_SKIN}, COL)
 
 rig = {}
 for h in ("L", "R"):
@@ -518,6 +573,7 @@ else:
     scn.display.render_aa = "16"
 
 PASS = opts.get("--pass")           # depth: an inverse-depth control image (near = white) for H3 Fun ControlNet
+                                    # mask: the hands (and forearms) white, everything else black, flat (for metrics)
 if PASS == "depth":
     near, far = (float(v) for v in opts.get("--depth-range", "0.12,2.5").split(","))
     scn.view_settings.view_transform = "Standard"
@@ -534,6 +590,100 @@ if PASS == "depth":
     comp = nt.nodes.new("CompositorNodeComposite")
     nt.links.new(rl.outputs["Depth"], inv.inputs[1]); nt.links.new(inv.outputs[0], mr.inputs[0])
     nt.links.new(mr.outputs[0], comp.inputs["Image"])
+
+if PASS == "normal":                  # shaded by surface normal: every finger, knuckle and key edge a distinct colour
+    scn.display.shading.light = "MATCAP"
+    scn.display.shading.studio_light = "check_normal+y.exr"
+    scn.display.shading.color_type = "SINGLE"
+    scn.display.shading.show_shadows = False
+    scn.display.shading.show_cavity = False
+    scn.view_settings.view_transform = "Standard"
+if PASS == "chrome":                  # the plate in the look H3 should render (mirror chrome gauntlets, glossy
+    def _pbr(m, base, metal, rough):    # black grand, warm low light): plate pixels then carry the material
+        b = m.node_tree.nodes.get("Principled BSDF")
+        b.inputs["Base Color"].default_value = (*base, 1.0)
+        b.inputs["Metallic"].default_value = metal
+        b.inputs["Roughness"].default_value = rough
+    _pbr(M_SKIN, (0.86, 0.86, 0.9), 1.0, 0.12)
+    _pbr(M_NAIL, (0.86, 0.86, 0.9), 1.0, 0.12)
+    _pbr(M_CASE, (0.004, 0.004, 0.004), 0.0, 0.18)
+    _pbr(M_BLACK, (0.006, 0.006, 0.006), 0.0, 0.1)
+    _pbr(M_WHITE, (0.78, 0.75, 0.68), 0.0, 0.25)
+    world.use_nodes = True
+    _pbr(M_FLOOR, (0.012, 0.007, 0.004), 0.0, 0.5)            # dark wood, a dark smoky room
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.05, 0.028, 0.014, 1.0)
+    world.node_tree.nodes["Background"].inputs[1].default_value = float(opts.get("--world", 0.12))
+    scn.cycles.samples = int(opts.get("--samples", 64))
+    scn.cycles.use_denoising = False                # this Blender build has no OpenImageDenoise
+    for nm, loc, e, col in (("lamp", (cx + 0.6, 0.5, 1.1), 60, (1.0, 0.62, 0.3)),
+                            ("rim", (cx - 0.9, 0.9, 0.7), 30, (1.0, 0.8, 0.6))):
+        L = bpy.data.objects.new(nm, bpy.data.lights.new(nm, "AREA"))
+        L.data.energy, L.data.size, L.data.color = e, 0.8, col
+        L.location = loc
+        L.rotation_euler = (Vector((cx, 0.1, 0)) - L.location).to_track_quat("-Z", "Y").to_euler()
+        COL.objects.link(L)
+    for nm, loc, sz, st in (("softbox", (cx, -0.2, 1.6), (0.7, 0.25), 2.0), ("bounce", (cx, 1.2, 0.6), (1.2, 0.3), 0.5)):
+        bpy.ops.mesh.primitive_plane_add(size=1.0, location=loc)
+        pl = bpy.context.active_object; pl.scale = (*sz, 1)
+        pl.rotation_euler = (Vector((cx, 0.1, 0.1)) - pl.location).to_track_quat("Z", "Y").to_euler()
+        em = bpy.data.materials.new(nm); em.use_nodes = True
+        nt = em.node_tree; nt.nodes.clear()
+        es = nt.nodes.new("ShaderNodeEmission"); es.inputs[0].default_value = (1.0, 0.75, 0.5, 1); es.inputs[1].default_value = st
+        lp = nt.nodes.new("ShaderNodeLightPath"); mx = nt.nodes.new("ShaderNodeMixShader"); tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+        out = nt.nodes.new("ShaderNodeOutputMaterial")
+        nt.links.new(lp.outputs["Is Camera Ray"], mx.inputs[0]); nt.links.new(es.outputs[0], mx.inputs[1])
+        nt.links.new(tr.outputs[0], mx.inputs[2]); nt.links.new(mx.outputs[0], out.inputs[0])
+        pl.data.materials.append(em)
+LOOK = opts.get("--look")          # show: a lit performance render (EEVEE) kept high contrast, every element its own colour
+if LOOK == "show":                  # (it goes into H3 later): orange hands, pure white / black keys, a navy case, a grey
+    scn.render.engine = "BLENDER_EEVEE"     # room; soft key light, a rim, contact shadows where the tips meet the keys
+    ee = scn.eevee
+    ee.taa_render_samples = int(opts.get("--samples", 32))
+    ee.use_gtao, ee.gtao_distance, ee.gtao_factor = True, 0.05, 1.0
+    ee.use_ssr = False              # screen-space reflections leave grey blotches on the white keys and the keybed
+    ee.use_soft_shadows = True
+    ee.shadow_cube_size, ee.shadow_cascade_size = "2048", "4096"
+    scn.view_settings.view_transform = "Standard"
+    scn.view_settings.exposure = float(opts.get("--exposure", -1.6))
+
+    def _pbr(m, base, metal, rough, coat=0.0):
+        b = m.node_tree.nodes.get("Principled BSDF")
+        b.inputs["Base Color"].default_value = (*base, 1.0)
+        b.inputs["Metallic"].default_value = metal
+        b.inputs["Roughness"].default_value = rough
+        b.inputs["Coat Weight"].default_value = coat
+        b.inputs["Coat Roughness"].default_value = 0.05
+    _pbr(M_SKIN, (0.85, 0.20, 0.02), 0.0, 0.45)          # hands and arms: saturated orange, nothing else near it
+    _pbr(M_NAIL, (0.85, 0.20, 0.02), 0.0, 0.45)
+    _pbr(M_WHITE, (0.92, 0.92, 0.92), 0.0, 0.35)
+    _pbr(M_BLACK, (0.004, 0.004, 0.004), 0.0, 0.55)
+    _pbr(M_CASE, (0.012, 0.028, 0.10), 0.0, 0.45, coat=0.25)     # navy: apart from the black keys and the room
+    _pbr(M_FLOOR, (0.10, 0.10, 0.10), 0.0, 0.8)
+    world.use_nodes = True
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.25, 0.25, 0.25, 1.0)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 1.0
+    for nm, loc, aim, e, sz, col in (("key", (cx + 0.35, -0.75, 1.25), (cx, 0.0, 0.0), 170, 1.4, (1.0, 0.97, 0.92)),
+                                     ("rim", (cx - 0.5, 0.95, 0.75), (cx, -0.05, 0.05), 90, 1.0, (0.92, 0.95, 1.0)),
+                                     ("fill", (cx - 0.9, -0.9, 0.35), (cx, 0.0, 0.05), 30, 2.0, (1.0, 1.0, 1.0))):
+        L = bpy.data.objects.new(nm, bpy.data.lights.new(nm, "AREA"))
+        L.data.energy, L.data.size, L.data.color = e, sz, col
+        L.data.use_contact_shadow = True
+        L.data.contact_shadow_distance, L.data.contact_shadow_thickness = 0.03, 0.004
+        L.location = loc
+        L.rotation_euler = (Vector(aim) - L.location).to_track_quat("-Z", "Y").to_euler()
+        COL.objects.link(L)
+if PASS == "mask":
+    scn.display.shading.light = "FLAT"
+    scn.display.shading.color_type = "OBJECT"
+    scn.display.shading.show_shadows = False
+    scn.display.shading.show_cavity = False
+    scn.display.render_aa = "OFF"
+    scn.view_settings.view_transform = "Standard"
+    world.color = (0, 0, 0)
+    for ob in COL.objects:
+        ob.color = (1, 1, 1, 1) if "hand_style" in ob else (0, 0, 0, 1)
+    if globals().get("MPFB_MESH") is not None:
+        MPFB_MESH.color = (1, 1, 1, 1)
 
 MESHQA = opts.get("--meshqa")      # OUT.json: no render; count skinned-mesh self-intersections per frame, by body part
 if MESHQA:
@@ -625,9 +775,13 @@ for i in FRAME_IDS:
             el, wr = Vector(hd["elbow"]), Vector(hd["wrist"])
             R["forearm"].set(el, wr - (wr - el).normalized() * 0.05)
             if "angles" in hd and MPFB_FULL_FOREARM:          # the skinned forearm runs (almost) to the elbow:
-                R["forearm"].set(el, el + (wr - el).normalized() * 0.06)   # a short sleeve covers its cut edge
+                R["forearm"].set(el, el + (wr - el).normalized() * SLEEVE)  # a short sleeve covers its cut edge
                 R["forearm"].j1.hide_render = True
             (pose_rig if "angles" in hd else pose_mpfb)(MPFB_ARM, MPFB_REST, h, hd)
+            for o, t, r in globals().get("GBANDS", {}).get(h, []):
+                d = wr - el
+                rot = Vector((0, 0, 1)).rotation_difference(d.normalized()).to_matrix().to_4x4()
+                o.matrix_world = Matrix.Translation(el + d * t) @ rot @ Matrix.Diagonal((r, r, 0.022, 1))
             if "angles" in hd and opts.get("--fkcheck"):
                 bpy.context.view_layer.update()
                 for f in range(5):
@@ -680,16 +834,21 @@ for i in FRAME_IDS:
         fwd = Vector(c["look"]) - Vector(c["pos"])
         cam.matrix_world = look_matrix(c["pos"], fwd, c["up"])
         cam_d.lens = c["lens"]
+        if LOOK == "show" and c.get("fstop"):         # a touch of depth of field on the close shots, focused on the hand
+            cam_d.dof.use_dof, cam_d.dof.aperture_fstop = True, c["fstop"]
+            cam_d.dof.focus_distance = (Vector(c.get("focus", c["look"])) - Vector(c["pos"])).length
+        else:
+            cam_d.dof.use_dof = False
         for ob in HEAD_PARTS:
             ob.hide_render = c["hide_head"]
         if "hide_body" in c:                           # keyboard shots: only the arms, hands and piano render
             for ob in COL.objects:
                 if ob.name.split("_")[0].rstrip("-1") in ("torso", "head", "nose", "neck", "thigh", "shin", "bench"):
                     ob.hide_render = bool(c["hide_body"]) or (ob in HEAD_PARTS and c["hide_head"])
-    if "case" in opts.get("--hide", ""):              # debug: see the fingers from the far side of the piano
-        for ob in COL.objects:
-            if ob.name in ("fallboard", "lid_body", "music_desk", "cheek_l", "cheek_r"):
-                ob.hide_render = True
+    hide_case = "case" in opts.get("--hide", "") or (VIEW == "edit" and fr["cam"].get("hide_case"))
+    for ob in COL.objects:                           # see the fingers from the far side of the piano
+        if ob.name in ("fallboard", "lid_body", "music_desk", "cheek_l", "cheek_r"):
+            ob.hide_render = bool(hide_case) or (ob.name == "music_desk" and VIEW != "pov")
     if "body" in opts.get("--hide", ""):              # debug: see the hands from the player's side
         for ob in COL.objects:
             if ob.name.split("_")[0].rstrip("-1") in ("torso", "head", "nose", "neck", "thigh", "shin", "bench") \

@@ -1,0 +1,27 @@
+id,desc,hand_r,flow_cos,flow_err,frame_r
+r1,fl2va + canny + plate 0.88 (candy-cane sleeves),0.27,0.82,0.69,0.79
+r2,ref2va bass knight + canny,0.09,0.62,0.85,0.66
+r3,ref2va bass knight + canny + plate,0.17,0.67,0.79,0.75
+jazz3,chrome/jazz prompt + canny + plate,0.09,0.75,0.74,0.72
+jazz4,jazz3 control released last 20%,0.11,0.71,0.82,0.75
+q60,jazz3 at 60 steps,0.09,0.76,0.73,0.73
+refine,q60 re-run at strength 0.5,0.05,0.73,0.76,0.68
+K1,normal-shaded-pass canny control (fingers resolved) + chrome/jazz prompt + plate,0.42,0.85,0.67,0.83
+K2,depth-pass control + chrome/jazz prompt + plate,-0.01,0.66,0.82,0.65
+K4,beauty canny at control 0.8 + chrome/jazz prompt + plate,0.07,0.69,0.75,0.71
+K5,ref2va chrome refs (max size) + beauty canny + plate,0.07,0.72,0.75,0.69
+K6,normal-pass canny 0.6 + depth control + chrome/jazz prompt + plate,0.41,0.80,0.69,0.83
+K7,ref2va chrome refs + normal-pass canny + plate,0.07,0.66,0.75,0.69
+K10,fl2va + normal-pass canny + chrome-material plate (Blender --pass chrome),0.09,0.81,0.73,0.75
+K11,K10 + chrome frame 0 pinned as first frame,0.18,0.83,0.67,0.72
+K13,K10 with the chrome plate held harder (video strength 0.70),0.19,0.85,0.67,0.73
+K14,K10 + lockstep anchors (every 3rd latent frame at 0.6),0.15,0.83,0.69,0.77
+K15,K11 + KV pull x4 toward the pinned frame (32 cond heads),0.17,0.82,0.68,0.72
+K16,K11 + KV pull x6 toward the pinned frame on steps 6-19,0.19,0.85,0.69,0.72
+K17,dark-cafe chrome plate v2 at 0.70 + its frame 0 pinned + normal canny,0.13,0.86,0.73,0.70
+K18,K17 at video strength 0.60,0.12,0.89,0.65,0.69
+K20,K1 (grey plate) + canny of the gauntlet normal pass (joint rings + cuff),0.24,0.84,0.68,0.79
+K19,gauntlet chrome plate (0.70) + its frame 0 pinned + gauntlet canny,0.12,0.88,0.70,0.70
+K21,K20 + vambrace bands in the control (full armour),0.13,0.79,0.74,0.74
+K22,K21 with a grey plate of the armoured geometry,0.10,0.75,0.72,0.73
+K23,second shot ov125 (overhead): K22 recipe (scored vs gauntlet+vambrace normal pass),0.08,0.92,0.56,0.60

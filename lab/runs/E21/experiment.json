@@ -1,0 +1,21 @@
+{
+ "id": "E21",
+ "leg": "H4 contact",
+ "parent": "E20",
+ "hypothesis": "The pressing pad is held up by its own key's surface in the collision model.",
+ "change": "E20 + pressing pad may sink 3 mm into its own key",
+ "ovr": {
+  "PRESS_AXES": [
+   3.0,
+   1.0,
+   3.0
+  ],
+  "PRESS_AXES_BLACK": [
+   3.0,
+   3.0,
+   3.0
+  ],
+  "OWN_KEY_GIVE": 0.003
+ },
+ "env": "HAND_SCALE=1"
+}
