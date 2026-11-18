@@ -5,8 +5,10 @@
 set -e
 O=$(realpath -m "${1:?usage: solve.sh OUT_DIR}"); mkdir -p "$O"
 REPO=$(cd "$(dirname "$0")/../.." && pwd)
-P=${PY:-/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python}
-M=${MIDI_DIR:-/home/frosty40/h3b_suite/examples/piano}
+if [ -n "${PY:-}" ]; then P=$PY
+elif [ -x "$REPO/.venv_blockout/bin/python" ]; then P=$REPO/.venv_blockout/bin/python
+else P=python3; fi
+M=${MIDI_DIR:-$REPO/examples/piano}
 cd "$REPO"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 HAND_SCALE=1
 export PIANO_OVR=${PIANO_OVR-}     # V3 settings are the code defaults; set this only for experiments

@@ -3,8 +3,10 @@
 # Usage: tools/v18/render.sh OUT_DIR
 set -e
 O=$(realpath "${1:?usage: render.sh OUT_DIR}"); REPO=$(cd "$(dirname "$0")/../.." && pwd); cd "$REPO"
-P=${PY:-/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python}
-SFZ=${SFZ:-/home/frosty40/h3_band_TFCV/models/piano_dl/SalamanderGrandPiano-SFZ+FLAC-V3+20200602/SalamanderGrandPiano-V3+20200602.sfz}
+if [ -n "${PY:-}" ]; then P=$PY
+elif [ -x "$REPO/.venv_blockout/bin/python" ]; then P=$REPO/.venv_blockout/bin/python
+else P=python3; fi
+SFZ=${SFZ:-$REPO/models/piano_dl/SalamanderGrandPiano-SFZ+FLAC-V3+20200602/SalamanderGrandPiano-V3+20200602.sfz}
 $P -m blockout.cameras $O/suite.json $O/edit.json > $O/cams.log 2>&1
 $P -m blockout.sampler $O/notes.json $O/ks.wav --sfz "$SFZ" > $O/sampler.log 2>&1
 N=$($P -c "import json;print(len(json.load(open('$O/edit.json'))['frames']))"); q=$(( (N+9)/10 ))

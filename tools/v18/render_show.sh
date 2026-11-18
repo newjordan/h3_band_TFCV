@@ -6,8 +6,10 @@
 # Usage: tools/v18/render_show.sh OUT_DIR [JOBS]        (JOBS parallel Blender processes, default 6)
 set -e
 O=$(realpath "${1:?usage: render_show.sh OUT_DIR [JOBS]}"); J=${2:-6}; REPO=$(cd "$(dirname "$0")/../.." && pwd); cd "$REPO"
-P=${PY:-/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python}
-SFZ=${SFZ:-/home/frosty40/h3_band_TFCV/models/piano_dl/SalamanderGrandPiano-SFZ+FLAC-V3+20200602/SalamanderGrandPiano-V3+20200602.sfz}
+if [ -n "${PY:-}" ]; then P=$PY
+elif [ -x "$REPO/.venv_blockout/bin/python" ]; then P=$REPO/.venv_blockout/bin/python
+else P=python3; fi
+SFZ=${SFZ:-$REPO/models/piano_dl/SalamanderGrandPiano-SFZ+FLAC-V3+20200602/SalamanderGrandPiano-V3+20200602.sfz}
 $P -m blockout.cameras $O/suite.json $O/edit_show.json --style fingers > $O/cams_show.log 2>&1
 [ -s $O/ks.wav ] || $P -m blockout.sampler $O/notes.json $O/ks.wav --sfz "$SFZ" > $O/sampler.log 2>&1
 N=$($P -c "import json;print(len(json.load(open('$O/edit_show.json'))['frames']))"); q=$(( (N+J-1)/J ))

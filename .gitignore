@@ -18,7 +18,17 @@ ComfyUI/
 !examples/*.json
 .venv*/
 __pycache__/
+*.pyc
 *.log
+.DS_Store
+dist/
+build/
+.idea/
+.vscode/
+.codex/
+.cursor/
+.aider*
+.aider/
 # project page media (small web encodes only)
 !docs/media/*.mp4
 !docs/media/*.jpg

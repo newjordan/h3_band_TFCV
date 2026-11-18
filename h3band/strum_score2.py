@@ -34,10 +34,11 @@ sync_margin = sync_margin_a. b is reported but NOT used: validation showed it ca
 onset-locked stroke from the static plate (both ~0.13). At 24 fps a 16th note is ~3 frames, so frame-quantized
 stroke times carry +-1/3 cycle of phase error on a 16th grid, and on the 8th grid 16th-strummed onsets are
 bimodal (phase 0 and 0.5). Beat-phase locking needs >= 60 fps footage or sub-frame stroke timing.
-sync_margin = mean of the a and b margins. c has no audio control (it is a property of the motion).
+c has no audio control (it is a property of the motion). Without a beats file, b is skipped.
 """
 import argparse
 import json
+import os
 import pathlib
 import sys
 
@@ -187,51 +188,64 @@ def analyze(video, events_path, t0, box=None, beats_path=None, grid_lag=0.0):
         source = "subbox_flow"
         sig, cover = subbox_signal(frames)
     speed = np.abs(sig)
-    ev = json.load(open(events_path))["events"]
-    beats = json.load(open(beats_path or config.BEATS))["beats"]
-    BEAT_P = float(np.median(np.diff(beats)))
+    with open(events_path) as fh:
+        ev = json.load(fh)["events"]
+    beats_file = pathlib.Path(beats_path) if beats_path else config.BEATS
+    if beats_file.exists():
+        with open(beats_file) as fh:
+            beats = json.load(fh)["beats"]
+        BEAT_P = float(np.median(np.diff(beats)))
+    elif beats_path or "H3B_BEATS" in os.environ:
+        raise FileNotFoundError(beats_file)
+    else:
+        beats = None
     on = onsets_in(ev, t0, n)
     # strokes = the N strongest speed peaks, N = number of guitar onsets in the clip
     pk, props = find_peaks(speed, distance=2, height=0)
     pk = np.sort(pk[np.argsort(props["peak_heights"])[::-1][:max(3, len(on))]])
     stroke_t = (pk - 0.5) / FPS                              # flow between frames f-1 and f
-    on_ph = phase8(on + t0, beats)
+    on_ph = phase8(on + t0, beats) if beats is not None else None
 
     a_real = xcorr(speed, train(on, n))
-    b_real = lock(phase8(stroke_t + t0, beats), on_ph)
+    b_real = lock(phase8(stroke_t + t0, beats), on_ph) if beats is not None else None
     ctrl_a, ctrl_b = {}, {}
     for s in (1.0, 2.0, 3.0):
         sh = np.roll(train(on, n), int(round(s * FPS)))
         ctrl_a[f"shift_{s:g}s"] = xcorr(speed, sh)
-        shifted_on_t = ((on + s) % (n / FPS))
-        ctrl_b[f"shift_{s:g}s"] = lock(phase8(stroke_t + t0, beats), phase8(shifted_on_t + t0, beats))
+        if beats is not None:
+            shifted_on_t = ((on + s) % (n / FPS))
+            ctrl_b[f"shift_{s:g}s"] = lock(phase8(stroke_t + t0, beats), phase8(shifted_on_t + t0, beats))
     other = onsets_in(ev, t0 + 60.0, n)
     ctrl_a["section_+60s"] = xcorr(speed, train(other, n))
-    ctrl_b["section_+60s"] = lock(phase8(stroke_t + t0, beats), phase8(other + t0 + 60.0, beats))
-    ctrl_b["grid_quarter_beat"] = lock(phase8(stroke_t + t0, beats, BEAT_P / 4), on_ph)
+    if beats is not None:
+        ctrl_b["section_+60s"] = lock(phase8(stroke_t + t0, beats), phase8(other + t0 + 60.0, beats))
+        ctrl_b["grid_quarter_beat"] = lock(phase8(stroke_t + t0, beats, BEAT_P / 4), on_ph)
     ma = a_real - max(ctrl_a.values())
     # grid-locked music has the same 8th-note phase in every section, so section_+60s is reported for b but
     # is not a valid b control (a perfectly synced take ties it); b's margin uses the shifts and the grid shift
-    mb = b_real - max(v for k, v in ctrl_b.items() if v == v and k != "section_+60s")
-    # permutation nulls: circularly shift the motion (>= 6 frames) and re-score, 200 draws
+    mb = (b_real - max(v for k, v in ctrl_b.items() if v == v and k != "section_+60s")) if beats is not None else None
+    # permutation nulls: circularly shift the motion (>= 6 frames) and re-score, 200 draws.
+    # When beats are present the a and b draws stay in one loop so the shift sequence is unchanged.
     rng = np.random.default_rng(0)
     ot = train(on, n)
     null_a, null_b = [], []
     for _ in range(200):
         k = int(rng.integers(6, n - 6))
         null_a.append(xcorr(np.roll(speed, k), ot))
-        null_b.append(lock(phase8(((stroke_t + k / FPS) % (n / FPS)) + t0, beats), on_ph))
+        if beats is not None:
+            null_b.append(lock(phase8(((stroke_t + k / FPS) % (n / FPS)) + t0, beats), on_ph))
     p_a = float((np.sum(np.array(null_a) >= a_real) + 1) / 201)
-    p_b = float((np.sum(np.array(null_b) >= b_real) + 1) / 201)
-    zs = np.exp(1j * phase8(stroke_t + t0, beats)).mean()
+    p_b = float((np.sum(np.array(null_b) >= b_real) + 1) / 201) if beats is not None else None
+    zs = np.exp(1j * phase8(stroke_t + t0, beats)).mean() if beats is not None else None
     return {"video": pathlib.Path(video).name, "signal": source, "subbox": cover, "frames": n,
             "onsets": int(len(on)), "strokes": int(len(pk)),
             "a_xcorr": round(a_real, 3), "a_controls": {k: round(v, 3) for k, v in ctrl_a.items()},
-            "b_lock": round(b_real, 3), "b_controls": {k: round(v, 3) for k, v in ctrl_b.items()},
-            "b_stroke_R": round(float(abs(zs)), 3),
+            "b_lock": None if b_real is None else round(b_real, 3),
+            "b_controls": {k: round(v, 3) for k, v in ctrl_b.items()},
+            "b_stroke_R": None if zs is None else round(float(abs(zs)), 3),
             "c_rhythm_share": round(spectral_share(speed), 3),
-            "p_a": round(p_a, 3), "p_b": round(p_b, 3),
-            "sync_margin_a": round(ma, 3), "sync_margin_b": round(mb, 3),
+            "p_a": round(p_a, 3), "p_b": None if p_b is None else round(p_b, 3),
+            "sync_margin_a": round(ma, 3), "sync_margin_b": None if mb is None else round(mb, 3),
             "sync_margin": round(ma, 3)}
 
 

@@ -1,18 +1,22 @@
 """Does an H3 render match its Blender plate, hand by hand? MediaPipe hand landmarks on both, frame by frame.
 
-    ~/h3/mv_tools/.venv/bin/python h3_tools/handmatch.py PLATE.mp4 RENDER.mp4 [label]
+    python h3_tools/handmatch.py PLATE.mp4 RENDER.mp4 [label]
+
+The landmarker is $H3B_HAND_MODEL, default models/hand_landmarker.task (same file strum_score2.py uses).
 
 Per frame: the plate's hands (grey blockout) and the render's hands are detected (21 landmarks each), paired by wrist
 distance, and the mean landmark distance is divided by the plate hand's size (wrist -> middle MCP). Reports: share of
 plate hands the render also shows as a hand (detectable), median / p90 normalised landmark error, and the error of
 the fingertips alone (the part that hits the keys).
 """
-import sys, subprocess, numpy as np
+import os, sys, subprocess, numpy as np
+from pathlib import Path
 import mediapipe as mp
 from mediapipe.tasks import python as mpt
 from mediapipe.tasks.python import vision
 
-MODEL = "/home/frosty40/h3/mv_tools/hand_landmarker.task"
+REPO = Path(__file__).resolve().parents[1]
+MODEL = os.environ.get("H3B_HAND_MODEL", str(REPO / "models" / "hand_landmarker.task"))
 TIPS = [4, 8, 12, 16, 20]
 
 
