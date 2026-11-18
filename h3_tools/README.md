@@ -10,7 +10,7 @@
 - `make_controls.py` (canny/gray control videos from plate frames), `fidelity.py` (plate structure correlation per frame:
   catches cuts/drift), `pick_anchors.py` (lockstep anchors from a pass-1 take).
 - `jitter.py`, `zig.py`, `stall.py`, `miss.py`: hand-motion QA on piano anim JSONs (wrist shake, finger reversals, solver stalls,
-  missed keys).
+  missed keys). `miss.py DIR TAG` reads `DIR/TAG.json` and `DIR/TAG_notes.json`.
 
 Why plates drift in plain mode B: a masked plate token is re-blended each step as m*x + (1-m)*plate; at strength 0.88, m = 0.992,
 so the plate steers only the first noisy steps. The ControlNet path (`blockout/h3_lock.py`) holds structure at every step.

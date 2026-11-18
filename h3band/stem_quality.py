@@ -40,7 +40,10 @@ def stats(path, ref_env=None, sung_start=0.0):
            "silent_frac_25db": round(float((env < hi - 25).mean()), 3)}
     w = 5 * FPS
     sung = env[int(sung_start * FPS):]
-    wins = [sung[i:i + w] for i in range(0, len(sung) - w + 1, w)]
+    # Shorter than one 5 s window (a preview, or --sung-start near the end): score
+    # the samples we have. An empty list makes np.median warn and return nan.
+    span = sung if len(sung) else env
+    wins = [span[i:i + w] for i in range(0, len(span) - w + 1, w)] or [span]
     out["win5_dyn_range_db"] = round(float(np.median([np.percentile(v, 95) - np.percentile(v, 5) for v in wins])), 1)
     out["win5_silent_frac"] = round(float(np.median([(v < np.percentile(v, 95) - 25).mean() for v in wins])), 3)
     if x.shape[1] == 2:
