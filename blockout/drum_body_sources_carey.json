@@ -1,0 +1,113 @@
+{
+ "version": 1,
+ "drummer": "carey",
+ "method": "SAM 3D Body (sam_3d_body_dinov3_bf16, ComfyUI core nodes) on each frame, whole frame as the box, hand refinement on; SAM3DBody_Smooth savgol window 7; BVH via BuildPoseFile, camera translation off. Made with: python h3band/sam3d_mocap.py work/sam3d/clips/X.mp4 work/sam3d/X --fps F. Each clip is a cut of one static-camera shot (ffmpeg scene detection at threshold 0.12 and contact sheets), scaled to 960x540 so ComfyUI's LoadVideo holds it in memory.",
+ "note": "carey_a-c are one shot (440.3-534.2 s), carey_d-e another (255.6-313.2 s), cut in pieces for memory; concert lighting (purple, strobing) throughout",
+ "sources": [
+  {
+   "id": "carey_a",
+   "bvh": "../work/sam3d/carey_a.bvh",
+   "video": "../work/sam3d/clips/carey_a.mp4",
+   "content": "Danny Carey (Tool), 'Pneuma' live in Boston, Vic Firth drum cam, https://www.youtube.com/watch?v=FssULNGSZIA, 440.5-478 s",
+   "rate": "real time, 23.976 fps, 900 frames",
+   "cut": [
+    440.5,
+    478
+   ],
+   "shots": [
+    {
+     "id": "s1",
+     "t": [
+      0.0,
+      37.538
+     ],
+     "view": "front-side"
+    }
+   ]
+  },
+  {
+   "id": "carey_b",
+   "bvh": "../work/sam3d/carey_b.bvh",
+   "video": "../work/sam3d/clips/carey_b.mp4",
+   "content": "Danny Carey (Tool), 'Pneuma' live in Boston, Vic Firth drum cam, https://www.youtube.com/watch?v=FssULNGSZIA, 478-516 s",
+   "rate": "real time, 23.976 fps, 912 frames",
+   "cut": [
+    478,
+    516
+   ],
+   "shots": [
+    {
+     "id": "s1",
+     "t": [
+      0.0,
+      38.038
+     ],
+     "view": "front-side"
+    }
+   ]
+  },
+  {
+   "id": "carey_c",
+   "bvh": "../work/sam3d/carey_c.bvh",
+   "video": "../work/sam3d/clips/carey_c.mp4",
+   "content": "Danny Carey (Tool), 'Pneuma' live in Boston, Vic Firth drum cam, https://www.youtube.com/watch?v=FssULNGSZIA, 516-534 s",
+   "rate": "real time, 23.976 fps, 432 frames",
+   "cut": [
+    516,
+    534
+   ],
+   "shots": [
+    {
+     "id": "s1",
+     "t": [
+      0.0,
+      18.018
+     ],
+     "view": "front-side"
+    }
+   ]
+  },
+  {
+   "id": "carey_d",
+   "bvh": "../work/sam3d/carey_d.bvh",
+   "video": "../work/sam3d/clips/carey_d.mp4",
+   "content": "Danny Carey (Tool), 'Pneuma' live in Boston, Vic Firth drum cam, https://www.youtube.com/watch?v=FssULNGSZIA, 260-296 s",
+   "rate": "real time, 23.976 fps, 864 frames",
+   "cut": [
+    260,
+    296
+   ],
+   "shots": [
+    {
+     "id": "s1",
+     "t": [
+      0.0,
+      36.036
+     ],
+     "view": "front-side"
+    }
+   ]
+  },
+  {
+   "id": "carey_e",
+   "bvh": "../work/sam3d/carey_e.bvh",
+   "video": "../work/sam3d/clips/carey_e.mp4",
+   "content": "Danny Carey (Tool), 'Pneuma' live in Boston, Vic Firth drum cam, https://www.youtube.com/watch?v=FssULNGSZIA, 296-312.5 s",
+   "rate": "real time, 23.976 fps, 396 frames",
+   "cut": [
+    296,
+    312.5
+   ],
+   "shots": [
+    {
+     "id": "s1",
+     "t": [
+      0.0,
+      16.517
+     ],
+     "view": "front-side"
+    }
+   ]
+  }
+ ]
+}

@@ -22,7 +22,7 @@ STYLES = {
     #              nod   sharp  down_acc  lag    sway_roll sway_yaw  pitch  yaw_out  lean  jitter
     "focused":    (0.035, 1.0,  1.3,      0.03,  0.020,    0.015,    0.10,  0.00,    0.02, 0.00),
     "groove":     (0.110, 1.5,  1.5,      0.03,  0.060,    0.040,    0.02,  0.00,    0.03, 0.00),
-    "wild":       (0.330, 3.0,  1.3,      0.02,  0.120,    0.100,   -0.05,  0.00,    0.05, 0.10),
+    "wild":       (0.330, 2.0,  1.3,      0.02,  0.120,    0.100,   -0.05,  0.00,    0.05, 0.10),
     "crowd":      (0.050, 1.0,  2.0,      0.04,  0.030,    0.030,   -0.45,  0.55,    0.00, 0.00),
     "expressive": (0.015, 1.0,  2.0,      0.05,  0.070,    0.060,    0.05,  0.00,    0.10, 0.00),
 }
@@ -60,28 +60,36 @@ def _beat_phase(t, beats):
     return (t - beats[i]) / (beats[i + 1] - beats[i]), i
 
 
-def head_angles(t, beats, downbeats, energy, schedule, seed=0):
-    """(pitch_down, yaw, roll) offsets in radians and lean (m, forward) at time t."""
+def head_angles(t, beats, downbeats, energy, schedule, seed=0, motion=1.0):
+    """(pitch_down, yaw, roll) offsets in radians and lean (m, forward) at time t. motion scales the beat nod,
+    the sway and the jitter (0: the style's resting gaze only, for a head that mocap moves)."""
     P = style_params(t, schedule)
     e = 0.4 + 0.9 * energy
     ph, i = _beat_phase(t - P["lag"], beats)
     # nod: lands on the beat; sharper styles snap down and float back up
     shape = (0.5 * (1 + math.cos(2 * math.pi * ph))) ** P["sharp"]
-    acc = 1.0
-    if i >= 0 and len(downbeats) and np.min(np.abs(downbeats - beats[i])) < 1e-3:
-        acc = P["down_acc"]
-    nod = P["nod"] * shape * acc * e
     # bar-length sway (period = 2 bars for roll, 4 bars for yaw)
     bar = float(np.median(np.diff(downbeats))) if len(downbeats) > 1 else 2.0
     j = np.searchsorted(downbeats, t, side="right") - 1
     bph = ((t - downbeats[j]) / bar if j >= 0 else t / bar)
     nb = (j if j >= 0 else 0) + bph
-    roll = P["sway_roll"] * math.sin(math.pi * nb) * e
-    yaw = P["sway_yaw"] * math.sin(0.5 * math.pi * nb + 0.7) * e + P["yaw_out"]
+    # the downbeat's accent swells and eases with the bar's own nod shape: a per-beat multiplier would step
+    w = (0.5 * (1 + math.cos(2 * math.pi * bph))) ** P["sharp"] if len(downbeats) and j >= 0 else 0.0
+    acc = 1.0 + (P["down_acc"] - 1.0) * w
+    nod = motion * P["nod"] * shape * acc * e
+    roll = motion * P["sway_roll"] * math.sin(math.pi * nb) * e
+    yaw = motion * P["sway_yaw"] * math.sin(0.5 * math.pi * nb + 0.7) * e + P["yaw_out"]
     if P["jitter"]:
-        rng = np.random.default_rng(seed + max(i, 0))
-        yaw += P["jitter"] * float(rng.uniform(-1, 1)) * shape
-        roll += 0.5 * P["jitter"] * float(rng.uniform(-1, 1)) * shape
+        # each beat's random tilt, crossfaded in over the beat's first stretch: a fresh draw at the beat
+        # would snap the head
+        u = min(1.0, ph / 0.25)
+        u = u * u * (3 - 2 * u)
+        r0 = np.random.default_rng(seed + max(i, 0))
+        r1 = np.random.default_rng(seed + max(i - 1, 0))
+        draw = (1 - u) * np.array([r1.uniform(-1, 1), r1.uniform(-1, 1)]) + \
+            u * np.array([r0.uniform(-1, 1), r0.uniform(-1, 1)])
+        yaw += motion * P["jitter"] * draw[0] * shape
+        roll += motion * 0.5 * P["jitter"] * draw[1] * shape
     pitch = P["pitch"] + nod
     lean = P["lean"] * energy
     return pitch, yaw, roll, lean
@@ -99,6 +107,7 @@ def rot(pitch_down, yaw, roll):
 
 
 ARM_FOLLOW = 0.85                       # how far the elbow swings to put the forearm in line behind the hand
+TORSO_FOLLOW = (0.25, 0.3, 0.35)        # Body.pose: share of the head's pitch, yaw and roll the torso takes
 
 
 ELBOW_UP = 0.0                          # how far an arm working inside its shoulder lifts its elbow (0..1)
@@ -204,15 +213,21 @@ class Body:
         self.gaze = base_gaze_pitch      # where the eyes look at rest (radians below horizontal)
         self.eye_ahead = eye_ahead
 
+    def pitches(self, pitch, lean, torso_pitch=0.0):
+        """(torso pitch, head pitch) in pose, radians down (arrays work): the torso takes its share of the head's
+        pitch and leans in; the head tilts part of the way to the gaze, the eyes do the rest."""
+        return TORSO_FOLLOW[0] * pitch + 0.06 + 0.6 * lean + torso_pitch, 0.55 * self.gaze + pitch
+
     def pose(self, pitch, yaw, roll, lean, wrists, hand_fwd=None, torso=(0.0, 0.0, 0.0)):
         # torso follows the head a little; the head carries the rest. torso = (pitch, yaw, roll) the reach adds:
         # it leans toward a far hand, then turns to open toward that end of the keyboard
-        Rt = rot(0.25 * pitch + 0.06 + 0.6 * lean + torso[0], 0.3 * yaw + torso[1], 0.35 * roll + torso[2])
+        fp, fy, fr = TORSO_FOLLOW
+        tp, head_pitch = self.pitches(pitch, lean, torso[0])
+        Rt = rot(tp, fy * yaw + torso[1], fr * roll + torso[2])
         top = self.hips + Rt @ np.array([0, 0, self.th])
         shoulders = {"L": self.hips + Rt @ np.array([-self.sh, 0, self.th - 0.03]),
                      "R": self.hips + Rt @ np.array([self.sh, 0, self.th - 0.03])}
         neck_top = top + Rt @ np.array([0, 0.01, 0.09])
-        head_pitch = 0.55 * self.gaze + pitch          # head tilts part of the way; the eyes do the rest
         Rh = rot(head_pitch, yaw, roll)
         head = neck_top + Rh @ np.array([0, 0.02, 0.11])
         eye = head + Rh @ np.array([0, self.eye_ahead, 0.02])

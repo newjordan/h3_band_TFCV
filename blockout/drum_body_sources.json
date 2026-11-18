@@ -1,0 +1,70 @@
+{
+ "version": 1,
+ "method": "SAM 3D Body (sam_3d_body_dinov3_bf16, ComfyUI core nodes) on each frame, whole frame as the box, hand refinement on; SAM3DBody_Smooth savgol window 7; BVH via BuildPoseFile, camera translation off. Made with: python h3band/sam3d_mocap.py work/ref/clips/chad_otherside.mp4 work/sam3d/chad. Shot times from ffmpeg scene detection (threshold 0.3, and 0.08 for the 22.56 s cut).",
+ "sources": [
+  {
+   "id": "chad_otherside",
+   "bvh": "../work/sam3d/chad.bvh",
+   "video": "../work/ref/clips/chad_otherside.mp4",
+   "content": "Chad Smith drum cam performance of 'Otherside' (multi-camera), work/ref/clips/chad_otherside.mp4; source URL not recorded",
+   "rate": "real time, 23.976 fps, 720 frames",
+   "shots": [
+    {
+     "id": "s1",
+     "t": [
+      3.84,
+      10.14
+     ],
+     "view": "back-high"
+    },
+    {
+     "id": "s2",
+     "t": [
+      10.14,
+      14.35
+     ],
+     "view": "front-side"
+    },
+    {
+     "id": "s3",
+     "t": [
+      14.35,
+      18.35
+     ],
+     "view": "back-close"
+    },
+    {
+     "id": "s4",
+     "t": [
+      22.56,
+      27.99
+     ],
+     "view": "front"
+    }
+   ],
+   "skipped": [
+    {
+     "t": [
+      0.0,
+      3.84
+     ],
+     "why": "talking to camera, then not playing"
+    },
+    {
+     "t": [
+      18.35,
+      22.56
+     ],
+     "why": "hands close-up, body out of frame"
+    },
+    {
+     "t": [
+      27.99,
+      30.03
+     ],
+     "why": "hands close-up, body out of frame"
+    }
+   ]
+  }
+ ]
+}

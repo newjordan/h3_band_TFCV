@@ -7,6 +7,10 @@ stream, and sets per-stream noise masks:
   video_denoise 1   -> generate; 0 -> lock the take; in between -> run those tokens at that fraction of sigma
   zone box          -> pixel x0,y0,x1,y1, moving linearly from the first to the last frame; the box runs at
                        zone_denoise while the rest of the frame runs at video_denoise. 16 px per latent cell.
+  zone video        -> frames (the video's size, one per frame) whose brightness v puts each pixel at
+                       video_denoise + (zone_denoise - video_denoise) * v (h3band/drum_zone_mask.py: sticks and
+                       hands). Each latent frame takes the brightest of its frames, over whole 32 px DiT patches
+                       plus an 8 px margin, since H3 labels a patch with its noisiest cell.
 
 Requires a ComfyUI with MiniMax H3 support. With per-token noise masks on nested AV latents (upstream
 ComfyUI PR #15375) a mask-0 token is clean at the condition timestep; without it the sampler applies the
@@ -50,14 +54,15 @@ class H3BandZoneLatent:
                 "optional": {"video_latent": ("LATENT",),
                              "zone_box_start": ("STRING", {"default": ""}),
                              "zone_box_end": ("STRING", {"default": ""}),
-                             "zone_denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01})}}
+                             "zone_denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01}),
+                             "zone_video": ("IMAGE",)}}
 
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "run"
     CATEGORY = "h3band"
 
     def run(self, latent, audio_vae, audio, video_denoise, audio_denoise, video_latent=None,
-            zone_box_start="", zone_box_end="", zone_denoise=1.0):
+            zone_box_start="", zone_box_end="", zone_denoise=1.0, zone_video=None):
         s = latent["samples"]
         if not getattr(s, "is_nested", False) or len(s.tensors) != 2:
             raise ValueError("H3BandZoneLatent expects an H3 AV latent")
@@ -101,10 +106,33 @@ class H3BandZoneLatent:
                 cx1, cy1 = min(lw, int(-(-x1 // 16))), min(lh, int(-(-y1 // 16)))
                 vmask[:, :, k, cy0:cy1, cx0:cx1] = float(zone_denoise)
             logging.info("[H3BandZoneLatent] zone %s -> %s at denoise %.2f (rest %.2f)", b0, b1, zone_denoise, video_denoise)
+        if zone_video is not None:
+            w = self.zone_weights(zone_video, video.shape[2], video.shape[3], video.shape[4]).to(vmask)
+            vmask = vmask + (float(zone_denoise) - vmask) * w[None, None]
+            logging.info("[H3BandZoneLatent] zone video %s: %.1f%% of cells in the zone, denoise %.2f (rest %.2f)",
+                         tuple(zone_video.shape), 100.0 * float((w > 0).float().mean()), zone_denoise, video_denoise)
         out["noise_mask"] = comfy.nested_tensor.NestedTensor((vmask, amask))
         logging.info("[H3BandZoneLatent] video %s denoise %.2f | audio latent %d of %d frames, denoise %.2f, swapped_video=%s",
                      tuple(video.shape), video_denoise, min(rt, T), T, audio_denoise, video_latent is not None)
         return (out,)
+
+    @staticmethod
+    def zone_weights(frames, lt, lh, lw):
+        """[N, H, W, C] frames -> [lt, lh, lw] zone weight per latent cell: the brightest pixel over the latent frame's
+        frames (1,4,4,4,4 pattern), pooled over whole 2x2-cell (32 px) patches with an 8 px margin"""
+        v = frames[..., :3].float().mean(-1)
+        fpt, f, rows = (1, 4, 4, 4, 4), 0, []
+        for k in range(lt):
+            n = fpt[k % 5]
+            rows.append((v[f:f + n] if f < len(v) else v[-1:]).amax(0))
+            f += n
+        v = torch.stack(rows)[:, None]                          # [lt, 1, H, W]
+        ph, pw = -(-lh // 2), -(-lw // 2)                       # patch grid
+        if tuple(v.shape[-2:]) != (ph * 32, pw * 32):
+            v = torch.nn.functional.interpolate(v, size=(ph * 32, pw * 32), mode="nearest")
+        v = torch.nn.functional.max_pool2d(v, kernel_size=48, stride=32, padding=8)
+        v = v.repeat_interleave(2, dim=-2).repeat_interleave(2, dim=-1)[:, 0, :lh, :lw]
+        return v.clamp(0.0, 1.0)
 
 
 NODE_CLASS_MAPPINGS = {"H3BandZoneLatent": H3BandZoneLatent}

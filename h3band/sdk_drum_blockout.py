@@ -3,22 +3,24 @@
 
   sdk_drum_blockout.py SRC OUT.mp4 [--audio DRUMS.wav] [--start S] [--frames N] [--fps 24]
                        [--view front|three4|side|over|top] [--camera ex,ey,ez,lx,ly,lz] [--res 1280x704]
-                       [--heads 0:groove] [--seed 0] [--workflow API.json]
+                       [--heads 0:groove] [--seed 0] [--workflow API.json] [--teach] [--emotion 0:calm,8:intense]
+                       [--force F] [--range R] [--body B] [--flair X]
 
 SRC is a drum stem (.wav/.flac/...; hits detected by H3 Band Drum Events) or a .mid (H3 Band Drum Hits).
---audio is the track under the video: required with a MIDI (e.g. a blockout.drumsynth render of it),
-otherwise SRC itself. Files are uploaded as SDK assets; the job runs examples/workflows/
+--audio is the track under the video: SRC itself for a stem; for a MIDI, H3 Band Drum Synth renders it
+unless --audio is given. --teach adds H3 Band Drum Teacher (chokes, rimshots, ...) before the blockout. Files are uploaded as SDK assets; the job runs examples/workflows/
 drum_blockout_api.json with the inputs set here and the SaveVideo output is downloaded to OUT.mp4.
 
 Talks to COMFY_BASE_URL (default http://127.0.0.1:8189: comfy-api-proxy in front of a local ComfyUI with
 comfy_nodes/ installed and Blender on the server). COMFY_API_KEY is passed if set.
 """
-import argparse, json, os, sys
+import argparse, json, os
 from pathlib import Path
 
 from comfy_sdk import Comfy, OutputReady, Progress, StatusChange
 
 WORKFLOW = Path(__file__).resolve().parent.parent / "examples" / "workflows" / "drum_blockout_api.json"
+SLIDERS = ("force", "range", "body", "flair")     # blockout/drum_style.py
 
 
 def main():
@@ -34,11 +36,13 @@ def main():
     ap.add_argument("--heads", default="0:groove", help="head style timeline, e.g. 0:focused,8:groove,16:wild")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--workflow", default=str(WORKFLOW))
+    ap.add_argument("--teach", action="store_true", help="H3 Band Drum Teacher picks techniques before the blockout")
+    ap.add_argument("--emotion", default="", help="blockout/drum_style.py timeline, e.g. 0:calm,8:intense")
+    for k in SLIDERS:
+        ap.add_argument(f"--{k}", type=float, default=-1.0, help=f"{k} slider 0..1 over every emotion preset")
     a = ap.parse_args()
     is_midi = a.src.lower().endswith((".mid", ".midi"))
     audio = a.audio or (None if is_midi else a.src)
-    if audio is None:
-        sys.exit("a MIDI source needs --audio for the video's soundtrack")
     w, h = map(int, a.res.split("x"))
 
     os.environ.setdefault("COMFY_BASE_URL", "http://127.0.0.1:8189")
@@ -46,12 +50,19 @@ def main():
     graph = json.load(open(a.workflow))
     if is_midi:
         graph["2"] = {"class_type": "H3BandDrumHitsMIDI", "inputs": {"midi": ""}}
+    if a.teach:
+        graph["7"] = {"class_type": "H3BandDrumTeacher", "inputs": {"hits": ["2", 0], "choke_gap": 1.0}}
+        graph["3"]["inputs"]["hits"] = ["7", 0]
+    if audio is None:     # a MIDI alone: the synth renders the (taught) hits as the soundtrack
+        graph["1"] = {"class_type": "H3BandDrumSynth", "inputs": {"hits": graph["3"]["inputs"]["hits"], "seed": 0}}
     wf = client.workflows.from_json(graph)
-    wf.set_input("1", "audio", client.assets.from_file(audio))
+    if audio:
+        wf.set_input("1", "audio", client.assets.from_file(audio))
     if is_midi:
         wf.set_input("2", "midi", client.assets.from_file(a.src))
     for k, v in {"start": a.start, "frames": a.frames, "fps": a.fps, "width": w, "height": h, "view": a.view,
-                 "camera": a.camera, "head_schedule": a.heads, "seed": a.seed}.items():
+                 "camera": a.camera, "head_schedule": a.heads, "seed": a.seed, "emotion": a.emotion,
+                 **{k: getattr(a, k) for k in SLIDERS}}.items():
         wf.set_input("3", k, v)
     wf.set_input("4", "start_index", a.start)
     wf.set_input("4", "duration", a.frames / a.fps)

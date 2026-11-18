@@ -1,8 +1,14 @@
-"""Blender (bpy) renderer for a drum blockout JSON from blockout/drums.py. Grey matte primitives, Workbench.
+"""Blender (bpy) renderer for a drum blockout JSON from blockout/drums.py. Grey matte, Workbench
+(--look real: a lit stage in EEVEE).
+
+The drummer is the CC0 MPFB2 man in blockout/hand_model/mpfb_body.blend (mpfb_make_body.py), dressed, posed bone by
+bone onto the solved joints; without that file (or with DRUM_BODY=prims) he is the older primitive mannequin with
+the MPFB2 hands.
 
     blender -b --factory-startup -P blockout/blender_drums.py -- ANIM.json OUT_DIR [--res 1280x704]
-           [--frames a:b] [--engine WORKBENCH|CYCLES] [--view front|three4|side|over|top] [--lens mm]
-           [--cam ex,ey,ez,lx,ly,lz]
+           [--frames a:b] [--engine WORKBENCH|CYCLES] [--depth NEAR,FAR] [--view front|three4|side|over|top] [--lens mm]
+           [--cam ex,ey,ez,lx,ly,lz] [--stick-scale K] [--stick-rgb R,G,B] [--look real] [--matte sticks]
+           [--grey NAME=G,...] [--hide sticks] [--mask sticks]
 
 front is the audience view, three4 a stage-left three-quarter, side a debug profile for checking strokes,
 over an over-the-shoulder view, top a debug plan view. --cam sets any eye and look-at point (kit metres:
@@ -42,6 +48,9 @@ def mat(name, g):
 
 M = {k: mat(k, g) for k, g in (("skin", 0.42), ("stick", 0.86), ("head", 0.80), ("shell", 0.20), ("hoop", 0.50),
                                ("metal", 0.58), ("hw", 0.33), ("floor", 0.06), ("rug", 0.13), ("seat", 0.12))}
+# --stick-rgb R,G,B paints the sticks one colour (e.g. 1,0.05,0.6 pink) so they stand out from the grey for H3
+if "--stick-rgb" in opts:
+    M["stick"].diffuse_color = (*map(float, opts["--stick-rgb"].split(",")), 1.0)
 
 
 def link(ob, m=None, parent=None):
@@ -107,7 +116,6 @@ def pivot(name, c, n):
 
 # ------------------------------------------------------------------ kit
 pivots = {}
-hat_top = None
 for p, k in KIT.items():
     c, n, r = Vector(k["c"]), Vector(k["n"]), k["r"]
     e = pivots[p] = pivot(p, c, n)
@@ -119,27 +127,24 @@ for p, k in KIT.items():
         cyl(p + "_hoop2", r + 0.008, r + 0.008, -d - 0.006, -d + 0.012, M["hoop"], e, caps=False)
         if k["kind"] == "kick":
             cyl(p + "_reso", r, r, -d, -d + 0.004, M["head"], e)
-        bottom = c - n * d
-        if p == "snare":
-            tripod("snare_stand", bottom, 0.22, 0.25)
-        elif p == "floor":
-            for a in (30, 150, 270):
-                o = Vector((math.cos(math.radians(a)), math.sin(math.radians(a)), 0)) * (r + 0.02)
-                rod(f"floor_leg{a}", c + o + Vector((0, 0, -0.05)), (c + o * 1.25).to_2d().to_3d(), 0.008, M["hw"])
-        elif p in ("tom1", "tom2"):
-            kc = Vector(KIT["kick"]["c"]) + Vector((0, KIT["kick"]["depth"] * 0.4, KIT["kick"]["r"]))
-            rod(p + "_mount", bottom, kc, 0.011, M["hw"])
     else:
-        cyl(p + "_bow", r, 0.03, -0.003, 0.009, M["metal"], e, segs=48)
+        if p.rstrip("0123456789") == "china":      # edge turned up (drum_collide.piece_parts)
+            cyl(p + "_bow", r, 0.03, 0.012, 0.0, M["metal"], e, segs=48)
+        else:
+            cyl(p + "_bow", r, 0.03, -0.003, 0.009, M["metal"], e, segs=48)
         cyl(p + "_bell", 0.055, 0.02, 0.006, 0.026, M["metal"], e)
         if k["kind"] == "hihat":
-            hat_top = e
             cyl(p + "_bottom", r, 0.03, -0.010, -0.004, M["metal"], e, segs=48)
-
-            tripod("hihat_stand", c - Vector((0, 0, 0.012)), 0.24, 0.30)
-            rod("hihat_rod", c - Vector((0, 0, 0.012)), c + Vector((0, 0, 0.06)), 0.004, M["hw"])
-        else:
-            tripod(p + "_stand", c - n * 0.02, 0.28, 0.35 if c.z > 1.1 else 0.30)
+# stands, tom mounts and floor-tom legs: the hitbox rods (drum_collide.stands); a post gets tripod feet
+FEET = {"snare": 0.22, "hihat": 0.24, "tom": 0.24}
+if "stands" not in anim:
+    print("blender_drums: this JSON has no 'stands' (made before drums.py wrote them); drawing no hardware")
+for name, a, b, r in anim.get("stands", ()):
+    if name.endswith("_stand"):
+        owner = name[:-len("_stand")].rstrip("0123456789")
+        tripod(name, b, FEET.get(owner, 0.28), a[2])
+    else:
+        rod(name, a, b, r, M["hw"])
 # hi-hat top cymbal (bow + bell) rides up when the pedal opens
 hat_moving = [ob for ob in bpy.data.objects if ob.name in ("hihat_bow", "hihat_bell")]
 
@@ -168,6 +173,15 @@ rod("beater_post_r", (bp.x + 0.05, bp.y, 0.0), (bp.x + 0.05, bp.y, bp.z + 0.02),
 beater = bpy.data.objects.new("beater", None); COL.objects.link(beater)
 cyl("beater_shaft", 0.005, 0.005, 0.0, kp["beater_len"] - 0.02, M["hw"], beater, segs=12)
 cyl("beater_ball", 0.032, 0.032, kp["beater_len"] - 0.03, kp["beater_len"] + 0.01, M["head"], beater, segs=24)
+beater2 = None
+if "heel2" in kp:       # double pedal: second footboard, its beater beside the first, a drive shaft between
+    kick_board2 = pedal("kick_pedal2", kp["heel2"], (0, 1), kp["len"])
+    bp2 = Vector(kp["beater_pivot2"])
+    beater2 = bpy.data.objects.new("beater2", None); COL.objects.link(beater2)
+    cyl("beater2_shaft", 0.005, 0.005, 0.0, kp["beater_len"] - 0.02, M["hw"], beater2, segs=12)
+    cyl("beater2_ball", 0.032, 0.032, kp["beater_len"] - 0.03, kp["beater_len"] + 0.01, M["head"], beater2, segs=24)
+    h2 = Vector(kp["heel2"])
+    rod("drive_shaft", (h2.x, h2.y + kp["len"] + 0.02, 0.05), (bp2.x - 0.05, bp2.y, bp2.z), 0.006, M["hw"])
 
 # throne, rug, floor
 hips0 = Vector(frames[0]["body"]["hips"])
@@ -218,16 +232,354 @@ def set_hull(ob, pts):
     bm.to_mesh(ob.data); bm.free()
 
 
-rig = {}
-for h in ("L", "R"):
-    rig[h] = {"upper": Seg(f"{h}_upper", 0.046, 0.038), "fore": Seg(f"{h}_fore", 0.036, 0.028),
-              "fist": sphere(f"{h}_fist", 1.0, M["skin"]), "stick": Seg(f"{h}_stick", 0.0075, 0.0055, M["stick"]),
-              "thigh": Seg(f"{h}_thigh", 0.075, 0.058), "shin": Seg(f"{h}_shin", 0.055, 0.042),
-              "foot": hull_ob(f"{h}_foot")}
-torso, pelvis = hull_ob("torso"), hull_ob("pelvis")
-neck = Seg("neck", 0.050, 0.045)
-head = sphere("head", 1.0, M["skin"])
-nose = link(bpy.data.objects.new("nose", capsule_mesh("nose", 0.016, 0.004)), M["skin"])
+# ------------------------------------------------------------------ MPFB2 hands (blockout/hand_model)
+# The piano's rigged, skinned CC0 hand. drum_hands.py solves the grip on the same rig (blockout/rig), so each
+# frame's "root" and "angles" pose the bones by pure forward kinematics, as blender_piano.pose_rig does.
+HANDS = "angles" in frames[0]["hands"]["R"]         # older JSONs get a fist
+HAND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hand_model")
+
+
+def load_mpfb():
+    with bpy.data.libraries.load(os.path.join(HAND_DIR, "mpfb_hands.blend")) as (src, dst):
+        dst.objects = ["hands", "Human.rig"]
+    mesh, arm = dst.objects
+    for o in (mesh, arm):
+        COL.objects.link(o)
+    mesh.data.materials.clear()
+    mesh.data.materials.append(M["skin"])
+    for p in mesh.data.polygons:
+        p.use_smooth = True
+    sub = mesh.modifiers.new("smooth", "SUBSURF")      # after the armature: smooth the posed mesh
+    sub.levels, sub.render_levels = 1, 2
+    arm.hide_render = True
+    bones = {s: {b.name[:-2]: b for b in arm.data.bones if b.name.endswith("." + s)} for s in "LR"}
+    pts = [mesh.matrix_world @ v.co for v in mesh.data.vertices]
+    w, e = bones["R"]["wrist"].head_local, bones["R"]["lowerarm01"].head_local
+    u = (w - e).normalized()
+    along = [(p - e).dot(u) for p in pts]
+    near = [i for i, a in enumerate(along) if a > -0.01 and (pts[i] - e - u * along[i]).length < 0.08]
+    cut = min(along[i] for i in near)       # where the skinned forearm starts, m from the elbow
+    full = (w - e).length - cut > 0.2       # the skin runs (almost) to the elbow
+    cut_r = max((pts[i] - e - u * along[i]).length for i in near if along[i] < cut + 0.01)
+    end_r = min(((pts[i] - e - u * along[i]).length for i in near if abs(along[i] - cut - 0.012) < 0.008),
+                default=cut_r)              # the skin's width where the sleeve ends: the sleeve tucks under it
+    return arm, bones, full, (cut, cut_r, end_r)
+
+
+_SK = {}
+
+
+def pose_hand(arm, B, s, hd):
+    """The wrist bone takes the solved root pose, every finger bone its joint rotation about its own rest axes,
+    and the two forearm bones run from the elbow to the wrist, sharing some of the hand's roll."""
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from blockout.rig.skeleton import Skeleton
+    if s not in _SK:
+        _SK[s] = Skeleton(s)
+    sk = _SK[s]
+    B = B[s]
+    wrist, elbow = Vector(hd["wrist"]), Vector(hd["elbow"])
+    u = (wrist - elbow).normalized()
+    root = Matrix([list(r) for r in hd["root"]["rot"]]).to_4x4()
+    root.translation = Vector(hd["root"]["pos"])
+    want = {"wrist": root @ Matrix.Diagonal((sk.scale, sk.scale, sk.scale, 1.0))}   # the rig's hand scale
+    for nm, back, share in (("lowerarm02", 0.0, 0.6), ("lowerarm01", B["lowerarm02"].length, 0.2)):
+        head = wrist - u * (B["lowerarm02"].length + back)
+        r3 = B[nm].matrix_local.to_3x3()
+        r3 = r3.col[1].normalized().rotation_difference(u).to_matrix() @ r3
+        rigid = root.to_3x3() @ B["wrist"].matrix_local.to_3x3().inverted() @ B[nm].matrix_local.to_3x3()
+        za, zb = r3.col[2] - u * r3.col[2].dot(u), rigid.col[2] - u * rigid.col[2].dot(u)
+        if za.length > 1e-6 and zb.length > 1e-6:
+            ang = za.normalized().angle(zb.normalized())
+            if za.normalized().cross(zb.normalized()).dot(u) < 0:
+                ang = -ang
+            r3 = Matrix.Rotation(ang * share, 3, u) @ r3
+        m = r3.to_4x4()
+        m.translation = head
+        want[nm] = m
+
+    def basis(nm):
+        b = B[nm]
+        if b.parent is None:
+            return b.matrix_local.inverted() @ want[nm]
+        pn = b.parent.name[:-2]
+        return (b.parent.matrix_local.inverted() @ b.matrix_local).inverted() @ want[pn].inverted() @ want[nm]
+
+    for nm in ("lowerarm01", "lowerarm02", *sk.names):
+        pb = arm.pose.bones[f"{nm}.{s}"]
+        if nm in want:
+            pb.matrix_basis = basis(nm)
+        else:
+            pb.matrix_basis = Matrix([list(r) for r in sk.local_rot(nm, hd["angles"].get(nm, {}))]).to_4x4()
+
+
+# ------------------------------------------------------------------ MPFB2 whole body (blockout/hand_model/mpfb_body.*)
+# The same CC0 man as the hands, shaped toward the solver's performer (mpfb_make_body.py). Every bone the solver
+# has a joint for is unparented in that file, so each takes a world pose here: its head on the solved joint, its
+# length stretched to the solved segment, its roll from the limb's bend plane. Fingers and toes ride their parents.
+def _frame(a, b):
+    a = a.normalized()
+    b = (b - a * b.dot(a)).normalized()
+    return Matrix((a, b, a.cross(b))).transposed()
+
+
+def _minrot(a, b):
+    return a.normalized().rotation_difference(b.normalized()).to_matrix()
+
+
+def _signed(a, b, axis):
+    a, b = a - axis * a.dot(axis), b - axis * b.dot(axis)
+    if a.length < 1e-9 or b.length < 1e-9:
+        return 0.0
+    ang = a.angle(b)
+    return ang if a.cross(b).dot(axis) >= 0 else -ang
+
+
+def _slerp(Q, f):
+    return Matrix.Identity(3).to_quaternion().slerp(Q.to_quaternion(), f).to_matrix()
+
+
+ZONES = (("skin", None), ("shirt", 0.16), ("pants", 0.10), ("shoes", 0.05), ("eyes", 0.26))
+WORN = {"shirt": (0.13, 0.13, 0.14), "pants": (0.06, 0.07, 0.10), "shoes": (0.55, 0.55, 0.55),
+        "hair": (0.045, 0.04, 0.035), "brows": (0.05, 0.045, 0.04)}
+
+
+def _zone(bone):
+    if bone.startswith(("spine", "clavicle", "shoulder01", "breast", "upperarm01")):
+        return 1
+    if bone.startswith(("root", "pelvis", "upperleg", "lowerleg")):
+        return 2
+    if bone.startswith(("foot", "toe")):
+        return 3
+    return 0
+
+
+class MPFBBody:
+    SPINE = (("spine05", 0.15), ("spine04", 0.35), ("spine03", 0.6), ("spine02", 0.85), ("spine01", 1.0))
+    NECK = (("neck01", 0.25), ("neck02", 0.5), ("neck03", 0.75), ("head", 1.0))
+    TOES = [f"toe{t}-1" for t in range(1, 6)]
+
+    def __init__(self, fr0):
+        with bpy.data.libraries.load(os.path.join(HAND_DIR, "mpfb_body.blend")) as (src, dst):
+            dst.objects = list(src.objects)
+        obs = {o.name: o for o in dst.objects}
+        self.mesh, self.arm = obs.pop("body"), obs.pop("Human.rig")
+        self.worn = obs                     # suit, shoes, hair, brows (mpfb_make_body.py with the asset pack)
+        for o in (self.mesh, self.arm, *self.worn.values()):
+            COL.objects.link(o)
+        self.arm.hide_render = True
+        me = self.mesh.data
+        me.materials.clear()
+        for k, g in ZONES:
+            me.materials.append(M["skin"] if g is None else mat(k, g))
+        names = {g.index: g.name for g in self.mesh.vertex_groups}
+        zone = []
+        for v in me.vertices:
+            gs = [(e.weight, names[e.group]) for e in v.groups if e.weight > 0]
+            # dressed: the skin is skin; bare: shirt, shorts and shoes painted on by the bones under them
+            zone.append(4 if any(n == "eyes" for _, n in gs) else 0 if self.worn or not gs else _zone(max(gs)[1]))
+        for p in me.polygons:
+            z = [zone[i] for i in p.vertices]
+            p.material_index = max(set(z), key=z.count)
+            p.use_smooth = True
+        for o in (self.mesh, *self.worn.values()):
+            if o is not self.mesh:
+                for slot in o.material_slots:
+                    m = slot.material
+                    m.diffuse_color = (*WORN.get(m.name.split(".")[0], (0.3, 0.3, 0.3)), 1.0)
+                    m.roughness = 0.7
+                for p in o.data.polygons:
+                    p.use_smooth = True
+            sub = o.modifiers.new("smooth", "SUBSURF")
+            sub.levels, sub.render_levels = 1, 2 if o is self.mesh else 1
+        bones = self.arm.data.bones
+        self.Lc = {b.name: b.matrix_local.copy() for b in bones}
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from blockout.rig.skeleton import Skeleton
+        self.sk = {s: Skeleton(s) for s in "LR"}
+        # rest hip-joint centre onto the solver's, turned to face the audience (+y)
+        hj = (bones["upperleg01.L"].head_local + bones["upperleg01.R"].head_local) / 2
+        self.hc = (Vector(fr0["feet"]["L"]["hip"]) + Vector(fr0["feet"]["R"]["hip"])) / 2
+        self.A = Matrix.Translation(self.hc) @ Matrix.Rotation(math.pi, 4, "Z") @ Matrix.Translation(-hj)
+        self.Ai = self.A.inverted()
+        self.arm.matrix_world = self.A
+        W = {n: self.A @ m for n, m in self.Lc.items()}
+        self.h0 = {n: m.translation.copy() for n, m in W.items()}
+        self.R0 = {n: m.to_3x3() for n, m in W.items()}
+        # the solver's torso stands straight over its hips pivot; the rest body leans a little forward of that,
+        # so it sits back about its hip joints by the difference (a seated pelvis rolls back anyway)
+        b0 = fr0["body"]
+        Rt0 = Matrix(b0["torso_rot"])
+        sm = (Vector(b0["shoulders"]["L"]) + Vector(b0["shoulders"]["R"])) / 2 - Vector(b0["hips"])
+        sm_neutral = Vector(b0["hips"]) + Rt0.transposed() @ sm
+        sm0 = (self.h0["upperarm01.L"] + self.h0["upperarm01.R"]) / 2
+        self.C = _minrot(sm0 - self.hc, sm_neutral - self.hc)
+        # foot landmarks from the sole: heel (back), ball (under the toe joints), toe (front)
+        mw = self.A
+        pts = {s: [] for s in "LR"}
+        for o in [self.mesh] + [o for nm, o in self.worn.items() if nm == "shoes"]:      # the shoe sole if worn
+            gn = {g.index: g.name for g in o.vertex_groups}
+            for v in o.data.vertices:
+                gs = [(e.weight, gn[e.group]) for e in v.groups if e.weight > 0.5]
+                if gs and max(gs)[1].startswith(("foot", "toe")):
+                    pts[max(gs)[1][-1]].append(mw @ v.co)
+        self.foot0 = {}
+        for s, P in pts.items():
+            zmin = min(p.z for p in P)
+            sole = [p for p in P if p.z < zmin + 0.012]
+            heel = min(sole, key=lambda p: p.y)
+            toe = max(P, key=lambda p: p.y)
+            ball = sum((self.h0[f"{t}.{s}"] for t in self.TOES), Vector()) / 5
+            ball = Vector((ball.x, ball.y, heel.z))
+            self.foot0[s] = (heel, ball, Vector((toe.x, toe.y, heel.z)))
+        self.n_prev = {}
+
+    def _put(self, n, pos, Q, scale=(1.0, 1.0, 1.0)):
+        """World pose of an unparented bone: head at pos, rest frame turned by Q, scaled in its own axes."""
+        P = Matrix.Translation(pos) @ (Q @ self.R0[n]).to_4x4() @ Matrix.Diagonal((*scale, 1.0))
+        self.arm.pose.bones[n].matrix_basis = self.Lc[n].inverted() @ self.Ai @ P
+        return P
+
+    def _bend_axis(self, key, a, b, fallback):
+        n = a.cross(b)
+        if n.length < 0.03 * a.length * b.length:
+            n = self.n_prev.get(key, fallback)
+        n = n.normalized()
+        self.n_prev[key] = n
+        return n
+
+    def pose(self, fr):
+        b = fr["body"]
+        Rt, Rh = Matrix(b["torso_rot"]), Matrix(b["head_rot"])
+        C, hc = self.C, self.hc
+
+        def rigid(n, Q, piv):
+            return self._put(n, piv + Q @ (self.h0[n] - piv), Q)
+        rigid("root", C, hc)
+        Qs = {}
+        p = hc + C @ (self.h0["spine05"] - hc)
+        prev = None
+        for n, f in self.SPINE:
+            if prev:
+                p = p + Qs[prev] @ (self.h0[n] - self.h0[prev])
+            Qs[n] = _slerp(Rt, f) @ C
+            self._put(n, p, Qs[n])
+            prev = n
+        top, Qtop = p, Qs["spine01"]
+        for n, f in self.NECK:
+            p = p + Qs[prev] @ (self.h0[n] - self.h0[prev])
+            Qs[n] = Qtop.to_quaternion().slerp(Rh.to_quaternion(), f).to_matrix()
+            self._put(n, p, Qs[n])
+            prev = n
+        for s, hd in fr["hands"].items():
+            self._arm(s, hd, top, Qtop)
+        for s, fd in fr["feet"].items():
+            rigid(f"pelvis.{s}", C, hc)
+            self._leg(s, fd)
+
+    def _arm(self, s, hd, top, Qtop):
+        n = lambda k: f"{k}.{s}"
+        # clavicle + shoulder01 swing (and stretch a little) to put the shoulder joint on the solved one
+        pc = top + Qtop @ (self.h0[n("clavicle")] - self.h0["spine01"])
+        S, E, Wr = Vector(hd["shoulder"]), Vector(hd["elbow"]), Vector(hd["wrist"])
+        ps0 = pc + Qtop @ (self.h0[n("upperarm01")] - self.h0[n("clavicle")])
+        Qc = _minrot(ps0 - pc, S - pc) @ Qtop
+        k = (S - pc).length / max((ps0 - pc).length, 1e-6)
+        self._put(n("clavicle"), pc, Qc, (k, k, k))
+        self._put(n("shoulder01"), pc + k * (Qc @ (self.h0[n("shoulder01")] - self.h0[n("clavicle")])), Qc, (k, k, k))
+        # upper arm: aimed at the elbow, rolled so the rest elbow hinge lines up with the solved one
+        d0 = self.h0[n("lowerarm01")] - self.h0[n("upperarm01")]
+        f0 = self.h0[n("wrist")] - self.h0[n("lowerarm01")]
+        d, f = E - S, Wr - E
+        n0 = d0.cross(f0).normalized()
+        nn = self._bend_axis("arm" + s, d, f, Qc @ n0)
+        Qu = _frame(d, nn) @ _frame(d0, n0).inverted()
+        Qsw = _minrot(Qc @ d0, d) @ Qc
+        tw = _signed(Qsw @ n0, Qu @ n0, d.normalized())
+        ku = d.length / d0.length
+        self._put(n("upperarm01"), S, Matrix.Rotation(0.5 * tw, 3, d.normalized()) @ Qsw, (1.0, ku, 1.0))
+        self._put(n("upperarm02"), S + ku * (Qu @ (self.h0[n("upperarm02")] - self.h0[n("upperarm01")])), Qu,
+                  (1.0, ku, 1.0))
+        # forearm: hinged at the elbow, then pronated part of the way toward the hand's own roll
+        Qf = _minrot(Qu @ f0, f) @ Qu
+        root = Matrix([list(r) for r in hd["root"]["rot"]])
+        Qh = root @ self.R0[n("wrist")].inverted()
+        u = f.normalized()
+        ps = _signed(Qf @ n0, Qh @ n0, u)
+        kf = f.length / f0.length
+        self._put(n("lowerarm01"), E, Matrix.Rotation(0.2 * ps, 3, u) @ Qf, (1.0, kf, 1.0))
+        self._put(n("lowerarm02"), E + kf * (Qf @ (self.h0[n("lowerarm02")] - self.h0[n("lowerarm01")])),
+                  Matrix.Rotation(0.6 * ps, 3, u) @ Qf, (1.0, kf, 1.0))
+        # the hand: the solved wrist pose, fingers by their joint angles (as pose_hand)
+        sk = self.sk[s]
+        self._put(n("wrist"), Vector(hd["root"]["pos"]), Qh, (sk.scale,) * 3)
+        for nm in sk.names:
+            if nm != "wrist":
+                self.arm.pose.bones[n(nm)].matrix_basis = Matrix(
+                    [list(r) for r in sk.local_rot(nm, hd["angles"].get(nm, {}))]).to_4x4()
+
+    def _leg(self, s, fd):
+        n = lambda k: f"{k}.{s}"
+        H, K, A = Vector(fd["hip"]), Vector(fd["knee"]), Vector(fd["ankle"])
+        d0 = self.h0[n("lowerleg01")] - self.h0[n("upperleg01")]
+        s0 = self.h0[n("foot")] - self.h0[n("lowerleg01")]
+        d, sh = K - H, A - K
+        n0 = (self.A.to_3x3() @ Vector((1, 0, 0)))            # the knee's hinge at rest: the body's own left
+        n0 = (n0 - d0.normalized() * n0.dot(d0.normalized())).normalized()
+        nn = self._bend_axis("leg" + s, d, sh, self.C @ n0)
+        Qt = _frame(d, nn) @ _frame(d0, n0).inverted()
+        Qsw = _minrot(self.C @ d0, d) @ self.C
+        tw = _signed(Qsw @ n0, Qt @ n0, d.normalized())
+        kt = d.length / d0.length
+        self._put(n("upperleg01"), H, Matrix.Rotation(0.5 * tw, 3, d.normalized()) @ Qsw, (1.0, kt, 1.0))
+        self._put(n("upperleg02"), H + kt * (Qt @ (self.h0[n("upperleg02")] - self.h0[n("upperleg01")])), Qt,
+                  (1.0, kt, 1.0))
+        Qs = _minrot(Qt @ s0, sh) @ Qt
+        ks = sh.length / s0.length
+        self._put(n("lowerleg01"), K, Qs, (1.0, ks, 1.0))
+        self._put(n("lowerleg02"), K + ks * (Qs @ (self.h0[n("lowerleg02")] - self.h0[n("lowerleg01")])), Qs,
+                  (1.0, ks, 1.0))
+        # foot: from the ankle, its sole turned onto the solved heel -> ball line, sized to it; toes bend at the ball
+        heel0, ball0, toe0 = self.foot0[s]
+        heel, ball, toe = Vector(fd["heel"]), Vector(fd["ball"]), Vector(fd["toe"])
+        up = Vector((0, 0, 1))
+        Qft = _frame(ball - heel, up) @ _frame(ball0 - heel0, up).inverted()
+        kft = (ball - heel).length / (ball0 - heel0).length
+        Pf = self._put(n("foot"), A, Qft, (kft,) * 3)
+        Qtoe = _minrot(Qft @ (toe0 - ball0), toe - ball) @ Qft
+        for t in self.TOES:
+            tn = n(t)
+            pt = A + kft * (Qft @ (self.h0[tn] - self.h0[n("foot")]))
+            Pt = Matrix.Translation(pt) @ (Qtoe @ self.R0[tn]).to_4x4() @ Matrix.Diagonal((kft, kft, kft, 1.0))
+            rel = self.Lc[n("foot")].inverted() @ self.Lc[tn]
+            self.arm.pose.bones[tn].matrix_basis = rel.inverted() @ Pf.inverted() @ Pt
+
+
+BODY = HANDS and "shoulders" in frames[0]["body"] and os.environ.get("DRUM_BODY", "mpfb") == "mpfb" \
+    and os.path.exists(os.path.join(HAND_DIR, "mpfb_body.blend"))
+FULL_FOREARM = False
+if BODY:
+    MPFB_BODY = MPFBBody(frames[0])
+elif HANDS:
+    MPFB_ARM, MPFB_BONES, FULL_FOREARM, (SKIN_CUT, SKIN_CUT_R, SKIN_END_R) = load_mpfb()
+# --stick-scale K fattens the sticks K times (a control video for H3: real 15 mm sticks are under one 32 px video token)
+SS = float(opts.get("--stick-scale", 1.0))
+rig = {h: {"stick": Seg(f"{h}_stick", 0.0075 * SS, 0.0055 * SS, M["stick"])} for h in ("L", "R")}
+for h in ("L", "R") if not BODY else ():
+    # a skinned forearm that runs to the elbow is cut off just short of it: a sleeve a little wider than the cut
+    # covers the elbow end and the cut edge, its tapered end tucked into the skin so no open edge shows
+    fore = Seg(f"{h}_fore", SKIN_CUT_R + 0.003, max(SKIN_END_R - 0.002, 0.008)) if FULL_FOREARM \
+        else Seg(f"{h}_fore", 0.036, 0.028)
+    rig[h].update({"upper": Seg(f"{h}_upper", 0.046, 0.038), "fore": fore,
+                   "thigh": Seg(f"{h}_thigh", 0.075, 0.058), "shin": Seg(f"{h}_shin", 0.055, 0.042),
+                   "foot": hull_ob(f"{h}_foot")})
+    if not HANDS:
+        rig[h]["fist"] = sphere(f"{h}_fist", 1.0, M["skin"])
+if not BODY:
+    torso, pelvis = hull_ob("torso"), hull_ob("pelvis")
+    neck = Seg("neck", 0.050, 0.045)
+    head = sphere("head", 1.0, M["skin"])
+    nose = link(bpy.data.objects.new("nose", capsule_mesh("nose", 0.016, 0.004)), M["skin"])
 
 # ------------------------------------------------------------------ camera, light, render
 cam_d = bpy.data.cameras.new("cam")
@@ -272,6 +624,123 @@ else:
     scn.display.shadow_shift = 0.05
     scn.display.light_direction = (-0.35, 0.45, 0.82)
     scn.display.render_aa = "16"
+# --look real renders the blockout as a lit stage in EEVEE instead of grey: H3's starting video, so it only has to make
+# real what is already there (black sticks, coated heads, red lacquer, brass, skin, black T-shirt)
+REAL = {"skin": ((0.55, 0.33, 0.24), 0.45, 0, 0), "stick": ((0.015, 0.015, 0.015), 0.3, 0, 0),
+        "head": ((0.80, 0.78, 0.72), 0.55, 0, 0), "shell": ((0.30, 0.02, 0.02), 0.2, 0, 1),
+        "hoop": ((0.90, 0.90, 0.90), 0.12, 1, 0), "metal": ((0.78, 0.52, 0.22), 0.28, 1, 0),
+        "hw": ((0.80, 0.80, 0.80), 0.2, 1, 0), "floor": ((0.008, 0.007, 0.006), 0.6, 0, 0),
+        "rug": ((0.03, 0.012, 0.01), 0.9, 0, 0), "seat": ((0.01, 0.01, 0.01), 0.45, 0, 0),
+        "shirt": ((0.012, 0.012, 0.013), 0.85, 0, 0), "pants": ((0.02, 0.025, 0.045), 0.8, 0, 0),
+        "shoes": ((0.45, 0.45, 0.45), 0.5, 0, 0), "eyes": ((0.3, 0.3, 0.3), 0.2, 0, 0),
+        "hair": ((0.03, 0.02, 0.012), 0.5, 0, 0), "brows": ((0.03, 0.02, 0.012), 0.5, 0, 0)}
+if opts.get("--look") == "real":
+    scn.render.engine = "BLENDER_EEVEE"
+    scn.eevee.taa_render_samples = 32
+    looks = {i.identifier for i in scn.view_settings.bl_rna.properties["look"].enum_items}
+    scn.view_settings.look = next((k for k in looks if "Medium High Contrast" in k), "None")
+    for m in bpy.data.materials:
+        if m.name.split(".")[0] not in REAL:
+            continue
+        rgb, rough, metal, coat = REAL[m.name.split(".")[0]]
+        if m.name == "stick" and "--stick-rgb" in opts:
+            rgb = tuple(map(float, opts["--stick-rgb"].split(",")))
+        bsdf = next(nd for nd in m.node_tree.nodes if nd.type == "BSDF_PRINCIPLED")
+        bsdf.inputs["Base Color"].default_value = (*rgb, 1.0)
+        bsdf.inputs["Roughness"].default_value = rough
+        bsdf.inputs["Metallic"].default_value = metal
+        bsdf.inputs["Coat Weight"].default_value = coat
+        bsdf.inputs["Alpha"].default_value = 1.0
+    world.use_nodes = True
+    bg = next(nd for nd in world.node_tree.nodes if nd.type == "BACKGROUND")
+    bg.inputs["Color"].default_value, bg.inputs["Strength"].default_value = (0.01, 0.01, 0.012, 1), 1.0
+    for name, kind, at, energy, size, rgb in (
+            ("top", "AREA", (0.0, 0.6, 3.4), 900, 2.4, (1.0, 0.92, 0.80)),       # warm overhead wash on the heads
+            ("back", "SPOT", (-1.6, -1.8, 3.0), 1500, 0.3, (1.0, 0.85, 0.65)),   # behind the drummer: back and arms
+            ("rim", "SPOT", (1.8, 2.4, 2.6), 900, 0.3, (0.65, 0.75, 1.0))):     # cool from the audience side
+        L = bpy.data.lights.new(name, kind)
+        L.energy, L.color = energy, rgb
+        if kind == "AREA":
+            L.size = size
+        else:
+            L.shadow_soft_size, L.spot_size, L.spot_blend = size, math.radians(70), 0.5
+        ob = bpy.data.objects.new(name, L)
+        ob.location = at
+        ob.rotation_euler = (Vector((0.0, 0.25, 0.7)) - Vector(at)).to_track_quat("-Z", "Y").to_euler()
+        COL.objects.link(ob)
+# --depth NEAR,FAR renders a depth map instead (white at NEAR metres from the camera, black at FAR, sticks included):
+# the control video for H3's Fun ControlNet
+if "--depth" in opts:
+    near, far = map(float, opts["--depth"].split(","))
+    dm = bpy.data.materials.new("depth")
+    nt = dm.node_tree
+    nt.nodes.clear()
+    cd, mr = nt.nodes.new("ShaderNodeCameraData"), nt.nodes.new("ShaderNodeMapRange")
+    em, mo = nt.nodes.new("ShaderNodeEmission"), nt.nodes.new("ShaderNodeOutputMaterial")
+    for k, v in (("From Min", near), ("From Max", far), ("To Min", 1.0), ("To Max", 0.0)):
+        mr.inputs[k].default_value = v
+    nt.links.new(cd.outputs["View Z Depth"], mr.inputs["Value"])
+    nt.links.new(mr.outputs["Result"], em.inputs["Color"])
+    nt.links.new(em.outputs["Emission"], mo.inputs["Surface"])
+    scn.view_layers[0].material_override = dm
+    world.color = (0, 0, 0)
+    if world.node_tree:
+        for nd in world.node_tree.nodes:
+            if nd.type == "BACKGROUND":
+                nd.inputs["Color"].default_value = (0, 0, 0, 1)
+    scn.render.engine = "BLENDER_EEVEE" if "BLENDER_EEVEE" in {e.identifier for e in
+                                                               bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items} else "BLENDER_EEVEE_NEXT"
+    scn.eevee.taa_render_samples = 16
+    scn.view_settings.view_transform = "Standard"
+
+
+# --matte sticks renders just the two sticks over a transparent background (RGBA), everything else a holdout that still
+# hides them: a matte to lay the blockout's frame-exact sticks over an H3 take made from the same camera
+if opts.get("--matte") == "sticks":
+    hold = bpy.data.materials.new("holdout")
+    nt = hold.node_tree
+    nt.nodes.clear()
+    nt.links.new(nt.nodes.new("ShaderNodeHoldout").outputs[0], nt.nodes.new("ShaderNodeOutputMaterial").inputs["Surface"])
+    for ob in scn.objects:
+        if ob.type != "MESH" or ob.name.startswith(("L_stick", "R_stick")):
+            continue
+        if not ob.material_slots:
+            ob.data.materials.append(None)
+        for slot in ob.material_slots:
+            slot.link, slot.material = "OBJECT", hold
+    scn.render.film_transparent = True
+    scn.render.image_settings.color_mode = "RGBA"
+
+# --grey NAME=G,... sets Workbench greys by material name, world= the background (e.g. floor=0.35,rug=0.35,world=0.35)
+if "--grey" in opts:
+    for kv in opts["--grey"].split(","):
+        k, g = kv.split("=")
+        if k == "world":
+            world.color = (float(g),) * 3
+        for m in bpy.data.materials:
+            if m.name.split(".")[0] == k:
+                m.diffuse_color = (float(g),) * 3 + (1.0,)
+# --hide sticks renders without the sticks (and their shadows); --mask sticks renders flat ID colours, the left stick
+# red, the right green, everything else black: what of each stick the camera sees. With the normal render they measure
+# how much each stroke shows in a control video.
+STICKS = [ob for ob in scn.objects if ob.name.startswith(("L_stick", "R_stick"))]
+if opts.get("--hide") == "sticks":
+    for ob in STICKS:
+        ob.hide_render = True
+if opts.get("--mask") == "sticks":
+    ids = {"": bpy.data.materials.new("mask_none"), "L": bpy.data.materials.new("mask_L"), "R": bpy.data.materials.new("mask_R")}
+    for k, rgb in (("", (0, 0, 0, 1)), ("L", (1, 0, 0, 1)), ("R", (0, 1, 0, 1))):
+        ids[k].diffuse_color = rgb
+    for ob in scn.objects:
+        if ob.type != "MESH":
+            continue
+        if not ob.material_slots:
+            ob.data.materials.append(None)
+        for slot in ob.material_slots:
+            slot.link, slot.material = "OBJECT", ids[ob.name[0] if ob in STICKS else ""]
+    sh.light, sh.show_shadows, sh.show_cavity = "FLAT", False, False
+    world.color = (0, 0, 0)
+    scn.view_settings.view_transform = "Standard"
 
 
 def foot_pts(fd, side):
@@ -298,15 +767,33 @@ for i in range(fa, min(fb, len(frames))):
     kick_board.matrix_world = BASE[kick_board.name] @ Matrix.Rotation(fr["kick"]["board"], 4, "X")
     hat_board.matrix_world = BASE[hat_board.name] @ Matrix.Rotation(fr["hihat"]["board"], 4, "X")
     beater.matrix_world = Matrix.Translation(bp) @ Matrix.Rotation(-fr["kick"]["beater"], 4, "X")
+    if beater2:
+        kick_board2.matrix_world = BASE[kick_board2.name] @ Matrix.Rotation(fr["kick"]["board2"], 4, "X")
+        beater2.matrix_world = Matrix.Translation(bp2) @ Matrix.Rotation(-fr["kick"]["beater2"], 4, "X")
+    for h, hd in fr["hands"].items():
+        rig[h]["stick"].set(hd["butt"], hd["tip"])
+    if BODY:
+        MPFB_BODY.pose(fr)
+        scn.render.filepath = os.path.join(out_dir, f"f_{i:05d}.png")
+        bpy.ops.render.render(write_still=True)
+        continue
     for h, hd in fr["hands"].items():
         R = rig[h]
         R["upper"].set(hd["shoulder"], hd["elbow"])
         R["fore"].set(hd["elbow"], hd["wrist"])
-        R["stick"].set(hd["butt"], hd["tip"])
-        d = (Vector(hd["tip"]) - Vector(hd["butt"])).normalized()
-        R["fist"].matrix_world = (Matrix.Translation(Vector(hd["grip"]) - d * 0.012)
-                                  @ Vector((0, 0, 1)).rotation_difference(d).to_matrix().to_4x4()
-                                  @ Matrix.Diagonal((0.042, 0.038, 0.055, 1)))
+        if HANDS:
+            el, wr = Vector(hd["elbow"]), Vector(hd["wrist"])
+            if FULL_FOREARM:        # the skinned forearm runs to the elbow: a short sleeve covers its cut edge
+                R["fore"].set(el, el + (wr - el).normalized() * (SKIN_CUT + 0.012))
+                R["fore"].j1.hide_render = True
+            else:                   # the primitive forearm stops short and swallows the hand's forearm stub
+                R["fore"].set(el, wr - (wr - el).normalized() * 0.05)
+            pose_hand(MPFB_ARM, MPFB_BONES, h, hd)
+        else:
+            d = Vector(hd["hand_dir"]) if "hand_dir" in hd else (Vector(hd["tip"]) - Vector(hd["butt"])).normalized()
+            R["fist"].matrix_world = (Matrix.Translation(Vector(hd["grip"]) - d * 0.012)
+                                      @ Vector((0, 0, 1)).rotation_difference(d).to_matrix().to_4x4()
+                                      @ Matrix.Diagonal((0.042, 0.038, 0.055, 1)))
         fd = fr["feet"][h]
         R["thigh"].set(fd["hip"], fd["knee"])
         R["shin"].set(fd["knee"], fd["ankle"])
