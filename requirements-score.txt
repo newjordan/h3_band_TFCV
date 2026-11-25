@@ -1,6 +1,7 @@
-# scorers (sync_score.py, strum_score.py), pre-flight, chain runner
-mediapipe==1.2.3
-opencv-python-headless==5.1.0.95
-numpy
-scipy==1.18.1
-soundfile==0.14.0
+# Scorers (sync_score.py, strum_score2.py), pre-flight, chain runner.
+# Install the base package too: pip install -e ".[score]"
+mediapipe>=0.10
+opencv-python-headless>=4.9
+numpy>=1.26
+scipy>=1.11
+soundfile>=0.12

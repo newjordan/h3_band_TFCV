@@ -17,7 +17,7 @@ import argparse, json
 
 import numpy as np
 
-from strum_score2 import FPS, read_frames, subbox_signal, train
+from strum_score2 import FPS, permutation_shifts, read_frames, subbox_signal, train
 
 LAG = 2
 
@@ -42,12 +42,12 @@ def analyze(video, hits_path, start, box=None):
     ctrl = {"between_hits": xcorr(speed, train(on + half, n))}
     for s in (1.0, 2.0, 3.0):
         ctrl[f"shift_{s:g}s"] = xcorr(speed, np.roll(train(on, n), int(round(s * FPS))))
-    rng = np.random.default_rng(0)
     ot = train(on, n)
-    null = [xcorr(np.roll(speed, int(rng.integers(6, n - 6))), ot) for _ in range(200)]
-    p = float((np.sum(np.array(null) >= real) + 1) / 201)
+    null = [xcorr(np.roll(speed, k), ot) for k in permutation_shifts(n)]
+    p = float((np.sum(np.array(null) >= real) + 1) / 201) if null else None
     return {"video": video, "frames": n, "hits": int(len(on)), "score": round(real, 3),
-            "controls": {k: round(v, 3) for k, v in ctrl.items()}, "p": round(p, 3),
+            "controls": {k: round(v, 3) for k, v in ctrl.items()},
+            "p": None if p is None else round(p, 3),
             "sync_margin": round(real - max(ctrl.values()), 3)}
 
 

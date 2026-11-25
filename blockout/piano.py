@@ -2486,10 +2486,50 @@ def _close_roles(hands, times, fps):
     return out, near, role
 
 
+def carried_note(n, start=None, end=None):
+    """A Note with the same pitch and velocity. Copies feeling attributes (touch, lift) when they are set."""
+    m = type(n)(n.start if start is None else start, n.end if end is None else end, n.pitch, n.velocity, n.track)
+    for attr in ("touch", "lift"):
+        if hasattr(n, attr):
+            setattr(m, attr, getattr(n, attr))
+    return m
+
+
+def scale_timeline(notes, beats, downbeats, speed):
+    """Divide note and beat times by speed. speed=1 returns the same lists. Feeling attributes stay on the notes."""
+    if speed == 1.0:
+        return notes, list(beats), list(downbeats)
+    notes = [carried_note(n, n.start / speed, n.end / speed) for n in notes]
+    return notes, [b / speed for b in beats], [b / speed for b in downbeats]
+
+
+def load_performance(path, speed=1.0, feeling=None, seed=0, schedule="0:expressive"):
+    """Notes, beats, downbeats, head schedule and an optional energy function, on one timeline.
+
+    Feeling (rubato, touch, velocity) is applied in score time, then speed scales that result once.
+    Scaling the beat grid first and the notes again inside animate() put a feeling chart on the wrong
+    clock and dropped each note's touch.
+    """
+    from . import midi
+    notes = midi.read(path)
+    bts, dbs = midi.beats(path)
+    sched = [(float(t), st) for t, st in (x.split(":") for x in schedule.split(","))]
+    efn = None
+    if feeling:
+        from . import feeling as feeling_mod
+        ch = feeling_mod.Chart(feeling, dbs)
+        notes, tm = feeling_mod.perform(notes, ch, seed)
+        sched = [(float(tm(t)) / speed, h) for t, h in ch.heads]
+        efn = lambda t, ch=ch, tm=tm: float(np.clip(1.4 * ch.at("strength", np.interp(t * speed, tm.tp, tm.ts)), 0, 1))
+        bts, dbs = [float(tm(b)) for b in bts], [float(tm(b)) for b in dbs]
+    notes, bts, dbs = scale_timeline(notes, bts, dbs, speed)
+    return notes, bts, dbs, sched, efn
+
+
 def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats=None,
             schedule=((0.0, "expressive"),), energy_fn=None, seed=0):
     if speed != 1.0:
-        notes = [type(n)(n.start / speed, n.end / speed, n.pitch, n.velocity, n.track) for n in notes]
+        notes = [carried_note(n, n.start / speed, n.end / speed) for n in notes]
     end = dur + start if dur else max(n.end for n in notes) + 1.0
     whole = split_hands(notes) if CONSOLIDATE else None   # hands decided once for the whole piece (parts agree)
     all_notes = notes                                     # (the pedal is decided once for the whole piece too)
@@ -2508,9 +2548,10 @@ def animate(notes, fps=24, start=0.0, dur=None, speed=1.0, beats=None, downbeats
 
     hands = {}
     for name, ns, rest in (("R", rh, cx + 0.15), ("L", lh, cx - 0.15)):
-        ns = [type(n)(n.start, n.end, n.pitch, n.velocity, n.track) for n in ns]   # motion copies (repair may shorten holds)
-        for n, o in zip(ns, [m for m in (rh if name == "R" else lh)]):
-            n.touch, n.lift = getattr(o, "touch", 0.3), getattr(o, "lift", 1.0)
+        ns = [carried_note(n) for n in ns]   # motion copies (repair may shorten holds)
+        for n in ns:
+            n.touch = getattr(n, "touch", 0.3)
+            n.lift = getattr(n, "lift", 1.0)
         if PEDAL_HOLD is not None:
             _pedal_holds(ns, all_notes)
         fing = fingering(slices(ns, hand=name), name) if ns else []
@@ -2889,15 +2930,15 @@ _apply_overrides()
 
 if __name__ == "__main__":
     import argparse
-    from . import midi
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description="Solve piano-hand motion from a MIDI file and write an animation JSON.")
     ap.add_argument("mid"); ap.add_argument("out")
-    ap.add_argument("--start", type=float, default=0.0, help="seconds, after --speed")
-    ap.add_argument("--dur", type=float, default=None)
-    ap.add_argument("--speed", type=float, default=1.0)
+    ap.add_argument("--start", type=float, default=0.0, help="window start in seconds, after --speed and any feeling rubato")
+    ap.add_argument("--dur", type=float, default=None, help="window length in seconds (default: through the last note)")
+    ap.add_argument("--speed", type=float, default=1.0, help="play the score this many times faster")
     ap.add_argument("--fps", type=int, default=24)
     ap.add_argument("--schedule", default="0:expressive",
-                    help="head style timeline, seconds after --speed: '0:focused,8:groove,16:wild,20:crowd'")
+                    help="head style timeline in seconds after --speed, unless --feeling replaces it: "
+                         "'0:focused,8:groove,16:wild'")
     ap.add_argument("--feeling", help="feeling chart JSON (strength/touch/freedom/tempo/head by bar)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--notes-out", help="write the performed notes (for the audio) as JSON")
@@ -2905,20 +2946,16 @@ if __name__ == "__main__":
                     help="hand proportions: the MPFB2 rig's (default) or the old mannequin's")
     a = ap.parse_args()
     set_hand_model(a.hand)
-    notes = midi.read(a.mid)
-    bts, dbs = midi.beats(a.mid, a.speed)
-    sched = [(float(t), st) for t, st in (x.split(":") for x in a.schedule.split(","))]
-    efn = None
-    if a.feeling:
-        from . import feeling
-        ch = feeling.Chart(a.feeling, dbs)
-        notes, tm = feeling.perform(notes, ch, a.seed)
-        sched = [(float(tm(t)), h) for t, h in ch.heads]
-        efn = lambda t, ch=ch, tm=tm: float(np.clip(1.4 * ch.at("strength", np.interp(t, tm.tp, tm.ts)), 0, 1))
-        bts, dbs = [float(tm(b)) for b in bts], [float(tm(b)) for b in dbs]
+    notes, bts, dbs, sched, efn = load_performance(a.mid, a.speed, a.feeling, a.seed, a.schedule)
     if a.notes_out:
         json.dump([[n.start, n.end, n.pitch, n.velocity, n.track] for n in notes], open(a.notes_out, "w"))
-    anim = animate(notes, a.fps, a.start, a.dur, a.speed, bts, dbs, sched, efn, a.seed)
+    # speed is already in the note and beat times; animate must not scale them again
+    anim = animate(notes, a.fps, a.start, a.dur, 1.0, bts, dbs, sched, efn, a.seed)
+    anim["speed"] = a.speed
     json.dump(anim, open(a.out, "w"))
-    print(f"{len(anim['frames'])} frames -> {a.out}")
+    qa = anim["qa"]
+    print(f"{len(anim['frames'])} frames at {a.fps} fps -> {a.out}")
+    print(f"qa  fingers inside a key: {qa['finger_frames']}   penetrating >1 mm: {qa['penetrating_over_1mm']}"
+          f"   max {qa['max_penetration_mm']} mm")
+    print(f"    presses in the hit pad: {qa['hits']['in_hitpad']}   reach misses >3 mm: {qa['reach']['miss_over_3mm']}")
 

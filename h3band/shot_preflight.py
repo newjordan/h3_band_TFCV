@@ -71,10 +71,20 @@ def latent_index(f):
 
 
 def envelope(x, sr):
-    x = sosfiltfilt(butter(4, [150, 4000], btype="band", fs=sr, output="sos"), x.mean(axis=1))
+    mono = x.mean(axis=1)
+    try:
+        mono = sosfiltfilt(butter(4, [150, 4000], btype="band", fs=sr, output="sos"), mono)
+    except ValueError:
+        return np.array([-160.0])
     hop = sr / FPS
-    n = int(len(x) / hop)
-    return 20 * np.log10(np.array([np.sqrt(np.mean(x[int(k * hop):int((k + 1) * hop)] ** 2)) for k in range(n)]) + 1e-8)
+    n = int(len(mono) / hop)
+    if n <= 0:
+        return np.array([-160.0])
+    rms = []
+    for k in range(n):
+        a, b = int(k * hop), int((k + 1) * hop)
+        rms.append(np.sqrt(np.mean(mono[a:b] ** 2)) if b > a else 0.0)
+    return 20 * np.log10(np.array(rms) + 1e-8)
 
 
 def parse_box(s):

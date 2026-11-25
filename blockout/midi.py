@@ -26,13 +26,27 @@ def _varlen(b, i):
 
 
 def _events(trk):
-    """Yield (abs_tick, status, data bytes) for one track chunk."""
-    i, tick, status = 0, 0, None
+    """Yield (abs_tick, status, data bytes) for one track chunk.
+
+    Channel messages (0x80-0xEF) set running status. Meta events and sysex do not: a note-off
+    that omits its status byte after a tempo or lyric event is still that channel message.
+    Treating 0xFF as the new running status drops those notes.
+    """
+    i, tick, running = 0, 0, None
     while i < len(trk):
         d, i = _varlen(trk, i)
         tick += d
+        if i >= len(trk):
+            break
         if trk[i] & 0x80:
-            status = trk[i]; i += 1
+            status = trk[i]
+            i += 1
+            if status < 0xF0:
+                running = status
+        else:
+            if running is None:
+                raise ValueError("MIDI running status used before any channel message")
+            status = running
         if status == 0xFF:
             kind = trk[i]; n, i = _varlen(trk, i + 1)
             yield tick, (0xFF, kind), trk[i:i + n]; i += n
@@ -97,7 +111,7 @@ def read(path):
 
 def beats(path, speed=1.0):
     """Beat and downbeat times (s) from the time-signature map. Compound metres (6/8, 9/8, 12/8) beat in
-    dotted quarters. Returns (beats, downbeats) as lists, divided by speed like the notes."""
+    dotted quarters. Times are divided by speed. read() does not take speed; scale notes separately."""
     tracks, div, to_s = _parse(path)
     sigs = sorted((t, d[0], 2 ** d[1]) for trk in tracks for t, s, d in trk if s == (0xFF, 0x58)) or [(0, 4, 4)]
     if sigs[0][0] != 0:
@@ -119,8 +133,24 @@ def beats(path, speed=1.0):
 
 
 if __name__ == "__main__":
-    import sys
-    ns = read(sys.argv[1])
-    print(f"{len(ns)} notes, {ns[-1].end:.1f} s, pitch {min(n.pitch for n in ns)}-{max(n.pitch for n in ns)}")
-    for n in ns[:40]:
-        print(f"{n.start:7.3f} {n.end - n.start:6.3f}  p{n.pitch:3d} v{n.velocity:3d} trk{n.track}")
+    import argparse
+    ap = argparse.ArgumentParser(description="Print notes (and optionally the beat grid) from a Standard MIDI file.")
+    ap.add_argument("mid")
+    ap.add_argument("--beats", action="store_true", help="print beat and downbeat times after the notes")
+    ap.add_argument("--limit", type=int, default=40, help="how many notes to list")
+    a = ap.parse_args()
+    ns = read(a.mid)
+    if not ns:
+        print("0 notes")
+    else:
+        print(f"{len(ns)} notes, {ns[0].start:.3f}-{ns[-1].end:.3f} s, "
+              f"pitch {min(n.pitch for n in ns)}-{max(n.pitch for n in ns)}")
+        for n in ns[:a.limit]:
+            print(f"{n.start:7.3f} {n.end - n.start:6.3f}  p{n.pitch:3d} v{n.velocity:3d} trk{n.track}")
+        if len(ns) > a.limit:
+            print(f"... {len(ns) - a.limit} more")
+    if a.beats:
+        bts, dbs = beats(a.mid)
+        print(f"{len(bts)} beats, {len(dbs)} downbeats")
+        if bts:
+            print(f"first beat {bts[0]:.3f} s, last {bts[-1]:.3f} s")

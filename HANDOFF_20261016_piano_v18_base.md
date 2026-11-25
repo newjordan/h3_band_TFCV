@@ -13,7 +13,7 @@ Graceful fingers playing the piano. Regular hand. The Comfy dev challenge is due
 - **Render:** `tools/v18/render.sh OUT`. Still keyboard edit, Salamander audio, `OUT/suite_grey.mp4`, a few minutes.
 - **Score:** `python3 tools/v18/review_metrics.py OUT/suite.json` (sections + suite).
 - **Diff two solves:** `python3 tools/v18/compare.py A.json B.json`.
-- **Python:** `/home/frosty40/h3_band_TFCV/.venv_blockout/bin/python`. MIDI and feeling inputs: `~/h3b_suite/examples/piano/knights_suite.{mid,feeling.json}` (unchanged since Oct 9).
+- **Python:** the checkout's `.venv_blockout/bin/python` (or `H3B_LAB_PYTHON`). MIDI and feeling inputs: `examples/piano/knights_suite.{mid,feeling.json}` (unchanged since Oct 9).
 - **Experiments:** `PIANO_OVR='{"NAME": value, ...}'` still overrides any solver constant (`NAME_S` multiplies it).
 
 ## Proof the baseline is solid

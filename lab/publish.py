@@ -1,10 +1,14 @@
 """Publish the lab (plots + results table) to the band site: python lab/publish.py"""
-import csv, json, os, shutil, subprocess
+import csv, json, os, shutil, subprocess, sys
 LAB = os.path.dirname(os.path.abspath(__file__))
-W = os.path.expanduser("~/h3/results/band_site/web")
+W = os.environ.get("H3B_LAB_SITE")
+if not W:
+    sys.exit("Set H3B_LAB_SITE to the site directory to publish into.")
 os.makedirs(os.path.join(W, "media", "lab"), exist_ok=True)
-for f in os.listdir(os.path.join(LAB, "plots")):
-    shutil.copy2(os.path.join(LAB, "plots", f), os.path.join(W, "media", "lab", f))
+plot_dir = os.path.join(LAB, "plots")
+if os.path.isdir(plot_dir):
+    for f in os.listdir(plot_dir):
+        shutil.copy2(os.path.join(plot_dir, f), os.path.join(W, "media", "lab", f))
 rows = list(csv.DictReader(open(os.path.join(LAB, "results.csv"))))
 E = {e["id"]: e for e in json.load(open(os.path.join(LAB, "experiments.json")))}
 table = [["id", "leg", "change", "key sync %", "Debussy", "Rach", "Chopin", "unfingered / sideways / short / shallow",

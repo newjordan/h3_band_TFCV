@@ -469,8 +469,9 @@ footer { padding-block: 0 40px; color: var(--text-dim); font-size: 13px; }
         <div class="mnode" id="skeleton-slot">
           <div class="title"><b>Skeleton hands play the piano</b><span class="src h3">H3 render</span></div>
           <div class="mbody">
-            <div style="position:relative">
+            <div class="pending" id="skeleton-pending">
               <video controls playsinline preload="metadata" poster="media/skeleton_piano_poster.jpg"><source src="media/skeleton_piano.mp4" type="video/mp4"></video>
+              <p class="flag">This clip is not in the checkout.</p>
             </div>
             <p class="cap">The C19 take, Rachmaninoff opening, one 124-frame H3 clip (5.2 s) from a locked-off overhead camera. Left: the Blender reference. Middle: H3 with the skeleton look. Right: Blockout Lock Check, our reference edges in red over H3. 80% of the reference edges have an H3 edge within the scale-matched tolerance (median frame; a Blender render of the same geometry scores 97%). Arms and wrist bones lock; fast fingers can leave a faint ghost. Sound: the hands on the working piano.</p>
           </div>
@@ -586,7 +587,7 @@ pip install -r band-aid/requirements.txt
 <span class="c"># Blender for the blockout renders (default: blender on PATH)</span>
 export H3B_BLENDER=/path/to/blender</pre>
       <div class="prose">
-        <p>H3 renders need a ComfyUI with MiniMax H3 and the H3 models from <code>Comfy-Org/MiniMax-H3</code>: <code>minimax_h3_fl2va_pruned_nvfp4</code> and the Fun ControlNet Union 2.0 model patch.</p>
+        <p>H3 renders need a ComfyUI with MiniMax H3 and the H3 models from <code>Comfy-Org/MiniMax-H3</code>: <code>minimax_h3_fl2va_pruned_nvfp4</code> and the Fun ControlNet Union 2.0 model patch. The CPU tools and tests install on their own with <code>pip install -e ".[dev]"</code> and <code>pytest</code>. Weights are not part of this repo.</p>
         <h3>Queue the lock graph through the Comfy API</h3>
         <p><code>h3band/h3_run.py</code> builds the API-format graph from a small job file and posts it to <code>/prompt</code>. The plate, control and audio paths are relative to ComfyUI's input folder.</p>
       </div>
@@ -682,6 +683,12 @@ python sdk_drum_h3.py ../work/C.mp4 --midi ../examples/drums/rock_groove.mid --a
 
   // executing outline, in queue order, like ComfyUI while a prompt runs
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) {
+    document.querySelectorAll("video").forEach(function (v) {
+      v.removeAttribute("autoplay");
+      v.pause();
+    });
+  }
   var nodes = Array.prototype.slice.call(graph.querySelectorAll(".node[data-run]"))
     .sort(function (a, b) { return a.getAttribute("data-run") - b.getAttribute("data-run"); });
   if (!reduce && nodes.length) {
@@ -725,11 +732,11 @@ python sdk_drum_h3.py ../work/C.mp4 --midi ../examples/drums/rock_groove.mid --a
   });
 
   // the skeleton clip slot: keep the placeholder poster until docs/media/skeleton_piano.mp4 exists
-  var slot = document.getElementById("skeleton-slot");
-  var src = slot.querySelector("source");
-  src.addEventListener("error", function () { slot.classList.add("is-pending"); });
-  var probe = slot.querySelector("video");
-  probe.addEventListener("loadedmetadata", function () { slot.classList.remove("is-pending"); });
+  var pending = document.getElementById("skeleton-pending");
+  var probe = pending.querySelector("video");
+  function markMissing() { pending.classList.add("is-pending"); }
+  probe.addEventListener("error", markMissing);
+  probe.addEventListener("loadedmetadata", function () { pending.classList.remove("is-pending"); });
 })();
 </script>
 </body>
