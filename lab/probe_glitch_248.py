@@ -1,9 +1,18 @@
-import sys, numpy as np, math
-sys.path.insert(0, "/home/frosty40/h3b_wrist")
-from blockout import midi, feeling, piano as P
-notes = midi.read("/home/frosty40/h3b_wrist/examples/piano/knights_suite.mid")
-bts, dbs = midi.beats("/home/frosty40/h3b_wrist/examples/piano/knights_suite.mid")
-ch = feeling.Chart("/home/frosty40/h3b_wrist/examples/piano/knights_suite.feeling.json", dbs)
+import math
+import pathlib
+import sys
+
+import numpy as np
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from blockout import feeling, midi, piano as P  # noqa: E402
+
+MID = ROOT / "examples" / "piano" / "knights_suite.mid"
+FEEL = ROOT / "examples" / "piano" / "knights_suite.feeling.json"
+notes = midi.read(MID)
+bts, dbs = midi.beats(MID)
+ch = feeling.Chart(FEEL, dbs)
 notes, tm = feeling.perform(notes, ch, 0)
 sched = [(float(tm(t)), h) for t, h in ch.heads]
 efn = lambda t: float(np.clip(1.4 * ch.at("strength", np.interp(t, tm.tp, tm.ts)), 0, 1))

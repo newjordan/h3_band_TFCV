@@ -18,7 +18,7 @@ B       = existing take VAE-encoded as the video stream at video_denoise, track 
 --dump prints the API graph instead of queueing it.
 Writes RESULTS_DIR/<tag>.json; the take lands in COMFY_OUTPUT/<OUTPUT_PREFIX>/<tag>_*.mp4.
 """
-import datetime, json, sys, time, urllib.request
+import argparse, datetime, json, sys, time, urllib.request
 
 import config
 
@@ -114,19 +114,44 @@ def build(j):
     return g
 
 
-def main():
-    j = json.load(open(sys.argv[1]))
-    g = build(j)
-    if len(sys.argv) > 2 and sys.argv[2] == "--dump":
-        print(json.dumps(g, indent=1))
-        return
+def _write_result(j, status, wall, pid=None):
     config.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    length = j.get("length") or 0
+    per = round(wall / (length / 24.0), 1) if length else None
+    rec = {"t": datetime.datetime.now().isoformat(timespec="seconds"), "job": j, "prompt_id": pid,
+           "status": status, "wall_s": round(wall, 1), "s_per_video_s": per}
+    json.dump(rec, open(config.RESULTS_DIR / f"{j['tag']}.json", "w"), indent=1)
+    print(f"[h3_run] {j['tag']} {status} in {wall:.0f}s", flush=True)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="Queue one MiniMax H3 job on ComfyUI, or print its API graph.")
+    ap.add_argument("job", help="job JSON, for example examples/workflows/band_aid_skeleton_job.json")
+    ap.add_argument("--dump", action="store_true", help="print the API graph as JSON and do not queue it")
+    a = ap.parse_args(argv)
+    j = json.load(open(a.job))
+    g = build(j)
+    if a.dump:
+        print(f"[h3_run] {j.get('tag', '?')} mode {j.get('mode', '?')}  {len(g)} nodes  "
+              f"video mask {video_mask(j):.4f}", file=sys.stderr)
+        print(json.dumps(g, indent=1))
+        return 0
     t0 = time.time()
-    r = api("/prompt", {"prompt": g, "client_id": j["tag"]})
+    try:
+        r = api("/prompt", {"prompt": g, "client_id": j["tag"]})
+    except Exception as e:
+        print(f"[h3_run] {j['tag']} could not reach {config.COMFY_URL}: {e}", flush=True)
+        _write_result(j, "server-unreachable", time.time() - t0)
+        return 1
     if r.get("node_errors"):
         print("node errors:", json.dumps(r["node_errors"])[:3000])
-        sys.exit(2)
-    pid = r["prompt_id"]
+        _write_result(j, "node-errors", time.time() - t0)
+        return 2
+    pid = r.get("prompt_id")
+    if not pid:
+        print(f"[h3_run] {j['tag']} response had no prompt_id: {json.dumps(r)[:500]}", flush=True)
+        _write_result(j, "error", time.time() - t0)
+        return 1
     print(f"[h3_run] {j['tag']} queued {pid}", flush=True)
     status, fails = None, 0
     while True:
@@ -148,12 +173,9 @@ def main():
             if msgs:
                 print(json.dumps(msgs)[:3000], flush=True)
             break
-    wall = time.time() - t0
-    rec = {"t": datetime.datetime.now().isoformat(timespec="seconds"), "job": j, "prompt_id": pid,
-           "status": status, "wall_s": round(wall, 1), "s_per_video_s": round(wall / (j["length"] / 24.0), 1)}
-    json.dump(rec, open(config.RESULTS_DIR / f"{j['tag']}.json", "w"), indent=1)
-    print(f"[h3_run] {j['tag']} {status} in {wall:.0f}s", flush=True)
+    _write_result(j, status, time.time() - t0, pid)
+    return 0 if status == "success" else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

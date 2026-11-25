@@ -77,6 +77,10 @@ def xcorr(a, b):
 
 def analyze(video, events, t0, box=None):
     mot, fps = motion_track(video, box)
+    if len(mot) == 0:
+        return {"video": video, "frames": 0, "onsets": 0, "box": box,
+                "peak_corr": None, "peak_lag_frames": None, "corr_lag0": None,
+                "control_shifted_peak": [], "margin_vs_control": None}
     m = detrend(mot, fps)
     train, n_on = onset_train(events, t0, len(m), fps)
     peak, lag = xcorr(m, train)

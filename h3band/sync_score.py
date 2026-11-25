@@ -17,9 +17,6 @@ import numpy as np
 import soundfile as sf
 from scipy.signal import butter, sosfiltfilt
 
-import mediapipe as mp
-from mediapipe.tasks.python import BaseOptions, vision
-
 import config  # noqa: E402
 
 MODEL = str(config.FACE_MODEL)
@@ -28,8 +25,18 @@ OPEN_THRESH = 0.035  # inner-lip gap / face height
 JAW_OPEN = 0.15      # MediaPipe jawOpen blendshape
 
 
+def _landmarker_api():
+    """MediaPipe is only needed to read a face. Importing the scorer (envelope, CLI --help) does not require it."""
+    if not hasattr(_landmarker_api, "mods"):
+        import mediapipe as mp
+        from mediapipe.tasks.python import BaseOptions, vision
+        _landmarker_api.mods = (mp, BaseOptions, vision)
+    return _landmarker_api.mods
+
+
 def _faces(lm, rgb, x0=0, y0=0, sx=1.0):
     """Landmarks of every face in rgb, mapped back to full-frame pixels."""
+    mp, _, _ = _landmarker_api()
     h, w = rgb.shape[:2]
     res = lm.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=np.ascontiguousarray(rgb)))
     out = []
@@ -55,6 +62,7 @@ def _pick(faces, box):
 def mouth_track(video, box=None):
     """Full-frame detection, then a tracked crop (3x face height, upscaled to 512) around the last face:
     the short-range face model misses small or mic-occluded faces at full-frame scale."""
+    _, BaseOptions, vision = _landmarker_api()
     opts = vision.FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=MODEL),
                                         running_mode=vision.RunningMode.IMAGE, num_faces=4,
                                         min_face_detection_confidence=0.1, min_face_presence_confidence=0.1,
@@ -124,7 +132,10 @@ def vocal_envelope(audio, fps, n_frames, shift_s=0.0):
     x = x.mean(axis=1)
     if shift_s:
         x = np.roll(x, int(round(shift_s * sr)))
-    x = sosfiltfilt(butter(4, [150, 4000], btype="band", fs=sr, output="sos"), x)
+    try:
+        x = sosfiltfilt(butter(4, [150, 4000], btype="band", fs=sr, output="sos"), x)
+    except ValueError:
+        return np.full(n_frames, -160.0)
     hop = sr / fps
     env = np.empty(n_frames)
     for k in range(n_frames):

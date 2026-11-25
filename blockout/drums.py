@@ -592,7 +592,7 @@ def check(anim):
 if __name__ == "__main__":
     import argparse
     from . import midi
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description="Animate a drummer from a GM drum MIDI or a hit list and write JSON.")
     ap.add_argument("src", help="GM drum MIDI, or a hit list JSON from h3band/drum_events.py")
     ap.add_argument("out")
     ap.add_argument("--beats", help="beats JSON {'beats': [...]} (hit lists; MIDI uses its time signature)")
@@ -619,5 +619,12 @@ if __name__ == "__main__":
     sched = [(float(t), st) for t, st in (x.split(":") for x in a.schedule.split(","))]
     anim = animate(hits, a.fps, a.start, a.dur, bts, dbs, sched, a.seed)
     json.dump(anim, open(a.out, "w"))
-    print(f"{len(anim['frames'])} frames -> {a.out}")
-    print(json.dumps(check(anim)))
+    summary = check(anim)
+    med, mx = summary["contact_err_mm_median"], summary["contact_err_mm_max"]
+    med_s = "n/a" if med is None else f"{med:g} mm"
+    mx_s = "n/a" if mx is None else f"{mx:g} mm"
+    print(f"{len(anim['frames'])} frames at {a.fps} fps -> {a.out}")
+    print(f"contact median {med_s}, max {mx_s}; tips through heads {summary['tip_penetrating_frames']}; "
+          f"kicks on the head {summary['kicks_beater_on_head']}/{summary['kicks']}; "
+          f"reach {summary['max_reach_m']} m (arm {summary['arm_length_m']:.3f} m)")
+    print(json.dumps(summary))

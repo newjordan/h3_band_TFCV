@@ -10,24 +10,43 @@
 
 Usage: stem_quality.py OUT.json name=path [name=path ...] [--ref dry] [--sung-start SECONDS]
 """
-import json, sys
+import argparse
+import json
 
 import numpy as np
 import soundfile as sf
 from scipy.signal import butter, sosfiltfilt
 
 FPS = 24
+SILENCE_DB = -160.0
 
 
 def envelope(x, sr):
-    x = sosfiltfilt(butter(4, [150, 4000], btype="band", fs=sr, output="sos"), x.mean(axis=1))
+    mono = np.asarray(x, dtype=np.float64).mean(axis=1)
+    if mono.size == 0:
+        return np.array([SILENCE_DB])
+    try:
+        mono = sosfiltfilt(butter(4, [150, 4000], btype="band", fs=sr, output="sos"), mono)
+    except ValueError:
+        # filtfilt needs more samples than its padding. A preview shorter than that is silence
+        # at this bandwidth, not a crash.
+        return np.array([SILENCE_DB])
     hop = sr / FPS
-    n = int(len(x) / hop)
-    seg = x[: int(n * hop)][: n * int(hop)] if float(hop).is_integer() else None
-    if seg is not None:
+    n = int(len(mono) / hop)
+    if n <= 0:
+        return np.array([SILENCE_DB])
+    if float(hop).is_integer():
+        take = n * int(hop)
+        seg = mono[:take]
+        if len(seg) < take:
+            return np.array([SILENCE_DB])
         rms = np.sqrt((seg.reshape(n, int(hop)) ** 2).mean(axis=1))
     else:
-        rms = np.array([np.sqrt(np.mean(x[int(round(k * hop)):int(round((k + 1) * hop))] ** 2)) for k in range(n)])
+        rms = np.array([
+            np.sqrt(np.mean(mono[int(round(k * hop)):int(round((k + 1) * hop))] ** 2))
+            if int(round((k + 1) * hop)) > int(round(k * hop)) else 0.0
+            for k in range(n)
+        ])
     return 20 * np.log10(rms + 1e-8)
 
 
@@ -56,13 +75,14 @@ def stats(path, ref_env=None, sung_start=0.0):
 
 
 def main():
-    out_path, args = sys.argv[1], sys.argv[2:]
-    ref, sung_start = None, 0.0
-    if "--sung-start" in args:
-        i = args.index("--sung-start"); sung_start = float(args[i + 1]); args = args[:i] + args[i + 2:]
-    if "--ref" in args:
-        i = args.index("--ref"); ref = args[i + 1]; args = args[:i] + args[i + 2:]
-    stems = dict(a.split("=", 1) for a in args)
+    ap = argparse.ArgumentParser(description="Score stem dynamic range, silence and stereo width at 24 fps.")
+    ap.add_argument("out", help="JSON path to write")
+    ap.add_argument("stems", nargs="+", help="name=path, one per stem")
+    ap.add_argument("--ref", help="stem name whose envelope the others are correlated against")
+    ap.add_argument("--sung-start", type=float, default=0.0, help="seconds into the file where the 5 s windows begin")
+    a = ap.parse_args()
+    out_path, sung_start, ref = a.out, a.sung_start, a.ref
+    stems = dict(item.split("=", 1) for item in a.stems)
     ref_env = stats(stems[ref], None, sung_start)[1] if ref else None
     res = {k: dict(path=v, **stats(v, None if k == ref else ref_env, sung_start)[0]) for k, v in stems.items()}
     json.dump(res, open(out_path, "w"), indent=1)

@@ -35,7 +35,7 @@ Also in `lab/NOTEBOOK.md`. **100% is now 58 notes away (E36).**
 - Band site rebuild: `python3 ~/h3/mv_tools/band_site.py`. Line/dot plots only.
 - No bulk H3 renders; single shots only when asked. GPU lease `h3-K`.
 - Commits: `newjordan <11369410+newjordan@users.noreply.github.com>`, no Co-Authored-By, push for the drums work.
-- Lab runs: `systemd-run --user --unit=lab-<ID> --working-directory=/home/frosty40/h3b_wrist /home/frosty40/h3_band_TFCV/.venv_blockout/bin/python lab/run.py <ID>`, or chain via `lab/queue.sh`. Pausing: kill run.py + eval_suite children + `ssh sparky|turbo pkill -f lab_<ID>_w_`, then delete `lab/runs/<ID>`.
+- Lab runs: from the repo root, `python lab/run.py <ID>`, or chain via `lab/queue.sh`. Extra machines go in `H3B_LAB_HOSTS` (`name:slots:python:code`). Pausing: kill run.py and its eval_suite children, then delete `lab/runs/<ID>`.
 
 ## Next ideas (by expected value)
 1. Renderer diff for the glitch (capsule vs mpfb on the 249.9 window frames) -> fix Seg/mpfb forearm -> re-render the Chopin window -> re-cut v20.

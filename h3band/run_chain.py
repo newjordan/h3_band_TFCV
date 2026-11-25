@@ -7,7 +7,7 @@ Jobs come from SHOTS_DIR/<id>/jobs/*.json (written by shot_preflight.py), run in
 h3_run.py. After each success the take (COMFY_OUTPUT/<OUTPUT_PREFIX>/<tag>_*.mp4) is copied to
 COMFY_INPUT/<OUTPUT_PREFIX>/<id>/<tag>.mp4, where the next mode-B job reads it. Every zone is scored on
 every take: vocal zones with sync_score.py against their stem, guitar zones with strum_score.py against
-the guitar onsets (GUITAR_EVENTS). Stops at the first failure. Log: SHOTS_DIR/<id>/chain.json.
+the guitar onsets (GUITAR_EVENTS), using strum_score2.py. Stops at the first failure. Log: SHOTS_DIR/<id>/chain.json.
 --dry-run only builds each job's graph (no server needed).
 """
 import json, shutil, subprocess, sys, time
@@ -19,17 +19,23 @@ HERE = Path(__file__).resolve().parent
 PY = sys.executable
 
 
+def score_command(zone, mp4, pre):
+    """The scorer command for one zone. Guitar uses strum_score2: v1's whole-box flow reads body bounce as a strum."""
+    box = ",".join(f"{v:g}" for v in zone["box_start"])
+    t0 = str(pre["song_window"][0])
+    if zone["stem"] == "guitar":
+        return [PY, str(HERE / "strum_score2.py"), str(mp4), str(config.GUITAR_EVENTS), t0, "--box", box, "--json"]
+    if zone["stem"] in pre["stems"]:
+        return [PY, str(HERE / "sync_score.py"), str(mp4), pre["stems"][zone["stem"]]["out"], "--box", box]
+    return None
+
+
 def score_take(mp4, pre):
     """Score every zone on this take, whatever stage it is: shows sync appear and survive."""
     out = {}
     for z in pre["zones"]:
-        box = ",".join(f"{v:g}" for v in z["box_start"])
-        if z["stem"] == "guitar":
-            cmd = [PY, str(HERE / "strum_score.py"), str(mp4), str(config.GUITAR_EVENTS),
-                   str(pre["song_window"][0]), "--box", box, "--json"]
-        elif z["stem"] in pre["stems"]:
-            cmd = [PY, str(HERE / "sync_score.py"), str(mp4), pre["stems"][z["stem"]]["out"], "--box", box]
-        else:
+        cmd = score_command(z, mp4, pre)
+        if cmd is None:
             continue
         r = subprocess.run(cmd, capture_output=True, text=True)
         try:
@@ -68,7 +74,13 @@ def main():
         t0 = time.time()
         print(f"[chain] {j['tag']}: {j.get('plan', '')}", flush=True)
         subprocess.run([PY, str(HERE / "h3_run.py"), str(jp)], check=False)
-        res = json.loads((config.RESULTS_DIR / f"{j['tag']}.json").read_text())
+        res_path = config.RESULTS_DIR / f"{j['tag']}.json"
+        if not res_path.exists():
+            stage = {"tag": j["tag"], "status": "no-result", "wall_s": round(time.time() - t0, 1)}
+            log["stages"].append(stage)
+            log_path.write_text(json.dumps(log, indent=1))
+            sys.exit(f"[chain] {j['tag']} wrote no result (the server never accepted the prompt)")
+        res = json.loads(res_path.read_text())
         stage = {"tag": j["tag"], "status": res["status"], "wall_s": res["wall_s"]}
         if res["status"] != "success":
             log["stages"].append(stage)

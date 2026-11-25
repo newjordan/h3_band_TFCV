@@ -96,32 +96,63 @@ def hand_signal(frames):
     return np.diff(ys, prepend=ys[0])
 
 
+def _highpass(sig, axis=None):
+    """3 Hz high-pass. Clips shorter than the filter's padding are returned unchanged."""
+    sig = np.asarray(sig, float)
+    length = sig.shape[0] if axis in (0, None) and sig.ndim > 1 else len(sig)
+    if length < 16:
+        return sig
+    try:
+        kw = {"axis": axis} if axis is not None else {}
+        return sosfiltfilt(butter(3, 3.0, btype="high", fs=FPS, output="sos"), sig, **kw)
+    except ValueError:
+        return sig
+
+
+def permutation_shifts(n, draws=200, seed=0):
+    """Circular shifts that move the motion by at least 6 frames. Empty when the clip is under 13 frames
+    (numpy rejects integers(6, n - 6) there, which used to abort the score)."""
+    if n < 13:
+        return []
+    rng = np.random.default_rng(seed)
+    return [int(rng.integers(6, n - 6)) for _ in range(draws)]
+
+
 def subbox_signal(frames):
+    if len(frames) == 0:
+        return np.zeros(0), {"grid": GRID, "window_rows": [0, 0], "window_cols": [0, 0], "energy_share": 0.0}
     gray = []
     for f in frames:
         g = cv2.cvtColor(f, cv2.COLOR_BGR2GRAY)
         s = 360.0 / max(g.shape)
         gray.append(cv2.resize(g, None, fx=s, fy=s, interpolation=cv2.INTER_AREA) if s < 1 else g)
     h, w = gray[0].shape
-    vy = np.zeros((len(gray), GRID, GRID))
+    grid = GRID
+    while grid > 1 and (h // grid < 1 or w // grid < 1):
+        grid //= 2
+    win = min(WIN, grid)
+    if h // grid < 1 or w // grid < 1 or win < 1:
+        return np.zeros(len(gray)), {"grid": grid, "window_rows": [0, 0], "window_cols": [0, 0], "energy_share": 0.0}
+    vy = np.zeros((len(gray), grid, grid))
     for t in range(1, len(gray)):
         fl = cv2.calcOpticalFlowFarneback(gray[t - 1], gray[t], None, 0.5, 3, 11, 3, 5, 1.1, 0)
         fy = fl[..., 1] - np.median(fl[..., 1])          # remove rigid zone motion (bounce, push-in)
-        cells = fy[:h // GRID * GRID, :w // GRID * GRID].reshape(GRID, h // GRID, GRID, w // GRID)
+        cells = fy[:h // grid * grid, :w // grid * grid].reshape(grid, h // grid, grid, w // grid)
         vy[t] = cells.mean(axis=(1, 3))
-    hp = sosfiltfilt(butter(3, 3.0, btype="high", fs=FPS, output="sos"), vy, axis=0)
+    hp = _highpass(vy, axis=0)
     energy = (hp ** 2).sum(axis=0)
     best, at = -1.0, (0, 0)
-    for r in range(GRID - WIN + 1):
-        for c in range(GRID - WIN + 1):
-            e = energy[r:r + WIN, c:c + WIN].sum()
-            if e > best:
+    for r in range(grid - win + 1):
+        for c in range(grid - win + 1):
+            e = energy[r:r + win, c:c + win].sum()
+            if np.isfinite(e) and e > best:
                 best, at = e, (r, c)
     r, c = at
-    win = hp[:, r:r + WIN, c:c + WIN].reshape(len(gray), -1)
-    sig = win.mean(axis=1)
-    cover = {"grid": GRID, "window_rows": [r, r + WIN], "window_cols": [c, c + WIN],
-             "energy_share": round(float(best / energy.sum()), 3)}
+    window = hp[:, r:r + win, c:c + win].reshape(len(gray), -1)
+    sig = window.mean(axis=1)
+    total = float(energy.sum())
+    cover = {"grid": grid, "window_rows": [r, r + win], "window_cols": [c, c + win],
+             "energy_share": round(float(best / total), 3) if total else 0.0}
     return sig, cover
 
 
@@ -169,6 +200,8 @@ def lock(stroke_ph, onset_ph):
 
 
 def spectral_share(speed):
+    if len(speed) < 8:
+        return float("nan")
     f, p = welch(speed - speed.mean(), fs=FPS, nperseg=min(64, len(speed)))
     band = lambda lo, hi: p[(f >= lo) & (f <= hi)].sum()
     tot = band(1.0, 10.0)
@@ -183,7 +216,7 @@ def analyze(video, events_path, t0, box=None, beats_path=None, grid_lag=0.0):
     sig = hand_signal(frames)
     if sig is not None:
         source, cover = "hand_landmarks", None
-        sig = sosfiltfilt(butter(3, 3.0, btype="high", fs=FPS, output="sos"), sig)
+        sig = _highpass(sig)
     else:
         source = "subbox_flow"
         sig, cover = subbox_signal(frames)
@@ -226,16 +259,15 @@ def analyze(video, events_path, t0, box=None, beats_path=None, grid_lag=0.0):
     mb = (b_real - max(v for k, v in ctrl_b.items() if v == v and k != "section_+60s")) if beats is not None else None
     # permutation nulls: circularly shift the motion (>= 6 frames) and re-score, 200 draws.
     # When beats are present the a and b draws stay in one loop so the shift sequence is unchanged.
-    rng = np.random.default_rng(0)
+    # Clips under 13 frames cannot make that shift; they still get margin a, with p left unset.
     ot = train(on, n)
     null_a, null_b = [], []
-    for _ in range(200):
-        k = int(rng.integers(6, n - 6))
+    for k in permutation_shifts(n):
         null_a.append(xcorr(np.roll(speed, k), ot))
         if beats is not None:
-            null_b.append(lock(phase8(((stroke_t + k / FPS) % (n / FPS)) + t0, beats), on_ph))
-    p_a = float((np.sum(np.array(null_a) >= a_real) + 1) / 201)
-    p_b = float((np.sum(np.array(null_b) >= b_real) + 1) / 201) if beats is not None else None
+            null_b.append(lock(phase8(((stroke_t + k / FPS) % (max(n, 1) / FPS)) + t0, beats), on_ph))
+    p_a = float((np.sum(np.array(null_a) >= a_real) + 1) / 201) if null_a else None
+    p_b = float((np.sum(np.array(null_b) >= b_real) + 1) / 201) if beats is not None and null_b else None
     zs = np.exp(1j * phase8(stroke_t + t0, beats)).mean() if beats is not None else None
     return {"video": pathlib.Path(video).name, "signal": source, "subbox": cover, "frames": n,
             "onsets": int(len(on)), "strokes": int(len(pk)),
@@ -244,7 +276,7 @@ def analyze(video, events_path, t0, box=None, beats_path=None, grid_lag=0.0):
             "b_controls": {k: round(v, 3) for k, v in ctrl_b.items()},
             "b_stroke_R": None if zs is None else round(float(abs(zs)), 3),
             "c_rhythm_share": round(spectral_share(speed), 3),
-            "p_a": round(p_a, 3), "p_b": None if p_b is None else round(p_b, 3),
+            "p_a": None if p_a is None else round(p_a, 3), "p_b": None if p_b is None else round(p_b, 3),
             "sync_margin_a": round(ma, 3), "sync_margin_b": None if mb is None else round(mb, 3),
             "sync_margin": round(ma, 3)}
 

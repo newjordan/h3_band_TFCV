@@ -1,10 +1,14 @@
-# separation, alignment, guitar events, vocal activity, stem quality
-# CPU torch: pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-audio-separator==0.47.0
-onnxruntime==1.30.0
+# Separation, alignment, guitar events, vocal activity, stem quality.
+# CPU torch first, then the rest:
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements-sep.txt
+# Versions below are the current releases checked against PyPI while preparing this tree
+# (audio-separator 0.48.0, onnxruntime 1.32.0). CI does not install this extra.
+audio-separator>=0.48
+onnxruntime>=1.20
 torch
 torchaudio
-librosa
-numpy
-scipy
-soundfile
+librosa>=0.10
+numpy>=1.26
+scipy>=1.11
+soundfile>=0.12

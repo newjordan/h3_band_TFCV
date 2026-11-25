@@ -1,4 +1,5 @@
-numpy
-soundfile
-scipy
-matplotlib
+# Piano and drum blockout, including the feeling-chart plot (blockout/feeling.py plot).
+numpy>=1.26
+scipy>=1.11
+soundfile>=0.12
+matplotlib>=3.8

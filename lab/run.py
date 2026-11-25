@@ -1,4 +1,8 @@
-"""Piano-hand lab: run one experiment over the whole Knight's Suite on toymaker + sparky + turbo, record it.
+"""Piano-hand lab: run one experiment over the whole Knight's Suite and record it.
+
+Workers are this machine (`H3B_LAB_LOCAL_SLOTS`, default 1) plus any hosts in `H3B_LAB_HOSTS`
+(`name:slots:python:code`, comma-separated). The suite defaults to `examples/piano` in this repo
+(`H3B_LAB_SUITE`).
 
     python lab/run.py EXP_ID            # EXP_ID defined in lab/experiments.json
     python lab/run.py --plots           # regenerate lab/plots/*.png from lab/results.csv
@@ -14,10 +18,26 @@ import csv, json, os, queue, shlex, subprocess, sys, threading, time
 
 LAB = os.path.dirname(os.path.abspath(__file__))
 CODE = os.path.dirname(LAB)
-SUITE = os.path.expanduser("~/h3b_suite/examples/piano")
-HOSTS = [("local", 12, os.path.expanduser("~/h3_band_TFCV/.venv_blockout/bin/python"), CODE),
-         ("sparky", 18, "/home/frosty40/h3band/venv/bin/python", "/home/frosty40/h3band/code"),
-         ("turbo", 28, "/home/frosty40/h3band/venv/bin/python", "/home/frosty40/h3band/code")]
+SUITE = os.environ.get("H3B_LAB_SUITE", os.path.join(CODE, "examples", "piano"))
+
+
+def _hosts():
+    """Local workers, plus any extra machines in H3B_LAB_HOSTS.
+
+    H3B_LAB_HOSTS is comma-separated `name:slots:python:code` (no spaces). Nothing here is a
+    personal path: set the variable for the machines you actually have.
+    """
+    local_py = os.environ.get("H3B_LAB_PYTHON", sys.executable)
+    slots = int(os.environ.get("H3B_LAB_LOCAL_SLOTS", "1"))
+    hosts = [("local", slots, local_py, CODE)]
+    extra = os.environ.get("H3B_LAB_HOSTS", "").strip()
+    for item in filter(None, (p.strip() for p in extra.split(","))):
+        name, n, py, code = item.split(":", 3)
+        hosts.append((name, int(n), py, code))
+    return hosts
+
+
+HOSTS = _hosts()
 SSH = ["-o", "ControlMaster=auto", "-o", "ControlPath=/tmp/lab-ssh-%r@%h:%p", "-o", "ControlPersist=900"]
 WINDOWS = [round(39.9 + 10 * k, 1) for k in range(36) if 39.9 + 10 * k < 390.5]
 FIELDS = ["id", "leg", "parent", "change", "started", "minutes", "notes", "ok", "keysync", "debussy", "rach", "chopin",

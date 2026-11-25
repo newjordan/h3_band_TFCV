@@ -16,27 +16,12 @@ Needs opencv-python (cv2). Images are ComfyUI IMAGE tensors [frames, H, W, 3] in
 import numpy as np
 import torch
 
-try:
-    import cv2
-except ImportError:                                   # reported when a node runs, so the package still loads
-    cv2 = None
+from .lock_core import edges_from_rgb, lock_frames, need_cv2
 
 
-def _need_cv2():
-    if cv2 is None:
-        raise RuntimeError("Band Aid lock nodes need opencv-python: pip install opencv-python-headless")
-
-
-def _u8(img):
-    """One IMAGE frame (H, W, 3) float 0..1 -> uint8 grey."""
-    a = (img.detach().cpu().numpy() * 255.0).clip(0, 255).astype(np.uint8)
-    return cv2.cvtColor(a, cv2.COLOR_RGB2GRAY)
-
-
-def _edges(grey, low, high, blur):
-    if blur > 1:
-        grey = cv2.GaussianBlur(grey, (blur | 1, blur | 1), 0)
-    return cv2.Canny(grey, low, high) > 0
+def _u8_rgb(img):
+    """One IMAGE frame (H, W, 3) float 0..1 -> uint8 RGB."""
+    return (img.detach().cpu().numpy() * 255.0).clip(0, 255).astype(np.uint8)
 
 
 class BlockoutReferenceEdges:
@@ -58,10 +43,11 @@ class BlockoutReferenceEdges:
     CATEGORY = "Band Aid"
 
     def run(self, normal_pass, low, high, blur, mask=None, mask_dilate_px=0):
-        _need_cv2()
+        need_cv2()
+        import cv2
         out = []
         for i in range(normal_pass.shape[0]):
-            e = _edges(_u8(normal_pass[i]), low, high, blur)
+            e = edges_from_rgb(_u8_rgb(normal_pass[i]), low, high, blur)
             if mask is not None and mask_dilate_px > 0:
                 m = (mask[min(i, mask.shape[0] - 1)].cpu().numpy() > 0.5).astype(np.uint8)
                 k = np.ones((2 * mask_dilate_px + 1,) * 2, np.uint8)
@@ -86,39 +72,14 @@ class BlockoutLockCheck:
     CATEGORY = "Band Aid"
 
     def run(self, render, normal_pass, mask, tolerance_px, mask_dilate_px):
-        _need_cv2()
+        need_cv2()
         n = min(render.shape[0], normal_pass.shape[0], mask.shape[0])
-        H, W = render.shape[1], render.shape[2]
-        k = np.ones((2 * mask_dilate_px + 1,) * 2, np.uint8)
-        rec, pre, worst, over = [], [], (2.0, -1), []
-        for i in range(n):
-            ref = normal_pass[i]
-            if ref.shape[0] != H or ref.shape[1] != W:
-                ref = torch.nn.functional.interpolate(ref.permute(2, 0, 1)[None], size=(H, W), mode="area")[0].permute(1, 2, 0)
-            m = mask[i].cpu().numpy()
-            if m.shape != (H, W):
-                m = cv2.resize(m, (W, H), interpolation=cv2.INTER_NEAREST)
-            m = cv2.dilate((m > 0.5).astype(np.uint8), k) > 0
-            er, en = _edges(_u8(render[i]), 20, 60, 3) & m, _edges(_u8(ref), 20, 60, 3) & m
-            ov = (render[i].cpu().numpy() * 255).astype(np.uint8).copy()
-            ov[en] = (255, 0, 0)
-            if en.sum() >= 20:
-                d_r = cv2.distanceTransform((~er).astype(np.uint8), cv2.DIST_L2, 3)
-                d_n = cv2.distanceTransform((~en).astype(np.uint8), cv2.DIST_L2, 3)
-                r = float(np.mean(d_r[en] <= tolerance_px))
-                p = float(np.mean(d_n[er] <= tolerance_px)) if er.any() else 0.0
-                rec.append(r); pre.append(p)
-                worst = min(worst, (r, i))
-                cv2.putText(ov, f"f{i} lock {100 * r:.0f}%", (8, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-            over.append(torch.from_numpy(ov.astype(np.float32) / 255.0))
-        if not rec:
-            return (0.0, 0.0, "no reference edges inside the mask", torch.stack(over))
-        R, P = np.array(rec), np.array(pre)
-        report = (f"Band Aid lock check, {len(R)} frames, tolerance {tolerance_px:g} px: reference edges matched "
-                  f"p10/p50/p90 {np.percentile(R, 10):.2f} / {np.median(R):.2f} / {np.percentile(R, 90):.2f}; "
-                  f"render edges on the reference p50 {np.median(P):.2f}; worst frame {worst[1]} ({worst[0]:.2f}). "
-                  f"Ceiling (a Blender plate of the same geometry) ~0.97.")
-        return (float(np.median(R)), float(np.median(P)), report, torch.stack(over))
+        render_u8 = np.stack([_u8_rgb(render[i]) for i in range(n)]) if n else np.zeros((0, 1, 1, 3), np.uint8)
+        normal_u8 = np.stack([_u8_rgb(normal_pass[i]) for i in range(n)]) if n else np.zeros((0, 1, 1, 3), np.uint8)
+        mask_np = mask[:n].detach().cpu().numpy() if n else np.zeros((0, 1, 1), np.float32)
+        recall, precision, report, overlay = lock_frames(
+            render_u8, normal_u8, mask_np, tolerance_px, mask_dilate_px)
+        return (float(recall), float(precision), report, torch.from_numpy(overlay.astype(np.float32) / 255.0))
 
 
 NODE_CLASS_MAPPINGS = {"BandAidBlockoutReferenceEdges": BlockoutReferenceEdges,

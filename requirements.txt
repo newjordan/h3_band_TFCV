@@ -1,5 +1,6 @@
-# Band Aid custom nodes, inside ComfyUI's own environment (numpy, torch and Pillow ship with ComfyUI)
-numpy
-scipy
-soundfile
-opencv-python-headless
+# Band Aid custom nodes, inside ComfyUI's own environment.
+# numpy, torch and Pillow already ship with ComfyUI. Same libraries as the base install of pyproject.toml.
+numpy>=1.26
+scipy>=1.11
+soundfile>=0.12
+opencv-python-headless>=4.9
